@@ -21,17 +21,12 @@ function CollapsibleTrigger({
 
 function CollapsibleContent({
   className,
-  style,
   ...props
 }: React.ComponentProps<typeof CollapsiblePrimitive.CollapsibleContent>) {
   return (
     <CollapsiblePrimitive.CollapsibleContent
       data-slot="collapsible-content"
-      className={`overflow-hidden data-[state=open]:animate-[slideDown_200ms_ease-out] data-[state=closed]:animate-[slideUp_200ms_ease-out] ${className || ""}`}
-      style={{
-        ...style,
-        "--radix-collapsible-content-height": "var(--radix-collapsible-content-height)",
-      } as React.CSSProperties}
+      className={`overflow-hidden data-[state=open]:animate-[slideDown_250ms_ease-out] data-[state=closed]:animate-[slideUp_200ms_ease-in] ${className || ""}`}
       {...props}
     />
   )

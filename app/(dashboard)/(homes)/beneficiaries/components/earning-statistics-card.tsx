@@ -28,8 +28,8 @@ const EarningStatisticsCard = ({ beneficiaries }: { beneficiaries: unknown[] }) 
                             <ShoppingCart />
                         </span>
                         <div>
-                            <span className="text-neutral-600 dark:text-neutral-100 text-sm font-medium">Sales</span>
-                            <h6 className="text-base font-semibold mb-0">$200k</h6>
+                            <span className="text-neutral-600 dark:text-neutral-100 text-sm font-medium">Grants</span>
+                            <h6 className="text-base font-semibold mb-0">$108k</h6>
                         </div>
                     </div>
 
@@ -38,8 +38,8 @@ const EarningStatisticsCard = ({ beneficiaries }: { beneficiaries: unknown[] }) 
                             <SquareKanban />
                         </span>
                         <div>
-                            <span className="text-neutral-600 dark:text-neutral-100 text-sm font-medium">Income</span>
-                            <h6 className="text-base font-semibold mb-0">$200k</h6>
+                            <span className="text-neutral-600 dark:text-neutral-100 text-sm font-medium">Expenses</span>
+                            <h6 className="text-base font-semibold mb-0">$22k</h6>
                         </div>
                     </div>
 
@@ -48,8 +48,8 @@ const EarningStatisticsCard = ({ beneficiaries }: { beneficiaries: unknown[] }) 
                             <ArrowBigUp />
                         </span>
                         <div>
-                            <span className="text-neutral-600 dark:text-neutral-100 text-sm font-medium">Profit</span>
-                            <h6 className="text-base font-semibold mb-0">$200k</h6>
+                            <span className="text-neutral-600 dark:text-neutral-100 text-sm font-medium">Remaining</span>
+                            <h6 className="text-base font-semibold mb-0">$85k</h6>
                         </div>
                     </div>
                 </div>

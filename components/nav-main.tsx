@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { ChevronRight, Settings, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface SidebarItem {
   title?: string;
@@ -40,11 +40,30 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
   const pathname = usePathname();
   const isCollapsed = useSidebarCollapsed();
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [manualClose, setManualClose] = useState<string | null>(null);
   const { setCustomizationOpen } = useThemeCustomizer();
+
+  // Auto-open the active group on route change, and clear manual close
+  useEffect(() => {
+    const activeGroup = items.find((item) =>
+      item.items?.some((sub) => pathname === sub.url || pathname.startsWith(sub.url))
+    );
+    if (activeGroup?.title) {
+      setOpenGroup(activeGroup.title);
+      setManualClose(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const handleToggleGroup = (title?: string) => {
     if (!title) return;
-    setOpenGroup((prev) => (prev === title ? null : title));
+    if (openGroup === title) {
+      setOpenGroup(null);
+      setManualClose(title);
+    } else {
+      setOpenGroup(title);
+      setManualClose(null);
+    }
   };
 
   return (
@@ -57,7 +76,7 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
           );
 
           if (item.items && item.items.length > 0) {
-            const isOpen = openGroup === item.title || isGroupActive;
+            const isOpen = manualClose === item.title ? false : (openGroup === item.title || isGroupActive);
 
             return (
               <Collapsible

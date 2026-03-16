@@ -62,51 +62,51 @@ const WorkingScheduleCard = ({ grants }: { grants: unknown[] }) => {
                             className="flex items-center justify-between gap-1 ps-2.5 border-inline-start border-start-width-[3px] border-purple">
                             <div className="">
                                 <div className="flex items-center gap-1">
-                                    <h6 className="text-lg mb-0">10:20 - 11:00</h6>
+                                    <h6 className="text-lg mb-0">10:00 - 11:00</h6>
                                     <span className="text-xs text-neutral-500 dark:text-neutral-300 font-medium">AM</span>
                                 </div>
-                                <p className="text-sm text-neutral-500 dark:text-neutral-300 font-medium mb-1">UI UX Dashboard Project
-                                    Meeting</p>
+                                <p className="text-sm text-neutral-500 dark:text-neutral-300 font-medium mb-1">Grant Review — Creative Writing
+                                    Fellowship</p>
                                 <p className="text-xs text-neutral-400 font-medium mb-0">Lead by <span
-                                    className="text-green-600">Jane Cooper</span> </p>
+                                    className="text-green-600">Sarah Mitchell</span> </p>
                             </div>
                             <div className="">
-                                <a href="javascript:void(0)"
-                                    className="bg-neutral-200 dark:bg-neutral-600 dark:hover:bg-neutral-500 hover:bg-neutral-600 hover:text-white text-sm text-[#0a0a0a] dark:text-white py-1.5 rounded px-6">View </a>
+                                <button type="button"
+                                    className="bg-neutral-200 dark:bg-neutral-600 dark:hover:bg-neutral-500 hover:bg-neutral-600 hover:text-white text-sm text-[#0a0a0a] dark:text-white py-1.5 rounded px-6">View </button>
                             </div>
                         </div>
                         <div
                             className="flex items-center justify-between gap-1 ps-2.5 border-inline-start border-start-width-[3px] border-yellow-600">
                             <div className="">
                                 <div className="flex items-center gap-1">
-                                    <h6 className="text-lg mb-0">10:20 - 11:00</h6>
-                                    <span className="text-xs text-neutral-500 dark:text-neutral-300 font-medium">AM</span>
+                                    <h6 className="text-lg mb-0">1:00 - 2:00</h6>
+                                    <span className="text-xs text-neutral-500 dark:text-neutral-300 font-medium">PM</span>
                                 </div>
-                                <p className="text-sm text-neutral-500 dark:text-neutral-300 font-medium mb-1">UI UX Dashboard Project
-                                    Meeting</p>
+                                <p className="text-sm text-neutral-500 dark:text-neutral-300 font-medium mb-1">Compliance Check — Housing
+                                    Stability</p>
                                 <p className="text-xs text-neutral-400 font-medium mb-0">Lead by <span
-                                    className="text-green-600">Jane Cooper</span> </p>
+                                    className="text-green-600">Sarah Mitchell</span> </p>
                             </div>
                             <div className="">
-                                <a href="javascript:void(0)"
-                                    className="bg-neutral-200 dark:bg-neutral-600 dark:hover:bg-neutral-500 hover:bg-neutral-600 hover:text-white text-sm text-[#0a0a0a] dark:text-white py-1.5 rounded px-6">View </a>
+                                <button type="button"
+                                    className="bg-neutral-200 dark:bg-neutral-600 dark:hover:bg-neutral-500 hover:bg-neutral-600 hover:text-white text-sm text-[#0a0a0a] dark:text-white py-1.5 rounded px-6">View </button>
                             </div>
                         </div>
                         <div
                             className="flex items-center justify-between gap-1 ps-2.5 border-inline-start border-start-width-[3px] border-cyan-600">
                             <div className="">
                                 <div className="flex items-center gap-1">
-                                    <h6 className="text-lg mb-0">10:20 - 11:00</h6>
-                                    <span className="text-xs text-neutral-500 dark:text-neutral-300 font-medium">AM</span>
+                                    <h6 className="text-lg mb-0">3:00 - 3:30</h6>
+                                    <span className="text-xs text-neutral-500 dark:text-neutral-300 font-medium">PM</span>
                                 </div>
-                                <p className="text-sm text-neutral-500 dark:text-neutral-300 font-medium mb-1">UI UX Dashboard Project
-                                    Meeting</p>
+                                <p className="text-sm text-neutral-500 dark:text-neutral-300 font-medium mb-1">Budget Review — Digital Skills
+                                    Training</p>
                                 <p className="text-xs text-neutral-400 font-medium mb-0">Lead by <span
-                                    className="text-green-600">Jane Cooper</span> </p>
+                                    className="text-green-600">Sarah Mitchell</span> </p>
                             </div>
                             <div className="">
-                                <a href="javascript:void(0)"
-                                    className="bg-neutral-200 dark:bg-neutral-600 dark:hover:bg-neutral-500 hover:bg-neutral-600 hover:text-white text-sm text-[#0a0a0a] dark:text-white py-1.5 rounded px-6">View </a>
+                                <button type="button"
+                                    className="bg-neutral-200 dark:bg-neutral-600 dark:hover:bg-neutral-500 hover:bg-neutral-600 hover:text-white text-sm text-[#0a0a0a] dark:text-white py-1.5 rounded px-6">View </button>
                             </div>
                         </div>
                     </div>

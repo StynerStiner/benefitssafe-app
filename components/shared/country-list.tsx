@@ -16,39 +16,32 @@ export interface Country {
 
 export const countries: Country[] = [
   {
-    name: "USA",
-    users: "1,240 Users",
+    name: "California",
+    users: "2 Beneficiaries",
     percent: 80,
     flag: FlagImg1,
     color: "bg-primary",
   },
   {
-    name: "Bangladesh",
-    users: "1,240 Users",
-    percent: 60,
+    name: "New York",
+    users: "0 Beneficiaries",
+    percent: 0,
     flag: FlagImg2,
     color: "bg-[#f86624]",
   },
   {
-    name: "France",
-    users: "1,240 Users",
-    percent: 49,
+    name: "Texas",
+    users: "0 Beneficiaries",
+    percent: 0,
     flag: FlagImg3,
     color: "bg-yellow-500",
   },
   {
-    name: "Germany",
-    users: "1,240 Users",
-    percent: 100,
+    name: "Other",
+    users: "0 Beneficiaries",
+    percent: 0,
     flag: FlagImg4,
     color: "bg-green-600",
-  },
-  {
-    name: "South Korea",
-    users: "1,240 Users",
-    percent: 30,
-    flag: FlagImg5,
-    color: "bg-cyan-600",
   },
 ];
 

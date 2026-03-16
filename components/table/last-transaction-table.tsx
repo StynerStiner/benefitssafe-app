@@ -28,39 +28,39 @@ interface TransactionsDataType {
 
 const transactions: TransactionsDataType[] = [
   {
-    id: "5986124445445",
-    date: "27 Mar 2024",
+    id: "Adobe CC Subscription",
+    date: "Mar 6, 2026",
+    status: "Completed",
+    statusVariant: "success",
+    amount: "$659.88",
+  },
+  {
+    id: "Editing Services",
+    date: "Feb 15, 2026",
+    status: "Completed",
+    statusVariant: "success",
+    amount: "$1,500.00",
+  },
+  {
+    id: "ChatGPT Plus",
+    date: "Feb 10, 2026",
+    status: "Completed",
+    statusVariant: "success",
+    amount: "$240.00",
+  },
+  {
+    id: "Laptop Repair",
+    date: "Mar 14, 2026",
     status: "Pending",
     statusVariant: "warning",
-    amount: "$20,000.00",
+    amount: "$350.00",
   },
   {
-    id: "5986124445445",
-    date: "27 Mar 2024",
-    status: "Rejected",
-    statusVariant: "danger",
-    amount: "$20,000.00",
-  },
-  {
-    id: "5986124445445",
-    date: "27 Mar 2024",
-    status: "Completed",
-    statusVariant: "success",
-    amount: "$20,000.00",
-  },
-  {
-    id: "5986124445445",
-    date: "27 Mar 2024",
-    status: "Completed",
-    statusVariant: "success",
-    amount: "$20,000.00",
-  },
-  {
-    id: "5986124445445",
-    date: "27 Mar 2024",
-    status: "Completed",
-    statusVariant: "success",
-    amount: "$20,000.00",
+    id: "Writing Workshop",
+    date: "Mar 11, 2026",
+    status: "Pending",
+    statusVariant: "warning",
+    amount: "$800.00",
   },
 ];
 
@@ -70,7 +70,7 @@ const LastTransactionTable = () => {
       <TableHeader>
         <TableRow className="border-0">
           <TableHead className="bg-neutral-100 dark:bg-slate-700 border-t border-neutral-200 dark:border-slate-600 px-4 h-12 border-s rounded-tl-lg">
-            Transaction ID
+            Expense
           </TableHead>
           <TableHead className="bg-neutral-100 dark:bg-slate-700 border-t border-neutral-200 dark:border-slate-600 px-4 h-12">
             Date

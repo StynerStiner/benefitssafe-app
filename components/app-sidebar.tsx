@@ -16,7 +16,7 @@ import { useSession } from "next-auth/react";
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const role = session?.user?.role as string | undefined;
-  const navItems = role ? getNavForRole(role) : data.navMain;
+  const navItems = React.useMemo(() => role ? getNavForRole(role) : data.navMain, [role]);
 
   return (
     <Sidebar collapsible="icon" {...props} className="hidden xl:block">

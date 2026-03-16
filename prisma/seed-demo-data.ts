@@ -18,6 +18,26 @@ function daysAgo(n: number): Date {
 async function main() {
   console.log("Seeding demo data into existing database...\n");
 
+  // ─── 0. CLEAN UP OLD DEMO DATA (order matters for FK constraints) ──
+  console.log("Cleaning up old demo data...");
+  await prisma.transaction.deleteMany({});
+  await prisma.subscription.deleteMany({});
+  await prisma.approval.deleteMany({});
+  await prisma.ledgerEntry.deleteMany({});
+  await prisma.document.deleteMany({});
+  await prisma.virtualCard.deleteMany({});
+  await prisma.expenseRequest.deleteMany({});
+  await prisma.budgetCategory.deleteMany({});
+  await prisma.grant.deleteMany({});
+  await prisma.vendor.deleteMany({});
+  await prisma.auditLog.deleteMany({});
+  await prisma.disbursementPolicy.deleteMany({});
+  await prisma.notification.deleteMany({});
+  await prisma.message.deleteMany({});
+  await prisma.conversationParticipant.deleteMany({});
+  await prisma.conversation.deleteMany({});
+  console.log("  Cleared all existing demo data (users & orgs preserved)\n");
+
   // ─── 1. LOOK UP EXISTING ORG & USERS ───────────────────────────────
   const org = await prisma.organization.findUniqueOrThrow({
     where: { id: "org-test-001" },
