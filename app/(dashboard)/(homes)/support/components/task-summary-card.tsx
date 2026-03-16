@@ -10,14 +10,14 @@ const TaskSummaryCard = () => {
     return (
         <div className="shadow-7 p-5 rounded-xl bg-white dark:bg-[#273142] h-full gradient-bg-chart relative z-[1]">
             <div className="flex items-center flex-wrap gap-2 justify-between mb-6">
-                <h6 className="mb-0 font-bold text-lg">Task Summary</h6>
+                <h6 className="mb-0 font-bold text-lg">Support Summary</h6>
             </div>
             <div className="">
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
                     <div className="col-span-12 sm:col-span-6 2xl:col-span-3">
                         <div className="rounded-xl overflow-hidden p-5 relative z-[1] bg-[linear-gradient(246deg,_#B159FF_5.05%,_#8B08FE_96.12%)]">
                             <Image src={moonShapeBorder} alt="Shape" className="absolute start-0 bottom-0 mb-2.5 -z-[1]" width={158} height={70} />
-                            <span className="block text-white mb-6">New Resolved</span>
+                            <span className="block text-white mb-6">New Tickets</span>
                             <div className="flex items-center justify-between gap-3">
                                 <h5 className="text-white">2.5k</h5>
                                 <span className="opacity-25">

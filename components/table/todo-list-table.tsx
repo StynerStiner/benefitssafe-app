@@ -29,44 +29,44 @@ interface todoListTypeItem {
 
 const todoListTableContents: todoListTypeItem[] = [
     {
-        id: "#63254",
-        duration: "Mobile app Development",
+        id: "#10001",
+        duration: "How to add a new beneficiary",
         amount: todoListImage1,
-        date: "Feb 10, 2025",
+        date: "Mar 15, 2026",
         priority: "High",
-        status: { label: "Completed", type: "success" },
+        status: { label: "Open", type: "warning" },
     },
     {
-        id: "#63254",
-        duration: "Product design",
+        id: "#10002",
+        duration: "Virtual card not working",
         amount: todoListImage2,
-        date: "Feb 10, 2025",
-        priority: "Low",
-        status: { label: "Pending", type: "warning" },
-    },
-    {
-        id: "#63254",
-        duration: "UI/UX Design",
-        amount: todoListImage3,
-        date: "Feb 10, 2025",
-        priority: "Medium",
-        status: { label: "Completed", type: "success" },
-    },
-    {
-        id: "#63254",
-        duration: "Website ui design",
-        amount: todoListImage4,
-        date: "Feb 10, 2025",
+        date: "Mar 14, 2026",
         priority: "High",
-        status: { label: "Pending", type: "warning" },
+        status: { label: "Open", type: "warning" },
     },
     {
-        id: "#63254",
-        duration: "PHP Project",
-        amount: todoListImage1,
-        date: "Feb 10, 2025",
+        id: "#10003",
+        duration: "Expense stuck in pending",
+        amount: todoListImage3,
+        date: "Mar 12, 2026",
+        priority: "Medium",
+        status: { label: "Resolved", type: "success" },
+    },
+    {
+        id: "#10004",
+        duration: "Grant budget category question",
+        amount: todoListImage4,
+        date: "Mar 10, 2026",
         priority: "Low",
-        status: { label: "Completed", type: "success" },
+        status: { label: "Resolved", type: "success" },
+    },
+    {
+        id: "#10005",
+        duration: "Subscription billing issue",
+        amount: todoListImage1,
+        date: "Mar 8, 2026",
+        priority: "High",
+        status: { label: "Open", type: "warning" },
     },
 ];
 
@@ -84,7 +84,7 @@ const TodoListTable = () => {
                         ID
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
-                        Task Name
+                        Ticket Subject
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
                         Assigned To

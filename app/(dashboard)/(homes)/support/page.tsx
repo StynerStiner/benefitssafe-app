@@ -12,15 +12,15 @@ import TodoListCard from "./components/todo-list-card";
 import TopPodcasterCard from "./components/top-podcaster-card";
 
 const metadata: Metadata = {
-    title: "Booking System Dashboard | BenefitsSafe Admin Panel",
+    title: "Support Dashboard | BenefitsSafe Admin Panel",
     description:
-        "Manage reservations, track bookings, and streamline scheduling with the Booking System Dashboard in BenefitsSafe Admin Template built using Next.js and Tailwind.",
+        "Manage support tickets, track resolutions, and streamline help desk operations with the Support Dashboard in BenefitsSafe Admin Panel.",
 };
 
 const HelpPage = () => {
     return (
         <>
-            <DashboardBreadcrumb title="Help Desk" text="Help Desk" />
+            <DashboardBreadcrumb title="Support" text="Support" />
 
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
                 <div className="col-span-12 lg:col-span-8">

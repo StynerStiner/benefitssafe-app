@@ -21,33 +21,33 @@ interface ProjectStatus {
 const projectStates: ProjectStatus[] = [
     {
         sl: "1",
-        name: "Esther Howard",
-        amount: "$30,00.00",
+        name: "Sarah Mitchell",
+        amount: "12 files",
     },
     {
         sl: "2",
-        name: "Wade Warren",
-        amount: "$40,00.00",
+        name: "James Carter",
+        amount: "8 files",
     },
     {
         sl: "3",
-        name: "Jenny Wilson",
-        amount: "$50,00.00",
+        name: "Jordan Lee",
+        amount: "5 files",
     },
     {
         sl: "4",
-        name: "Kristin",
-        amount: "$60,00.00",
+        name: "Maria Rodriguez",
+        amount: "3 files",
     },
     {
         sl: "5",
-        name: "Eleanor Pena",
-        amount: "$70,00.00",
+        name: "Taylor Davis",
+        amount: "2 files",
     },
     {
         sl: "6",
-        name: "Darlene Robertson",
-        amount: "$80,00.00",
+        name: "Pat Williams",
+        amount: "1 file",
     },
 ];
 

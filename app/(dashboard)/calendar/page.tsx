@@ -16,7 +16,7 @@ const metadata: Metadata = {
 const CalendarPage = () => {
     return (
         <>
-            <DashboardBreadcrumb title="Chat" text="Chat" />
+            <DashboardBreadcrumb title="Calendar" text="Calendar" />
 
             <Suspense fallback={<LoadingSkeleton />}>
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

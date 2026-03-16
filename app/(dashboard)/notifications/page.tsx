@@ -11,15 +11,15 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 const metadata: Metadata = {
-    title: "Email Management & Communication | BenefitsSafe Admin Dashboard",
+    title: "Notifications | BenefitsSafe Admin Dashboard",
     description:
-        "Access and manage email communications, inbox features, and message organization in the BenefitsSafe Admin Dashboard built with Next.js and Tailwind CSS.",
+        "View and manage system notifications, alerts, and updates in the BenefitsSafe Admin Dashboard.",
 };
 
 const EmailPage = () => {
     return (
         <>
-            <DashboardBreadcrumb title="Email" text="Email" />
+            <DashboardBreadcrumb title="Notifications" text="Notifications" />
 
             <div className="grid grid-cols-1 xl:grid-cols-12 xl:gap-6 relative">
                 <EmailSidebarOverlay />

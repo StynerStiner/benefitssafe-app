@@ -34,7 +34,7 @@ interface PerformanceAgentsTableTypeItem {
 const PerformanceAgentsTableTableContents: PerformanceAgentsTableTypeItem[] = [
     {
         customer: {
-            name: "Dianne Russell",
+            name: "Taylor Davis",
             image: UserGridImage1,
         },
         id: "#63254",
@@ -46,7 +46,7 @@ const PerformanceAgentsTableTableContents: PerformanceAgentsTableTypeItem[] = [
     },
     {
         customer: {
-            name: "Wade Warren",
+            name: "Sarah Mitchell",
             image: UserGridImage2,
         },
         id: "#63254",
@@ -58,7 +58,7 @@ const PerformanceAgentsTableTableContents: PerformanceAgentsTableTypeItem[] = [
     },
     {
         customer: {
-            name: "Albert Flores",
+            name: "Jordan Lee",
             image: UserGridImage3,
         },
         id: "#63254",
@@ -70,7 +70,7 @@ const PerformanceAgentsTableTableContents: PerformanceAgentsTableTypeItem[] = [
     },
     {
         customer: {
-            name: "Bessie Cooper",
+            name: "Maria Rodriguez",
             image: UserGridImage4,
         },
         id: "#63254",
@@ -82,7 +82,7 @@ const PerformanceAgentsTableTableContents: PerformanceAgentsTableTypeItem[] = [
     },
     {
         customer: {
-            name: "Arlene McCoy",
+            name: "Pat Williams",
             image: UserGridImage5,
         },
         id: "#63254",

@@ -20,43 +20,43 @@ interface Podcaster {
 const podcasters: Podcaster[] = [
   {
     id: 1,
-    name: "Digital Assets",
-    agentId: "UI Design",
+    name: "Taylor Davis",
+    agentId: "Support Lead",
     image: podcasterImage1,
     rating: 5.0
   },
   {
     id: 2,
-    name: "Wade Warren",
-    agentId: "36254",
+    name: "Sarah Mitchell",
+    agentId: "Admin",
     image: podcasterImage2,
-    rating: 3.5
+    rating: 4.5
   },
   {
     id: 3,
-    name: "Albert Flores",
-    agentId: "36254",
+    name: "Jordan Lee",
+    agentId: "Support",
     image: podcasterImage3,
-    rating: 2.5
+    rating: 4.2
   },
   {
     id: 4,
-    name: "Bessie Cooper",
-    agentId: "36254",
+    name: "Maria Rodriguez",
+    agentId: "Support",
     image: podcasterImage4,
-    rating: 4.38
+    rating: 3.8
   },
   {
     id: 5,
-    name: "Arlene McCoy",
-    agentId: "36254",
+    name: "Pat Williams",
+    agentId: "Support",
     image: podcasterImage5,
-    rating: 1.0
+    rating: 3.5
   },
   {
     id: 6,
-    name: "Cody Fisher",
-    agentId: "36254",
+    name: "James Carter",
+    agentId: "Beneficiary",
     image: podcasterImage1,
     rating: 4.7
   },
@@ -101,7 +101,7 @@ const TopPodcasterCard: React.FC = () => {
           {/* Header */}
           <div className="card-header border-b border-neutral-200 dark:border-slate-500 py-4 px-6">
             <div className="flex items-center flex-wrap gap-2 justify-between">
-              <h6 className="font-bold text-lg mb-0">Top Podcasters</h6>
+              <h6 className="font-bold text-lg mb-0">Top Support Agents</h6>
               <CommonLink />
             </div>
           </div>

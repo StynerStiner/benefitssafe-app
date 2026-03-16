@@ -19,43 +19,43 @@ interface recentTransactionType {
 const recentTransactionContents: recentTransactionType[] = [
     {
         sl: "1",
-        date: "02 Jan 2025",
-        paymentType: "Credit Card",
-        paidAmount: "$320.00",
-        dueAmount: "$0.00",
-        payableAmount: "$320.00",
+        date: "14 Jan 2026",
+        paymentType: "Creative Writing Fellowship — Grant Agreement",
+        paidAmount: "Grant Letter",
+        dueAmount: "245 KB",
+        payableAmount: "Sarah Mitchell",
     },
     {
         sl: "2",
-        date: "15 Feb 2025",
-        paymentType: "Bank Transfer",
-        paidAmount: "$1,200.00",
-        dueAmount: "$300.00",
-        payableAmount: "$1,500.00",
+        date: "02 Feb 2026",
+        paymentType: "Adobe CC — Invoice 2026-001",
+        paidAmount: "Invoice",
+        dueAmount: "1.2 MB",
+        payableAmount: "James Carter",
     },
     {
         sl: "3",
-        date: "28 Feb 2025",
-        paymentType: "Cash",
-        paidAmount: "$450.00",
-        dueAmount: "$50.00",
-        payableAmount: "$500.00",
+        date: "18 Feb 2026",
+        paymentType: "Maria's Editing — Receipt",
+        paidAmount: "Receipt",
+        dueAmount: "890 KB",
+        payableAmount: "Sarah Mitchell",
     },
     {
         sl: "4",
-        date: "10 Mar 2025",
-        paymentType: "UPI",
-        paidAmount: "$0.00",
-        dueAmount: "$900.00",
-        payableAmount: "$900.00",
+        date: "05 Mar 2026",
+        paymentType: "Housing Stability — Compliance Report",
+        paidAmount: "Report",
+        dueAmount: "3.4 MB",
+        payableAmount: "James Carter",
     },
     {
         sl: "5",
-        date: "18 Mar 2025",
-        paymentType: "PayPal",
-        paidAmount: "$600.00",
-        dueAmount: "$0.00",
-        payableAmount: "$600.00",
+        date: "12 Mar 2026",
+        paymentType: "Tax Form 1099 — Writing Coach LLC",
+        paidAmount: "Tax Form",
+        dueAmount: "156 KB",
+        payableAmount: "Sarah Mitchell",
     },
 ];
 
@@ -69,19 +69,19 @@ const InventoryRecentTransactionsTable = () => {
                         SL
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 first:border-s last:border-e text-base px-4 h-12 border-t border-neutral-200 dark:border-slate-600 text-center">
-                        Date
+                        Date Uploaded
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 first:border-s last:border-e text-base px-4 h-12 border-t border-neutral-200 dark:border-slate-600 text-center">
-                        Payment Type
+                        Document Name
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 first:border-s last:border-e text-base px-4 h-12 border-t border-neutral-200 dark:border-slate-600 text-center">
-                        Paid Amount
+                        Type
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 first:border-s last:border-e text-base px-4 h-12 border-t border-neutral-200 dark:border-slate-600 text-center text-center rounded-tr-lg">
-                        Due Amount
+                        File Size
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 first:border-s last:border-e text-base px-4 h-12 border-t border-neutral-200 dark:border-slate-600 text-center text-center rounded-tr-lg">
-                        Payable Amount
+                        Uploaded By
                     </TableHead>
                 </TableRow>
             </TableHeader>

@@ -12,13 +12,28 @@ function BasicFullCalendar() {
     const [events, setEvents] = useState([
         {
             id: uuidv4(),
-            title: "Team Meeting",
-            start: "2025-08-13T10:00:00"
+            title: "Grant Review — Creative Writing Fellowship",
+            start: "2026-03-18T10:00:00"
         },
         {
             id: uuidv4(),
-            title: "Project Deadline",
-            start: "2025-08-15"
+            title: "Compliance Check — Housing Stability",
+            start: "2026-03-20T14:00:00"
+        },
+        {
+            id: uuidv4(),
+            title: "Budget Review — Digital Skills Training",
+            start: "2026-03-22T09:00:00"
+        },
+        {
+            id: uuidv4(),
+            title: "Vendor Payment Due — Adobe CC",
+            start: "2026-03-25"
+        },
+        {
+            id: uuidv4(),
+            title: "Subscription Renewal — Scrivener",
+            start: "2026-03-28"
         },
     ]);
 

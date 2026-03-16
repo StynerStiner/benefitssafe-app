@@ -27,8 +27,8 @@ const EmailHeader = () => {
                                 <DropdownMenuItem>None</DropdownMenuItem>
                                 <DropdownMenuItem>Read</DropdownMenuItem>
                                 <DropdownMenuItem>Unread</DropdownMenuItem>
-                                <DropdownMenuItem>Starred</DropdownMenuItem>
-                                <DropdownMenuItem>Unstarred</DropdownMenuItem>
+                                <DropdownMenuItem>Important</DropdownMenuItem>
+                                <DropdownMenuItem>Not Important</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
@@ -54,7 +54,7 @@ const EmailHeader = () => {
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                                 <p className="ms-10 mt-2 text-neutral-500 mb-0 dark:text-white">
-                                    Select messages to see more actions
+                                    Select notifications to see more actions
                                 </p>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -64,7 +64,7 @@ const EmailHeader = () => {
                 <SearchBox />
             </div>
             <div className="flex items-center gap-3">
-                <span className="text-neutral-500 dark:text-neutral-300 line-height-1">1-12 of 1,253</span>
+                <span className="text-neutral-500 dark:text-neutral-300 line-height-1">1-11 of 24</span>
                 <nav>
                     <ul className="pagination flex items-center gap-2">
                         <li className="page-item">

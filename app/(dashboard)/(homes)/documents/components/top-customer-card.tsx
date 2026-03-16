@@ -21,33 +21,33 @@ interface TopCustomersStatus {
 const topCustomers: TopCustomersStatus[] = [
     {
         sl: "1",
-        name: "Savannah Nguyen",
-        amount: "$80,00.00",
+        name: "Grant Agreement",
+        amount: "5 files",
     },
     {
         sl: "2",
-        name: "Annette Black",
-        amount: "$70,00.00",
+        name: "Invoice",
+        amount: "8 files",
     },
     {
         sl: "3",
-        name: "Theresa Webb",
-        amount: "$60,00.00",
+        name: "Receipt",
+        amount: "12 files",
     },
     {
         sl: "4",
-        name: "Marvin McKinney",
-        amount: "$50,00.00",
+        name: "Compliance Report",
+        amount: "3 files",
     },
     {
         sl: "5",
-        name: "Brooklyn Simmons",
-        amount: "$40,00.00",
+        name: "Tax Form",
+        amount: "2 files",
     },
     {
         sl: "6",
-        name: "Dianne Russell",
-        amount: "$30,00.00",
+        name: "Policy Document",
+        amount: "1 file",
     },
 ];
 

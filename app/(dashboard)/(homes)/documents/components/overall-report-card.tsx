@@ -25,19 +25,19 @@ const OverallReportCard = ({ documents }: { documents: unknown[] }) => {
                     <div className="flex flex-wrap gap-5 justify-center mt-12">
                         <div className="flex items-center gap-2">
                             <span className="w-4 h-4 rounded-[2px] bg-blue-500"></span>
-                            <span className="text-neutral-600 dark:text-neutral-200">Purchase</span>
+                            <span className="text-neutral-600 dark:text-neutral-200">Grant Docs</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="w-4 h-4 rounded-[2px] bg-violet-600"></span>
-                            <span className="text-neutral-600 dark:text-neutral-200">Sales</span>
+                            <span className="text-neutral-600 dark:text-neutral-200">Invoices</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="w-4 h-4 rounded-[2px] bg-yellow-500"></span>
-                            <span className="text-neutral-600 dark:text-neutral-200">Expense</span>
+                            <span className="text-neutral-600 dark:text-neutral-200">Receipts</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="w-4 h-4 rounded-[2px] bg-green-500"></span>
-                            <span className="text-neutral-600 dark:text-neutral-200">Gross Profit</span>
+                            <span className="text-neutral-600 dark:text-neutral-200">Reports</span>
                         </div>
                     </div>
 

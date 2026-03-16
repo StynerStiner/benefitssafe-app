@@ -20,7 +20,7 @@ const IncomeExpenseCard = ({ documents }: { documents: unknown[] }) => {
                     <li className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
                             <span className="w-[8px] h-[8px] rounded-[50rem] bg-blue-500"></span>
-                            <span className="text-neutral-600 text-sm dark:text-neutral-100 font-semibold">Income </span>
+                            <span className="text-neutral-600 text-sm dark:text-neutral-100 font-semibold">Uploads </span>
                         </div>
                         <div className="flex items-center gap-2">
                             <h6 className="mb-0">$26,201</h6>
@@ -33,7 +33,7 @@ const IncomeExpenseCard = ({ documents }: { documents: unknown[] }) => {
                     <li className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
                             <span className="w-[8px] h-[8px] rounded-[50rem] bg-yellow-500"></span>
-                            <span className="text-neutral-600 text-sm dark:text-neutral-100 font-semibold">Loss </span>
+                            <span className="text-neutral-600 text-sm dark:text-neutral-100 font-semibold">Downloads </span>
                         </div>
                         <div className="flex items-center gap-2">
                             <h6 className="mb-0">$18,120</h6>

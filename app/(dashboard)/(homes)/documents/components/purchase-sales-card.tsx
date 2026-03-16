@@ -23,15 +23,15 @@ const PurchaseSalesCard = ({ documents }: { documents: unknown[] }) => {
                             <li className="flex items-center gap-2">
                                 <span className="w-3 h-2 rounded-[50rem] bg-yellow-500"></span>
                                 <span className="text-gray-600 dark:text-neutral-200 text-sm font-semibold">
-                                    Male:
-                                    <span className="text-gray-900 dark:text-white font-bold">200</span>
+                                    Uploads:
+                                    <span className="text-gray-900 dark:text-white font-bold">31</span>
                                 </span>
                             </li>
                             <li className="flex items-center gap-2">
                                 <span className="w-3 h-2 rounded-[50rem] bg-green-500"></span>
                                 <span className="text-gray-600 dark:text-neutral-200 text-sm font-semibold">
-                                    Female:
-                                    <span className="text-gray-900 dark:text-white font-bold"> 450</span>
+                                    Downloads:
+                                    <span className="text-gray-900 dark:text-white font-bold"> 87</span>
                                 </span>
                             </li>
                         </ul>

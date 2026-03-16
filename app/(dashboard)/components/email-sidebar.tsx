@@ -17,7 +17,7 @@ const EmailSidebar = () => {
             <div className="card-body p-0">
                 <Button className={cn(`w-full rounded-lg flex items-center justify-start gap-2 h-11`)}>
                     <CirclePlus className="w-4.5" />
-                    Compose
+                    Mark All Read
                 </Button>
 
                 <div className="mt-4">
@@ -29,9 +29,9 @@ const EmailSidebar = () => {
                                         <span className="icon text-2xl line-height-1 flex group-hover:text-primary dark:group-hover:text-white">
                                             <Mail className="w-4" />
                                         </span>
-                                        <span className="font-semibold">Inbox</span>
+                                        <span className="font-semibold">All Notifications</span>
                                     </span>
-                                    <span className="font-medium">800</span>
+                                    <span className="font-medium">24</span>
                                 </span>
                             </Link>
                         </li>
@@ -42,9 +42,9 @@ const EmailSidebar = () => {
                                         <span className="icon text-2xl line-height-1 flex group-hover:text-primary dark:group-hover:text-white">
                                             <Star className="w-4" />
                                         </span>
-                                        <span className="font-semibold">Starred</span>
+                                        <span className="font-semibold">Important</span>
                                     </span>
-                                    <span className="font-medium">250</span>
+                                    <span className="font-medium">8</span>
                                 </span>
                             </a>
                         </li>
@@ -55,9 +55,9 @@ const EmailSidebar = () => {
                                         <span className="icon text-2xl line-height-1 flex group-hover:text-primary dark:group-hover:text-white">
                                             <Send className="w-4" />
                                         </span>
-                                        <span className="font-semibold">Sent</span>
+                                        <span className="font-semibold">Read</span>
                                     </span>
-                                    <span className="font-medium">80</span>
+                                    <span className="font-medium">156</span>
                                 </span>
                             </Link>
                         </li>
@@ -68,9 +68,9 @@ const EmailSidebar = () => {
                                         <span className="icon text-2xl line-height-1 flex group-hover:text-primary dark:group-hover:text-white">
                                             <Pencil className="w-4" />
                                         </span>
-                                        <span className="font-semibold">Draft</span>
+                                        <span className="font-semibold">Unread</span>
                                     </span>
-                                    <span className="font-medium">50</span>
+                                    <span className="font-medium">12</span>
                                 </span>
                             </Link>
                         </li>
@@ -81,9 +81,9 @@ const EmailSidebar = () => {
                                         <span className="icon text-2xl line-height-1 flex group-hover:text-primary dark:group-hover:text-white">
                                             <TriangleAlert className="w-4" />
                                         </span>
-                                        <span className="font-semibold">Spam</span>
+                                        <span className="font-semibold">Archived</span>
                                     </span>
-                                    <span className="font-medium">30</span>
+                                    <span className="font-medium">43</span>
                                 </span>
                             </Link>
                         </li>
@@ -94,9 +94,9 @@ const EmailSidebar = () => {
                                         <span className="icon text-2xl line-height-1 flex group-hover:text-primary dark:group-hover:text-white">
                                             <Trash2 className="w-4" />
                                         </span>
-                                        <span className="font-semibold">Bin</span>
+                                        <span className="font-semibold">Trash</span>
                                     </span>
-                                    <span className="font-medium">20</span>
+                                    <span className="font-medium">5</span>
                                 </span>
                             </Link>
                         </li>
@@ -107,25 +107,25 @@ const EmailSidebar = () => {
                             <li className="mb-5">
                                 <span className="line-height-1 font-medium text-neutral-500 dark:text-neutral-300 text-sm flex items-center gap-2.5">
                                     <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                                    Personal
+                                    Grants
                                 </span>
                             </li>
                             <li className="mb-5">
                                 <span className="line-height-1 font-medium text-neutral-500 dark:text-neutral-300 text-sm flex items-center gap-2.5">
                                     <span className="w-2 h-2 bg-purple-600 rounded-full"></span>
-                                    Social
+                                    Expenses
                                 </span>
                             </li>
                             <li className="mb-5">
                                 <span className="line-height-1 font-medium text-neutral-500 dark:text-neutral-300 text-sm flex items-center gap-2.5">
                                     <span className="w-2 h-2 bg-green-600 rounded-full"></span>
-                                    Promotions
+                                    Compliance
                                 </span>
                             </li>
                             <li className="mb-5">
                                 <span className="line-height-1 font-medium text-neutral-500 dark:text-neutral-300 text-sm flex items-center gap-2.5">
                                     <span className="w-2 h-2 bg-yellow-600 rounded-full"></span>
-                                    Business
+                                    Cards
                                 </span>
                             </li>
                         </ul>

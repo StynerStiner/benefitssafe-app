@@ -27,11 +27,11 @@ export interface CalendarEvent {
 }
 
 const eventsData: CalendarEvent[] = [
-    { id: 1, title: 'Design Conference', label: 'Holiday', color: 'bg-red-500', startTime: 'Today, 09:00 AM', endTime: "11:00 AM", description: "Discussing new UI/UX trends for Q3" },
-    { id: 2, title: 'Weekend Festival', label: 'Personal', color: 'bg-green-600', startTime: 'Today, 01:30 PM', endTime: "04:00 PM", description: "Local music and art festival with friends" },
-    { id: 3, title: 'Design Conference', label: 'Business', color: 'bg-cyan-600', startTime: 'Today, 10:15 AM', endTime: "12:45 PM", description: "Team meeting to finalize product roadmap" },
-    { id: 4, title: 'Ultra Europe 2019', label: 'Family', color: 'bg-yellow-500', startTime: 'Today, 03:00 PM', endTime: "05:30 PM", description: "Family gathering and weekend planning" },
-    { id: 5, title: 'Design Conference', label: 'Important', color: 'bg-violet-600', startTime: 'Today, 06:00 PM', endTime: "08:15 PM", description: "Presentation prep for client pitch" },
+    { id: 1, title: 'Grant Review — Creative Writing', label: 'Grants', color: 'bg-red-500', startTime: 'Today, 09:00 AM', endTime: "11:00 AM", description: "Quarterly review of Creative Writing Fellowship spending and compliance" },
+    { id: 2, title: 'Vendor Payment — Adobe CC', label: 'Payments', color: 'bg-green-600', startTime: 'Today, 01:30 PM', endTime: "02:00 PM", description: "Monthly Adobe Creative Cloud subscription payment due" },
+    { id: 3, title: 'Budget Review — Digital Skills', label: 'Finance', color: 'bg-cyan-600', startTime: 'Today, 10:15 AM', endTime: "12:45 PM", description: "Review Digital Skills Training budget categories and remaining funds" },
+    { id: 4, title: 'Compliance Check — Housing', label: 'Compliance', color: 'bg-yellow-500', startTime: 'Today, 03:00 PM', endTime: "05:30 PM", description: "Housing Stability Support grant compliance review with auditor" },
+    { id: 5, title: 'Subscription Renewal — Scrivener', label: 'Subscriptions', color: 'bg-violet-600', startTime: 'Today, 06:00 PM', endTime: "08:15 PM", description: "Scrivener annual license renewal for James Carter" },
 ];
 
 
