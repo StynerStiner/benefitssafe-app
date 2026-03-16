@@ -216,10 +216,6 @@ const platformAdminNav: NavItem[] = [
     isActive: true,
     items: [
       { title: "Platform Overview", url: "/platform", circleColor: "bg-red-600" },
-      { title: "All Users", url: "/vendors", circleColor: "bg-primary" },
-      { title: "All Organizations", url: "/beneficiaries", circleColor: "bg-yellow-500" },
-      { title: "Support Tickets", url: "/support", circleColor: "bg-blue-500" },
-      { title: "Platform Metrics", url: "/reports", circleColor: "bg-violet-600" },
     ],
   },
   { label: "Org Management" },
