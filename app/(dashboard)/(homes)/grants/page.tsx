@@ -1,0 +1,112 @@
+"use client";
+
+import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
+import LoadingSkeleton from "@/components/loading-skeleton";
+import { Suspense, useEffect, useState } from "react";
+import AverageEarningCard from "./components/average-earning-card";
+import MyTasksCard from "./components/my-tasks-card";
+import ProjectAnalysisCard from "./components/project-analysis-card";
+import ProjectWidgets from "./components/project-widgets";
+import ProjectsStatusCard from "./components/projects-status-card";
+import TasksOverviewCard from "./components/tasks-overview-card";
+import TeamMembersCard from "./components/team-members-card";
+import WorkingScheduleCard from "./components/working-schedule-card";
+
+interface Grant {
+    id: string;
+    name: string;
+    description: string | null;
+    status: string;
+    totalAmount: string;
+    spentAmount: string;
+    remainingAmount: string;
+    startDate: string;
+    endDate: string | null;
+    grantIssuerName: string;
+    grantIssuerContact: string | null;
+    beneficiaryId: string | null;
+    beneficiary: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+    } | null;
+    categories: {
+        id: string;
+        name: string;
+        allocatedAmount: string;
+        spentAmount: string;
+    }[];
+    createdAt: string;
+}
+
+const ProjectManagement = () => {
+    const [grants, setGrants] = useState<Grant[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetch("/api/grants")
+            .then((res) => {
+                if (!res.ok) return [];
+                return res.json();
+            })
+            .then((data) => {
+                if (Array.isArray(data)) setGrants(data);
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, []);
+
+    if (loading) {
+        return (
+            <>
+                <DashboardBreadcrumb title="Grants" text="Grant Management" />
+                <LoadingSkeleton />
+            </>
+        );
+    }
+
+    return (
+        <>
+            <DashboardBreadcrumb title="Grants" text="Grant Management" />
+
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
+
+                <div className="col-span-12 2xl:col-span-8">
+                    <AverageEarningCard grants={grants} />
+                </div>
+
+                <div className="col-span-12 2xl:col-span-4">
+                    <WorkingScheduleCard grants={grants} />
+                </div>
+
+                <div className="col-span-12 sm:col-span-12">
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
+                        <ProjectWidgets grants={grants} />
+                    </div>
+                </div>
+
+                <div className="col-span-12 sm:col-span-6 2xl:col-span-4">
+                    <MyTasksCard grants={grants} />
+                </div>
+
+                <div className="col-span-12 sm:col-span-6 2xl:col-span-4">
+                    <ProjectAnalysisCard grants={grants} />
+                </div>
+
+                <div className="col-span-12 sm:col-span-6 2xl:col-span-4">
+                    <TeamMembersCard grants={grants} />
+                </div>
+
+                <div className="col-span-12 sm:col-span-6 2xl:col-span-4">
+                    <TasksOverviewCard grants={grants} />
+                </div>
+
+                <div className="col-span-12 2xl:col-span-8">
+                    <ProjectsStatusCard grants={grants} />
+                </div>
+            </div>
+        </>
+    );
+};
+export default ProjectManagement;

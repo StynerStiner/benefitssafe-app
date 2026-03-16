@@ -1,0 +1,110 @@
+"use client";
+
+import CampaignCard from '@/app/(dashboard)/(homes)/beneficiaries/components/campaign-card';
+import ClientPaymentStatusCard from '@/app/(dashboard)/(homes)/beneficiaries/components/client-payment-status-card';
+import CountriesStatusCard from '@/app/(dashboard)/(homes)/beneficiaries/components/countries-status-card';
+import CustomerOverviewCard from '@/app/(dashboard)/(homes)/beneficiaries/components/customer-overview-card';
+import EarningStatisticsCard from '@/app/(dashboard)/(homes)/beneficiaries/components/earning-statistics-card';
+import LastTransactionCard from '@/app/(dashboard)/(homes)/beneficiaries/components/last-transaction-card';
+import RevenueGrowthCard from '@/app/(dashboard)/(homes)/beneficiaries/components/revenue-growth-card';
+import StatsCard from '@/app/(dashboard)/(homes)/beneficiaries/components/stats-card';
+import TodoListRecentCard from '@/app/(dashboard)/(homes)/beneficiaries/components/todo-list-recent-card';
+import TopPerformerCard from '@/app/(dashboard)/(homes)/beneficiaries/components/top-performer-card';
+import DashboardBreadcrumb from '@/components/layout/dashboard-breadcrumb';
+import LoadingSkeleton from '@/components/loading-skeleton';
+import { useEffect, useState } from 'react';
+
+interface Beneficiary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  dateOfBirth: string | null;
+  addressCity: string | null;
+  addressState: string | null;
+  benefitPrograms: Record<string, boolean> | null;
+  isActive: boolean;
+  createdAt: string;
+  notes: string | null;
+  _count?: { grantsAsBeneficiary?: number; expenseRequests?: number };
+}
+
+const CrmPage = () => {
+  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/beneficiaries")
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => { if (Array.isArray(data)) setBeneficiaries(data); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <>
+        <DashboardBreadcrumb title="Beneficiaries" text="Beneficiary Management" />
+        <LoadingSkeleton />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <DashboardBreadcrumb title="Beneficiaries" text="Beneficiary Management" />
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+
+        <div className="lg:col-span-12 2xl:col-span-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <StatsCard beneficiaries={beneficiaries} />
+          </div>
+        </div>
+
+        <div className="lg:col-span-12 2xl:col-span-4">
+          <RevenueGrowthCard beneficiaries={beneficiaries} />
+        </div>
+
+        <div className="lg:col-span-12 2xl:col-span-8">
+          <EarningStatisticsCard beneficiaries={beneficiaries} />
+        </div>
+
+        <div className="lg:col-span-12 2xl:col-span-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-6 2xl:col-span-12 col-xxl-12 col-sm-6">
+              <CampaignCard beneficiaries={beneficiaries} />
+            </div>
+            <div className="lg:col-span-6 2xl:col-span-12 col-xxl-12 col-sm-6">
+              <CustomerOverviewCard beneficiaries={beneficiaries} />
+            </div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-6 2xl:col-span-4">
+          <ClientPaymentStatusCard beneficiaries={beneficiaries} />
+        </div>
+
+        <div className="lg:col-span-6 2xl:col-span-4">
+          <CountriesStatusCard beneficiaries={beneficiaries} />
+        </div>
+
+        <div className="lg:col-span-12 2xl:col-span-4">
+          <TopPerformerCard beneficiaries={beneficiaries} />
+        </div>
+
+        <div className="lg:col-span-12 2xl:col-span-6">
+          <TodoListRecentCard beneficiaries={beneficiaries} />
+        </div>
+
+        <div className="lg:col-span-12 2xl:col-span-6">
+          <LastTransactionCard beneficiaries={beneficiaries} />
+        </div>
+
+      </div>
+    </>
+  );
+};
+
+export default CrmPage;

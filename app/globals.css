@@ -1,0 +1,503 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.63 0.2 264.02);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  /* --popover: oklch(0.205 0 0); */
+  --popover: oklch(0.31 0.03 260.89);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.63 0.2 264.02);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  /* --accent: oklch(0.269 0 0); */
+  --accent: oklch(0.37 0.04 257.29);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Thin scrollbar css start */
+  .scrollbar-thin::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 rounded-[50rem] hover:bg-slate-400;
+  }
+
+  .scrollbar-thin:active::-webkit-scrollbar-thumb {
+    @apply bg-slate-500;
+  }
+  /* Thin scrollbar css start */
+
+  /* Invisible scrollbar css start */
+  .scrollbar-invisible::-webkit-scrollbar-thumb {
+    @apply bg-transparent;
+  }
+
+  .hover\:scrollbar-visible:hover::-webkit-scrollbar-thumb {
+    @apply bg-slate-300;
+  }
+
+  .hover\:scrollbar-visible:hover::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400;
+  }
+
+  .hover\:scrollbar-visible:hover::-webkit-scrollbar-thumb:active {
+    @apply bg-slate-500;
+  }
+  /* Invisible scrollbar css end */
+
+  /* Reset css Start */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold text-foreground;
+  }
+
+  h1,
+  .h1 {
+    font-size: clamp(2rem, 1.2rem + 4vw, 4.5rem);
+  }
+
+  h2,
+  .h2 {
+    font-size: clamp(1.75rem, 1.11rem + 3.2vw, 3.75rem);
+  }
+
+  h3,
+  .h3 {
+    font-size: clamp(1.5rem, 1.02rem + 2.4vw, 3rem);
+  }
+
+  h4,
+  .h4 {
+    font-size: clamp(1.375rem, 1.095rem + 1.4vw, 2.25rem);
+  }
+
+  h5,
+  .h5 {
+    font-size: clamp(1.25rem, 1.05rem + 1vw, 1.875rem);
+  }
+
+  h6,
+  .h6 {
+    font-size: clamp(1.125rem, 1.005rem + 0.6vw, 1.5rem);
+  }
+  a {
+    @apply active:scale-[.95];
+  }
+  span {
+    @apply inline-block;
+  }
+  /* Reset css End */
+
+  /* ======================================== Apexchart css End ======================================== */
+  .apexcharts-tooltip.apexcharts-theme-light {
+    @apply bg-white dark:bg-neutral-600 border-neutral-300 dark:border-neutral-500;
+    .apexcharts-tooltip-title {
+      @apply bg-neutral-600 dark:bg-neutral-500 border-b-[1px] border-neutral-300 dark:border-neutral-400;
+    }
+  }
+
+  .apexcharts-text.apexcharts-yaxis-label,
+  .apexcharts-text.apexcharts-xaxis-label {
+    @apply fill-neutral-600 dark:fill-white;
+  }
+
+  .apexcharts-yaxis {
+    @apply translate-x-[10px];
+  }
+
+  .remove-tooltip-title .apexcharts-tooltip-title {
+    @apply hidden;
+  }
+  .remove-tooltip-marker .apexcharts-tooltip-marker {
+    display: none !important;
+  }
+  .rounded-tooltip-value .apexcharts-tooltip.apexcharts-theme-light {
+    @apply w-11 h-11 flex items-center justify-center flex-col;
+    .apexcharts-tooltip-text-y-label {
+      @apply hidden;
+    }
+
+    .apexcharts-tooltip-marker {
+      @apply hidden;
+    }
+    .apexcharts-tooltip-text-y-value {
+      @apply ms-0;
+    }
+
+    .apexcharts-tooltip-text {
+      @apply flex;
+    }
+  }
+  .apexcharts-legend-text {
+    @apply text-neutral-600 dark:text-white;
+  }
+
+  .apexcharts-tooltip-z-none {
+    .apexcharts-tooltip-z-group {
+      @apply hidden;
+    }
+  }
+
+  .title-style {
+    .apexcharts-text.apexcharts-datalabel-value {
+      @apply hidden;
+    }
+    .apexcharts-text.apexcharts-datalabel-label {
+      @apply fill-neutral-600 text-sm font-bold;
+    }
+  }
+
+  .circle-none {
+    circle {
+      @apply hidden;
+    }
+  }
+
+  .donutChart {
+    @apply h-0 min-h-[163px] -mt-[32px];
+  }
+  .donutChart {
+    min-height: 163px !important;
+  }
+
+  .margin-16-minus {
+    @apply -m-[16px];
+  }
+
+  #semiCircleGauge {
+    transform: translateY(22px) translateX(14px);
+  }
+
+  .dark {
+    .apexcharts-legend-text {
+      color: #fff !important;
+    }
+    .apexcharts-text tspan {
+      fill: #fff;
+    }
+  }
+
+  .label-bold .apexcharts-text.apexcharts-yaxis-label,
+  .label-bold .apexcharts-text.apexcharts-xaxis-label {
+    fill: #111827;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .apexcharts-text tspan {
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  [dir="rtl"] .apexcharts-yaxis {
+    transform: translateX(-46px);
+  }
+
+  .apexcharts-tooltip.apexcharts-theme-light {
+    @apply dark:bg-slate-600 dark:border-slate-500;
+  }
+
+  .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-title {
+    @apply dark:bg-slate-600 dark:border-slate-500;
+  }
+
+  .label--20-px .apexcharts-text.apexcharts-yaxis-label,
+  .label--20-px .apexcharts-text.apexcharts-xaxis-label {
+    transform: translateX(-20px);
+  }
+  /* ======================================== Apexchart css End ======================================== */
+}
+
+.dark .apexcharts-tooltip.apexcharts-theme-light,
+.dark .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-title {
+  @apply bg-slate-900 border-slate-600;
+}
+
+/* ======================================== Custom Classes css Start ======================================== */
+@layer utilities {
+  .card {
+    @apply bg-white dark:bg-[#273142] p-6 h-full rounded-lg border-0;
+  }
+
+  .active-gradient [data-state="active"] {
+    background: linear-gradient(
+      oklch(from var(--primary) l c h / 0.25) 0%,
+      oklch(from var(--primary) l c h / 0.1) 100%
+    );
+  }
+
+  [data-slot="dropdown-menu-trigger"] {
+    @apply cursor-pointer;
+  }
+}
+
+.tooltip-arrow-white .bg-primary {
+  @apply bg-[#fff] fill-[#fff];
+}
+.dark .tooltip-arrow-white .bg-primary {
+  @apply bg-[#1e2939] fill-[#1e2939];
+}
+
+.tooltip-arrow-hidden .span {
+  @apply hidden;
+}
+
+.tooltip-arrow-hidden span {
+  display: none;
+}
+
+/* Upload Image Css Start */
+@layer components {
+  .avatar-upload {
+    @apply relative max-w-fit;
+  }
+
+  .avatar-upload.style-two {
+    @apply h-[150px] w-[180px] max-w-none;
+  }
+
+  #imagePreview {
+    @apply bg-cover bg-center bg-no-repeat;
+  }
+
+  #previewImage1,
+  #previewImage2 {
+    @apply bg-cover bg-center bg-no-repeat;
+  }
+
+  .avatar-upload .avatar-preview {
+    @apply relative h-[150px] w-[150px] rounded-full border border-[#487FFF] shadow-md;
+  }
+
+  .avatar-upload .avatar-preview.style-two {
+    @apply h-[120px] w-[120px] rounded border border-gray-300 shadow-none;
+  }
+
+  .avatar-upload .avatar-preview.style-two > div {
+    @apply rounded;
+  }
+
+  .avatar-upload .avatar-preview > div {
+    @apply h-full w-full rounded-full bg-cover bg-center bg-no-repeat;
+  }
+}
+/* Upload Image Css End */
+
+.left-line::before {
+  position: absolute;
+  content: "";
+  width: 4px;
+  height: 44px;
+  background-color: #00b8db;
+  border-radius: 100px;
+  left: -1px;
+  top: 24px;
+  box-shadow: 2px 1px 7px 0px #00b7db9c;
+}
+
+.line-bg-cyan::before {
+  background-color: #00b8db;
+  box-shadow: 2px 1px 7px 0px #00b7db94;
+}
+.line-bg-violet::before {
+  background-color: #7f22fe;
+  box-shadow: 2px 1px 7px 0px #7e22fe97;
+}
+.line-bg-green::before {
+  background-color: #00a63e;
+  box-shadow: 2px 1px 7px 0px #00a63da0;
+}
+.line-bg-yellow::before {
+  background-color: #f0b100;
+  box-shadow: 2px 1px 7px 0px #f0b000a8;
+}
+/* ======================================== Custom Classes css End ======================================== */
+
+/* ======================================= Layout Css Start ================================== */
+/* Helium layout css start */
+html[layout="helium"] body {
+  @apply bg-neutral-50 dark:bg-slate-900;
+}
+html[layout="helium"] .dashboard-sidebar-container {
+  @apply border border-neutral-200 dark:border-slate-600 overflow-hidden m-5 rounded-[8px];
+}
+
+html[layout="helium"] .dashboard-body-wrapper {
+  @apply p-5 ps-10;
+}
+
+html[layout="helium"] .dashboard-body {
+  @apply px-0 bg-transparent;
+}
+
+html[layout="helium"] .dashboard-header-wrapper {
+  @apply !shadow-none;
+}
+
+html[layout="helium"] .dashboard-header {
+  @apply border border-neutral-200 dark:border-slate-600 rounded-[8px] !shadow-none;
+}
+html[layout="helium"] .d-footer {
+  @apply rounded-[8px];
+}
+html[layout="helium"] .dashboard-sidebar-container {
+  height: calc(100vh - 40px);
+}
+/* Helium layout css End */
+
+/* Boron layout css start */
+html[layout="boron"] .dashboard-header-wrapper {
+  @apply fixed w-full start-0 top-0;
+}
+
+html[layout="boron"] .dashboard-sidebar-inner,
+html[layout="boron"] .dashboard-body {
+  @apply mt-[72px];
+}
+
+html[layout="boron"] .dashboard-sidebar-container {
+  height: calc(100vh - 72px);
+}
+/* Boron layout css End */
+
+
+.gradient-bg-chart::before {
+  @apply absolute w-full h-[106px] blur-[25px] -z-[1] content-[''] bottom-0;
+  background: linear-gradient(
+    90deg,
+    rgba(156, 43, 255, 0.15) 0%,
+    rgba(6, 207, 221, 0.15) 36.35%,
+    rgba(91, 134, 255, 0.15) 70.54%,
+    rgba(253, 164, 58, 0.15) 100%
+  );
+}
+
+/* ======================================= Layout Css End ================================== */
+
+/* Sidebar collapsible animation */
+@keyframes slideDown {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-collapsible-content-height); opacity: 1; }
+}
+@keyframes slideUp {
+  from { height: var(--radix-collapsible-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
+}

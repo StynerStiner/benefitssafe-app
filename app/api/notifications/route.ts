@@ -1,0 +1,72 @@
+// GET  /api/notifications — Get notifications for current user
+// PATCH /api/notifications — Mark notifications as read
+
+import { auth } from "@/auth";
+import { prisma } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const limit = parseInt(request.nextUrl.searchParams.get("limit") || "20");
+    const unreadOnly = request.nextUrl.searchParams.get("unread") === "true";
+
+    const where: Record<string, unknown> = {
+      userId: session.user.id,
+    };
+    if (unreadOnly) {
+      where.read = false;
+    }
+
+    const [notifications, unreadCount] = await Promise.all([
+      prisma.notification.findMany({
+        where: where as never,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+      }),
+      prisma.notification.count({
+        where: { userId: session.user.id, read: false },
+      }),
+    ]);
+
+    return NextResponse.json({ notifications, unreadCount });
+  } catch (error) {
+    console.error("GET /api/notifications error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+// Mark all or specific notifications as read
+export async function PATCH(request: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json().catch(() => ({}));
+    const { notificationId } = body;
+
+    if (notificationId) {
+      await prisma.notification.update({
+        where: { id: notificationId },
+        data: { read: true },
+      });
+    } else {
+      // Mark all as read
+      await prisma.notification.updateMany({
+        where: { userId: session.user.id, read: false },
+        data: { read: true },
+      });
+    }
+
+    return NextResponse.json({ message: "Marked as read" });
+  } catch (error) {
+    console.error("PATCH /api/notifications error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
