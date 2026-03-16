@@ -598,6 +598,40 @@ async function main() {
   }
   console.log("  Created 5 approval records");
 
+  // ─── 6b. UPDATE BUDGET CATEGORY SPENT AMOUNTS ─────────────────────
+  console.log("\nUpdating budget category spent amounts...");
+
+  // Grant 1 (Creative Writing Fellowship)
+  await prisma.budgetCategory.update({
+    where: { id: cat1.profSvc },
+    data: { spentAmount: 1500 }, // Maria's editing
+  });
+  await prisma.budgetCategory.update({
+    where: { id: cat1.software },
+    data: { spentAmount: 763.87 }, // Adobe 659.88 + Scrivener 49 + Adobe monthly 54.99
+  });
+
+  // Grant 2 (Digital Skills Training)
+  await prisma.budgetCategory.update({
+    where: { id: cat2.profSvc },
+    data: { spentAmount: 200 }, // Writing Coach
+  });
+  await prisma.budgetCategory.update({
+    where: { id: cat2.software },
+    data: { spentAmount: 240 }, // ChatGPT
+  });
+
+  // Grant 3 (Housing Stability Support)
+  await prisma.budgetCategory.update({
+    where: { id: cat3.profSvc },
+    data: { spentAmount: 7000 }, // Two months rent
+  });
+  await prisma.budgetCategory.update({
+    where: { id: cat3.materials },
+    data: { spentAmount: 1500 }, // Security deposit
+  });
+  console.log("  Updated 6 budget category spent amounts");
+
   // ─── 7. CREATE 4 SUBSCRIPTIONS ─────────────────────────────────────
   console.log("\nCreating subscriptions...");
 

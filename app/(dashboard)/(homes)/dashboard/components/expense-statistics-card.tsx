@@ -45,7 +45,7 @@ const ExpenseStatisticsCard = ({ expenses }: { expenses: Expense[] }) => {
                                 <span className="text-xs text-neutral-600 dark:text-neutral-300">Paid ({paid})</span>
                             </div>
                         </div>
-                        <ExpenseStatisticsChart />
+                        <ExpenseStatisticsChart series={[pending, approved, rejected, paid]} />
                     </div>
                 </div>
             </CardContent>

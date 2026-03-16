@@ -5,9 +5,9 @@ import dynamic from 'next/dynamic';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-const ExpenseStatisticsChart = () => {
+const ExpenseStatisticsChart = ({ series }: { series?: number[] }) => {
     const chartOptions: ApexOptions = {
-        series: [30, 30, 30, 30],
+        series: series || [30, 30, 30, 30],
         chart: {
             animations: { enabled: false },
             height: 240,
