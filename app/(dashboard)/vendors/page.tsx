@@ -4,12 +4,9 @@ import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import CustomSelect from "@/components/shared/custom-select";
 import SearchBox from "@/components/shared/search-box";
 import UsersListTable from '@/components/table/users-list-table';
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { Plus } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import AddVendorForm from "./add-vendor-form";
 
 interface Vendor {
     id: string;
@@ -55,12 +52,7 @@ const UsersList = () => {
                             options={["All", "PENDING", "APPROVED", "ACTIVE", "BLOCKED", "SUSPENDED", "REJECTED"]}
                         />
                     </div>
-                    <Button className={cn(`w-auto h-11`)} asChild>
-                        <Link href="#">
-                            <Plus className="w-5 h-5" />
-                            Add Vendor
-                        </Link>
-                    </Button>
+                    <AddVendorForm />
                 </CardHeader>
 
                 <CardContent className="card-body p-6">

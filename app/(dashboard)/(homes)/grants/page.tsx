@@ -11,6 +11,7 @@ import ProjectsStatusCard from "./components/projects-status-card";
 import TasksOverviewCard from "./components/tasks-overview-card";
 import TeamMembersCard from "./components/team-members-card";
 import WorkingScheduleCard from "./components/working-schedule-card";
+import AddGrantForm from "./components/add-grant-form";
 
 interface Grant {
     id: string;
@@ -68,7 +69,10 @@ const ProjectManagement = () => {
 
     return (
         <>
-            <DashboardBreadcrumb title="Grants" text="Grant Management" />
+            <div className="flex items-center justify-between">
+                <DashboardBreadcrumb title="Grants" text="Grant Management" />
+                <AddGrantForm />
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
 

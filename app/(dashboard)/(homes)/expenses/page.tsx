@@ -9,6 +9,7 @@ import StockReportCard from '@/app/(dashboard)/(homes)/expenses/component/stock-
 import TopCustomersCard from '@/app/(dashboard)/(homes)/expenses/component/top-customers-card';
 import TopSellingProductCard from '@/app/(dashboard)/(homes)/expenses/component/top-selling-product-card';
 import TransactionsCard from '@/app/(dashboard)/(homes)/expenses/component/transactions-card';
+import AddExpenseForm from "./component/add-expense-form";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import { useEffect, useState } from "react";
@@ -52,7 +53,10 @@ const EcommercePage = () => {
 
   return (
     <>
-      <DashboardBreadcrumb title="Expenses" text="Expense Management" />
+      <div className="flex items-center justify-between">
+        <DashboardBreadcrumb title="Expenses" text="Expense Management" />
+        <AddExpenseForm />
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
 
