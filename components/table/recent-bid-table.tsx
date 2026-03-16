@@ -44,73 +44,73 @@ interface BidItem {
 const initialBidData: BidItem[] = [
     {
         itemImage: nftItemImage1,
-        itemTitle: "Spanky & Friends",
-        itemOwner: "Owned by ABC",
-        price: "1.44 ETH",
-        yourOffer: "3.053 ETH",
+        itemTitle: "Adobe CC Monthly",
+        itemOwner: "Software",
+        price: "$54.99",
+        yourOffer: "Adobe Inc",
         recentOfferImage: nftOfferImage1,
-        recentOfferPrice: "1.44.00 ETH",
-        timeLeft: "2h 5m 40s",
+        recentOfferPrice: "4242",
+        timeLeft: "Mar 1, 2026",
     },
     {
         itemImage: nftItemImage2,
-        itemTitle: "Nike Air Shoe",
-        itemOwner: "Owned by ABC",
-        price: "1.44 ETH",
-        yourOffer: "3.053 ETH",
+        itemTitle: "Scrivener License",
+        itemOwner: "Software",
+        price: "$49.00",
+        yourOffer: "Literature & Latte",
         recentOfferImage: nftOfferImage2,
-        recentOfferPrice: "1.44.00 ETH",
-        timeLeft: "2h 5m 40s",
+        recentOfferPrice: "8888",
+        timeLeft: "Feb 28, 2026",
     },
     {
         itemImage: nftItemImage3,
-        itemTitle: "Woman Dresses",
-        itemOwner: "Owned by ABC",
-        price: "1.44 ETH",
-        yourOffer: "3.053 ETH",
+        itemTitle: "Maria's Editing",
+        itemOwner: "Service",
+        price: "$1,500.00",
+        yourOffer: "Maria's Editing LLC",
         recentOfferImage: nftOfferImage3,
-        recentOfferPrice: "1.44.00 ETH",
-        timeLeft: "2h 5m 40s",
+        recentOfferPrice: "1234",
+        timeLeft: "Feb 25, 2026",
     },
     {
         itemImage: nftItemImage4,
-        itemTitle: "Smart Watch",
-        itemOwner: "Owned by ABC",
-        price: "1.44 ETH",
-        yourOffer: "3.053 ETH",
+        itemTitle: "Writing Coach",
+        itemOwner: "Service",
+        price: "$200.00",
+        yourOffer: "Writing Coach LLC",
         recentOfferImage: nftOfferImage4,
-        recentOfferPrice: "1.44.00 ETH",
-        timeLeft: "2h 5m 40s",
+        recentOfferPrice: "4242",
+        timeLeft: "Feb 20, 2026",
     },
     {
         itemImage: nftItemImage5,
-        itemTitle: "Hoodie Rose",
-        itemOwner: "Owned by ABC",
-        price: "1.44 ETH",
-        yourOffer: "3.053 ETH",
+        itemTitle: "Print Shop",
+        itemOwner: "Printing",
+        price: "$175.00",
+        yourOffer: "Bay Area Print",
         recentOfferImage: nftOfferImage5,
-        recentOfferPrice: "1.44.00 ETH",
-        timeLeft: "2h 5m 40s",
+        recentOfferPrice: "1234",
+        timeLeft: "Feb 15, 2026",
     },
     {
         itemImage: nftItemImage6,
-        itemTitle: "Hoodie Rose",
-        itemOwner: "Owned by ABC",
-        price: "1.44 ETH",
-        yourOffer: "3.053 ETH",
+        itemTitle: "Adobe CC Feb",
+        itemOwner: "Software",
+        price: "$54.99",
+        yourOffer: "Adobe Inc",
         recentOfferImage: nftOfferImage6,
-        recentOfferPrice: "1.44.00 ETH",
-        timeLeft: "2h 5m 40s",
+        recentOfferPrice: "4242",
+        timeLeft: "Feb 1, 2026",
     },
     {
         itemImage: nftItemImage2,
-        itemTitle: "Hoodie Rose",
-        itemOwner: "Owned by ABC",
-        price: "1.44 ETH",
-        yourOffer: "3.053 ETH",
+        itemTitle: "Adobe CC Jan",
+        itemOwner: "Software",
+        price: "$54.99",
+        yourOffer: "Adobe Inc",
         recentOfferImage: nftOfferImage7,
-        recentOfferPrice: "1.44.00 ETH",
-        timeLeft: "2h 5m 40s",
+        recentOfferPrice: "4242",
+        timeLeft: "Jan 1, 2026",
     },
 ];
 
@@ -127,19 +127,19 @@ const RecentBidTable = () => {
             <TableHeader>
                 <TableRow className="border-0">
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-t border-s border-neutral-200 dark:border-slate-600 text-start rounded-tl-lg">
-                        Items
+                        Transaction
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-t border-neutral-200 dark:border-slate-600">
-                        Price
+                        Amount
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-t border-neutral-200 dark:border-slate-600">
-                        Your Offer
+                        Merchant
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-t border-neutral-200 dark:border-slate-600">
-                        Recent Offer
+                        Card
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-t border-neutral-200 dark:border-slate-600">
-                        Time Left
+                        Date
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-t border-e border-neutral-200 dark:border-slate-600 text-center rounded-tr-lg">
                         Action

@@ -98,10 +98,12 @@ const LedgerPage = () => {
         </div>
 
         <div className="xl:col-span-12 2xl:col-span-4">
-          <div className="space-y-6">
+          <div className="flex flex-col gap-6 h-full">
             <MasterCard />
             <TotalBalanceCard grants={grants} />
-            <UsersActivateCard grants={grants} />
+            <div className="flex-1">
+              <UsersActivateCard grants={grants} />
+            </div>
           </div>
         </div>
       </div>

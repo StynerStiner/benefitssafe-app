@@ -21,23 +21,23 @@ const BuyBalanceContent = () => {
           htmlFor="estimatedValue"
           className="font-semibold mb-2 block text-neutral-600 dark:text-white"
         >
-          Estimated Purchase Value
+          Filter by Grant
         </Label>
         <div className="flex">
           <Input
             id="estimatedValue"
-            placeholder="Estimated Value"
+            placeholder="Select grant..."
             className="border border-neutral-200 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-11 rounded-s-lg rounded-e-none !shadow-none !ring-0"
           />
           <div className="shrink-0 flex -ms-[0px]">
             <Select>
               <SelectTrigger className="border border-s-0 border-neutral-200 dark:border-slate-700 bg-transparent px-1 text-sm dark:text-white focus:ring-0 focus:ring-offset-0 !h-full rounded-e-lg rounded-s-none">
-                <SelectValue placeholder="BTC" />
+                <SelectValue placeholder="All Grants" />
               </SelectTrigger>
               <SelectContent className="bg-white dark:bg-neutral-700">
-                <SelectItem value="BTC">BTC</SelectItem>
-                <SelectItem value="LTC">LTC</SelectItem>
-                <SelectItem value="ETC">ETC</SelectItem>
+                <SelectItem value="all">All Grants</SelectItem>
+                <SelectItem value="writing">Writing</SelectItem>
+                <SelectItem value="digital">Digital</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -48,23 +48,23 @@ const BuyBalanceContent = () => {
           htmlFor="TradeValue"
           className="font-semibold mb-2 block text-neutral-600 dark:text-white"
         >
-          Trade Value
+          Date Range
         </Label>
         <div className="flex">
           <Input
             id="TradeValue"
-            placeholder="Estimated Value"
+            placeholder="Start Date"
             className="border border-neutral-200 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-11 rounded-s-lg rounded-e-none !shadow-none !ring-0"
           />
           <div className="shrink-0 flex -ms-[0px]">
             <Select>
               <SelectTrigger className="border border-s-0 border-neutral-200 dark:border-slate-700 bg-transparent px-1 text-sm dark:text-white focus:ring-0 focus:ring-offset-0 !h-full rounded-e-lg rounded-s-none">
-                <SelectValue placeholder="BTC" />
+                <SelectValue placeholder="All" />
               </SelectTrigger>
               <SelectContent className="bg-white dark:bg-neutral-700">
-                <SelectItem value="BTC">BTC</SelectItem>
-                <SelectItem value="LTC">LTC</SelectItem>
-                <SelectItem value="ETC">ETC</SelectItem>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="30d">30 Days</SelectItem>
+                <SelectItem value="90d">90 Days</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -77,11 +77,11 @@ const BuyBalanceContent = () => {
           htmlFor="address"
           className="font-semibold mb-2 block text-neutral-600 dark:text-white"
         >
-          Trade Value
+          Date Range
         </Label>
         <Textarea
           id="address"
-          placeholder="Enter Address"
+          placeholder="Notes (optional)"
           className="border border-neutral-200 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary rounded-lg !shadow-none !ring-0 h-[120px]"
         />
       </div>
@@ -92,12 +92,12 @@ const BuyBalanceContent = () => {
           Total Balance
         </span>
         <h6 className="mb-1.5 font-semibold text-xl text-yellow-500 dark:text-yellow-500">
-          $320,320.00
+          $85,389
         </h6>
       </div>
 
       {/* Transfer Button */}
-      <Button className={cn(`w-full h-11`)}>Transfer Now</Button>
+      <Button className={cn(`w-full h-11`)}>View All Entries</Button>
     </div>
   );
 };

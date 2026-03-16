@@ -28,7 +28,6 @@ export async function GET(request: NextRequest) {
     // Build where clause with search
     const where: Record<string, unknown> = {
       organizationId,
-      isActive: true,
     };
 
     if (roleFilter) {
@@ -55,6 +54,7 @@ export async function GET(request: NextRequest) {
           email: true,
           phone: true,
           role: true,
+          isActive: true,
           addressCity: true,
           addressState: true,
         },

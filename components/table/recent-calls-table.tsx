@@ -32,63 +32,63 @@ interface RecentCallsTableTypeItem {
 const RecentCallsTableContents: RecentCallsTableTypeItem[] = [
     {
         customer: {
-            name: "Tokyo Tower",
+            name: "Sarah Mitchell",
             image: UserGridImage1,
         },
-        type: "Inbound",
-        duration: "5 mins",
-        time: "10:30 PM",
-        status: { label: "Resolved", type: "resolved" },
+        type: "Approved",
+        duration: "expense",
+        time: "Mar 6",
+        status: { label: "Completed", type: "resolved" },
     },
     {
         customer: {
-            name: "Santorini Resort",
+            name: "James Carter",
             image: UserGridImage2,
         },
-        type: "Inbound",
-        duration: "12 mins",
-        time: "10:40 PM",
-        status: { label: "Pending", type: "pending" },
+        type: "Created",
+        duration: "expense",
+        time: "Jan 15",
+        status: { label: "Completed", type: "resolved" },
     },
     {
         customer: {
-            name: "Bali Beach Villa",
+            name: "Sarah Mitchell",
             image: UserGridImage3,
         },
-        type: "Outbound",
-        duration: "15 mins",
-        time: "11:00 PM",
-        status: { label: "Dropped", type: "dropped" },
+        type: "Created",
+        duration: "card",
+        time: "Jan 10",
+        status: { label: "Completed", type: "resolved" },
     },
     {
         customer: {
-            name: "Swiss Alps Hotel",
+            name: "James Carter",
             image: UserGridImage4,
         },
-        type: "Inbound",
-        duration: "17 mins",
-        time: "11:30 PM",
-        status: { label: "Resolved", type: "resolved" },
+        type: "Created",
+        duration: "expense",
+        time: "Jan 7",
+        status: { label: "Completed", type: "resolved" },
     },
     {
         customer: {
-            name: "Maldives Retreat",
+            name: "Sarah Mitchell",
             image: UserGridImage5,
         },
-        type: "Inbound",
-        duration: "25 mins",
-        time: "09:15 AM",
-        status: { label: "Pending", type: "pending" },
+        type: "Approved",
+        duration: "vendor",
+        time: "Jan 5",
+        status: { label: "Completed", type: "resolved" },
     },
     {
         customer: {
-            name: "Bali Beach Villa",
+            name: "Sarah Mitchell",
             image: UserGridImage3,
         },
-        type: "Inbound",
-        duration: "30 mins",
-        time: "10:45 PM",
-        status: { label: "Resolved", type: "resolved" },
+        type: "Approved",
+        duration: "expense",
+        time: "Dec 28",
+        status: { label: "Completed", type: "resolved" },
     },
 ];
 
@@ -99,16 +99,16 @@ const RecentCallsTable = () => {
             <TableHeader>
                 <TableRow>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-start">
-                        Caller Name
+                        User
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
-                        Type
+                        Action
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
-                        Duration
+                        Entity
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
-                        Time
+                        Date
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
                         Status

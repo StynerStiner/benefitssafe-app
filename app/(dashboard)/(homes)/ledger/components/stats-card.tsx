@@ -1,12 +1,6 @@
 import CardSmallChartTwo from '@/components/charts/card-small-chart-two';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import cryptoCurrencyImage1 from '@/public/assets/images/currency/crypto-img1.png';
-import cryptoCurrencyImage2 from '@/public/assets/images/currency/crypto-img2.png';
-import cryptoCurrencyImage3 from '@/public/assets/images/currency/crypto-img3.png';
-import cryptoCurrencyImage4 from '@/public/assets/images/currency/crypto-img4.png';
-import cryptoCurrencyImage5 from '@/public/assets/images/currency/crypto-img5.png';
-import Image from 'next/image';
 
 interface Grant { totalAmount: string; spentAmount: string; remainingAmount: string; }
 interface LedgerEntry { type: string; amount: string; }
@@ -26,8 +20,8 @@ const StatsCard = ({ grants, ledgerEntries }: { grants: Grant[]; ledgerEntries: 
             price: `$${totalCredits.toLocaleString("en-US", { maximumFractionDigits: 0 })}`,
             change: `${entryCount > 0 ? ledgerEntries.filter((l) => l.type === "CREDIT").length : 0} entries`,
             changeType: "success" as const,
-            image: cryptoCurrencyImage1,
-            chartId: "bitcoinAreaChart",
+            initials: "TC",
+            iconBg: "bg-green-500",
             gradient: "from-yellow-600/10",
             chartBg: "#F98C08",
         },
@@ -38,8 +32,8 @@ const StatsCard = ({ grants, ledgerEntries }: { grants: Grant[]; ledgerEntries: 
             price: `$${totalDebits.toLocaleString("en-US", { maximumFractionDigits: 0 })}`,
             change: `${ledgerEntries.filter((l) => l.type === "DEBIT").length} entries`,
             changeType: "danger" as const,
-            image: cryptoCurrencyImage2,
-            chartId: "ethereumAreaChart",
+            initials: "TD",
+            iconBg: "bg-red-500",
             gradient: "from-blue-600/10",
             chartBg: "#5F80FF",
         },
@@ -50,8 +44,8 @@ const StatsCard = ({ grants, ledgerEntries }: { grants: Grant[]; ledgerEntries: 
             price: `$${netBalance.toLocaleString("en-US", { maximumFractionDigits: 0 })}`,
             change: `${grants.length} grants`,
             changeType: "success" as const,
-            image: cryptoCurrencyImage3,
-            chartId: "solanaAreaChart",
+            initials: "NB",
+            iconBg: "bg-blue-500",
             gradient: "from-purple-600/10",
             chartBg: "#C817F8",
         },
@@ -62,8 +56,8 @@ const StatsCard = ({ grants, ledgerEntries }: { grants: Grant[]; ledgerEntries: 
             price: `$${totalAllocated.toLocaleString("en-US", { maximumFractionDigits: 0 })}`,
             change: `${grants.length} grants`,
             changeType: "success" as const,
-            image: cryptoCurrencyImage4,
-            chartId: "litecoinAreaChart",
+            initials: "TA",
+            iconBg: "bg-purple-500",
             gradient: "from-blue-600/10",
             chartBg: "#2171EA",
         },
@@ -74,8 +68,8 @@ const StatsCard = ({ grants, ledgerEntries }: { grants: Grant[]; ledgerEntries: 
             price: entryCount.toLocaleString(),
             change: "total entries",
             changeType: "success" as const,
-            image: cryptoCurrencyImage5,
-            chartId: "dogecoinAreaChart",
+            initials: "LE",
+            iconBg: "bg-yellow-500",
             gradient: "from-yellow-600/10",
             chartBg: "#C2A633",
         },
@@ -94,13 +88,11 @@ const StatsCard = ({ grants, ledgerEntries }: { grants: Grant[]; ledgerEntries: 
                     >
                     <CardContent className="card-body p-0">
                         <div className="flex flex-wrap items-center gap-3">
-                            <Image
-                                src={crypto.image}
-                                alt={crypto.name}
-                                width={40}
-                                height={40}
-                                className="rounded-full shrink-0"
-                            />
+                            <span
+                                className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center text-white text-xs font-semibold ${crypto.iconBg}`}
+                            >
+                                {crypto.initials}
+                            </span>
                             <div className="grow">
                                 <h6 className="text-xl mb-1">{crypto.name}</h6>
                                 <p className="font-medium text-neutral-500 dark:text-neutral-300 mb-0">{crypto.symbol}</p>

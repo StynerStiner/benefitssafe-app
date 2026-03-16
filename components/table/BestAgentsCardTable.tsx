@@ -27,53 +27,53 @@ interface BestAgentsCardTableTypeItem {
 const BestAgentsCardTableContents: BestAgentsCardTableTypeItem[] = [
     {
         customer: {
-            name: "Tokyo Tower",
+            name: "Sarah Mitchell",
             image: UserGridImage1,
         },
         amounts: "380",
-        startDate: "8 mins 10 secs",
-        endDate: "70%",
-        duration: "90%",
+        startDate: "2 hrs ago",
+        endDate: "Admin",
+        duration: "Test Nonprofit",
     },
     {
         customer: {
-            name: "Santorini Resort",
+            name: "James Carter",
             image: UserGridImage2,
         },
         amounts: "65",
-        startDate: "4 mins 16 secs",
-        endDate: "80%",
-        duration: "85%",
+        startDate: "5 hrs ago",
+        endDate: "Beneficiary",
+        duration: "Test Nonprofit",
     },
     {
         customer: {
-            name: "Bali Beach Villa",
+            name: "Jordan Lee",
             image: UserGridImage3,
         },
         amounts: "280",
-        startDate: "5 mins 30 secs",
-        endDate: "90%",
-        duration: "80%",
+        startDate: "1 day ago",
+        endDate: "Staff",
+        duration: "Test Nonprofit",
     },
     {
         customer: {
-            name: "Swiss Alps Hotel",
+            name: "Maria Rodriguez",
             image: UserGridImage4,
         },
         amounts: "380",
-        startDate: "12 mins 45 secs",
-        endDate: "95%",
-        duration: "75%",
+        startDate: "3 days ago",
+        endDate: "CPA",
+        duration: "Test Nonprofit",
     },
     {
         customer: {
-            name: "Maldives Retreat",
+            name: "Pat Williams",
             image: UserGridImage5,
         },
         amounts: "150",
-        startDate: "3 mins 45 secs",
-        endDate: "95%",
-        duration: "40%",
+        startDate: "1 week ago",
+        endDate: "Platform Admin",
+        duration: "BenefitsSafe",
     }
 ];
 
@@ -87,16 +87,16 @@ const BestAgentsCardTable = () => {
                         User
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
-                        Calls
+                        Actions
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
-                        Avg. Duration
+                        Last Active
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
-                        FCR
+                        Role
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
-                        Duration
+                        Org
                     </TableHead>
                 </TableRow>
             </TableHeader>

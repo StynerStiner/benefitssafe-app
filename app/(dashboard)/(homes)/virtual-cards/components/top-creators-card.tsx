@@ -20,12 +20,12 @@ interface Creator {
 }
 
 const creatorsData: Creator[] = [
-    { id: 1, name: "Theresa Webb", username: "@wishon", avatar: Image1 },
-    { id: 2, name: "Arlene McCoy", username: "@nemccoy", avatar: Image2 },
-    { id: 3, name: "Kathryn Murphy", username: "@kathrynmur", avatar: Image3 },
-    { id: 4, name: "Marvin McKinney", username: "@marvinckin", avatar: Image4 },
-    { id: 5, name: "Theresa Webb", username: "@wishon", avatar: Image1 },
-    { id: 6, name: "Dianne Russell", username: "@dinne_r", avatar: Image5 },
+    { id: 1, name: "James Carter", username: "Beneficiary", avatar: Image1 },
+    { id: 2, name: "Adobe Inc", username: "•••• 4242", avatar: Image2 },
+    { id: 3, name: "Literature & Latte", username: "•••• 8888", avatar: Image3 },
+    { id: 4, name: "OpenAI", username: "•••• 1234", avatar: Image4 },
+    { id: 5, name: "Writing Coach LLC", username: "Service Provider", avatar: Image1 },
+    { id: 6, name: "Bay Area Print", username: "Service Provider", avatar: Image5 },
 ];
 
 const TopCreatorsCard = ({ cards }: { cards: unknown[] }) => {
@@ -45,7 +45,7 @@ const TopCreatorsCard = ({ cards }: { cards: unknown[] }) => {
                     {/* Header */}
                     <div className="card-header border-b border-neutral-200 dark:border-slate-500 py-4 px-6">
                         <div className="flex items-center flex-wrap gap-2 justify-between">
-                            <h6 className="font-bold text-lg mb-0">Top Cardholders</h6>
+                            <h6 className="font-bold text-lg mb-0">Card Assignments</h6>
                             <CommonLink />
                         </div>
                     </div>
@@ -78,7 +78,7 @@ const TopCreatorsCard = ({ cards }: { cards: unknown[] }) => {
                                     className="text-white px-6 rounded-full follow-btn transition-2"
                                     onClick={() => toggleFollow(creator.id)}
                                 >
-                                    {followState[creator.id] ? "Following" : "Follow"}
+                                    {followState[creator.id] ? "Following" : "View"}
                                 </Button>
                             </div>
                         ))}

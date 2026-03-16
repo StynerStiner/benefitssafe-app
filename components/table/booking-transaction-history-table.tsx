@@ -6,13 +6,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import UserGridImage1 from "@/public/assets/images/home-twelve/transaction-img1.png";
-import UserGridImage2 from "@/public/assets/images/home-twelve/transaction-img2.png";
-import UserGridImage3 from "@/public/assets/images/home-twelve/transaction-img3.png";
-import UserGridImage4 from "@/public/assets/images/home-twelve/transaction-img4.png";
-import UserGridImage5 from "@/public/assets/images/home-twelve/transaction-img5.png";
-import Image, { StaticImageData } from "next/image";
-
 interface ActivityStatus {
     label: string;
     type: "success" | "warning" | "purple";
@@ -21,7 +14,8 @@ interface ActivityStatus {
 interface BookingTransactionHistoryTypeItem {
     customer: {
         name: string;
-        image: string | StaticImageData; // ✅ allow both
+        initials: string;
+        iconBg: string;
     };
     id: string;
     duration: string;
@@ -33,58 +27,63 @@ interface BookingTransactionHistoryTypeItem {
 const bookingTransactionsHistoryTableContents: BookingTransactionHistoryTypeItem[] = [
     {
         customer: {
-            name: "Grand Palace",
-            image: UserGridImage1,
+            name: "Creative Writing Fellowship",
+            initials: "CW",
+            iconBg: "bg-blue-500",
         },
-        id: "#63254",
-        duration: "5 min ago",
-        amount: "$12,408.12",
-        date: "21/09/2025",
-        status: { label: "Completed", type: "success" },
+        id: "3 categories",
+        duration: "290 days",
+        amount: "$25,000",
+        date: "Active",
+        status: { label: "Standard", type: "success" },
     },
     {
         customer: {
-            name: "Paris France",
-            image: UserGridImage2,
+            name: "Digital Skills Training",
+            initials: "DS",
+            iconBg: "bg-green-500",
         },
-        id: "#63254",
-        duration: "12 min ago",
-        amount: "$12,408.12",
-        date: "21/09/2025",
-        status: { label: "Pending", type: "warning" },
+        id: "3 categories",
+        duration: "198 days",
+        amount: "$15,000",
+        date: "Active",
+        status: { label: "Standard", type: "success" },
     },
     {
         customer: {
-            name: "Khaosan Road",
-            image: UserGridImage3,
+            name: "Housing Stability Support",
+            initials: "HS",
+            iconBg: "bg-teal-500",
         },
-        id: "#63254",
-        duration: "15 min ago",
-        amount: "$12,408.12",
-        date: "21/09/2025",
-        status: { label: "Completed", type: "success" },
+        id: "3 categories",
+        duration: "471 days",
+        amount: "$50,000",
+        date: "Active",
+        status: { label: "Enhanced Review", type: "warning" },
     },
     {
         customer: {
-            name: "Wat Phra Kaew",
-            image: UserGridImage4,
+            name: "Artist Residency Grant",
+            initials: "AR",
+            iconBg: "bg-neutral-500",
         },
-        id: "#63254",
-        duration: "17 min ago",
-        amount: "$12,408.12",
-        date: "21/09/2025",
-        status: { label: "Pending", type: "warning" },
+        id: "3 categories",
+        duration: "Ended",
+        amount: "$8,000",
+        date: "Completed",
+        status: { label: "Standard", type: "success" },
     },
     {
         customer: {
-            name: "Wat Pho",
-            image: UserGridImage5,
+            name: "Emergency Relief Fund",
+            initials: "ER",
+            iconBg: "bg-yellow-500",
         },
-        id: "#63254",
-        duration: "25 min ago",
-        amount: "$12,408.12",
-        date: "21/09/2025",
-        status: { label: "Completed", type: "success" },
+        id: "0 categories",
+        duration: "290 days",
+        amount: "$10,000",
+        date: "Draft",
+        status: { label: "Pending", type: "purple" },
     },
 ];
 
@@ -94,22 +93,22 @@ const BookingTransactionHistoryTable = () => {
             <TableHeader>
                 <TableRow>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-start">
-                        Place
+                        Grant
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
-                        ID
+                        Categories
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
                         Duration
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
-                        Amount
-                    </TableHead>
-                    <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
-                        Date
+                        Budget
                     </TableHead>
                     <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
                         Status
+                    </TableHead>
+                    <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-6 h-16 text-center">
+                        Policy
                     </TableHead>
                 </TableRow>
             </TableHeader>
@@ -119,13 +118,11 @@ const BookingTransactionHistoryTable = () => {
                         {/* Customer */}
                         <TableCell className="py-3.5 px-6 text-start">
                             <div className="flex items-center">
-                                <Image
-                                    src={item.customer.image}
-                                    alt={item.customer.name}
-                                    width={40}
-                                    height={40}
-                                    className="w-10 h-10 rounded-md me-3"
-                                />
+                                <span
+                                    className={`w-10 h-10 rounded-md me-3 flex items-center justify-center text-white text-xs font-semibold shrink-0 ${item.customer.iconBg}`}
+                                >
+                                    {item.customer.initials}
+                                </span>
                                 <div>
                                     <h6 className="text-base mb-0">{item.customer.name}</h6>
                                 </div>

@@ -11,9 +11,8 @@ const Footer = () => {
           &copy; {currentYear} BenefitsSafe. All Rights Reserved.
         </p>
         <p className="mb-0 dark:text-white">
-          Made by
+          Made by{" "}
           <span className="font-medium text-primary dark:text-primary">
-            {" "}
             BenefitsSafe
           </span>
         </p>

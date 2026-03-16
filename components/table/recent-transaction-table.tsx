@@ -34,12 +34,12 @@ export interface Transaction {
 export const transactions: Transaction[] = [
   {
     id: "1",
-    asset: "Bitcoin",
-    time: "10:34 AM",
-    date: "27 Mar 2024",
-    amount: "+ 0.431 BTC",
-    usdValue: "$3,480.90",
-    address: "Abc.........np562",
+    asset: "Grant Funding",
+    time: "Dec 16",
+    date: "2025",
+    amount: "+ $25,000",
+    usdValue: "",
+    address: "Creative Writing",
     status: "Completed",
     statusVariant: "success",
     direction: "in",
@@ -47,51 +47,51 @@ export const transactions: Transaction[] = [
   },
   {
     id: "2",
-    asset: "Bitcoin",
-    time: "10:34 AM",
-    date: "27 Mar 2024",
-    amount: "+ 0.431 BTC",
-    usdValue: "$3,480.90",
-    address: "Abc.........np562",
-    status: "Terminated",
+    asset: "Adobe CC",
+    time: "Dec 18",
+    date: "2025",
+    amount: "- $659.88",
+    usdValue: "",
+    address: "Creative Writing",
+    status: "Completed",
     statusVariant: "danger",
     direction: "out",
     icon: ArrowDownLeft,
   },
   {
     id: "3",
-    asset: "Bitcoin",
-    time: "10:34 AM",
-    date: "27 Mar 2024",
-    amount: "+ 0.431 BTC",
-    usdValue: "$3,480.90",
-    address: "Abc.........np562",
+    asset: "Scrivener",
+    time: "Dec 19",
+    date: "2025",
+    amount: "- $49.00",
+    usdValue: "",
+    address: "Creative Writing",
+    status: "Completed",
+    statusVariant: "danger",
+    direction: "out",
+    icon: ArrowDownLeft,
+  },
+  {
+    id: "4",
+    asset: "Grant Funding",
+    time: "Jan 15",
+    date: "2026",
+    amount: "+ $15,000",
+    usdValue: "",
+    address: "Digital Skills",
     status: "Completed",
     statusVariant: "success",
     direction: "in",
     icon: ArrowUpRight,
   },
   {
-    id: "4",
-    asset: "Bitcoin",
-    time: "10:34 AM",
-    date: "27 Mar 2024",
-    amount: "+ 0.431 BTC",
-    usdValue: "$3,480.90",
-    address: "Abc.........np562",
-    status: "Terminated",
-    statusVariant: "danger",
-    direction: "out",
-    icon: ArrowDownLeft,
-  },
-  {
     id: "5",
-    asset: "Bitcoin",
-    time: "10:34 AM",
-    date: "27 Mar 2024",
-    amount: "+ 0.431 BTC",
-    usdValue: "$3,480.90",
-    address: "Abc.........np562",
+    asset: "Grant Funding",
+    time: "Nov 16",
+    date: "2025",
+    amount: "+ $50,000",
+    usdValue: "",
+    address: "Housing",
     status: "Completed",
     statusVariant: "success",
     direction: "in",
@@ -105,16 +105,16 @@ const RecentTransactionTable = () => {
       <TableHeader>
         <TableRow className="border-0">
           <TableHead className="px-4 h-12 bg-neutral-100 dark:bg-slate-700 border-t border-neutral-200 first:border-s last:border-e dark:border-slate-600 rounded-tl-lg">
-            Ast
+            Entry
           </TableHead>
           <TableHead className="px-4 h-12 bg-neutral-100 dark:bg-slate-700 border-t border-neutral-200 first:border-s last:border-e dark:border-slate-600">
-            Date & Time
+            Date
           </TableHead>
           <TableHead className="px-4 h-12 text-center bg-neutral-100 dark:bg-slate-700 border-t border-neutral-200 first:border-s last:border-e dark:border-slate-600">
             Amount
           </TableHead>
           <TableHead className="px-4 h-12 text-center bg-neutral-100 dark:bg-slate-700 border-t border-neutral-200 first:border-s last:border-e dark:border-slate-600">
-            Address
+            Grant
           </TableHead>
           <TableHead className="px-4 h-12 text-center bg-neutral-100 dark:bg-slate-700 border-t border-neutral-200 first:border-s last:border-e dark:border-slate-600 rounded-tr-lg">
             Status

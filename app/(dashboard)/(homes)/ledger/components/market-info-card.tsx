@@ -8,17 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { default as cryptoImage1, default as cryptoImage6 } from "@/public/assets/images/currency/crypto-img1.png";
-import cryptoImage2 from "@/public/assets/images/currency/crypto-img2.png";
-import cryptoImage3 from "@/public/assets/images/currency/crypto-img3.png";
-import cryptoImage4 from "@/public/assets/images/currency/crypto-img4.png";
-import cryptoImage5 from "@/public/assets/images/currency/crypto-img5.png";
-import Image, { StaticImageData } from "next/image";
 
 interface MarketItem {
   id: string;
   name: string;
-  image: StaticImageData;
+  initials: string;
+  iconBg: string;
   price: string;
   change: string;
   changeType: "positive" | "negative";
@@ -27,56 +22,52 @@ interface MarketItem {
 
 const marketData: MarketItem[] = [
   {
-    id: "bitcoin",
-    name: "Bitcoin",
-    image: cryptoImage1,
-    price: "$55,000.00",
-    change: "+3.85%",
+    id: "writing",
+    name: "Creative Writing Fellowship",
+    initials: "CW",
+    iconBg: "bg-blue-500",
+    price: "$20,179",
+    change: "+80%",
     changeType: "positive",
     chartBg: "#45B369",
   },
   {
-    id: "ethereum",
-    name: "Ethereum",
-    image: cryptoImage2,
-    price: "$55,000.00",
-    change: "-2.85%",
-    changeType: "negative",
-    chartBg: "#EF4A00",
-  },
-  {
-    id: "solana",
-    name: "Solana",
-    image: cryptoImage3,
-    price: "$55,000.00",
-    change: "+3.85%",
+    id: "digital",
+    name: "Digital Skills Training",
+    initials: "DS",
+    iconBg: "bg-green-500",
+    price: "$13,710",
+    change: "+91%",
     changeType: "positive",
     chartBg: "#45B369",
   },
   {
-    id: "litecoin",
-    name: "Litecoin",
-    image: cryptoImage4,
-    price: "$55,000.00",
-    change: "+3.85%",
+    id: "housing",
+    name: "Housing Stability Support",
+    initials: "HS",
+    iconBg: "bg-teal-500",
+    price: "$41,500",
+    change: "+83%",
     changeType: "positive",
     chartBg: "#45B369",
   },
   {
-    id: "dogecoin",
-    name: "Dogecoin",
-    image: cryptoImage5,
-    price: "$15,000.00",
-    change: "-2.85%",
-    changeType: "negative",
-    chartBg: "#EF4A00",
+    id: "artist",
+    name: "Artist Residency Grant",
+    initials: "AR",
+    iconBg: "bg-neutral-500",
+    price: "$0",
+    change: "100%",
+    changeType: "positive",
+    chartBg: "#45B369",
   },
   {
-    id: "crypto",
-    name: "Crypto",
-    image: cryptoImage6,
-    price: "$15,000.00",
-    change: "-2.85%",
+    id: "emergency",
+    name: "Emergency Relief Fund",
+    initials: "ER",
+    iconBg: "bg-yellow-500",
+    price: "$10,000",
+    change: "0%",
     changeType: "negative",
     chartBg: "#EF4A00",
   },
@@ -112,13 +103,11 @@ const MarketInfoCard = ({ ledgerEntries }: { ledgerEntries: unknown[] }) => {
               className="flex flex-wrap items-center justify-between gap-2 bg-neutral-200/75 dark:bg-slate-700 px-3 py-2 rounded"
             >
               <div className="flex flex-wrap items-center gap-2">
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  width={36}
-                  height={36}
-                  className="rounded-full shrink-0"
-                />
+                <span
+                  className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-white text-xs font-semibold ${item.iconBg}`}
+                >
+                  {item.initials}
+                </span>
                 <div className="grow">
                   <h6 className="text-base mb-0">{item.name}</h6>
                 </div>

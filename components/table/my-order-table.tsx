@@ -25,44 +25,44 @@ interface MyOrdersType {
 const initialOrdersData: MyOrdersType[] = [
   {
     id: 1,
-    rate: "0.265415.00",
-    amountEth: "29.4251512",
-    pricePln: "2.154",
-    status: "green",
+    rate: "Dec 18",
+    amountEth: "$659.88",
+    pricePln: "Creative Writing",
+    status: "red",
   },
   {
     id: 2,
-    rate: "0.265415.00",
-    amountEth: "29.4251512",
-    pricePln: "2.154",
-    status: "green",
+    rate: "Dec 19",
+    amountEth: "$49.00",
+    pricePln: "Creative Writing",
+    status: "red",
   },
   {
     id: 3,
-    rate: "0.265415.00",
-    amountEth: "29.4251512",
-    pricePln: "2.154",
+    rate: "Jan 2",
+    amountEth: "$1,500.00",
+    pricePln: "Creative Writing",
     status: "red",
   },
   {
     id: 4,
-    rate: "0.265415.00",
-    amountEth: "29.4251512",
-    pricePln: "2.154",
-    status: "green",
+    rate: "Jan 10",
+    amountEth: "$240.00",
+    pricePln: "Digital Skills",
+    status: "red",
   },
   {
     id: 5,
-    rate: "0.265415.00",
-    amountEth: "29.4251512",
-    pricePln: "2.154",
+    rate: "Jan 15",
+    amountEth: "$54.99",
+    pricePln: "Creative Writing",
     status: "red",
   },
   {
     id: 6,
-    rate: "0.265415.00",
-    amountEth: "29.4251512",
-    pricePln: "2.154",
+    rate: "Feb 1",
+    amountEth: "$200.00",
+    pricePln: "Digital Skills",
     status: "red",
   },
 ];
@@ -80,13 +80,13 @@ const MyOrderTable = () => {
       <TableHeader>
         <TableRow className="border-0">
           <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base border-t border-neutral-200 dark:border-slate-600 px-4 h-12 border-s rounded-tl-lg">
-            Rate
+            Date
           </TableHead>
           <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base border-t border-neutral-200 dark:border-slate-600 px-4 h-12">
-            Amount ETH
+            Amount
           </TableHead>
           <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base border-t border-neutral-200 dark:border-slate-600 px-4 h-12 text-center">
-            Price PLN
+            Grant
           </TableHead>
           <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base border-t border-neutral-200 dark:border-slate-600 px-4 h-12 border-e rounded-tr-lg text-center">
             Action

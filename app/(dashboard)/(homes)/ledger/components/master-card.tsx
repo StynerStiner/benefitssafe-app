@@ -16,7 +16,7 @@ const MasterCard = () => {
             className={cn("w-auto h-9 px-2 py-1.5 gap-1 rounded-md text-sm")}
           >
             <Plus className="w-3 h-3" />
-            Sell Now
+            Add Card
           </Button>
         </div>
 

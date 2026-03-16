@@ -41,7 +41,7 @@ const chartOptions: ApexOptions = {
             },
         },
         xaxis: {
-            categories: ['Service Problems', 'Technical Issues', 'Payment Issue', 'New Customer', 'Product Problems'],
+            categories: ['Approvals', 'Creates', 'Updates', 'Rejects', 'Deletes'],
         },
         legend: {
             show: false

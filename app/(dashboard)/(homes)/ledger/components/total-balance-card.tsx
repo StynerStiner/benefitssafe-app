@@ -19,13 +19,13 @@ const TotalBalanceCard = ({ grants }: { grants: { remainingAmount: string }[] })
               value="buy"
               className="h-11 data-[state=active]:bg-primary data-[state=active]:text-white dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white duration-300 !shadow-none dark:text-white"
             >
-              Buy
+              Credits
             </TabsTrigger>
             <TabsTrigger
               value="sell"
               className="h-11 data-[state=active]:bg-primary data-[state=active]:text-white dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white duration-300 !shadow-none dark:text-white"
             >
-              Sell
+              Debits
             </TabsTrigger>
           </TabsList>
 

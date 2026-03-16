@@ -17,14 +17,14 @@ const StatisticsCard = ({ cards }: { cards: unknown[] }) => {
                     <div className="card-body py-4 px-6">
                         <div className="flex items-center gap-1 justify-between mb-[44px]">
                             <div>
-                                <h5 className="font-semibold mb-3">145</h5>
+                                <h5 className="font-semibold mb-3">3</h5>
                                 <span className="text-neutral-500 dark:text-neutral-300 font-normal text-xl">Cards Issued</span>
                             </div>
                             <TodayIncomeChart />
                         </div>
                         <div className="flex items-center gap-1 justify-between">
                             <div>
-                                <h5 className="font-semibold mb-3">750 ETH</h5>
+                                <h5 className="font-semibold mb-3">$5,709</h5>
                                 <span className="text-neutral-500 dark:text-neutral-300 font-normal text-xl">Total Spending Cap</span>
                             </div>
                             <div className="remove-tooltip-title rounded-tooltip-value remove-tooltip-marker">

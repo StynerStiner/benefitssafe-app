@@ -41,7 +41,7 @@ const chartOptions: ApexOptions = {
             },
         },
         xaxis: {
-            categories: ['Booking', 'Pending', 'Finished', 'Canceled', 'Refunded'],
+            categories: ['Allowed', 'Review Required', 'Blocked', 'Expired', 'Exempt'],
         },
         legend: {
             show: false

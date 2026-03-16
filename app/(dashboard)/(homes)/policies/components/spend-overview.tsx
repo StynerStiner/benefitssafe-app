@@ -1,5 +1,6 @@
 import CustomSelect from '@/components/shared/custom-select';
 import { Card, CardContent } from '@/components/ui/card';
+import { RefreshCw, CreditCard, RotateCcw, Banknote } from 'lucide-react';
 import RadialProgressBarSmall from './radial-progress-small';
 
 const SpendOverview = ({ policy }: { policy: unknown }) => {
@@ -20,11 +21,11 @@ const SpendOverview = ({ policy }: { policy: unknown }) => {
                         <div className="flex items-center gap-3">
                             <span
                                 className="w-10 h-10 rounded-[50%] flex justify-center items-center dark:bg-slate-800 bg-[#E8EDFB]">
-                                <img src="assets/images/home-twelve/icons/spen-icon1.png" alt="Icon" />
+                                <RefreshCw className="w-5 h-5 text-blue-500" />
                             </span>
                             <div className="">
-                                <h6 className="text-sm mb-2">Flights</h6>
-                                <span className="text-xs text-neutral-600 dark:text-neutral-300">$70,570</span>
+                                <h6 className="text-sm mb-2">Subscriptions</h6>
+                                <span className="text-xs text-neutral-600 dark:text-neutral-300">$134/mo</span>
                             </div>
                         </div>
                         <div className="">
@@ -38,11 +39,11 @@ const SpendOverview = ({ policy }: { policy: unknown }) => {
                         <div className="flex items-center gap-3">
                             <span
                                 className="w-10 h-10 rounded-[50%] flex justify-center items-center dark:bg-slate-800 bg-[#FDE4EA]">
-                                <img src="assets/images/home-twelve/icons/spen-icon2.png" alt="Icon" />
+                                <CreditCard className="w-5 h-5 text-red-500" />
                             </span>
                             <div className="">
-                                <h6 className="text-sm mb-2">Hotels</h6>
-                                <span className="text-xs text-neutral-600 dark:text-neutral-300">$85,570</span>
+                                <h6 className="text-sm mb-2">Direct Payments</h6>
+                                <span className="text-xs text-neutral-600 dark:text-neutral-300">$5,000 max</span>
                             </div>
                         </div>
                         <div className="">
@@ -56,11 +57,11 @@ const SpendOverview = ({ policy }: { policy: unknown }) => {
                         <div className="flex items-center gap-3">
                             <span
                                 className="w-10 h-10 rounded-[50%] flex justify-center items-center dark:bg-slate-800 bg-[#FDE4EA]">
-                                <img src="assets/images/home-twelve/icons/spen-icon3.png" alt="Icon" />
+                                <RotateCcw className="w-5 h-5 text-yellow-500" />
                             </span>
                             <div className="">
-                                <h6 className="text-sm mb-2">Trains</h6>
-                                <span className="text-xs text-neutral-600 dark:text-neutral-300">$15,000</span>
+                                <h6 className="text-sm mb-2">Reimbursements</h6>
+                                <span className="text-xs text-neutral-600 dark:text-neutral-300">Blocked</span>
                             </div>
                         </div>
                         <div className="">
@@ -74,11 +75,11 @@ const SpendOverview = ({ policy }: { policy: unknown }) => {
                         <div className="flex items-center gap-3">
                             <span
                                 className="w-10 h-10 rounded-[50%] flex justify-center items-center dark:bg-slate-800 bg-[#E3F4E9]">
-                                <img src="assets/images/home-twelve/icons/spen-icon4.png" alt="Icon" />
+                                <Banknote className="w-5 h-5 text-green-500" />
                             </span>
                             <div className="">
-                                <h6 className="text-sm mb-2">Cars</h6>
-                                <span className="text-xs text-neutral-600 dark:text-neutral-300">$90,000</span>
+                                <h6 className="text-sm mb-2">Cash</h6>
+                                <span className="text-xs text-neutral-600 dark:text-neutral-300">Blocked</span>
                             </div>
                         </div>
                         <div className="">

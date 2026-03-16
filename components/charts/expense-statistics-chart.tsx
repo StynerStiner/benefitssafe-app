@@ -13,7 +13,7 @@ const ExpenseStatisticsChart = () => {
             height: 240,
             type: 'pie',
         },
-        labels: ['Entertainment', 'Bill Expense', 'Others', 'Investment'],
+        labels: ['Pending', 'Approved', 'Rejected', 'Paid'],
         colors: ['#02BCAF', '#F0437D', '#1C52F6', '#43DCFF'],
         legend: {
             show: true

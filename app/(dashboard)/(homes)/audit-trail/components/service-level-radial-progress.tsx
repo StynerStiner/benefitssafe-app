@@ -74,19 +74,19 @@ const ServiceLevelRadialProgress = () => {
                 </svg>
 
                 <div className="text-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <span className="font-semibold text-primary-light">Service Level</span>
+                    <span className="font-semibold text-primary-light">Compliance Score</span>
                     <h3 className="mb-0 leading-none mt-1">85.7</h3>
                     <span className="text-neutral-500 dark:text-neutral-200 mt-2 mb-0">Target: 90%</span>
                 </div>
             </div>
 
             <div>
-                <h6 className="text-xl">Average CSAT</h6>
+                <h6 className="text-xl">Avg Response Time</h6>
                 <span className="font-medium text-neutral-500 dark:text-neutral-200">All time</span>
 
                 <div className="mt-3 flex items-start gap-2.5">
                     <h4 className="mb-0">4.7</h4>
-                    <span className="text-white bg-green-500 text-sm py-[2px] px-2.5 rounded-full mt-2">of 5</span>
+                    <span className="text-white bg-green-500 text-sm py-[2px] px-2.5 rounded-full mt-2">hrs</span>
                 </div>
             </div>
         </div>

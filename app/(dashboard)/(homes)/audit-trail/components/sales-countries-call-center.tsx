@@ -9,7 +9,7 @@ const SalesCountriesCallCenter = ({ auditLogs }: { auditLogs: unknown[] }) => {
             <CardContent className="card-body p-6 h-full flex flex-col justify-between">
 
                 <div className="flex items-center flex-wrap gap-2 justify-between mb-5">
-                    <h6 className="font-bold text-lg mb-0">Activity by Entity Type</h6>
+                    <h6 className="font-bold text-lg mb-0">Activity by Organization</h6>
                     <CustomSelect
                         placeholder="Monthly"
                         options={["Monthly", "Weekly", "Yearly",]}
