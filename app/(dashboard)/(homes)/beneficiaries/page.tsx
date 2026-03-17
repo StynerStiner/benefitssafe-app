@@ -10,6 +10,7 @@ import RevenueGrowthCard from '@/app/(dashboard)/(homes)/beneficiaries/component
 import StatsCard from '@/app/(dashboard)/(homes)/beneficiaries/components/stats-card';
 import TodoListRecentCard from '@/app/(dashboard)/(homes)/beneficiaries/components/todo-list-recent-card';
 import TopPerformerCard from '@/app/(dashboard)/(homes)/beneficiaries/components/top-performer-card';
+import AddBeneficiaryForm from '@/app/(dashboard)/(homes)/beneficiaries/components/add-beneficiary-form';
 import DashboardBreadcrumb from '@/components/layout/dashboard-breadcrumb';
 import LoadingSkeleton from '@/components/loading-skeleton';
 import { useEffect, useState } from 'react';
@@ -54,6 +55,10 @@ const CrmPage = () => {
   return (
     <>
       <DashboardBreadcrumb title="Beneficiaries" text="Beneficiary Management" />
+
+      <div className="flex justify-end mt-4">
+        <AddBeneficiaryForm />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
 

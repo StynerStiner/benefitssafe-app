@@ -8,6 +8,7 @@ import CustomSelect from "@/components/shared/custom-select";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import UpgradeNowCard from "../reports/components/upgrade-now-card";
+import AddSubscriptionForm from "./components/add-subscription-form";
 import DailyEarningsCard from "./components/daily-earnings-card";
 import RecentActivityCard from "./components/recent-activity-card";
 import ReferralSourcesCard from "./components/referral-sources-card";
@@ -53,7 +54,10 @@ const SubscriptionsPage = () => {
 
     return (
         <>
-            <DashboardBreadcrumb title="Subscriptions" text="Subscription Management" />
+            <div className="flex items-center justify-between">
+                <DashboardBreadcrumb title="Subscriptions" text="Subscription Management" />
+                <AddSubscriptionForm />
+            </div>
 
             <div className="grid grid-cols-1 2xl:grid-cols-12 gap-6">
                 <div className="col-span-12 2xl:col-span-6">
