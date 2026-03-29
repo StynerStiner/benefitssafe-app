@@ -205,20 +205,7 @@ async function main() {
     console.log(`Created user: ${created.firstName} ${created.lastName} (${created.role}) — ${created.email}`);
   }
 
-  console.log("\nSeed complete! All test users use password: Test1234!");
-  console.log("\nTest accounts:");
-  console.log("  admin@benefits-safe.test           → nonprofit_admin (Sarah Mitchell)");
-  console.log("  staff@benefits-safe.test            → nonprofit_staff (Jordan Lee)");
-  console.log("  beneficiary@benefits-safe.test       → beneficiary (James Carter)");
-  console.log("  cpa@benefits-safe.test              → cpa (Maria Rodriguez)");
-  console.log("  auditor@benefits-safe.test          → auditor (David Chen)");
-  console.log("  vendor@benefits-safe.test           → vendor (Alex Thompson)");
-  console.log("  attorney@benefits-safe.test         → attorney (Rachel Kim)");
-  console.log("  grant.officer@benefits-safe.test    → grant_officer (Michael Torres)");
-  console.log("  platform@benefits-safe.test         → platform_admin (Pat Williams)");
-  console.log("  support@benefits-safe.test          → support_agent (Taylor Davis)");
-  console.log("  compliance@benefits-safe.test       → compliance_officer (Nora Patel)");
-  console.log("  billing@benefits-safe.test          → billing_admin (Sam Johnson)");
+  console.log("\nSeed complete! Database initialized with test data.");
 }
 
 main()

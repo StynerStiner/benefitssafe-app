@@ -1,92 +1,65 @@
+'use client';
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import Image, { StaticImageData } from "next/image";
+import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import CardBG from "@/public/assets/images/card/card-bg.png";
 import CardLogo from "@/public/assets/images/card/card-logo.png";
 
-import UserImage1 from "@/public/assets/images/nft/nft-user-img1.png";
-import UserImage2 from "@/public/assets/images/nft/nft-user-img2.png";
-import UserImage3 from "@/public/assets/images/nft/nft-user-img3.png";
-import UserImage4 from "@/public/assets/images/nft/nft-user-img4.png";
-
-type NftCard = {
-    id: number;
-    title: string;
-    cardType: string;
+type VirtualCard = {
+    id: string;
+    beneficiaryId: string;
+    beneficiaryName: string;
+    cardholderName: string;
     last4: string;
-    userImage: StaticImageData;
-    userName: string;
-    priceEth: string;
-    priceUsd: string;
-    category: string;
+    status: string;
+    spendingLimit?: number;
+    restrictions?: string;
 };
 
-const nftCards: NftCard[] = [
-    {
-        id: 1,
-        title: "Adobe Card (4242)",
-        cardType: "Virtual Card",
-        last4: "4242",
-        userImage: UserImage1,
-        userName: "James Carter",
-        priceEth: "Cap: $660",
-        priceUsd: "$5,709",
-        category: "recurring",
-    },
-    {
-        id: 2,
-        title: "Scrivener Card (8888)",
-        cardType: "Virtual Card",
-        last4: "8888",
-        userImage: UserImage2,
-        userName: "James Carter",
-        priceEth: "Cap: $660",
-        priceUsd: "$5,709",
-        category: "single-use",
-    },
-    {
-        id: 3,
-        title: "General Services (1234)",
-        cardType: "Virtual Card",
-        last4: "1234",
-        userImage: UserImage3,
-        userName: "James Carter",
-        priceEth: "Cap: $660",
-        priceUsd: "$5,709",
-        category: "recurring",
-    },
-    {
-        id: 4,
-        title: "General Services (1234)",
-        cardType: "Virtual Card",
-        last4: "1234",
-        userImage: UserImage4,
-        userName: "James Carter",
-        priceEth: "Cap: $660",
-        priceUsd: "$5,709",
-        category: "multi-vendor",
-    },
-];
-
-function shuffleArray<T>(array: T[]): T[] {
-    return [...array].sort(() => Math.random() - 0.5);
-}
-
 interface TrendingNftWidgetsProps {
-    category: string;
+    category?: string;
 }
 
-const TrendingNftWidgets: React.FC<TrendingNftWidgetsProps> = ({ category }) => {
-    let filtered = category === "all" ? nftCards : nftCards.filter(c => c.category === category);
+const TrendingNftWidgets: React.FC<TrendingNftWidgetsProps> = ({ category = "all" }) => {
+    const [cards, setCards] = useState<VirtualCard[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    let shuffled = shuffleArray(filtered);
+    useEffect(() => {
+        fetch("/api/virtual-cards?limit=100")
+            .then((res) => res.ok ? res.json() : { data: [] })
+            .then((json) => {
+                const cardList = Array.isArray(json) ? json : (json.data ?? json.cards ?? []);
+                setCards(cardList);
+            })
+            .catch(() => setCards([]))
+            .finally(() => setLoading(false));
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex overflow-x-auto gap-6 pb-2">
+                <div className="animate-pulse w-[280px] h-[350px] bg-slate-200 dark:bg-slate-700 rounded flex-shrink-0"></div>
+                <div className="animate-pulse w-[280px] h-[350px] bg-slate-200 dark:bg-slate-700 rounded flex-shrink-0"></div>
+            </div>
+        );
+    }
+
+    const filtered = cards.filter(c => c.status !== 'archived');
+    if (filtered.length === 0) {
+        return (
+            <div className="text-center py-8 text-neutral-500">
+                <p>No virtual cards available</p>
+            </div>
+        );
+    }
 
     return (
         <div className="flex overflow-x-auto gap-6 pb-2">
-            {shuffled.map((card) => (
+            {filtered.map((card) => (
                 <div
                     key={card.id}
                     className="nft-card bg-white dark:bg-slate-800 rounded overflow-hidden w-[280px] flex-shrink-0"
@@ -100,7 +73,7 @@ const TrendingNftWidgets: React.FC<TrendingNftWidgetsProps> = ({ category }) => 
                         />
                         <div className="flex flex-col justify-between h-full">
                             <div className="flex items-center justify-between flex-wrap">
-                                <h6 className="text-white mb-0 text-sm">{card.cardType}</h6>
+                                <h6 className="text-white mb-0 text-sm">Virtual Card</h6>
                                 <Image src={CardLogo} alt="Logo" width={50} height={30} className="w-[50px] h-[30px]" />
                             </div>
                             <div>
@@ -110,51 +83,41 @@ const TrendingNftWidgets: React.FC<TrendingNftWidgetsProps> = ({ category }) => 
                             <div className="flex items-center justify-between">
                                 <div>
                                     <span className="text-white text-xs font-normal text-opacity-75">Name</span>
-                                    <h6 className="text-white text-sm font-semibold mb-0">{card.userName}</h6>
+                                    <h6 className="text-white text-sm font-semibold mb-0">{card.cardholderName}</h6>
                                 </div>
                                 <div>
-                                    <span className="text-white text-xs font-normal text-opacity-75">Cap</span>
-                                    <h6 className="text-white text-sm font-semibold mb-0">{card.priceEth.replace("Cap: ", "")}</h6>
+                                    <span className="text-white text-xs font-normal text-opacity-75">Limit</span>
+                                    <h6 className="text-white text-sm font-semibold mb-0">${card.spendingLimit?.toLocaleString() || 'Unlimited'}</h6>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div className="p-2.5">
                         <h6 className="text-base font-bold text-neutral-600 dark:text-white mb-1">
-                            {card.title}
+                            {card.cardholderName}
                         </h6>
 
-                        {/* User Info */}
+                        {/* Beneficiary Info */}
                         <div className="flex items-center gap-2">
-                            <Image
-                                src={card.userImage}
-                                className="w-7 h-7 rounded-full object-cover"
-                                alt={card.userName}
-                                width={28}
-                                height={28}
-                            />
+                            <div className="w-7 h-7 rounded-full bg-slate-300 dark:bg-slate-600 flex items-center justify-center text-xs font-semibold">
+                                {card.beneficiaryName.charAt(0).toUpperCase()}
+                            </div>
                             <span className="text-sm text-neutral-500 dark:text-neutral-300 font-medium">
-                                {card.userName}
+                                {card.beneficiaryName}
                             </span>
                         </div>
 
-                        {/* Price Info */}
+                        {/* Status Info */}
                         <div className="mt-2.5 flex items-center justify-between gap-2 flex-wrap">
-                            <span className="text-sm text-neutral-500 dark:text-neutral-300 font-medium">
-                                {""}
-                                <span className="text-sm text-neutral-600 dark:text-white font-semibold">
-                                    {card.priceEth}
-                                </span>
-                            </span>
-                            <span className="text-sm font-semibold text-blue-600">
-                                {card.priceUsd}
+                            <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                                {card.status}
                             </span>
                         </div>
 
                         {/* Action Buttons */}
                         <div className="flex items-center flex-wrap mt-3 gap-2">
                             <Link
-                                href="#"
+                                href={`/virtual-cards/${card.id}/transactions`}
                                 className="btn rounded-full border text-neutral-500 dark:text-neutral-300 border-neutral-500 dark:border-neutral-300 px-3 py-1.5 hover:bg-neutral-500 dark:hover:bg-slate-600 hover:text-white flex-grow text-center duration-200"
                             >
                                 Transactions
@@ -163,8 +126,9 @@ const TrendingNftWidgets: React.FC<TrendingNftWidgetsProps> = ({ category }) => 
                                 className={cn(
                                     "h-[39px] px-3 !py-1.5 flex-grow text-center rounded-full duration-200"
                                 )}
+                                asChild
                             >
-                                <Link href="#">Manage</Link>
+                                <Link href={`/virtual-cards/${card.id}`}>Manage</Link>
                             </Button>
                         </div>
                     </div>

@@ -34,12 +34,15 @@ interface Subscription {
 const SubscriptionsPage = () => {
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         fetch("/api/subscriptions")
             .then((r) => r.ok ? r.json() : [])
             .then((data) => { if (Array.isArray(data)) setSubscriptions(data); })
-            .catch(() => {})
+            .catch(() => {
+                setError("Failed to load subscriptions. Please try refreshing the page.");
+            })
             .finally(() => setLoading(false));
     }, []);
 
@@ -58,6 +61,12 @@ const SubscriptionsPage = () => {
                 <DashboardBreadcrumb title="Subscriptions" text="Subscription Management" />
                 <AddSubscriptionForm />
             </div>
+
+            {error && (
+                <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                    <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 2xl:grid-cols-12 gap-6">
                 <div className="col-span-12 2xl:col-span-6">

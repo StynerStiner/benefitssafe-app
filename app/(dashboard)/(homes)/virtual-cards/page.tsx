@@ -26,12 +26,18 @@ interface VirtualCard {
 const VirtualCardsPage = () => {
     const [cards, setCards] = useState<VirtualCard[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch("/api/virtual-cards")
-            .then((r) => r.ok ? r.json() : [])
-            .then((data) => { if (Array.isArray(data)) setCards(data); })
-            .catch(() => {})
+        fetch("/api/virtual-cards?limit=100")
+            .then((r) => r.ok ? r.json() : { data: [] })
+            .then((json) => {
+                const items = Array.isArray(json) ? json : json.data;
+                if (Array.isArray(items)) setCards(items);
+            })
+            .catch(() => {
+                setError("Failed to load virtual cards. Please try refreshing the page.");
+            })
             .finally(() => setLoading(false));
     }, []);
 
@@ -47,6 +53,12 @@ const VirtualCardsPage = () => {
     return (
         <>
             <DashboardBreadcrumb title="Virtual Cards" text="Card Management" />
+
+            {error && (
+                <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                    <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                </div>
+            )}
 
             <div className="gap-6 grid grid-cols-1 2xl:grid-cols-12">
                 <div className="col-span-12 2xl:col-span-8">

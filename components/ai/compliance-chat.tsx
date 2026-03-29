@@ -76,9 +76,10 @@ export function ComplianceChat() {
   // Fetch grants when panel opens
   useEffect(() => {
     if (open && !grantsLoaded) {
-      fetch("/api/grants")
-        .then((r) => r.ok ? r.json() : [])
-        .then((data) => {
+      fetch("/api/grants?limit=100")
+        .then((r) => r.ok ? r.json() : { data: [] })
+        .then((json) => {
+          const data = Array.isArray(json) ? json : json.data;
           if (Array.isArray(data)) {
             setGrants(data.map((g: Record<string, unknown>) => ({
               id: g.id as string,

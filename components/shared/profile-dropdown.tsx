@@ -14,7 +14,6 @@ import Link from "next/link";
 
 const ProfileDropdown = () => {
   const { data: session } = useSession();
-  console.log("session", session?.user?.image);
 
   return (
     <DropdownMenu>

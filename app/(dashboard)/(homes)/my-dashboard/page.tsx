@@ -12,9 +12,9 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 const metadata: Metadata = {
-  title: "AI Dashboard | WowDash Admin Panel",
+  title: "Dashboard | BenefitsSafe",
   description:
-    "Explore AI analytics, monitor model performance, and track intelligent automation workflows in the AI Dashboard of WowDash Admin Template.",
+    "Monitor grant disbursement activity, beneficiary expenses, and organization overview.",
 };
 
 

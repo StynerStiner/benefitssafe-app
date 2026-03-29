@@ -40,6 +40,7 @@ interface Vendor {
     id: string;
     name: string;
     type: string;
+    status: string;
 }
 
 const inputClassName =
@@ -81,12 +82,13 @@ const AddExpenseForm = () => {
     // Fetch grants and vendors when sheet opens
     useEffect(() => {
         if (open) {
-            fetch("/api/grants")
+            fetch("/api/grants?limit=100")
                 .then((res) => {
-                    if (!res.ok) return [];
+                    if (!res.ok) return { data: [] };
                     return res.json();
                 })
-                .then((data) => {
+                .then((json) => {
+                    const data = Array.isArray(json) ? json : json.data;
                     if (Array.isArray(data)) {
                         const activeGrants = data.filter(
                             (g: Grant) => g.status === "ACTIVE"
@@ -169,6 +171,45 @@ const AddExpenseForm = () => {
         if (!expenseType) {
             toast.error("Expense type is required");
             return;
+        }
+
+        // Check that expense amount does not exceed grant's remaining amount
+        const selectedGrant = grants.find((g) => g.id === grantId);
+        if (selectedGrant) {
+            const grantRemaining = parseFloat(selectedGrant.remainingAmount);
+            if (Number(amount) > grantRemaining) {
+                toast.error(
+                    `Amount exceeds the grant's remaining balance of ${formatCurrency(grantRemaining)}`
+                );
+                return;
+            }
+        }
+
+        // Check that expense amount does not exceed category's remaining budget
+        const selectedCategory = categories.find((c) => c.id === categoryId);
+        if (selectedCategory) {
+            const categoryRemaining =
+                Number(selectedCategory.allocatedAmount) -
+                Number(selectedCategory.spentAmount);
+            if (Number(amount) > categoryRemaining) {
+                toast.error(
+                    `Amount exceeds the category's remaining budget of ${formatCurrency(categoryRemaining)}`
+                );
+                return;
+            }
+        }
+
+        // Warn if vendor is not APPROVED status
+        if (vendorId) {
+            const selectedVendor = vendors.find((v) => v.id === vendorId);
+            if (selectedVendor && selectedVendor.status !== "APPROVED" && selectedVendor.status !== "ACTIVE") {
+                const proceed = window.confirm(
+                    `Warning: Vendor "${selectedVendor.name}" has status "${selectedVendor.status}" and is not approved. Do you want to proceed?`
+                );
+                if (!proceed) {
+                    return;
+                }
+            }
         }
 
         setSubmitting(true);

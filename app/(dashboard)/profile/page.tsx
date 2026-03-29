@@ -8,9 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Metadata } from "next";
 
 const metadata: Metadata = {
-    title: "View Profile & User Details | WowDash Admin Dashboard",
+    title: "My Profile | BenefitsSafe",
     description:
-        "Access detailed user profiles and personal information in the WowDash Admin Dashboard built with Next.js and Tailwind CSS.",
+        "View and manage your personal profile information in BenefitsSafe.",
 };
 
 const ViewProfile = () => {

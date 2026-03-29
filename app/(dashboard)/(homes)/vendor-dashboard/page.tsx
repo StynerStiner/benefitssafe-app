@@ -13,9 +13,9 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 const metadata: Metadata = {
-  title: "Investment Dashboard | WowDash Admin Panel",
+  title: "Vendor Dashboard | BenefitsSafe",
   description:
-    "Track investment portfolios, returns, and market insights in the Investment Dashboard of WowDash Admin Template built with Next.js and Tailwind.",
+    "Track vendor performance, invoices, and payments in BenefitsSafe.",
 };
 
 const InvestmentPage = () => {

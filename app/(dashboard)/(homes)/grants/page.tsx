@@ -44,17 +44,21 @@ interface Grant {
 const ProjectManagement = () => {
     const [grants, setGrants] = useState<Grant[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch("/api/grants")
+        fetch("/api/grants?limit=100")
             .then((res) => {
-                if (!res.ok) return [];
+                if (!res.ok) return { data: [] };
                 return res.json();
             })
-            .then((data) => {
-                if (Array.isArray(data)) setGrants(data);
+            .then((json) => {
+                const items = Array.isArray(json) ? json : json.data;
+                if (Array.isArray(items)) setGrants(items);
             })
-            .catch(() => {})
+            .catch(() => {
+                setError("Failed to load grants. Please try refreshing the page.");
+            })
             .finally(() => setLoading(false));
     }, []);
 
@@ -73,6 +77,12 @@ const ProjectManagement = () => {
                 <DashboardBreadcrumb title="Grants" text="Grant Management" />
                 <AddGrantForm />
             </div>
+
+            {error && (
+                <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                    <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
 

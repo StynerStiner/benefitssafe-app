@@ -33,7 +33,7 @@ const AudienceStatsChart = () => {
 
     // const chartOptions: ApexOptions = {
     //     chart: {
-            animations: { enabled: false },
+    //         animations: { enabled: false },
     //         type: 'bar',
     //         height: 235,
     //         toolbar: {

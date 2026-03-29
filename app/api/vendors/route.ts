@@ -3,6 +3,7 @@
 // POST /api/vendors — create vendor
 
 import { auth } from "@/auth";
+import { cached, invalidateCacheByPrefix, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { createVendorSchema } from "@/lib/validations/vendor";
 import { NextRequest, NextResponse } from "next/server";
@@ -47,28 +48,35 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const [vendors, total] = await Promise.all([
-      prisma.vendor.findMany({
-        where: where as never,
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          type: true,
-          status: true,
-          website: true,
-          approvedAt: true,
-          createdAt: true,
-          _count: { select: { expenses: true } },
-        },
-        orderBy: { createdAt: "desc" },
-        take: limit,
-        skip: offset,
-      }),
-      prisma.vendor.count({ where: where as never }),
-    ]);
+    // Cache key includes filters and pagination to avoid stale cross-query results
+    const cacheKey = `${CACHE_KEYS.orgVendors(organizationId)}:${search || ""}:${status || ""}:${type || ""}:${limit}:${offset}`;
 
-    return NextResponse.json({ vendors, total, limit, offset });
+    const result = await cached(cacheKey, CACHE_TTL.MEDIUM, async () => {
+      const [vendors, total] = await Promise.all([
+        prisma.vendor.findMany({
+          where: where as never,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            type: true,
+            status: true,
+            website: true,
+            approvedAt: true,
+            createdAt: true,
+            user: { select: { avatarUrl: true } },
+            _count: { select: { expenses: true } },
+          },
+          orderBy: { createdAt: "desc" },
+          take: limit,
+          skip: offset,
+        }),
+        prisma.vendor.count({ where: where as never }),
+      ]);
+      return { vendors, total, limit, offset };
+    });
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error("GET /api/vendors error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -158,6 +166,9 @@ export async function POST(request: Request) {
         newValue: JSON.parse(JSON.stringify({ name: data.name, type: data.type })),
       },
     });
+
+    // Invalidate all cached vendor listings for this org
+    await invalidateCacheByPrefix(CACHE_KEYS.orgVendors(organizationId));
 
     return NextResponse.json(vendor, { status: 201 });
   } catch (error) {

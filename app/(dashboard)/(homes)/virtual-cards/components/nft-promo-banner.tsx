@@ -2,9 +2,6 @@ import Image from "next/image";
 import React from "react";
 import NftGradientBg from "@/public/assets/images/nft/nft-gradient-bg.png";
 import NftCardImage from "@/public/assets/images/nft/nf-card-img.png";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 const NftPromoBanner = ({ cards }: { cards: { status: string; spendingCap: string | null }[] }) => {
     const activeCount = cards.filter((c) => c.status === "ACTIVE").length;
@@ -43,19 +40,11 @@ const NftPromoBanner = ({ cards }: { cards: { status: string; spendingCap: strin
                         Manage merchant-locked virtual cards for beneficiary expenses.
                     </p>
                     <div className="flex items-center flex-wrap mt-6 gap-4">
-                        <Link
-                            href="#"
-                            className="btn rounded-full border border-white text-white px-[32px] py-[9px] hover:bg-white hover:text-neutral-900 duration-200"
+                        <span
+                            className="btn rounded-full border border-white text-white px-[32px] py-[9px]"
                         >
-                            View All
-                        </Link>
-                        <Button className={cn(`h-11 px-[28px] py-[11px] rounded-full`)}>
-                            <Link
-                                href="#"
-                            >
-                                Issue Card
-                            </Link>
-                        </Button>
+                            {activeCount} Active {activeCount === 1 ? "Card" : "Cards"}
+                        </span>
                     </div>
                 </div>
             </div>

@@ -48,7 +48,10 @@ const MedicalPage = () => {
             .then((json) => {
                 if (json.data) setStats(json.data);
             })
-            .catch(console.error)
+            .catch(() => {
+                // Silently fail - stats are optional for display
+                setStats(null);
+            })
             .finally(() => setLoading(false));
     }, []);
 

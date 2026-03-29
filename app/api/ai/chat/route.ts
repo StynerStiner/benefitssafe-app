@@ -6,6 +6,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { captureApiError } from "@/lib/error-handler";
+import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -74,6 +76,24 @@ export async function POST(request: Request) {
 
     if (!ALLOWED_ROLES.includes(session.user.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Rate limit: 10 requests per minute per user
+    const rateLimitResult = rateLimit(
+      `ai-chat:${session.user.id}`,
+      RATE_LIMIT_CONFIGS.aiChat,
+    );
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please wait before sending another message." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000)),
+            "X-RateLimit-Remaining": String(rateLimitResult.remaining),
+          },
+        },
+      );
     }
 
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -297,6 +317,7 @@ export async function POST(request: Request) {
       usage: response.usage,
     });
   } catch (error) {
+    captureApiError(error, { route: "POST /api/ai/chat" });
     console.error("POST /api/ai/chat error:", error);
 
     if (error instanceof Anthropic.APIError) {

@@ -13,9 +13,10 @@ import { Input } from '@/components/ui/input'
 import { useLoading } from '@/contexts/LoadingContext'
 import { loginSchema } from '@/lib/zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react'
-import { signIn } from 'next-auth/react'
+import { Eye, EyeOff, Loader2, Lock, Mail, ShieldCheck } from 'lucide-react'
+import { signIn, useSession } from 'next-auth/react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useRef, useState, useTransition } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
@@ -27,14 +28,22 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [isPending, startTransition] = useTransition()
   const { loading, setLoading } = useLoading()
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
+  const router = useRouter()
+  const { update: updateSession } = useSession()
+
+  // MFA state
+  const [mfaRequired, setMfaRequired] = useState(false)
+  const [mfaUserId, setMfaUserId] = useState<string | null>(null)
+  const [mfaToken, setMfaToken] = useState('')
+  const [mfaVerifying, setMfaVerifying] = useState(false)
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'wowdash@gmail.com',
-      password: 'Pa$$w0rd!',
+      email: '',
+      password: '',
     },
   })
 
@@ -52,24 +61,133 @@ const LoginForm = () => {
         if (res?.error) {
           toast.error(res.error)
         } else {
-          await signIn('credentials', {
-            redirect: true,
+          // Use redirect: false so we can check for MFA
+          const signInResult = await signIn('credentials', {
+            redirect: false,
             email: values.email,
             password: values.password,
-            callbackUrl: '/dashboard',
           })
-          toast.success('Login successful!')
+
+          if (signInResult?.error) {
+            toast.error('Invalid email or password.')
+          } else if (signInResult?.ok) {
+            // Check session for MFA pending status
+            const sessionRes = await fetch('/api/auth/session')
+            const sessionData = await sessionRes.json()
+
+            if (sessionData?.user?.mfaPending) {
+              setMfaRequired(true)
+              setMfaUserId(sessionData.user.id)
+            } else {
+              toast.success('Login successful!')
+              router.push('/dashboard')
+            }
+          }
         }
-      } catch (error) {
+      } catch {
         toast.error('Something went wrong. Please try again.')
       } finally {
         setLoading(false)
       }
-    });
+    })
 
     setTimeout(() => {
       setIsSubmitting(false)
-    }, 2000);
+    }, 2000)
+  }
+
+  const handleMfaVerify = async () => {
+    if (!mfaToken.trim() || !mfaUserId) return
+
+    setMfaVerifying(true)
+    try {
+      const res = await fetch('/api/mfa/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: mfaUserId, token: mfaToken.trim() }),
+      })
+
+      const data = await res.json()
+
+      if (data.verified) {
+        // Clear the mfaPending flag in the session
+        await updateSession({ mfaPending: false })
+        toast.success('Login successful!')
+        router.push('/dashboard')
+      } else {
+        toast.error(data.error || 'Invalid verification code.')
+        setMfaToken('')
+      }
+    } catch {
+      toast.error('Verification failed. Please try again.')
+    } finally {
+      setMfaVerifying(false)
+    }
+  }
+
+  // MFA verification step
+  if (mfaRequired) {
+    return (
+      <div className="space-y-5">
+        <div className="flex items-center gap-3 mb-2">
+          <ShieldCheck className="w-6 h-6 text-primary" />
+          <h4 className="font-semibold">Two-Factor Authentication</h4>
+        </div>
+        <p className="text-neutral-500 dark:text-neutral-300 text-sm">
+          Enter the 6-digit code from your authenticator app, or use a backup recovery code.
+        </p>
+
+        <div className="relative">
+          <ShieldCheck className="absolute start-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-700 dark:text-neutral-200" />
+          <Input
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="000000"
+            value={mfaToken}
+            onChange={(e) => setMfaToken(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                handleMfaVerify()
+              }
+            }}
+            className="ps-13 pe-12 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0 text-center text-lg tracking-widest"
+            maxLength={9}
+            autoFocus
+          />
+        </div>
+
+        <Button
+          type="button"
+          onClick={handleMfaVerify}
+          className="w-full rounded-lg h-[52px] text-sm"
+          disabled={mfaVerifying || !mfaToken.trim()}
+        >
+          {mfaVerifying ? (
+            <>
+              <Loader2 className="animate-spin h-4.5 w-4.5 mr-2" />
+              Verifying...
+            </>
+          ) : (
+            'Verify'
+          )}
+        </Button>
+
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => {
+            setMfaRequired(false)
+            setMfaUserId(null)
+            setMfaToken('')
+          }}
+          className="w-full text-sm text-neutral-500 hover:text-neutral-700"
+        >
+          Back to login
+        </Button>
+      </div>
+    )
   }
 
   return (

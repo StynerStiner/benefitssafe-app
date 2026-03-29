@@ -14,6 +14,7 @@
 
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { validateMCC } from "@/lib/mcc-controls";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -48,6 +49,15 @@ export async function POST(request: Request) {
       }
       case "issuing_transaction.created": {
         return handleTransactionCreated(event.data.object);
+      }
+      case "issuing_dispute.created": {
+        return handleDisputeCreated(event.data.object);
+      }
+      case "issuing_dispute.updated": {
+        return handleDisputeUpdated(event.data.object);
+      }
+      case "issuing_dispute.submitted": {
+        return handleDisputeSubmitted(event.data.object);
       }
       default: {
         return NextResponse.json({ received: true });
@@ -165,6 +175,21 @@ async function handleAuthorizationRequest(authorization: Record<string, unknown>
     });
   }
 
+  // 6. Merchant category code (MCC) validation
+  const mcc = merchantData?.category as string | undefined;
+  const beneficiary = virtualCard.beneficiaryId
+    ? await prisma.user.findUnique({
+        where: { id: virtualCard.beneficiaryId },
+        select: { benefitPrograms: true },
+      })
+    : null;
+
+  const mccValidation = validateMCC(mcc, beneficiary?.benefitPrograms || []);
+  checks.push({
+    pass: mccValidation.allowed,
+    reason: mccValidation.reason || "Merchant category approved",
+  });
+
   const allPassed = checks.every((c) => c.pass);
   const failedChecks = checks.filter((c) => !c.pass);
 
@@ -211,19 +236,27 @@ async function handleAuthorizationCreated(authorization: Record<string, unknown>
   });
 
   if (virtualCard) {
-    // Create transaction record
-    await prisma.transaction.create({
-      data: {
-        organizationId: virtualCard.organizationId,
-        cardId: virtualCard.id,
-        stripeTransactionId: authorization.id as string,
-        amount: (amount || 0) / 100,
-        merchantName: (merchantData?.name as string) || "Unknown",
-        merchantCategory: (merchantData?.category as string) || null,
-        status: "pending",
-        grantId: virtualCard.expense?.grantId || null,
-      },
+    // Check if transaction already exists (idempotency)
+    const existingTx = await prisma.transaction.findUnique({
+      where: { stripeTransactionId: authorization.id as string },
+      select: { id: true },
     });
+
+    if (!existingTx) {
+      // Create transaction record only if it doesn't exist
+      await prisma.transaction.create({
+        data: {
+          organizationId: virtualCard.organizationId,
+          cardId: virtualCard.id,
+          stripeTransactionId: authorization.id as string,
+          amount: (amount || 0) / 100,
+          merchantName: (merchantData?.name as string) || "Unknown",
+          merchantCategory: (merchantData?.category as string) || null,
+          status: "pending",
+          grantId: virtualCard.expense?.grantId || null,
+        },
+      });
+    }
   }
 
   return NextResponse.json({ received: true });
@@ -253,45 +286,220 @@ async function handleTransactionCreated(transaction: Record<string, unknown>) {
   });
 
   if (virtualCard && virtualCard.expense) {
-    const chargeAmount = Math.abs(amount) / 100;
+    // Check if this transaction was already processed (idempotency)
+    const existingLedger = await prisma.ledgerEntry.findFirst({
+      where: { reference: transaction.id as string },
+      select: { id: true },
+    });
 
-    // Update grant spent/remaining amounts
-    await prisma.grant.update({
-      where: { id: virtualCard.expense.grantId },
-      data: {
-        spentAmount: { increment: chargeAmount },
-        remainingAmount: { decrement: chargeAmount },
+    if (!existingLedger) {
+      const chargeAmount = Math.abs(amount) / 100;
+
+      // Update grant spent/remaining amounts
+      await prisma.grant.update({
+        where: { id: virtualCard.expense.grantId },
+        data: {
+          spentAmount: { increment: chargeAmount },
+          remainingAmount: { decrement: chargeAmount },
+        },
+      });
+
+      // Update budget category
+      if (virtualCard.expense.categoryId) {
+        await prisma.budgetCategory.update({
+          where: { id: virtualCard.expense.categoryId },
+          data: {
+            spentAmount: { increment: chargeAmount },
+          },
+        });
+      }
+
+      // Create immutable ledger entry
+      const grant = await prisma.grant.findUnique({
+        where: { id: virtualCard.expense.grantId },
+        select: { remainingAmount: true },
+      });
+
+      await prisma.ledgerEntry.create({
+        data: {
+          grantId: virtualCard.expense.grantId,
+          categoryId: virtualCard.expense.categoryId,
+          type: "DEBIT",
+          amount: chargeAmount,
+          balanceAfter: parseFloat(grant?.remainingAmount?.toString() || "0"),
+          description: `Card charge: ${merchantData?.name || "Unknown merchant"}`,
+          reference: transaction.id as string,
+        },
+      });
+    }
+  }
+
+  return NextResponse.json({ received: true });
+}
+
+// Handle dispute creation (chargeback, fraud claim, etc.)
+async function handleDisputeCreated(dispute: Record<string, unknown>) {
+  const stripeTransactionId = (dispute.transaction as Record<string, unknown>)?.id as string;
+  const amount = dispute.amount as number; // in cents
+  const reason = dispute.reason as string;
+  const disputeId = dispute.id as string;
+
+  if (!stripeTransactionId) {
+    return NextResponse.json({ received: true });
+  }
+
+  try {
+    // Check if we already processed this dispute
+    const existingDispute = await prisma.notification.findFirst({
+      where: {
+        entityId: disputeId,
+        type: "dispute_created",
+      },
+      select: { id: true },
+    });
+
+    if (existingDispute) {
+      return NextResponse.json({ received: true });
+    }
+
+    // Find the transaction in our system
+    const transaction = await prisma.transaction.findUnique({
+      where: { stripeTransactionId },
+      select: {
+        id: true,
+        cardId: true,
+        organizationId: true,
+        card: {
+          select: {
+            beneficiaryId: true,
+            vendorId: true,
+          },
+        },
       },
     });
 
-    // Update budget category
-    if (virtualCard.expense.categoryId) {
-      await prisma.budgetCategory.update({
-        where: { id: virtualCard.expense.categoryId },
+    if (!transaction) {
+      console.warn(`Dispute for unknown transaction: ${stripeTransactionId}`);
+      return NextResponse.json({ received: true });
+    }
+
+    // Update transaction status
+    await prisma.transaction.update({
+      where: { id: transaction.id },
+      data: {
+        status: "disputed",
+        declinedReason: reason,
+      },
+    });
+
+    // Create audit log
+    await prisma.auditLog.create({
+      data: {
+        organizationId: transaction.organizationId,
+        action: "dispute_created",
+        entityType: "transaction",
+        entityId: transaction.id,
+        newValue: {
+          disputeId,
+          reason,
+          amount: amount / 100,
+          status: "open",
+        },
+      },
+    });
+
+    // Notify admin about dispute
+    const admins = await prisma.user.findMany({
+      where: {
+        organizationId: transaction.organizationId,
+        role: {
+          in: ["nonprofit_admin", "platform_admin"],
+        },
+      },
+      select: { id: true },
+    });
+
+    for (const admin of admins) {
+      await prisma.notification.create({
         data: {
-          spentAmount: { increment: chargeAmount },
+          userId: admin.id,
+          organizationId: transaction.organizationId,
+          type: "dispute_created",
+          entityId: disputeId,
+          title: `Dispute filed on card transaction: $${(amount / 100).toFixed(2)}`,
+          message: `A ${reason} dispute has been filed. Amount: $${(amount / 100).toFixed(2)}. Please review and respond within 7 days.`,
+          actionUrl: `/audit-trail?filter=dispute&id=${disputeId}`,
         },
       });
     }
 
-    // Create immutable ledger entry
-    const grant = await prisma.grant.findUnique({
-      where: { id: virtualCard.expense.grantId },
-      select: { remainingAmount: true },
+    return NextResponse.json({ received: true });
+  } catch (error) {
+    console.error("Failed to process dispute creation:", error);
+    return NextResponse.json({ received: true }); // Don't fail webhook
+  }
+}
+
+// Handle dispute status updates
+async function handleDisputeUpdated(dispute: Record<string, unknown>) {
+  const disputeId = dispute.id as string;
+  const status = dispute.status as string;
+
+  try {
+    // Check idempotency
+    const existingUpdate = await prisma.auditLog.findFirst({
+      where: {
+        entityId: disputeId,
+        action: "dispute_updated",
+      },
+      select: { id: true },
     });
 
-    await prisma.ledgerEntry.create({
+    if (existingUpdate) {
+      return NextResponse.json({ received: true });
+    }
+
+    // Create audit log for dispute update
+    await prisma.auditLog.create({
       data: {
-        grantId: virtualCard.expense.grantId,
-        categoryId: virtualCard.expense.categoryId,
-        type: "DEBIT",
-        amount: chargeAmount,
-        balanceAfter: parseFloat(grant?.remainingAmount?.toString() || "0"),
-        description: `Card charge: ${merchantData?.name || "Unknown merchant"}`,
-        reference: transaction.id as string,
+        action: "dispute_updated",
+        entityType: "transaction",
+        entityId: disputeId,
+        newValue: {
+          status,
+          updatedAt: new Date().toISOString(),
+        },
       },
     });
-  }
 
-  return NextResponse.json({ received: true });
+    return NextResponse.json({ received: true });
+  } catch (error) {
+    console.error("Failed to process dispute update:", error);
+    return NextResponse.json({ received: true });
+  }
+}
+
+// Handle dispute submission (evidence submitted)
+async function handleDisputeSubmitted(dispute: Record<string, unknown>) {
+  const disputeId = dispute.id as string;
+
+  try {
+    // Create audit log
+    await prisma.auditLog.create({
+      data: {
+        action: "dispute_evidence_submitted",
+        entityType: "transaction",
+        entityId: disputeId,
+        newValue: {
+          disputeId,
+          submittedAt: new Date().toISOString(),
+        },
+      },
+    });
+
+    return NextResponse.json({ received: true });
+  } catch (error) {
+    console.error("Failed to process dispute submission:", error);
+    return NextResponse.json({ received: true });
+  }
 }

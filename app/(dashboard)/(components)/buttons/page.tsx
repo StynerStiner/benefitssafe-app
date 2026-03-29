@@ -597,7 +597,14 @@ const ButtonPage = () => {
           </div>
         </DefaultCardComponent>
 
-        <DefaultCardComponent title="Buttons Sizes">5        </DefaultCardComponent>
+        <DefaultCardComponent title="Buttons Sizes">
+          <div className="flex flex-wrap gap-2">
+            <Button className="h-8 px-3 text-sm">Small</Button>
+            <Button className="h-10 px-4">Medium</Button>
+            <Button className="h-12 px-6 text-lg">Large</Button>
+            <Button className="h-14 px-8 text-xl">Extra Large</Button>
+          </div>
+        </DefaultCardComponent>
 
         <DefaultCardComponent title="Custom Button">
           <Button

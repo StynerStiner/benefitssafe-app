@@ -1,0 +1,8 @@
+<svg width="168" height="40" viewBox="0 0 168 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Icon: BS Square (Light background) -->
+  <rect width="40" height="40" rx="8" fill="white" opacity="0.1" stroke="white" stroke-width="1"/>
+  <text x="20" y="28" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="white" text-anchor="middle">BS</text>
+
+  <!-- Text: BenefitsSafe (White) -->
+  <text x="50" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="white">BenefitsSafe</text>
+</svg>

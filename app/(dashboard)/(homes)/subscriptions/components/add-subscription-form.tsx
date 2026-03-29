@@ -83,12 +83,13 @@ const AddSubscriptionForm = () => {
                 .catch(() => {});
 
             // Fetch active grants (with categories included)
-            fetch("/api/grants")
+            fetch("/api/grants?limit=100")
                 .then((res) => {
-                    if (!res.ok) return [];
+                    if (!res.ok) return { data: [] };
                     return res.json();
                 })
-                .then((data) => {
+                .then((json) => {
+                    const data = Array.isArray(json) ? json : json.data;
                     if (Array.isArray(data)) {
                         const activeGrants = data.filter(
                             (g: Grant) => g.status === "ACTIVE"
@@ -149,8 +150,28 @@ const AddSubscriptionForm = () => {
             return;
         }
         if (!monthlyCost || Number(monthlyCost) <= 0) {
-            toast.error("Monthly cost must be a positive number");
+            toast.error("Monthly cost must be greater than $0.00");
             return;
+        }
+
+        // Validate login email format (if provided)
+        if (loginEmail.trim()) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(loginEmail.trim())) {
+                toast.error("Please enter a valid login email address");
+                return;
+            }
+        }
+
+        // Validate renewal date is in the future (if provided)
+        if (renewalDate) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const renewal = new Date(renewalDate);
+            if (renewal <= today) {
+                toast.error("Renewal date must be in the future");
+                return;
+            }
         }
 
         setSubmitting(true);

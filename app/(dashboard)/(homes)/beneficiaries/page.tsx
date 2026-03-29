@@ -34,12 +34,18 @@ interface Beneficiary {
 const CrmPage = () => {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/beneficiaries")
-      .then((r) => r.ok ? r.json() : [])
-      .then((data) => { if (Array.isArray(data)) setBeneficiaries(data); })
-      .catch(() => {})
+    fetch("/api/beneficiaries?limit=100")
+      .then((r) => r.ok ? r.json() : { data: [] })
+      .then((json) => {
+        const items = Array.isArray(json) ? json : json.data;
+        if (Array.isArray(items)) setBeneficiaries(items);
+      })
+      .catch(() => {
+        setError("Failed to load beneficiaries. Please try refreshing the page.");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -55,6 +61,12 @@ const CrmPage = () => {
   return (
     <>
       <DashboardBreadcrumb title="Beneficiaries" text="Beneficiary Management" />
+
+      {error && (
+        <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        </div>
+      )}
 
       <div className="flex justify-end mt-4">
         <AddBeneficiaryForm />

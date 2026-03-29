@@ -14,8 +14,6 @@ export async function handleForgotPasswordAction(formData: FormData) {
     }
   }
 
-  console.log(`Password reset email sent to ${parsed.data.email}`)
-
   return {
     success: true,
   }

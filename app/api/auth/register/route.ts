@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db";
+import { stripe } from "@/lib/stripe";
+import { rateLimit } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -19,6 +21,16 @@ const registerApiSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    // Rate limit: 5 registration attempts per minute per IP
+    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+    const { success } = rateLimit("auth", ip, 5);
+    if (!success) {
+      return NextResponse.json(
+        { error: "Too many registration attempts. Please try again later." },
+        { status: 429 },
+      );
+    }
+
     const body = await request.json();
     const parsed = registerApiSchema.safeParse(body);
 
@@ -46,13 +58,50 @@ export async function POST(request: Request) {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
+    // Create Stripe Connect account for the organization
+    let stripeAccountId: string | null = null;
+    let stripeCardholderIdId: string | null = null;
+
+    try {
+      // Create Stripe Connect Express account
+      const stripeAccount = await stripe.accounts.create({
+        type: "express",
+        country: "US",
+        email: email.toLowerCase().trim(),
+        business_profile: {
+          name: organizationName.trim(),
+          product_category: "non_profit",
+        },
+      });
+      stripeAccountId = stripeAccount.id;
+
+      // Create cardholder for issuing cards
+      const cardholder = await stripe.issuing.cardholders.create({
+        type: "business",
+        billing: {
+          address: {
+            country: "US",
+          },
+        },
+        name: organizationName.trim(),
+        email: email.toLowerCase().trim(),
+      });
+      stripeCardholderIdId = cardholder.id;
+    } catch (stripeError) {
+      console.error("Stripe account creation failed:", stripeError);
+      // Don't fail registration if Stripe fails — log but continue
+      // Organization can be connected to Stripe later
+    }
+
     // Create Organization + Admin User in a transaction
     const result = await prisma.$transaction(async (tx) => {
       const organization = await tx.organization.create({
         data: {
           name: organizationName.trim(),
+          stripeAccountId,
+          stripeCardholderIdId,
         },
-        select: { id: true, name: true },
+        select: { id: true, name: true, stripeAccountId: true },
       });
 
       const user = await tx.user.create({
@@ -79,6 +128,7 @@ export async function POST(request: Request) {
             organizationName: organization.name,
             adminEmail: user.email,
             adminName: `${user.firstName} ${user.lastName}`,
+            stripeConnected: !!stripeAccountId,
           })),
         },
       });
@@ -91,6 +141,8 @@ export async function POST(request: Request) {
         message: "Organization created successfully",
         organizationId: result.organization.id,
         userId: result.user.id,
+        stripeConnected: !!stripeAccountId,
+        onboardingRequired: !stripeAccountId,
       },
       { status: 201 },
     );

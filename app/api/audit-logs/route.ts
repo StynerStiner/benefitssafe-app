@@ -3,6 +3,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { auditLogQuerySchema } from "@/lib/validations/audit-log";
 import { NextRequest, NextResponse } from "next/server";
 
 const ALLOWED_ROLES = [
@@ -14,7 +15,7 @@ const ALLOWED_ROLES = [
   "compliance_officer",
 ];
 
-// GET /api/audit-logs — list audit logs with filters and pagination
+// GET /api/audit-logs -- list audit logs with filters and pagination
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -28,13 +29,25 @@ export async function GET(request: NextRequest) {
     const { organizationId, role } = session.user;
     const params = request.nextUrl.searchParams;
 
-    const search = params.get("search")?.trim();
-    const action = params.get("action");
-    const entityType = params.get("entityType");
-    const from = params.get("from");
-    const to = params.get("to");
-    const limit = Math.min(parseInt(params.get("limit") || "25"), 100);
-    const offset = parseInt(params.get("offset") || "0");
+    // Extract raw query params into an object for Zod validation
+    const rawQuery: Record<string, string> = {};
+    const paramKeys = ["search", "action", "entityType", "from", "to", "limit", "offset"];
+    for (const key of paramKeys) {
+      const val = params.get(key);
+      if (val !== null) {
+        rawQuery[key] = val;
+      }
+    }
+
+    const parsed = auditLogQuerySchema.safeParse(rawQuery);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid query parameters", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { search, action, entityType, from, to, limit, offset } = parsed.data;
 
     // Build where clause
     const where: Record<string, unknown> = {};

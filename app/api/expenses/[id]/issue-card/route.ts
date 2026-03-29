@@ -4,6 +4,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -22,9 +23,24 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { role, organizationId } = session.user;
+    const { role, organizationId, id: userId } = session.user;
     if (role !== "nonprofit_admin" && role !== "platform_admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Rate limit: max 10 card issues per minute per user per org
+    const rateLimitKey = `card-issue:${organizationId}:${userId}`;
+    const limitResult = rateLimit(rateLimitKey, RATE_LIMIT_CONFIGS.cardIssuance);
+
+    if (!limitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded",
+          message: "Too many card issuance requests. Please wait before trying again.",
+          retryAfter: limitResult.resetAt,
+        },
+        { status: 429, headers: { "Retry-After": limitResult.resetAt.toISOString() } },
+      );
     }
 
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === "sk_test_REMOVED_PLACEHOLDER") {
@@ -182,6 +198,46 @@ export async function POST(
         })),
       },
     });
+
+    // Notify beneficiary about new card
+    if (expense.requestedById) {
+      await prisma.notification.create({
+        data: {
+          userId: expense.requestedById,
+          organizationId,
+          type: "card_issued",
+          entityId: virtualCard.id,
+          title: "New virtual card issued",
+          message: `A new ${virtualCard.cardType} virtual card has been issued for ${expense.vendor?.name || "this purchase"}. Card ending in ${virtualCard.last4}. Spending limit: $${parseFloat(virtualCard.spendingCap.toString()).toFixed(2)}.`,
+          actionUrl: `/virtual-cards/${virtualCard.id}`,
+        },
+      });
+    }
+
+    // Notify organization admins
+    const admins = await prisma.user.findMany({
+      where: {
+        organizationId,
+        role: {
+          in: ["nonprofit_admin", "platform_admin"],
+        },
+      },
+      select: { id: true },
+    });
+
+    for (const admin of admins) {
+      await prisma.notification.create({
+        data: {
+          userId: admin.id,
+          organizationId,
+          type: "card_issued_admin",
+          entityId: virtualCard.id,
+          title: `Card issued for ${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`,
+          message: `Virtual card issued to ${expense.requestedBy.firstName} ${expense.requestedBy.lastName} for ${expense.vendor?.name || "expense"}. Amount: $${parseFloat(virtualCard.spendingCap.toString()).toFixed(2)}.`,
+          actionUrl: `/virtual-cards/${virtualCard.id}`,
+        },
+      });
+    }
 
     return NextResponse.json({
       message: "Virtual card issued",

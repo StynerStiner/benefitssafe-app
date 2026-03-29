@@ -3,6 +3,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { createExpenseSchema } from "@/lib/validations/expense";
 import { classifyExpense } from "@/utils/compliance-rules";
 import { NextResponse } from "next/server";
@@ -20,18 +21,24 @@ export async function GET(request: Request) {
     const status = searchParams.get("status");
     const grantId = searchParams.get("grantId");
 
+    // Parse and validate pagination params
+    const rawLimit = parseInt(searchParams.get("limit") ?? "25", 10);
+    const rawOffset = parseInt(searchParams.get("offset") ?? "0", 10);
+    const limit = Math.min(Math.max(Number.isNaN(rawLimit) ? 25 : rawLimit, 1), 100);
+    const offset = Math.max(Number.isNaN(rawOffset) ? 0 : rawOffset, 0);
+
     // Build where clause based on role
     const where: Record<string, unknown> = {};
 
     if (role === "beneficiary") {
       // Beneficiaries only see their own expenses
       where.requestedById = userId;
-      where.grant = { organizationId };
+      where.grant = { is: { organizationId } };
     } else if (role === "platform_admin") {
       // Platform admins see everything
     } else if (role === "nonprofit_admin" || role === "cpa") {
       // Scoped to their organization
-      where.grant = { organizationId };
+      where.grant = { is: { organizationId } };
     } else {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -44,22 +51,28 @@ export async function GET(request: Request) {
       where.grantId = grantId;
     }
 
-    const expenses = await prisma.expenseRequest.findMany({
-      where,
-      include: {
-        grant: {
-          select: { id: true, name: true, benefitFlags: true, organizationId: true },
+    const [expenses, total] = await Promise.all([
+      prisma.expenseRequest.findMany({
+        where,
+        include: {
+          grant: {
+            select: { id: true, name: true, benefitFlags: true, organizationId: true },
+          },
+          category: { select: { id: true, name: true } },
+          requestedBy: { select: { id: true, firstName: true, lastName: true, email: true, avatarUrl: true } },
+          virtualCard: { select: { id: true, last4: true, status: true } },
+          vendor: { select: { id: true, name: true, type: true } },
         },
-        category: { select: { id: true, name: true } },
-        requestedBy: { select: { id: true, firstName: true, lastName: true, email: true } },
-        vendor: { select: { id: true, name: true, type: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.expenseRequest.count({ where }),
+    ]);
 
     // Note: suggestedCategory and approvedAt are included automatically by Prisma
 
-    return NextResponse.json(expenses);
+    return NextResponse.json({ data: expenses, total, limit, offset });
   } catch (error) {
     console.error("GET /api/expenses error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -79,6 +92,24 @@ export async function POST(request: Request) {
     // Only beneficiaries and nonprofit admins can submit expenses
     if (role !== "beneficiary" && role !== "nonprofit_admin" && role !== "platform_admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Rate limit: 30 requests per minute per user
+    const rateLimitResult = rateLimit(
+      `expense-create:${session.user.id}`,
+      RATE_LIMIT_CONFIGS.expenseCreate,
+    );
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please slow down." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000)),
+            "X-RateLimit-Remaining": String(rateLimitResult.remaining),
+          },
+        },
+      );
     }
 
     const body = await request.json();
@@ -190,7 +221,8 @@ export async function POST(request: Request) {
       include: {
         grant: { select: { id: true, name: true } },
         category: { select: { id: true, name: true } },
-        requestedBy: { select: { id: true, firstName: true, lastName: true, email: true } },
+        requestedBy: { select: { id: true, firstName: true, lastName: true, email: true, avatarUrl: true } },
+        virtualCard: { select: { id: true, last4: true, status: true } },
       },
     });
 

@@ -94,7 +94,8 @@ export async function POST(request: Request) {
       select: { token: true, expiresAt: true },
     });
 
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3001";
+    const baseUrl = process.env.NEXTAUTH_URL;
+    if (!baseUrl) throw new Error("NEXTAUTH_URL environment variable not set");
     const inviteUrl = `${baseUrl}/auth/accept-invite?token=${invite.token}`;
 
     // Log invite URL (in production, send via Postmark)

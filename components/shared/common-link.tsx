@@ -6,7 +6,11 @@ interface LinkData {
   text?: string;
 }
 
-const CommonLink = ({ href = "#", text = "View All" }: LinkData) => {
+const CommonLink = ({ href, text = "View All" }: LinkData) => {
+  if (!href || href === "#") {
+    return null;
+  }
+
   return (
     <Link
       href={href}

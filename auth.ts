@@ -19,12 +19,14 @@ declare module "next-auth" {
       role: UserRole;
       organizationId: string;
       image?: string | null;
+      mfaPending?: boolean;
     };
   }
 
   interface User {
     role: UserRole;
     organizationId: string;
+    mfaPending?: boolean;
   }
 }
 
@@ -36,6 +38,7 @@ declare module "@auth/core/jwt" {
     avatarUrl: string | null;
     role: UserRole;
     organizationId: string;
+    mfaPending?: boolean;
   }
 }
 
@@ -45,6 +48,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   session: {
     strategy: "jwt",
+    maxAge: 3600, // 1 hour — sessions expire after 60 minutes of inactivity
+    updateAge: 900, // Refresh token every 15 minutes of active use
   },
   providers: [
     Credentials({
@@ -68,6 +73,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               role: true,
               organizationId: true,
               isActive: true,
+              mfaEnabled: true,
             },
           });
 
@@ -88,6 +94,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             lastName: user.lastName,
             role: user.role,
             organizationId: user.organizationId,
+            mfaPending: user.mfaEnabled,
           };
         } catch {
           return null;
@@ -104,7 +111,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session: updateSession }) {
       if (user) {
         token.id = user.id as string;
         token.firstName = (user as unknown as { firstName: string }).firstName;
@@ -112,6 +119,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.avatarUrl = (user as unknown as { avatarUrl: string | null }).avatarUrl;
         token.role = user.role;
         token.organizationId = user.organizationId;
+        token.mfaPending = user.mfaPending ?? false;
+      }
+      // Allow clearing mfaPending via session update after MFA verification
+      if (trigger === "update" && updateSession?.mfaPending === false) {
+        token.mfaPending = false;
       }
       return token;
     },
@@ -122,6 +134,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session.user.avatarUrl = token.avatarUrl;
       session.user.role = token.role;
       session.user.organizationId = token.organizationId;
+      session.user.mfaPending = token.mfaPending ?? false;
       return session;
     },
   },

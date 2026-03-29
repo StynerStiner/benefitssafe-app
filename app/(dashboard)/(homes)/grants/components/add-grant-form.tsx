@@ -135,6 +135,31 @@ const AddGrantForm = () => {
             return;
         }
 
+        // Validate email format for grant issuer contact (if provided)
+        if (grantIssuerContact.trim()) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(grantIssuerContact.trim())) {
+                toast.error("Grant issuer contact must be a valid email address");
+                return;
+            }
+        }
+
+        // Validate startDate is not in the past
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const start = new Date(startDate);
+        if (start < today) {
+            toast.error("Start date cannot be in the past");
+            return;
+        }
+
+        // Validate endDate is after startDate
+        const end = new Date(endDate);
+        if (end <= start) {
+            toast.error("End date must be after start date");
+            return;
+        }
+
         setSubmitting(true);
 
         try {

@@ -2,6 +2,7 @@
 // No org scoping — platform_admin sees everything.
 
 import { auth } from "@/auth";
+import { cached, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 
@@ -16,40 +17,42 @@ export async function GET() {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const [totalOrgs, totalUsers, totalGrants, activeGrants, recentOrgs, recentUsers] =
-      await Promise.all([
-        prisma.organization.count(),
-        prisma.user.count(),
-        prisma.grant.count(),
-        prisma.grant.count({ where: { status: "ACTIVE" } }),
-        prisma.organization.findMany({
-          orderBy: { createdAt: "desc" },
-          take: 10,
-          include: { _count: { select: { users: true } } },
-        }),
-        prisma.user.findMany({
-          orderBy: { createdAt: "desc" },
-          take: 10,
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-            role: true,
-            createdAt: true,
-          },
-        }),
-      ]);
+    const data = await cached(CACHE_KEYS.platformStats(), CACHE_TTL.SHORT, async () => {
+      const [totalOrgs, totalUsers, totalGrants, activeGrants, recentOrgs, recentUsers] =
+        await Promise.all([
+          prisma.organization.count(),
+          prisma.user.count(),
+          prisma.grant.count(),
+          prisma.grant.count({ where: { status: "ACTIVE" } }),
+          prisma.organization.findMany({
+            orderBy: { createdAt: "desc" },
+            take: 10,
+            include: { _count: { select: { users: true } } },
+          }),
+          prisma.user.findMany({
+            orderBy: { createdAt: "desc" },
+            take: 10,
+            select: {
+              firstName: true,
+              lastName: true,
+              email: true,
+              role: true,
+              createdAt: true,
+            },
+          }),
+        ]);
 
-    return NextResponse.json({
-      data: {
+      return {
         totalOrgs,
         totalUsers,
         totalGrants,
         activeGrants,
         recentOrgs,
         recentUsers,
-      },
+      };
     });
+
+    return NextResponse.json({ data });
   } catch (error) {
     console.error("Platform stats error:", error);
     return NextResponse.json(

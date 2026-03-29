@@ -1,98 +1,121 @@
+"use client";
+
 import CommonLink from "@/components/shared/common-link";
 import { Card, CardContent } from "@/components/ui/card";
-import { default as PerformerImg1, default as PerformerImg6 } from "@/public/assets/images/users/user1.png";
-import PerformerImg2 from "@/public/assets/images/users/user2.png";
-import PerformerImg3 from "@/public/assets/images/users/user3.png";
-import PerformerImg4 from "@/public/assets/images/users/user4.png";
-import PerformerImg5 from "@/public/assets/images/users/user5.png";
-import Image, { StaticImageData } from "next/image";
+import { useEffect, useState } from "react";
 
-export interface TopPerformer {
-  id: number;
+interface Grant {
+  id: string;
   name: string;
-  image: StaticImageData;
-  agentId: string;
-  earnings: number;
+  totalAmount: string;
+  _count?: { expenses?: number };
 }
 
-export const topPerformers: TopPerformer[] = [
-  {
-    id: 1,
-    name: "Dianne Russell",
-    image: PerformerImg1,
-    agentId: "36254",
-    earnings: 20,
-  },
-  {
-    id: 2,
-    name: "Wade Warren",
-    image: PerformerImg2,
-    agentId: "94352",
-    earnings: 94,
-  },
-  {
-    id: 3,
-    name: "Albert Flores",
-    image: PerformerImg3,
-    agentId: "23265",
-    earnings: 30,
-  },
-  {
-    id: 4,
-    name: "Bessie Cooper",
-    image: PerformerImg4,
-    agentId: "43694",
-    earnings: 40,
-  },
-  {
-    id: 5,
-    name: "Arlene McCoy",
-    image: PerformerImg5,
-    agentId: "94355",
-    earnings: 10,
-  },
-  {
-    id: 6,
-    name: "Arlene McCoy",
-    image: PerformerImg6,
-    agentId: "35685",
-    earnings: 56,
-  },
-];
+interface TopGrant {
+  id: string;
+  name: string;
+  totalAmount: number;
+  expenseCount: number;
+}
 
 const TopPerformerCard = () => {
+  const [topGrants, setTopGrants] = useState<TopGrant[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("/api/grants?limit=100");
+        const json = await res.json();
+        const grants = (Array.isArray(json) ? json : json.data ?? []) as Grant[];
+
+        // Sort by total amount and get top 6
+        const top = grants
+          .map((g) => ({
+            id: g.id,
+            name: g.name,
+            totalAmount: parseFloat(g.totalAmount || "0"),
+            expenseCount: g._count?.expenses || 0,
+          }))
+          .sort((a, b) => b.totalAmount - a.totalAmount)
+          .slice(0, 6);
+
+        setTopGrants(top);
+      } catch (error) {
+        console.error("Failed to fetch top grants:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <Card className="card">
+        <CardContent className="card-body p-0">
+          <p className="text-sm text-neutral-500 text-center py-8">Loading...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (topGrants.length === 0) {
+    return (
+      <Card className="card">
+        <CardContent className="card-body p-0">
+          <p className="text-sm text-neutral-500 text-center py-8">No grants yet</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="card">
       <CardContent className="card-body p-0">
         <div className="flex items-center justify-between">
-          <h6 className="mb-3 font-semibold text-lg">Top Performer</h6>
+          <h6 className="mb-3 font-semibold text-lg">Top Grants</h6>
           <CommonLink />
         </div>
 
         <div className="mt-4 space-y-6">
-          {topPerformers.map((topPerformer, index) => {
+          {topGrants.map((grant, index) => {
+            const colors = [
+              "bg-blue-600",
+              "bg-purple-600",
+              "bg-green-600",
+              "bg-orange-600",
+              "bg-pink-600",
+              "bg-indigo-600",
+            ];
+            const initials = grant.name
+              .split(" ")
+              .slice(0, 2)
+              .map((w) => w[0])
+              .join("")
+              .toUpperCase();
+
             return (
               <div
                 className="flex items-center justify-between gap-2"
-                key={index}
+                key={grant.id}
               >
                 <div className="flex items-center gap-3">
-                  <Image
-                    src={topPerformer.image}
-                    alt={topPerformer.name}
-                    className="w-10 h-10 rounded-full shrink-0 overflow-hidden"
-                  />
+                  <div
+                    className={`w-10 h-10 rounded-full shrink-0 overflow-hidden ${colors[index]} flex items-center justify-center text-white font-semibold text-sm`}
+                  >
+                    {initials}
+                  </div>
                   <div className="grow">
-                    <h6 className="text-base mb-0 font-medium">
-                      {topPerformer.name}
-                    </h6>
+                    <h6 className="text-base mb-0 font-medium">{grant.name}</h6>
                     <span className="text-sm text-neutral-500 dark:text-neutral-300 font-medium">
-                      Agent ID: {topPerformer.agentId}
+                      {grant.expenseCount} expenses
                     </span>
                   </div>
                 </div>
                 <span className="text-neutral-600 dark:text-neutral-100 text-base font-medium">
-                  ${topPerformer.earnings}
+                  ${(grant.totalAmount / 1000).toFixed(1)}k
                 </span>
               </div>
             );

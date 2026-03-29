@@ -1,5 +1,7 @@
 import { auth } from "@/auth";
+import { cached, invalidateCache, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { prisma } from "@/lib/db";
+import { updatePolicySchema } from "@/lib/validations/policy";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -9,9 +11,15 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const policy = await prisma.disbursementPolicy.findFirst({
-      where: { organizationId: session.user.organizationId },
-    });
+    const orgId = session.user.organizationId;
+
+    const policy = await cached(
+      CACHE_KEYS.orgPolicies(orgId),
+      CACHE_TTL.MEDIUM,
+      () => prisma.disbursementPolicy.findFirst({
+        where: { organizationId: orgId },
+      })
+    );
 
     return NextResponse.json(policy);
   } catch (error) {
@@ -27,35 +35,80 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { role, organizationId } = session.user;
+    const { role, organizationId, id: userId } = session.user;
     if (role !== "nonprofit_admin" && role !== "platform_admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
+    const parsed = updatePolicySchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const data = parsed.data;
+
+    // Capture the old value for audit log
+    const existingPolicy = data.id
+      ? await prisma.disbursementPolicy.findUnique({ where: { id: data.id } })
+      : null;
 
     const policy = await prisma.disbursementPolicy.upsert({
-      where: { id: body.id || "nonexistent" },
+      where: { id: data.id || "nonexistent" },
       update: {
-        cashToRecipient: body.cashToRecipient,
-        reimbursementToRecipient: body.reimbursementToRecipient,
-        rentUtilityPayments: body.rentUtilityPayments,
-        recurringSubscriptions: body.recurringSubscriptions,
-        maxSingleTransaction: body.maxSingleTransaction,
-        allowedCategories: body.allowedCategories,
-        blockedCategories: body.blockedCategories,
+        cashToRecipient: data.cashToRecipient,
+        reimbursementToRecipient: data.reimbursementToRecipient,
+        rentUtilityPayments: data.rentUtilityPayments,
+        recurringSubscriptions: data.recurringSubscriptions,
+        maxSingleTransaction: data.maxSingleTransaction,
+        allowedCategories: data.allowedCategories,
+        blockedCategories: data.blockedCategories,
       },
       create: {
         organizationId,
-        cashToRecipient: body.cashToRecipient || "DISALLOWED",
-        reimbursementToRecipient: body.reimbursementToRecipient || "DISALLOWED",
-        rentUtilityPayments: body.rentUtilityPayments || "REQUIRES_REVIEW",
-        recurringSubscriptions: body.recurringSubscriptions || "ALLOWED",
-        maxSingleTransaction: body.maxSingleTransaction,
-        allowedCategories: body.allowedCategories,
-        blockedCategories: body.blockedCategories,
+        cashToRecipient: data.cashToRecipient || "DISALLOWED",
+        reimbursementToRecipient: data.reimbursementToRecipient || "DISALLOWED",
+        rentUtilityPayments: data.rentUtilityPayments || "REQUIRES_REVIEW",
+        recurringSubscriptions: data.recurringSubscriptions || "ALLOWED",
+        maxSingleTransaction: data.maxSingleTransaction,
+        allowedCategories: data.allowedCategories,
+        blockedCategories: data.blockedCategories,
       },
     });
+
+    // Create audit log
+    await prisma.auditLog.create({
+      data: {
+        userId,
+        organizationId,
+        action: existingPolicy ? "update" : "create",
+        entityType: "disbursement_policy",
+        entityId: policy.id,
+        oldValue: existingPolicy
+          ? {
+              cashToRecipient: existingPolicy.cashToRecipient,
+              reimbursementToRecipient: existingPolicy.reimbursementToRecipient,
+              rentUtilityPayments: existingPolicy.rentUtilityPayments,
+              recurringSubscriptions: existingPolicy.recurringSubscriptions,
+              maxSingleTransaction: existingPolicy.maxSingleTransaction?.toString() ?? null,
+            }
+          : undefined,
+        newValue: {
+          cashToRecipient: policy.cashToRecipient,
+          reimbursementToRecipient: policy.reimbursementToRecipient,
+          rentUtilityPayments: policy.rentUtilityPayments,
+          recurringSubscriptions: policy.recurringSubscriptions,
+          maxSingleTransaction: policy.maxSingleTransaction?.toString() ?? null,
+        },
+      },
+    });
+
+    // Invalidate cached policy for this org
+    await invalidateCache(CACHE_KEYS.orgPolicies(organizationId));
 
     return NextResponse.json(policy);
   } catch (error) {

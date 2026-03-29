@@ -35,6 +35,8 @@ export type UserMinAggregateOutputType = {
   role: $Enums.UserRole | null
   organizationId: string | null
   isActive: boolean | null
+  mfaEnabled: boolean | null
+  mfaSecret: string | null
   dateOfBirth: Date | null
   addressStreet: string | null
   addressCity: string | null
@@ -59,6 +61,8 @@ export type UserMaxAggregateOutputType = {
   role: $Enums.UserRole | null
   organizationId: string | null
   isActive: boolean | null
+  mfaEnabled: boolean | null
+  mfaSecret: string | null
   dateOfBirth: Date | null
   addressStreet: string | null
   addressCity: string | null
@@ -83,6 +87,9 @@ export type UserCountAggregateOutputType = {
   role: number
   organizationId: number
   isActive: number
+  mfaEnabled: number
+  mfaSecret: number
+  mfaBackupCodes: number
   dateOfBirth: number
   addressStreet: number
   addressCity: number
@@ -110,6 +117,8 @@ export type UserMinAggregateInputType = {
   role?: true
   organizationId?: true
   isActive?: true
+  mfaEnabled?: true
+  mfaSecret?: true
   dateOfBirth?: true
   addressStreet?: true
   addressCity?: true
@@ -134,6 +143,8 @@ export type UserMaxAggregateInputType = {
   role?: true
   organizationId?: true
   isActive?: true
+  mfaEnabled?: true
+  mfaSecret?: true
   dateOfBirth?: true
   addressStreet?: true
   addressCity?: true
@@ -158,6 +169,9 @@ export type UserCountAggregateInputType = {
   role?: true
   organizationId?: true
   isActive?: true
+  mfaEnabled?: true
+  mfaSecret?: true
+  mfaBackupCodes?: true
   dateOfBirth?: true
   addressStreet?: true
   addressCity?: true
@@ -256,6 +270,9 @@ export type UserGroupByOutputType = {
   role: $Enums.UserRole
   organizationId: string
   isActive: boolean
+  mfaEnabled: boolean
+  mfaSecret: string | null
+  mfaBackupCodes: string[]
   dateOfBirth: Date | null
   addressStreet: string | null
   addressCity: string | null
@@ -302,6 +319,9 @@ export type UserWhereInput = {
   role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
   organizationId?: Prisma.StringFilter<"User"> | string
   isActive?: Prisma.BoolFilter<"User"> | boolean
+  mfaEnabled?: Prisma.BoolFilter<"User"> | boolean
+  mfaSecret?: Prisma.StringNullableFilter<"User"> | string | null
+  mfaBackupCodes?: Prisma.StringNullableListFilter<"User">
   dateOfBirth?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   addressStreet?: Prisma.StringNullableFilter<"User"> | string | null
   addressCity?: Prisma.StringNullableFilter<"User"> | string | null
@@ -333,6 +353,9 @@ export type UserOrderByWithRelationInput = {
   role?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  mfaEnabled?: Prisma.SortOrder
+  mfaSecret?: Prisma.SortOrderInput | Prisma.SortOrder
+  mfaBackupCodes?: Prisma.SortOrder
   dateOfBirth?: Prisma.SortOrderInput | Prisma.SortOrder
   addressStreet?: Prisma.SortOrderInput | Prisma.SortOrder
   addressCity?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -367,6 +390,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
   organizationId?: Prisma.StringFilter<"User"> | string
   isActive?: Prisma.BoolFilter<"User"> | boolean
+  mfaEnabled?: Prisma.BoolFilter<"User"> | boolean
+  mfaSecret?: Prisma.StringNullableFilter<"User"> | string | null
+  mfaBackupCodes?: Prisma.StringNullableListFilter<"User">
   dateOfBirth?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   addressStreet?: Prisma.StringNullableFilter<"User"> | string | null
   addressCity?: Prisma.StringNullableFilter<"User"> | string | null
@@ -398,6 +424,9 @@ export type UserOrderByWithAggregationInput = {
   role?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  mfaEnabled?: Prisma.SortOrder
+  mfaSecret?: Prisma.SortOrderInput | Prisma.SortOrder
+  mfaBackupCodes?: Prisma.SortOrder
   dateOfBirth?: Prisma.SortOrderInput | Prisma.SortOrder
   addressStreet?: Prisma.SortOrderInput | Prisma.SortOrder
   addressCity?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -429,6 +458,9 @@ export type UserScalarWhereWithAggregatesInput = {
   role?: Prisma.EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole
   organizationId?: Prisma.StringWithAggregatesFilter<"User"> | string
   isActive?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  mfaEnabled?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  mfaSecret?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  mfaBackupCodes?: Prisma.StringNullableListFilter<"User">
   dateOfBirth?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   addressStreet?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   addressCity?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
@@ -453,6 +485,9 @@ export type UserCreateInput = {
   avatarUrl?: string | null
   role: $Enums.UserRole
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -484,6 +519,9 @@ export type UserUncheckedCreateInput = {
   role: $Enums.UserRole
   organizationId: string
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -513,6 +551,9 @@ export type UserUpdateInput = {
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -544,6 +585,9 @@ export type UserUncheckedUpdateInput = {
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -574,6 +618,9 @@ export type UserCreateManyInput = {
   role: $Enums.UserRole
   organizationId: string
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -598,6 +645,9 @@ export type UserUpdateManyMutationInput = {
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -623,6 +673,9 @@ export type UserUncheckedUpdateManyInput = {
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -647,6 +700,14 @@ export type UserOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
+}
+
 export type UserCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
@@ -658,6 +719,9 @@ export type UserCountOrderByAggregateInput = {
   role?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  mfaEnabled?: Prisma.SortOrder
+  mfaSecret?: Prisma.SortOrder
+  mfaBackupCodes?: Prisma.SortOrder
   dateOfBirth?: Prisma.SortOrder
   addressStreet?: Prisma.SortOrder
   addressCity?: Prisma.SortOrder
@@ -683,6 +747,8 @@ export type UserMaxOrderByAggregateInput = {
   role?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  mfaEnabled?: Prisma.SortOrder
+  mfaSecret?: Prisma.SortOrder
   dateOfBirth?: Prisma.SortOrder
   addressStreet?: Prisma.SortOrder
   addressCity?: Prisma.SortOrder
@@ -707,6 +773,8 @@ export type UserMinOrderByAggregateInput = {
   role?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  mfaEnabled?: Prisma.SortOrder
+  mfaSecret?: Prisma.SortOrder
   dateOfBirth?: Prisma.SortOrder
   addressStreet?: Prisma.SortOrder
   addressCity?: Prisma.SortOrder
@@ -772,12 +840,21 @@ export type UserUncheckedUpdateManyWithoutOrganizationNestedInput = {
   deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
 }
 
+export type UserCreatemfaBackupCodesInput = {
+  set: string[]
+}
+
 export type EnumUserRoleFieldUpdateOperationsInput = {
   set?: $Enums.UserRole
 }
 
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
+}
+
+export type UserUpdatemfaBackupCodesInput = {
+  set?: string[]
+  push?: string | string[]
 }
 
 export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -868,6 +945,9 @@ export type UserCreateWithoutOrganizationInput = {
   avatarUrl?: string | null
   role: $Enums.UserRole
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -897,6 +977,9 @@ export type UserUncheckedCreateWithoutOrganizationInput = {
   avatarUrl?: string | null
   role: $Enums.UserRole
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -956,6 +1039,9 @@ export type UserScalarWhereInput = {
   role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
   organizationId?: Prisma.StringFilter<"User"> | string
   isActive?: Prisma.BoolFilter<"User"> | boolean
+  mfaEnabled?: Prisma.BoolFilter<"User"> | boolean
+  mfaSecret?: Prisma.StringNullableFilter<"User"> | string | null
+  mfaBackupCodes?: Prisma.StringNullableListFilter<"User">
   dateOfBirth?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   addressStreet?: Prisma.StringNullableFilter<"User"> | string | null
   addressCity?: Prisma.StringNullableFilter<"User"> | string | null
@@ -980,6 +1066,9 @@ export type UserCreateWithoutInviteTokensInput = {
   avatarUrl?: string | null
   role: $Enums.UserRole
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1010,6 +1099,9 @@ export type UserUncheckedCreateWithoutInviteTokensInput = {
   role: $Enums.UserRole
   organizationId: string
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1054,6 +1146,9 @@ export type UserUpdateWithoutInviteTokensInput = {
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1084,6 +1179,9 @@ export type UserUncheckedUpdateWithoutInviteTokensInput = {
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1112,6 +1210,9 @@ export type UserCreateWithoutGrantsInput = {
   avatarUrl?: string | null
   role: $Enums.UserRole
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1142,6 +1243,9 @@ export type UserUncheckedCreateWithoutGrantsInput = {
   role: $Enums.UserRole
   organizationId: string
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1186,6 +1290,9 @@ export type UserUpdateWithoutGrantsInput = {
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1216,6 +1323,9 @@ export type UserUncheckedUpdateWithoutGrantsInput = {
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1244,6 +1354,9 @@ export type UserCreateWithoutExpenseRequestsInput = {
   avatarUrl?: string | null
   role: $Enums.UserRole
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1274,6 +1387,9 @@ export type UserUncheckedCreateWithoutExpenseRequestsInput = {
   role: $Enums.UserRole
   organizationId: string
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1318,6 +1434,9 @@ export type UserUpdateWithoutExpenseRequestsInput = {
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1348,6 +1467,9 @@ export type UserUncheckedUpdateWithoutExpenseRequestsInput = {
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1376,6 +1498,9 @@ export type UserCreateWithoutVendorsInput = {
   avatarUrl?: string | null
   role: $Enums.UserRole
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1406,6 +1531,9 @@ export type UserUncheckedCreateWithoutVendorsInput = {
   role: $Enums.UserRole
   organizationId: string
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1450,6 +1578,9 @@ export type UserUpdateWithoutVendorsInput = {
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1480,6 +1611,9 @@ export type UserUncheckedUpdateWithoutVendorsInput = {
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1508,6 +1642,9 @@ export type UserCreateWithoutApprovalsInput = {
   avatarUrl?: string | null
   role: $Enums.UserRole
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1538,6 +1675,9 @@ export type UserUncheckedCreateWithoutApprovalsInput = {
   role: $Enums.UserRole
   organizationId: string
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1582,6 +1722,9 @@ export type UserUpdateWithoutApprovalsInput = {
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1612,6 +1755,9 @@ export type UserUncheckedUpdateWithoutApprovalsInput = {
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1640,6 +1786,9 @@ export type UserCreateManyOrganizationInput = {
   avatarUrl?: string | null
   role: $Enums.UserRole
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1664,6 +1813,9 @@ export type UserUpdateWithoutOrganizationInput = {
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1693,6 +1845,9 @@ export type UserUncheckedUpdateWithoutOrganizationInput = {
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1722,6 +1877,9 @@ export type UserUncheckedUpdateManyWithoutOrganizationInput = {
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1814,6 +1972,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   role?: boolean
   organizationId?: boolean
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: boolean
+  mfaBackupCodes?: boolean
   dateOfBirth?: boolean
   addressStreet?: boolean
   addressCity?: boolean
@@ -1846,6 +2007,9 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   role?: boolean
   organizationId?: boolean
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: boolean
+  mfaBackupCodes?: boolean
   dateOfBirth?: boolean
   addressStreet?: boolean
   addressCity?: boolean
@@ -1872,6 +2036,9 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   role?: boolean
   organizationId?: boolean
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: boolean
+  mfaBackupCodes?: boolean
   dateOfBirth?: boolean
   addressStreet?: boolean
   addressCity?: boolean
@@ -1898,6 +2065,9 @@ export type UserSelectScalar = {
   role?: boolean
   organizationId?: boolean
   isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecret?: boolean
+  mfaBackupCodes?: boolean
   dateOfBirth?: boolean
   addressStreet?: boolean
   addressCity?: boolean
@@ -1912,7 +2082,7 @@ export type UserSelectScalar = {
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "firstName" | "lastName" | "phone" | "passwordHash" | "avatarUrl" | "role" | "organizationId" | "isActive" | "dateOfBirth" | "addressStreet" | "addressCity" | "addressState" | "addressZip" | "ssnLast4" | "benefitPrograms" | "emergencyContactName" | "emergencyContactPhone" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "firstName" | "lastName" | "phone" | "passwordHash" | "avatarUrl" | "role" | "organizationId" | "isActive" | "mfaEnabled" | "mfaSecret" | "mfaBackupCodes" | "dateOfBirth" | "addressStreet" | "addressCity" | "addressState" | "addressZip" | "ssnLast4" | "benefitPrograms" | "emergencyContactName" | "emergencyContactPhone" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   expenseRequests?: boolean | Prisma.User$expenseRequestsArgs<ExtArgs>
@@ -1950,6 +2120,9 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     role: $Enums.UserRole
     organizationId: string
     isActive: boolean
+    mfaEnabled: boolean
+    mfaSecret: string | null
+    mfaBackupCodes: string[]
     dateOfBirth: Date | null
     addressStreet: string | null
     addressCity: string | null
@@ -2401,6 +2574,9 @@ export interface UserFieldRefs {
   readonly role: Prisma.FieldRef<"User", 'UserRole'>
   readonly organizationId: Prisma.FieldRef<"User", 'String'>
   readonly isActive: Prisma.FieldRef<"User", 'Boolean'>
+  readonly mfaEnabled: Prisma.FieldRef<"User", 'Boolean'>
+  readonly mfaSecret: Prisma.FieldRef<"User", 'String'>
+  readonly mfaBackupCodes: Prisma.FieldRef<"User", 'String[]'>
   readonly dateOfBirth: Prisma.FieldRef<"User", 'DateTime'>
   readonly addressStreet: Prisma.FieldRef<"User", 'String'>
   readonly addressCity: Prisma.FieldRef<"User", 'String'>

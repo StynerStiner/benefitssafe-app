@@ -41,14 +41,36 @@ const RegisterForm = () => {
     values: z.infer<typeof registerSchema>
   ) => {
     setLoading(true);
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
-    toast.success("User created successfully! Please wait...");
-    router.push("/dashboard");
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
 
-    setTimeout(() => {
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || "Registration failed. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      toast.success("Registration successful! Redirecting to login...");
+      form.reset();
+      setTimeout(() => {
+        router.push("/auth/login");
+      }, 1500);
+    } catch (error) {
+      toast.error("Something went wrong. Please try again.");
+      setIsSubmitting(false);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (

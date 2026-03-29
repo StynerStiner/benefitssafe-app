@@ -5,8 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 
-import LogoDark from "@/public/assets/images/logo.png";
-import LogoWhite from "@/public/assets/images/logo-light.png";
+import LogoDark from "@/public/assets/images/logo.svg";
+import LogoWhite from "@/public/assets/images/logo-light.svg";
 import { useSidebarCollapsed } from "@/hooks/useSidebarCollapsed";
 
 function ThemeLogo() {

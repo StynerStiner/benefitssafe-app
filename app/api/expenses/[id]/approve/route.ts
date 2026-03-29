@@ -3,6 +3,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { captureApiError } from "@/lib/error-handler";
 import { approveExpenseSchema } from "@/lib/validations/expense";
 import { NextResponse } from "next/server";
 
@@ -162,6 +163,7 @@ export async function PATCH(
 
     return NextResponse.json(result);
   } catch (error) {
+    captureApiError(error, { route: "PATCH /api/expenses/[id]/approve" });
     console.error("PATCH /api/expenses/[id]/approve error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

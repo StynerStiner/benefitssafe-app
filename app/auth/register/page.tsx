@@ -8,9 +8,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 
 const metadata: Metadata = {
-  title: "Cards & Content Containers | BenefitsSafe Admin Dashboard",
+  title: "Register | BenefitsSafe",
   description:
-    "Showcase versatile card components and content containers for organized layout in the BenefitsSafe Admin Dashboard built with Next.js and Tailwind CSS.",
+    "Create a new BenefitsSafe account for your nonprofit organization to manage grant disbursement.",
 };
 
 const forgotPassImage: StaticImg = {

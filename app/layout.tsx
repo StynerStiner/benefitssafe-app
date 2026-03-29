@@ -8,30 +8,25 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Wowdash - Tailwind & Next.js Admin Dashboard with shadcn UI (Typescript)",
-  description: "BenefitsSafe - Admin Dashboard Multipurpose Next.js, TypeScript, ShadCn UI & Tailwind Template",
-  metadataBase: new URL("https://wowdash-nextjs-typescript-shadcn-5fu5.vercel.app"),
+  title: "BenefitsSafe - Grant Disbursement Platform",
+  description: "BenefitsSafe helps nonprofits disburse restricted grants to SSI/SSDI beneficiaries safely, without triggering benefit loss.",
+  metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3002"),
   openGraph: {
-    title: "Wowdash - Admin Dashboard UI",
-    description: "A modern, responsive admin dashboard template built with Next.js, Tailwind CSS, and ShadCN UI.",
-    url: "https://wowdash-nextjs-typescript-shadcn-5fu5.vercel.app",
-    siteName: "Wowdash",
-    images: [
-      {
-        url: "https://wowdash-nextjs-typescript-shadcn-5fu5.vercel.app/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Wowdash Admin Dashboard Preview",
-      },
-    ],
+    title: "BenefitsSafe - Grant Disbursement for Nonprofits",
+    description: "Secure, compliant grant disbursement platform for nonprofits serving benefit-eligible populations.",
+    url: process.env.NEXTAUTH_URL || "http://localhost:3002",
+    siteName: "BenefitsSafe",
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Wowdash - Admin Dashboard UI",
-    description: "A modern, responsive admin dashboard template built with Next.js, Tailwind CSS, and ShadCN UI.",
-    images: ["https://wowdash-nextjs-typescript-shadcn-5fu5.vercel.app/og-image.jpg"],
+    title: "BenefitsSafe - Grant Disbursement Platform",
+    description: "Secure grant disbursement for nonprofits. Keep beneficiaries safe. Keep grants compliant.",
+  },
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
   },
 };
 

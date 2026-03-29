@@ -16,7 +16,5 @@ export async function handleResetPassword(formData: FormData) {
     throw new Error("Validation failed.");
   }
 
-  console.log("Password reset values:", result.data);
-
   redirect("/auth/login");
 }

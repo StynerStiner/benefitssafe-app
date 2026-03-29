@@ -49,12 +49,14 @@ const Analytics = () => {
 
     useEffect(() => {
         Promise.all([
-            fetch("/api/grants").then((r) => r.ok ? r.json() : []),
-            fetch("/api/expenses").then((r) => r.ok ? r.json() : []),
+            fetch("/api/grants?limit=100").then((r) => r.ok ? r.json() : { data: [] }),
+            fetch("/api/expenses?limit=100").then((r) => r.ok ? r.json() : { data: [] }),
             fetch("/api/audit-logs").then((r) => r.ok ? r.json() : []),
         ])
-            .then(([g, e, a]) => {
+            .then(([gJson, eJson, a]) => {
+                const g = Array.isArray(gJson) ? gJson : gJson.data;
                 if (Array.isArray(g)) setGrants(g);
+                const e = Array.isArray(eJson) ? eJson : eJson.data;
                 if (Array.isArray(e)) setExpenses(e);
                 const logs = Array.isArray(a) ? a : (a?.logs && Array.isArray(a.logs) ? a.logs : []);
                 setAuditLogs(logs);

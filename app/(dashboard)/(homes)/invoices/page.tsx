@@ -20,9 +20,12 @@ interface Expense {
     amount: string;
     status: string;
     expenseType: string;
+    frequency: string;
     createdAt: string;
     vendorName: string | null;
-    requestedBy: { firstName: string; lastName: string } | null;
+    riskClassification: string | null;
+    riskNotes: string | null;
+    requestedBy: { id: string; firstName: string; lastName: string; email: string } | null;
     grant: { id: string; name: string } | null;
     category: { id: string; name: string } | null;
 }
@@ -32,9 +35,12 @@ const InvoicesPage = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch("/api/expenses")
-            .then((r) => r.ok ? r.json() : [])
-            .then((data) => { if (Array.isArray(data)) setExpenses(data); })
+        fetch("/api/expenses?limit=100")
+            .then((r) => r.ok ? r.json() : { data: [] })
+            .then((json) => {
+                const items = Array.isArray(json) ? json : json.data;
+                if (Array.isArray(items)) setExpenses(items);
+            })
             .catch(() => {})
             .finally(() => setLoading(false));
     }, []);

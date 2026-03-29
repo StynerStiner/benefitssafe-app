@@ -1,8 +1,9 @@
-// GET  /api/messages/conversations — List user's conversations
-// POST /api/messages/conversations — Create new conversation
+// GET  /api/messages/conversations -- List user's conversations
+// POST /api/messages/conversations -- Create new conversation
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { createConversationSchema } from "@/lib/validations/conversation";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -15,44 +16,55 @@ export async function GET(request: NextRequest) {
     const userId = session.user.id;
     const { role, organizationId } = session.user;
     const isManager = role === "nonprofit_admin" || role === "platform_admin";
-    const viewAll = request.nextUrl?.searchParams?.get("all") === "true" && isManager;
+
+    const params = request.nextUrl.searchParams;
+    const viewAll = params.get("all") === "true" && isManager;
+    const limit = Math.min(parseInt(params.get("limit") || "25", 10) || 25, 100);
+    const offset = Math.max(parseInt(params.get("offset") || "0", 10) || 0, 0);
 
     // Managers can see ALL org conversations for oversight
     // Regular users only see their own
-    const participations = await prisma.conversationParticipant.findMany({
-      where: viewAll
-        ? { conversation: { organizationId } }
-        : { userId },
-      select: {
-        conversationId: true,
-        lastReadAt: true,
-        conversation: {
-          select: {
-            id: true,
-            subject: true,
-            type: true,
-            department: true,
-            updatedAt: true,
-            participants: {
-              select: {
-                userId: true,
+    const participationWhere = viewAll
+      ? { conversation: { organizationId } }
+      : { userId };
+
+    const [participations, total] = await Promise.all([
+      prisma.conversationParticipant.findMany({
+        where: participationWhere,
+        select: {
+          conversationId: true,
+          lastReadAt: true,
+          conversation: {
+            select: {
+              id: true,
+              subject: true,
+              type: true,
+              department: true,
+              updatedAt: true,
+              participants: {
+                select: {
+                  userId: true,
+                },
               },
-            },
-            messages: {
-              select: {
-                id: true,
-                content: true,
-                senderId: true,
-                createdAt: true,
+              messages: {
+                select: {
+                  id: true,
+                  content: true,
+                  senderId: true,
+                  createdAt: true,
+                },
+                orderBy: { createdAt: "desc" },
+                take: 1,
               },
-              orderBy: { createdAt: "desc" },
-              take: 1,
             },
           },
         },
-      },
-      orderBy: { conversation: { updatedAt: "desc" } },
-    });
+        orderBy: { conversation: { updatedAt: "desc" } },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.conversationParticipant.count({ where: participationWhere }),
+    ]);
 
     // Get all participant user info in one query
     const allUserIds = new Set<string>();
@@ -102,7 +114,7 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json(conversations);
+    return NextResponse.json({ conversations, total, limit, offset });
   } catch (error) {
     console.error("GET /api/messages/conversations error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -117,11 +129,16 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { recipientId, subject, message, department } = body;
+    const parsed = createConversationSchema.safeParse(body);
 
-    if (!recipientId || !message) {
-      return NextResponse.json({ error: "recipientId and message are required" }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 }
+      );
     }
+
+    const { recipientId, subject, message, department } = parsed.data;
 
     // Verify recipient exists and is in the same org
     const recipient = await prisma.user.findFirst({
@@ -199,6 +216,22 @@ export async function POST(request: Request) {
         entityType: "conversation",
         entityId: conversationId,
         href: "/messages",
+      },
+    });
+
+    // Create audit log
+    await prisma.auditLog.create({
+      data: {
+        userId: session.user.id,
+        organizationId: session.user.organizationId,
+        action: existingConvo ? "send_message" : "create",
+        entityType: "conversation",
+        entityId: conversationId,
+        newValue: {
+          recipientId,
+          isNewConversation: !existingConvo,
+          department: department || null,
+        },
       },
     });
 

@@ -47,6 +47,11 @@ model User {
   organization   Organization @relation(fields: [organizationId], references: [id])
   isActive       Boolean  @default(true)
 
+  // MFA / Two-Factor Authentication (TOTP)
+  mfaEnabled     Boolean  @default(false)
+  mfaSecret      String?  // Encrypted TOTP secret
+  mfaBackupCodes String[] // Recovery codes (hashed)
+
   // Beneficiary profile fields
   dateOfBirth           DateTime?
   addressStreet         String?
@@ -141,6 +146,7 @@ model Grant {
 
   @@index([organizationId])
   @@index([beneficiaryId])
+  @@index([organizationId, status]) // Grant listing filtered by org and status
 }
 
 enum GrantStatus {
@@ -226,6 +232,7 @@ model ExpenseRequest {
   @@index([grantId])
   @@index([requestedById])
   @@index([status])
+  @@index([grantId, status, createdAt]) // Expense filtering by grant, status, and date range
 }
 
 enum ExpenseFrequency {
@@ -287,6 +294,7 @@ model Vendor {
   virtualCards  VirtualCard[]
 
   @@index([organizationId])
+  @@index([organizationId, status]) // Vendor approval workflow queries
 }
 
 enum VendorType {
@@ -332,6 +340,7 @@ model Subscription {
 
   @@index([vendorId])
   @@index([grantId])
+  @@index([vendorId, status]) // Subscription queries by vendor and status
 }
 
 enum BillingUpdateStatus {
@@ -410,6 +419,7 @@ model Transaction {
 
   @@index([cardId])
   @@index([organizationId])
+  @@index([organizationId, createdAt]) // Transaction history time-series queries
 }
 
 // ============================================
@@ -434,6 +444,7 @@ model LedgerEntry {
 
   @@index([grantId])
   @@index([expenseId])
+  @@index([grantId, createdAt]) // Monthly reconciliation queries at scale
 }
 
 enum LedgerType {
@@ -475,6 +486,7 @@ model AuditLog {
 
   @@index([organizationId])
   @@index([entityType, entityId])
+  @@index([organizationId, createdAt]) // Audit trail time-series queries
 }
 
 // ============================================

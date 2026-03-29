@@ -82,12 +82,11 @@ const ProjectWidgets = ({ grants }: { grants: Grant[] }) => {
                                 </span>
                             </div>
 
-                            <a
-                                href="#"
-                                className="bg-green-500/20 hover:bg-green-500 hover:text-white text-green-600 dark:text-green-500 dark:hover:text-white text-sm py-1 px-6 mt-2.5 rounded inline-block transition-all duration-200"
+                            <span
+                                className="bg-green-500/20 text-green-600 dark:text-green-500 text-sm py-1 px-6 mt-2.5 rounded inline-block"
                             >
-                                View More
-                            </a>
+                                {item.title}
+                            </span>
                         </CardContent>
                     </Card>
                 </div>

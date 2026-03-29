@@ -1,8 +1,9 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { NextResponse } from "next/server";
+import { createSubscriptionSchema } from "@/lib/validations/subscription";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user) {
@@ -10,25 +11,36 @@ export async function GET() {
     }
 
     const { organizationId } = session.user;
+    const params = request.nextUrl.searchParams;
 
-    const subscriptions = await prisma.subscription.findMany({
-      where: {
-        vendor: { organizationId },
-      },
-      include: {
-        vendor: { select: { id: true, name: true, type: true, status: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const limit = Math.min(parseInt(params.get("limit") || "25", 10) || 25, 100);
+    const offset = Math.max(parseInt(params.get("offset") || "0", 10) || 0, 0);
 
-    return NextResponse.json(subscriptions);
+    const where = {
+      vendor: { organizationId },
+    };
+
+    const [subscriptions, total] = await Promise.all([
+      prisma.subscription.findMany({
+        where,
+        include: {
+          vendor: { select: { id: true, name: true, type: true, status: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.subscription.count({ where }),
+    ]);
+
+    return NextResponse.json({ subscriptions, total, limit, offset });
   } catch (error) {
     console.error("GET /api/subscriptions error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-// POST /api/subscriptions — create a new subscription
+// POST /api/subscriptions -- create a new subscription
 export async function POST(request: Request) {
   try {
     const session = await auth();
@@ -42,27 +54,20 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
+    const parsed = createSubscriptionSchema.safeParse(body);
 
-    // Basic validation
-    if (!body.serviceName?.trim()) {
-      return NextResponse.json({ error: "Service name is required" }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 }
+      );
     }
-    if (!body.vendorId) {
-      return NextResponse.json({ error: "Vendor is required" }, { status: 400 });
-    }
-    if (!body.grantId) {
-      return NextResponse.json({ error: "Grant is required" }, { status: 400 });
-    }
-    if (!body.categoryId) {
-      return NextResponse.json({ error: "Budget category is required" }, { status: 400 });
-    }
-    if (!body.monthlyCost || Number(body.monthlyCost) <= 0) {
-      return NextResponse.json({ error: "Monthly cost must be a positive number" }, { status: 400 });
-    }
+
+    const data = parsed.data;
 
     // Verify vendor belongs to org
     const vendor = await prisma.vendor.findFirst({
-      where: { id: body.vendorId, organizationId, archivedAt: null },
+      where: { id: data.vendorId, organizationId, archivedAt: null },
     });
     if (!vendor) {
       return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
@@ -70,7 +75,7 @@ export async function POST(request: Request) {
 
     // Verify grant belongs to org
     const grant = await prisma.grant.findFirst({
-      where: { id: body.grantId, organizationId, archivedAt: null },
+      where: { id: data.grantId, organizationId, archivedAt: null },
     });
     if (!grant) {
       return NextResponse.json({ error: "Grant not found" }, { status: 404 });
@@ -78,7 +83,7 @@ export async function POST(request: Request) {
 
     // Verify category belongs to grant
     const category = await prisma.budgetCategory.findFirst({
-      where: { id: body.categoryId, grantId: body.grantId },
+      where: { id: data.categoryId, grantId: data.grantId },
     });
     if (!category) {
       return NextResponse.json({ error: "Budget category not found" }, { status: 404 });
@@ -86,16 +91,16 @@ export async function POST(request: Request) {
 
     const subscription = await prisma.subscription.create({
       data: {
-        vendorId: body.vendorId,
-        grantId: body.grantId,
-        categoryId: body.categoryId,
-        serviceName: body.serviceName.trim(),
-        loginEmail: body.loginEmail?.trim() || "",
-        monthlyCost: Number(body.monthlyCost),
-        billingCycle: body.billingCycle || "monthly",
-        renewalDate: body.renewalDate ? new Date(body.renewalDate) : null,
-        billingUpdateStatus: body.billingUpdateStatus || "PENDING",
-        status: body.status || "ACTIVE",
+        vendorId: data.vendorId,
+        grantId: data.grantId,
+        categoryId: data.categoryId,
+        serviceName: data.serviceName.trim(),
+        loginEmail: data.loginEmail?.trim() || "",
+        monthlyCost: data.monthlyCost,
+        billingCycle: data.billingCycle,
+        renewalDate: data.renewalDate ?? null,
+        billingUpdateStatus: data.billingUpdateStatus,
+        status: data.status,
       },
       include: {
         vendor: { select: { id: true, name: true, type: true, status: true } },

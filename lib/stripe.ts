@@ -5,5 +5,5 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_REMOVED_PLACEHOLDER", {
-  apiVersion: "2026-02-25.clover",
+  apiVersion: "2024-04-10",
 });

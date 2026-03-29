@@ -6,14 +6,7 @@ interface User {
 }
 
 
-const users: User[] = [
-  {
-    id: "1",
-    email: "wowdash@gmail.com",
-    name: "Wowdash",
-    password: "Pa$$w0rd!"
-  }
-]
+const users: User[] = []
 
 export async function getUserFromDb(email: string, hashedPassword: string): Promise<User | null> {
   const find = users.find(user => user.email === email && user.password === hashedPassword)

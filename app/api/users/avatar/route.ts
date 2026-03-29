@@ -1,11 +1,10 @@
 // POST /api/users/avatar — Upload profile image for the current user
-// Stores in public/uploads/avatars/ (in production, use S3)
+// Stores in AWS S3 (production-ready, works everywhere)
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { writeFile } from "fs/promises";
+import { uploadAvatarToS3 } from "@/lib/s3-upload";
 import { NextResponse } from "next/server";
-import path from "path";
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
@@ -32,17 +31,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Image must be under 5MB" }, { status: 400 });
     }
 
-    // Generate unique filename
-    const ext = file.name.split(".").pop() || "jpg";
-    const filename = `${session.user.id}-${Date.now()}.${ext}`;
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "avatars");
-    const filePath = path.join(uploadDir, filename);
-
-    // Write file
+    // Upload to S3
     const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(filePath, buffer);
-
-    const avatarUrl = `/uploads/avatars/${filename}`;
+    const avatarUrl = await uploadAvatarToS3(buffer, session.user.id, file.name);
 
     // Update user record
     await prisma.user.update({
@@ -53,6 +44,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ avatarUrl });
   } catch (error) {
     console.error("POST /api/users/avatar error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

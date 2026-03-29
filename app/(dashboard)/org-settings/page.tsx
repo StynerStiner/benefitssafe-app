@@ -111,5 +111,6 @@ const ViewProfile = () => {
 
         </>
     );
-}; ``
+};
+
 export default ViewProfile;

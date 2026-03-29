@@ -43,10 +43,11 @@ const PoliciesPage = () => {
     useEffect(() => {
         Promise.all([
             fetch("/api/policies").then((r) => r.ok ? r.json() : null),
-            fetch("/api/grants").then((r) => r.ok ? r.json() : []),
+            fetch("/api/grants?limit=100").then((r) => r.ok ? r.json() : { data: [] }),
         ])
-            .then(([p, g]) => {
+            .then(([p, gJson]) => {
                 setPolicy(p);
+                const g = Array.isArray(gJson) ? gJson : gJson.data;
                 if (Array.isArray(g)) setGrants(g);
             })
             .catch(() => {})

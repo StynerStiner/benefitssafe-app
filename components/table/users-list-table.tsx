@@ -37,7 +37,14 @@ const statusColors: Record<string, string> = {
     DRAFT: "bg-gray-600/15 text-gray-600 dark:text-white border-gray-400",
 };
 
-export default function UserTable({ vendors }: { vendors?: Vendor[] }) {
+interface UserTableProps {
+    vendors?: Vendor[];
+    onView?: (vendor: Vendor) => void;
+    onEdit?: (vendor: Vendor) => void;
+    onDelete?: (vendor: Vendor) => void;
+}
+
+export default function UserTable({ vendors, onView, onEdit, onDelete }: UserTableProps) {
     const list = vendors || [];
 
     const formatDate = (d: string) =>
@@ -121,13 +128,28 @@ export default function UserTable({ vendors }: { vendors?: Vendor[] }) {
                                         }`}
                                 >
                                     <div className="flex justify-center gap-2">
-                                        <Button size="icon" variant="ghost" className="rounded-[50%] text-blue-500 bg-primary/10">
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            className="rounded-[50%] text-blue-500 bg-primary/10"
+                                            onClick={() => onView ? onView(vendor) : alert(`View vendor: ${vendor.name}`)}
+                                        >
                                             <Eye className="w-5 h-5" />
                                         </Button>
-                                        <Button size="icon" variant="ghost" className="rounded-[50%] text-green-600 bg-green-600/10">
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            className="rounded-[50%] text-green-600 bg-green-600/10"
+                                            onClick={() => onEdit ? onEdit(vendor) : alert(`Edit vendor: ${vendor.name}`)}
+                                        >
                                             <Edit className="w-5 h-5" />
                                         </Button>
-                                        <Button size="icon" variant="ghost" className="rounded-[50%] text-red-500 bg-red-500/10">
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            className="rounded-[50%] text-red-500 bg-red-500/10"
+                                            onClick={() => onDelete ? onDelete(vendor) : alert(`Delete vendor: ${vendor.name}`)}
+                                        >
                                             <Trash2 className="w-5 h-5" />
                                         </Button>
                                     </div>

@@ -51,20 +51,25 @@ const FinancePage = () => {
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         Promise.all([
-            fetch("/api/grants").then((r) => r.ok ? r.json() : []),
-            fetch("/api/expenses").then((r) => r.ok ? r.json() : []),
+            fetch("/api/grants?limit=100").then((r) => r.ok ? r.json() : { data: [] }),
+            fetch("/api/expenses?limit=100").then((r) => r.ok ? r.json() : { data: [] }),
             fetch("/api/audit-logs").then((r) => r.ok ? r.json() : []),
         ])
-            .then(([g, e, a]) => {
+            .then(([gJson, eJson, a]) => {
+                const g = Array.isArray(gJson) ? gJson : gJson.data;
                 if (Array.isArray(g)) setGrants(g);
+                const e = Array.isArray(eJson) ? eJson : eJson.data;
                 if (Array.isArray(e)) setExpenses(e);
                 const logs = Array.isArray(a) ? a : (a?.logs && Array.isArray(a.logs) ? a.logs : []);
                 setAuditLogs(logs);
             })
-            .catch(() => {})
+            .catch(() => {
+                setError("Failed to load dashboard data. Please try refreshing the page.");
+            })
             .finally(() => setLoading(false));
     }, []);
 
@@ -80,6 +85,12 @@ const FinancePage = () => {
     return (
         <>
             <DashboardBreadcrumb title="Dashboard" text="Admin Overview" />
+
+            {error && (
+                <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                    <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
                 <StatisticsCard grants={grants} expenses={expenses} />

@@ -2,6 +2,7 @@
 // POST /api/auth/accept-invite         — Accept invite and set password
 
 import { prisma } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -9,6 +10,16 @@ import { z } from "zod";
 // GET: Verify token and return user info
 export async function GET(request: Request) {
   try {
+    // Rate limit: 10 token verifications per minute per IP
+    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+    const { success } = rateLimit("auth", ip, 10);
+    if (!success) {
+      return NextResponse.json(
+        { error: "server", message: "Too many requests. Please try again later." },
+        { status: 429 },
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const token = searchParams.get("token");
 
@@ -92,6 +103,16 @@ const acceptSchema = z.object({
 // POST: Accept invite and set password
 export async function POST(request: Request) {
   try {
+    // Rate limit: 5 password set attempts per minute per IP
+    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+    const { success } = rateLimit("auth", ip, 5);
+    if (!success) {
+      return NextResponse.json(
+        { error: "server", message: "Too many requests. Please try again later." },
+        { status: 429 },
+      );
+    }
+
     const body = await request.json();
     const parsed = acceptSchema.safeParse(body);
 

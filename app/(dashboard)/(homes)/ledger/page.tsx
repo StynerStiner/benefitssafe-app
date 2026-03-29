@@ -47,11 +47,12 @@ const LedgerPage = () => {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/grants").then((r) => r.ok ? r.json() : []),
-      fetch("/api/ledger").then((r) => r.ok ? r.json() : { ledgerEntries: [], transactions: [] }),
+      fetch("/api/grants?limit=100").then((r) => r.ok ? r.json() : { data: [] }),
+      fetch("/api/ledger?limit=100").then((r) => r.ok ? r.json() : { ledgerEntries: [], transactions: [] }),
     ])
-      .then(([g, ledger]) => {
-        if (Array.isArray(g)) setGrants(g);
+      .then(([gJson, ledger]) => {
+        const gItems = Array.isArray(gJson) ? gJson : gJson.data;
+        if (Array.isArray(gItems)) setGrants(gItems);
         if (Array.isArray(ledger.ledgerEntries)) setLedgerEntries(ledger.ledgerEntries);
         if (Array.isArray(ledger.transactions)) setTransactions(ledger.transactions);
       })

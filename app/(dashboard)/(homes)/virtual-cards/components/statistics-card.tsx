@@ -1,9 +1,28 @@
+"use client";
+
 import CardSmallChartTwo from "@/components/charts/card-small-chart-two";
 import TodayIncomeChart from "@/components/charts/today-income-chart";
 import CommonLink from "@/components/shared/common-link";
 import { Card, CardContent } from "@/components/ui/card";
+import { useMemo } from "react";
 
-const StatisticsCard = ({ cards }: { cards: unknown[] }) => {
+interface VirtualCard {
+    id: string;
+    spendingLimit?: string | number;
+    status?: string;
+}
+
+const StatisticsCard = ({ cards }: { cards: VirtualCard[] }) => {
+    const stats = useMemo(() => {
+        const totalCards = cards.length;
+        const totalSpendingCap = cards.reduce((sum, c) => sum + parseFloat(String(c.spendingLimit || "0")), 0);
+        return { totalCards, totalSpendingCap };
+    }, [cards]);
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(amount);
+    };
+
     return (
         <Card className="card h-full rounded-lg border-0 !p-0">
             <CardContent className="card-body p-0 flex flex-col justify-between gap-8">
@@ -17,14 +36,14 @@ const StatisticsCard = ({ cards }: { cards: unknown[] }) => {
                     <div className="card-body py-4 px-6">
                         <div className="flex items-center gap-1 justify-between mb-[44px]">
                             <div>
-                                <h5 className="font-semibold mb-3">3</h5>
+                                <h5 className="font-semibold mb-3">{stats.totalCards}</h5>
                                 <span className="text-neutral-500 dark:text-neutral-300 font-normal text-xl">Cards Issued</span>
                             </div>
                             <TodayIncomeChart />
                         </div>
                         <div className="flex items-center gap-1 justify-between">
                             <div>
-                                <h5 className="font-semibold mb-3">$5,709</h5>
+                                <h5 className="font-semibold mb-3">{formatCurrency(stats.totalSpendingCap)}</h5>
                                 <span className="text-neutral-500 dark:text-neutral-300 font-normal text-xl">Total Spending Cap</span>
                             </div>
                             <div className="remove-tooltip-title rounded-tooltip-value remove-tooltip-marker">
