@@ -2,7 +2,8 @@
 import { doSocialLogin } from "@/app/actions";
 import { useLoading } from "@/contexts/LoadingContext";
 import GoogleIcon from "@/public/assets/images/icons/google-icon.png";
-import { Building2, Loader2 } from "lucide-react";
+import MicrosoftIcon from "@/public/icons8-microsoft-48.png";
+import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
 import { Button } from "../ui/button";
@@ -74,7 +75,7 @@ const SocialLogin = () => {
           </>
         ) : (
           <>
-            <Building2 className="w-[18px] h-[18px]" />
+            <Image src={MicrosoftIcon} alt="microsoft" width={18} height={18} />
             Microsoft
           </>
         )}
