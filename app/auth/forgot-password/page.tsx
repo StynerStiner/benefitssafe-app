@@ -37,17 +37,17 @@ const ForgotPassword = () => {
         <div className="lg:max-w-[464px] w-full mx-auto">
           {/* Logo and heading */}
           <div>
-            <div className="mb-6 flex items-center gap-3">
+            <div className="mb-6 flex items-center gap-4">
               <Image
                 src={LogoIcon}
                 alt="BenefitsSafe"
-                width={56}
-                height={56}
+                width={48}
+                height={48}
                 priority
                 className="object-contain"
               />
               <div>
-                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white leading-tight">BenefitsSafe</h2>
+                <h2 className="text-3xl font-bold text-neutral-900 dark:text-white leading-tight">BenefitsSafe</h2>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">Protecting Health, Security, and Growth.</p>
               </div>
             </div>
