@@ -60,7 +60,7 @@ export async function GET(request: Request) {
           },
           category: { select: { id: true, name: true } },
           requestedBy: { select: { id: true, firstName: true, lastName: true, email: true, avatarUrl: true } },
-          virtualCard: { select: { id: true, last4: true, status: true } },
+          virtualCards: { select: { id: true, last4: true, status: true } },
           vendor: { select: { id: true, name: true, type: true } },
         },
         orderBy: { createdAt: "desc" },
@@ -222,7 +222,7 @@ export async function POST(request: Request) {
         grant: { select: { id: true, name: true } },
         category: { select: { id: true, name: true } },
         requestedBy: { select: { id: true, firstName: true, lastName: true, email: true, avatarUrl: true } },
-        virtualCard: { select: { id: true, last4: true, status: true } },
+        virtualCards: { select: { id: true, last4: true, status: true } },
       },
     });
 

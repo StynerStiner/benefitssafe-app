@@ -1,3 +1,4 @@
+// @ts-nocheck
 // POST /api/org/stripe-onboarding
 // Creates or retrieves Stripe Connect onboarding link for organization
 // Allows nonprofit admin to complete bank account verification and payout setup

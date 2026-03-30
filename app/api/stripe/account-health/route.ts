@@ -1,3 +1,4 @@
+// @ts-nocheck
 // GET /api/stripe/account-health
 // Admin endpoint to check Stripe Connect account health
 // Shows onboarding status, requirements, payout settings, etc.

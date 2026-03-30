@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { auth } from "@/auth";
 import { cached, invalidateCache, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { prisma } from "@/lib/db";

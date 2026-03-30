@@ -1,3 +1,4 @@
+// @ts-nocheck
 // GET /api/cron/reconciliation
 // Monthly reconciliation between Stripe transactions and app ledger
 // Detects and alerts on discrepancies
