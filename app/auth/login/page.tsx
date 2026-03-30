@@ -1,5 +1,4 @@
 "use client";
-
 import LoginForm from "@/components/auth/login-form";
 import ThemeLogo from "@/components/shared/theme-logo";
 import AuthImage from "@/public/assets/images/auth/auth-img.png";

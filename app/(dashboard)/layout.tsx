@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { ClientRoot } from "@/app/client-root";
 import { auth } from "@/auth";
 import { SessionProvider } from "next-auth/react";

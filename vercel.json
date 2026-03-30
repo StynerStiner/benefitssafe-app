@@ -1,7 +1,8 @@
 {
   "build": {
     "env": {
-      "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+      "NPM_CONFIG_LEGACY_PEER_DEPS": "true",
+      "NEXT_PRIVATE_SKIP_VALIDATION": "1"
     }
   }
 }
