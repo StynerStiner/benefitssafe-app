@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useLoading } from "@/contexts/LoadingContext";
 import { registerSchema } from "@/lib/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Loader2, Lock, Mail, UserRound } from "lucide-react";
+import { Building2, Eye, EyeOff, Loader2, Lock, Mail, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -26,15 +26,20 @@ import SocialLogin from "./social-login";
 const RegisterForm = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { loading, setLoading } = useLoading();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      username: "",
+      organizationName: "",
+      firstName: "",
+      lastName: "",
       email: "",
       password: "",
+      confirmPassword: "",
+      acceptTerms: false as unknown as true,
     },
   });
 
@@ -50,13 +55,19 @@ const RegisterForm = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          organizationName: values.organizationName,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+          password: values.password,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.message || "Registration failed. Please try again.");
+        toast.error(data.message || data.error || "Registration failed. Please try again.");
         setIsSubmitting(false);
         return;
       }
@@ -79,21 +90,21 @@ const RegisterForm = () => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(handleRegisterFormSubmit)}
-          className="space-y-5"
+          className="space-y-4"
         >
-          {/* Username Field */}
+          {/* Organization Name */}
           <FormField
             control={form.control}
-            name="username"
+            name="organizationName"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
                   <div className="relative">
-                    <UserRound className="absolute start-5 top-1/2 transform -translate-y-1/2 text-xl text-neutral-700 dark:text-neutral-200 w-5 h-5" />
+                    <Building2 className="absolute start-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-700 dark:text-neutral-200" />
                     <Input
                       {...field}
                       type="text"
-                      placeholder="Username"
+                      placeholder="Organization Name"
                       className="ps-13 pe-12 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
                       disabled={loading}
                     />
@@ -103,6 +114,53 @@ const RegisterForm = () => {
               </FormItem>
             )}
           />
+
+          {/* First Name & Last Name (side by side) */}
+          <div className="grid grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <div className="relative">
+                      <UserRound className="absolute start-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-700 dark:text-neutral-200" />
+                      <Input
+                        {...field}
+                        type="text"
+                        placeholder="First Name"
+                        className="ps-13 pe-4 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
+                        disabled={loading}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <div className="relative">
+                      <UserRound className="absolute start-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-700 dark:text-neutral-200" />
+                      <Input
+                        {...field}
+                        type="text"
+                        placeholder="Last Name"
+                        className="ps-13 pe-4 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
+                        disabled={loading}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           {/* Email Field */}
           <FormField
@@ -161,7 +219,41 @@ const RegisterForm = () => {
             )}
           />
 
-          {/* Remember Me and Forgot Password */}
+          {/* Confirm Password Field */}
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <div className="relative">
+                    <Lock className="absolute start-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-700 dark:text-neutral-200" />
+                    <Input
+                      {...field}
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm Password"
+                      className="ps-13 pe-12 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
+                      disabled={loading}
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 !p-0 bg-transparent hover:bg-transparent text-muted-foreground h-[unset]"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </Button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Accept Terms */}
           <FormField
             control={form.control}
             name="acceptTerms"
@@ -207,10 +299,10 @@ const RegisterForm = () => {
             {isSubmitting ? (
               <>
                 <Loader2 className="animate-spin h-4.5 w-4.5 mr-2" />
-                Loading...
+                Creating your organization...
               </>
             ) : (
-              "Sign Up"
+              "Create Organization"
             )}
           </Button>
         </form>
@@ -219,17 +311,17 @@ const RegisterForm = () => {
       {/* Divider */}
       <div className="mt-8 relative text-center before:absolute before:w-full before:h-px before:bg-neutral-300 dark:before:bg-slate-600 before:top-1/2 before:left-0">
         <span className="relative z-10 px-4 bg-white dark:bg-slate-900 text-base">
-          Or sign in with
+          Or sign up with
         </span>
       </div>
 
       {/* Social Login */}
       <SocialLogin />
 
-      {/* Signup Prompt */}
+      {/* Login Prompt */}
       <div className="mt-8 text-center text-sm">
         <p>
-          Already have an account? {" "}
+          Already have an account?{" "}
           <Link
             href="/auth/login"
             className="text-primary font-semibold hover:underline"
