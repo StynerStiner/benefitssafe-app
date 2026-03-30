@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import GitHub from "next-auth/providers/github";
+import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
 import { loginSchema } from "./lib/zod";
 import type { UserRole } from "@/lib/generated/prisma/client";
 
@@ -105,9 +105,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
-    GitHub({
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    MicrosoftEntraID({
+      clientId: process.env.MICROSOFT_CLIENT_ID,
+      clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
+      tenantId: "common",
     }),
   ],
   callbacks: {
