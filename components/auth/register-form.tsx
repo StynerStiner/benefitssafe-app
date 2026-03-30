@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useLoading } from "@/contexts/LoadingContext";
 import { registerSchema } from "@/lib/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangle, Building2, Check, Eye, EyeOff, Hash, Loader2, Lock, Mail, UserRound, XCircle } from "lucide-react";
+import { AlertTriangle, Building2, Check, Eye, EyeOff, Hash, Loader2, Lock, Mail, Tag, UserRound, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
@@ -24,6 +24,7 @@ import { z } from "zod";
 import SocialLogin from "./social-login";
 
 type EINStatus = "idle" | "verifying" | "verified" | "not_found" | "error";
+type PromoStatus = "idle" | "verifying" | "valid" | "invalid";
 
 interface EINVerificationResult {
   verified: boolean;
@@ -31,6 +32,14 @@ interface EINVerificationResult {
   status?: string;
   city?: string;
   state?: string;
+}
+
+interface PromoVerificationResult {
+  valid: boolean;
+  trialDays?: number;
+  description?: string;
+  trialDescription?: string;
+  error?: string;
 }
 
 const RegisterForm = () => {
@@ -45,6 +54,11 @@ const RegisterForm = () => {
   const [einVerified, setEinVerified] = useState(false);
   const lastVerifiedEIN = useRef<string>("");
 
+  // Promo code verification state
+  const [promoStatus, setPromoStatus] = useState<PromoStatus>("idle");
+  const [promoResult, setPromoResult] = useState<PromoVerificationResult | null>(null);
+  const lastVerifiedPromo = useRef<string>("");
+
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -55,6 +69,7 @@ const RegisterForm = () => {
       email: "",
       password: "",
       confirmPassword: "",
+      promoCode: "",
       acceptTerms: false as unknown as true,
     },
   });
@@ -119,6 +134,55 @@ const RegisterForm = () => {
     }
   }, [form]);
 
+  /**
+   * Verify a promo code against the backend.
+   */
+  const verifyPromoCode = useCallback(async () => {
+    const code = form.getValues("promoCode")?.trim().toUpperCase();
+    if (!code) {
+      setPromoStatus("idle");
+      setPromoResult(null);
+      lastVerifiedPromo.current = "";
+      return;
+    }
+
+    // Skip if already verified this exact code
+    if (lastVerifiedPromo.current === code && promoStatus === "valid") return;
+
+    setPromoStatus("verifying");
+    setPromoResult(null);
+
+    try {
+      const response = await fetch("/api/promo-codes/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+
+      if (response.status === 429) {
+        setPromoStatus("invalid");
+        setPromoResult({ valid: false, error: "Too many attempts. Try again later." });
+        return;
+      }
+
+      const data: PromoVerificationResult = await response.json();
+
+      if (data.valid) {
+        setPromoStatus("valid");
+        setPromoResult(data);
+        lastVerifiedPromo.current = code;
+      } else {
+        setPromoStatus("invalid");
+        setPromoResult(data);
+        lastVerifiedPromo.current = "";
+      }
+    } catch {
+      setPromoStatus("invalid");
+      setPromoResult({ valid: false, error: "Could not verify code. Try again." });
+      lastVerifiedPromo.current = "";
+    }
+  }, [form, promoStatus]);
+
   const handleRegisterFormSubmit = async (
     values: z.infer<typeof registerSchema>
   ) => {
@@ -139,6 +203,7 @@ const RegisterForm = () => {
           lastName: values.lastName,
           email: values.email,
           password: values.password,
+          promoCode: values.promoCode?.trim() || undefined,
         }),
       });
 
@@ -150,7 +215,11 @@ const RegisterForm = () => {
         return;
       }
 
-      toast.success("Registration successful! Redirecting to login...");
+      const trialMsg = data.promoCodeApplied
+        ? `Promo code applied! You have ${data.trialDays} days free.`
+        : "You have a 14-day free trial.";
+
+      toast.success(`Registration successful! ${trialMsg} Redirecting to login...`);
       form.reset();
       setTimeout(() => {
         router.push("/auth/login");
@@ -414,6 +483,77 @@ const RegisterForm = () => {
             )}
           />
 
+          {/* Promo Code Field */}
+          <FormField
+            control={form.control}
+            name="promoCode"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <div className="relative flex gap-2">
+                    <div className="relative flex-1">
+                      <Tag className="absolute start-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-700 dark:text-neutral-200" />
+                      <Input
+                        {...field}
+                        type="text"
+                        placeholder="Promo Code (optional)"
+                        className="ps-13 pe-12 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0 uppercase"
+                        disabled={loading}
+                        maxLength={30}
+                        onChange={(e) => {
+                          field.onChange(e.target.value.toUpperCase());
+                          // Reset verification when code changes
+                          if (promoStatus !== "idle") {
+                            setPromoStatus("idle");
+                            setPromoResult(null);
+                            lastVerifiedPromo.current = "";
+                          }
+                        }}
+                      />
+                      {/* Status indicator inside input */}
+                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                        {promoStatus === "verifying" && (
+                          <Loader2 className="w-5 h-5 animate-spin text-neutral-500" />
+                        )}
+                        {promoStatus === "valid" && (
+                          <Check className="w-5 h-5 text-green-600" />
+                        )}
+                        {promoStatus === "invalid" && (
+                          <XCircle className="w-5 h-5 text-red-600" />
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={verifyPromoCode}
+                      disabled={loading || !field.value?.trim() || promoStatus === "verifying"}
+                      className="h-14 px-5 rounded-xl border border-neutral-300 dark:border-slate-700 shrink-0"
+                    >
+                      {promoStatus === "verifying" ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        "Verify"
+                      )}
+                    </Button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+                {/* Promo code feedback */}
+                {promoStatus === "valid" && promoResult && (
+                  <p className="text-sm text-green-600 mt-1">
+                    Code accepted -- {promoResult.trialDescription || promoResult.description}
+                  </p>
+                )}
+                {promoStatus === "invalid" && promoResult && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {promoResult.error || "Invalid promo code"}
+                  </p>
+                )}
+              </FormItem>
+            )}
+          />
+
           {/* Accept Terms */}
           <FormField
             control={form.control}
@@ -450,6 +590,29 @@ const RegisterForm = () => {
               </FormItem>
             )}
           />
+
+          {/* Trial info banner */}
+          <div className="text-sm text-neutral-600 dark:text-neutral-400 bg-neutral-50 dark:bg-slate-800/50 rounded-lg p-3 border border-neutral-200 dark:border-slate-700">
+            {promoStatus === "valid" && promoResult ? (
+              <span>
+                Your organization will receive{" "}
+                <span className="font-semibold text-green-600">
+                  {promoResult.trialDescription}
+                </span>{" "}
+                with code{" "}
+                <span className="font-mono font-semibold">
+                  {form.getValues("promoCode")}
+                </span>
+                . No credit card required.
+              </span>
+            ) : (
+              <span>
+                Every nonprofit gets a{" "}
+                <span className="font-semibold">14-day free trial</span>.
+                No credit card required. Have a promo code? Enter it above for extended access.
+              </span>
+            )}
+          </div>
 
           {/* Submit Button */}
           <Button

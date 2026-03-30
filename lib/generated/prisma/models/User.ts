@@ -853,10 +853,6 @@ export type UserUpdatemfaBackupCodesInput = {
   push?: string | string[]
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type UserCreateNestedOneWithoutInviteTokensInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutInviteTokensInput, Prisma.UserUncheckedCreateWithoutInviteTokensInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutInviteTokensInput

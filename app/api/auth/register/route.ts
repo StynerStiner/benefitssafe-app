@@ -6,6 +6,8 @@ import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+const DEFAULT_TRIAL_DAYS = 14;
+
 const registerApiSchema = z.object({
   ein: z.string().regex(/^\d{2}-?\d{7}$/, "EIN must be 9 digits").optional(),
   einVerified: z.boolean().optional(),
@@ -20,7 +22,43 @@ const registerApiSchema = z.object({
     .regex(/[a-zA-Z]/, "Must contain at least one letter")
     .regex(/[0-9]/, "Must contain at least one number")
     .regex(/[^a-zA-Z0-9]/, "Must contain at least one special character"),
+  promoCode: z.string().max(50).optional().or(z.literal("")),
 });
+
+/**
+ * Extract the email domain from an email address.
+ * Returns null for common free email providers (not org-specific).
+ */
+function getOrgEmailDomain(email: string): string | null {
+  const domain = email.split("@")[1]?.toLowerCase();
+  if (!domain) return null;
+
+  // Free email providers are not org-specific domains
+  const freeProviders = [
+    "gmail.com",
+    "yahoo.com",
+    "hotmail.com",
+    "outlook.com",
+    "aol.com",
+    "icloud.com",
+    "mail.com",
+    "protonmail.com",
+    "proton.me",
+    "zoho.com",
+    "yandex.com",
+    "live.com",
+    "msn.com",
+    "me.com",
+    "mac.com",
+    "fastmail.com",
+  ];
+
+  if (freeProviders.includes(domain)) {
+    return null;
+  }
+
+  return domain;
+}
 
 export async function POST(request: Request) {
   try {
@@ -44,12 +82,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const { ein, einVerified, organizationName, firstName, lastName, email, password } = parsed.data;
+    const { ein, einVerified, organizationName, firstName, lastName, email, password, promoCode } = parsed.data;
 
     // Normalize EIN: strip dashes for storage
     const normalizedEIN = ein ? ein.replace(/-/g, "") : undefined;
 
-    // Check for existing email
+    // ----------------------------------------------------------------
+    // ANTI-ABUSE CHECK 1: Duplicate email
+    // ----------------------------------------------------------------
     const existingUser = await prisma.user.findUnique({
       where: { email },
       select: { id: true },
@@ -60,6 +100,138 @@ export async function POST(request: Request) {
         { status: 409 },
       );
     }
+
+    // ----------------------------------------------------------------
+    // ANTI-ABUSE CHECK 2: One free trial per EIN
+    // If the EIN already has an organization with an active/trial status,
+    // reject to prevent duplicate trial signups.
+    // ----------------------------------------------------------------
+    if (normalizedEIN) {
+      const existingOrgByEIN = await prisma.organization.findFirst({
+        where: {
+          ein: normalizedEIN,
+          subscriptionStatus: { in: ["trial", "active"] },
+        },
+        select: { id: true, name: true },
+      });
+
+      if (existingOrgByEIN) {
+        return NextResponse.json(
+          {
+            error:
+              "An organization with this EIN already has an active account. " +
+              "Contact support if you believe this is an error.",
+          },
+          { status: 409 },
+        );
+      }
+    }
+
+    // ----------------------------------------------------------------
+    // ANTI-ABUSE CHECK 3: One free trial per email domain
+    // Prevents multiple signups from the same organization using
+    // different employees' email addresses. Only applies to
+    // non-free-provider domains (e.g., @mynonprofit.org).
+    // ----------------------------------------------------------------
+    const emailDomain = getOrgEmailDomain(email);
+    if (emailDomain) {
+      const existingOrgByDomain = await prisma.user.findFirst({
+        where: {
+          email: { endsWith: `@${emailDomain}` },
+          role: "nonprofit_admin",
+          organization: {
+            subscriptionStatus: { in: ["trial", "active"] },
+          },
+        },
+        select: {
+          id: true,
+          organization: { select: { id: true, name: true } },
+        },
+      });
+
+      if (existingOrgByDomain) {
+        return NextResponse.json(
+          {
+            error:
+              "An organization with this email domain already has an active account. " +
+              "Ask your admin for an invite instead.",
+          },
+          { status: 409 },
+        );
+      }
+    }
+
+    // ----------------------------------------------------------------
+    // PROMO CODE VALIDATION (if provided)
+    // ----------------------------------------------------------------
+    let validPromoCode: {
+      id: string;
+      code: string;
+      trialDays: number;
+      description: string | null;
+    } | null = null;
+
+    const trimmedPromo = promoCode?.trim().toUpperCase();
+    if (trimmedPromo) {
+      const promo = await prisma.promoCode.findUnique({
+        where: { code: trimmedPromo },
+        select: {
+          id: true,
+          code: true,
+          description: true,
+          trialDays: true,
+          maxUses: true,
+          currentUses: true,
+          isActive: true,
+          expiresAt: true,
+        },
+      });
+
+      if (!promo) {
+        return NextResponse.json(
+          { error: "Invalid promo code" },
+          { status: 400 },
+        );
+      }
+
+      if (!promo.isActive) {
+        return NextResponse.json(
+          { error: "This promo code is no longer active" },
+          { status: 400 },
+        );
+      }
+
+      if (promo.expiresAt && new Date(promo.expiresAt) < new Date()) {
+        return NextResponse.json(
+          { error: "This promo code has expired" },
+          { status: 400 },
+        );
+      }
+
+      if (promo.currentUses >= promo.maxUses) {
+        return NextResponse.json(
+          { error: "This promo code has reached its usage limit" },
+          { status: 400 },
+        );
+      }
+
+      validPromoCode = {
+        id: promo.id,
+        code: promo.code,
+        trialDays: promo.trialDays,
+        description: promo.description,
+      };
+    }
+
+    // ----------------------------------------------------------------
+    // CALCULATE TRIAL DATES
+    // ----------------------------------------------------------------
+    const now = new Date();
+    const trialDays = validPromoCode
+      ? validPromoCode.trialDays
+      : DEFAULT_TRIAL_DAYS;
+    const trialEndDate = new Date(now);
+    trialEndDate.setDate(trialEndDate.getDate() + trialDays);
 
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
@@ -95,11 +267,11 @@ export async function POST(request: Request) {
       stripeCardholderIdId = cardholder.id;
     } catch (stripeError) {
       console.error("Stripe account creation failed:", stripeError);
-      // Don't fail registration if Stripe fails — log but continue
+      // Don't fail registration if Stripe fails -- log but continue
       // Organization can be connected to Stripe later
     }
 
-    // Create Organization + Admin User in a transaction
+    // Create Organization + Admin User + Promo Redemption in a transaction
     const result = await prisma.$transaction(async (tx) => {
       const organization = await tx.organization.create({
         data: {
@@ -108,8 +280,20 @@ export async function POST(request: Request) {
           einVerified: einVerified === true,
           stripeAccountId,
           stripeCardholderIdId,
+          trialStartDate: now,
+          trialEndDate,
+          subscriptionStatus: "trial",
         },
-        select: { id: true, name: true, stripeAccountId: true, ein: true, einVerified: true },
+        select: {
+          id: true,
+          name: true,
+          stripeAccountId: true,
+          ein: true,
+          einVerified: true,
+          trialStartDate: true,
+          trialEndDate: true,
+          subscriptionStatus: true,
+        },
       });
 
       const user = await tx.user.create({
@@ -124,7 +308,39 @@ export async function POST(request: Request) {
         select: { id: true, email: true, firstName: true, lastName: true },
       });
 
-      // Audit log
+      // If promo code was provided, create redemption and increment usage
+      if (validPromoCode) {
+        await tx.promoRedemption.create({
+          data: {
+            promoCodeId: validPromoCode.id,
+            organizationId: organization.id,
+            redeemedById: user.id,
+          },
+        });
+
+        await tx.promoCode.update({
+          where: { id: validPromoCode.id },
+          data: { currentUses: { increment: 1 } },
+        });
+
+        // Audit log for promo redemption
+        await tx.auditLog.create({
+          data: {
+            userId: user.id,
+            organizationId: organization.id,
+            action: "redeem",
+            entityType: "promo_code",
+            entityId: validPromoCode.id,
+            newValue: JSON.parse(JSON.stringify({
+              promoCode: validPromoCode.code,
+              trialDays: validPromoCode.trialDays,
+              trialEndDate: trialEndDate.toISOString(),
+            })),
+          },
+        });
+      }
+
+      // Audit log for organization creation
       await tx.auditLog.create({
         data: {
           userId: user.id,
@@ -139,6 +355,10 @@ export async function POST(request: Request) {
             adminEmail: user.email,
             adminName: `${user.firstName} ${user.lastName}`,
             stripeConnected: !!stripeAccountId,
+            trialDays,
+            trialEndDate: trialEndDate.toISOString(),
+            promoCodeUsed: validPromoCode?.code || null,
+            subscriptionStatus: "trial",
           })),
         },
       });
@@ -154,6 +374,9 @@ export async function POST(request: Request) {
         einVerified: result.organization.einVerified,
         stripeConnected: !!stripeAccountId,
         onboardingRequired: !stripeAccountId,
+        trialDays,
+        trialEndDate: trialEndDate.toISOString(),
+        promoCodeApplied: validPromoCode?.code || null,
       },
       { status: 201 },
     );

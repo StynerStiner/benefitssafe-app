@@ -69,7 +69,9 @@ export const ModelName = {
   Message: 'Message',
   Notification: 'Notification',
   Document: 'Document',
-  DisbursementPolicy: 'DisbursementPolicy'
+  DisbursementPolicy: 'DisbursementPolicy',
+  PromoCode: 'PromoCode',
+  PromoRedemption: 'PromoRedemption'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -99,6 +101,9 @@ export const OrganizationScalarFieldEnum = {
   stripeAccountId: 'stripeAccountId',
   plaidItemId: 'plaidItemId',
   logoUrl: 'logoUrl',
+  trialStartDate: 'trialStartDate',
+  trialEndDate: 'trialEndDate',
+  subscriptionStatus: 'subscriptionStatus',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -440,6 +445,34 @@ export const DisbursementPolicyScalarFieldEnum = {
 } as const
 
 export type DisbursementPolicyScalarFieldEnum = (typeof DisbursementPolicyScalarFieldEnum)[keyof typeof DisbursementPolicyScalarFieldEnum]
+
+
+export const PromoCodeScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  description: 'description',
+  trialDays: 'trialDays',
+  maxUses: 'maxUses',
+  currentUses: 'currentUses',
+  isActive: 'isActive',
+  expiresAt: 'expiresAt',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PromoCodeScalarFieldEnum = (typeof PromoCodeScalarFieldEnum)[keyof typeof PromoCodeScalarFieldEnum]
+
+
+export const PromoRedemptionScalarFieldEnum = {
+  id: 'id',
+  promoCodeId: 'promoCodeId',
+  organizationId: 'organizationId',
+  redeemedById: 'redeemedById',
+  redeemedAt: 'redeemedAt'
+} as const
+
+export type PromoRedemptionScalarFieldEnum = (typeof PromoRedemptionScalarFieldEnum)[keyof typeof PromoRedemptionScalarFieldEnum]
 
 
 export const SortOrder = {

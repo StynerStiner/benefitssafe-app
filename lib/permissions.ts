@@ -114,3 +114,7 @@ export function canManageCompliance(role: UserRole): boolean {
 export function canManageBilling(role: UserRole): boolean {
   return role === "billing_admin" || role === "platform_admin";
 }
+
+export function canManagePromoCodes(role: UserRole): boolean {
+  return role === "platform_admin";
+}

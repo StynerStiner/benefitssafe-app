@@ -157,4 +157,9 @@ export const RATE_LIMIT_CONFIGS = {
     maxRequests: 30,
     windowMs: 60000,
   },
+  // Promo code verification: 10 per minute per IP
+  promoVerify: {
+    maxRequests: 10,
+    windowMs: 60000,
+  },
 };

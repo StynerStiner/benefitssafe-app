@@ -25,14 +25,21 @@ model Organization {
   stripeAccountId String?  // Stripe Connect account
   plaidItemId     String?  // Plaid connection
   logoUrl         String?  // Organization logo image URL
+
+  // Trial & Subscription
+  trialStartDate     DateTime?
+  trialEndDate       DateTime?
+  subscriptionStatus String   @default("trial") // trial, active, expired, suspended
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  users    User[]
-  grants   Grant[]
-  vendors  Vendor[]
-  cards    VirtualCard[]
-  policies DisbursementPolicy[]
+  users            User[]
+  grants           Grant[]
+  vendors          Vendor[]
+  cards            VirtualCard[]
+  policies         DisbursementPolicy[]
+  promoRedemptions PromoRedemption[]
 }
 
 model User {
@@ -597,4 +604,40 @@ enum PolicySetting {
   ALLOWED
   DISALLOWED
   REQUIRES_REVIEW
+}
+
+// ============================================
+// PROMO CODES & FREE TRIALS
+// ============================================
+
+model PromoCode {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  description String?
+  trialDays   Int       // How many days of free access this code gives
+  maxUses     Int       @default(50)   // Max number of times this code can be used
+  currentUses Int       @default(0)
+  isActive    Boolean   @default(true)
+  expiresAt   DateTime? // When the code itself expires
+  createdById String    // platform_admin who created it
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  redemptions PromoRedemption[]
+
+  @@index([code])
+  @@index([isActive])
+}
+
+model PromoRedemption {
+  id             String   @id @default(cuid())
+  promoCodeId    String
+  promoCode      PromoCode    @relation(fields: [promoCodeId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  redeemedById   String       // User who redeemed it
+  redeemedAt     DateTime     @default(now())
+
+  @@unique([promoCodeId, organizationId]) // One code per org
+  @@index([organizationId])
 }

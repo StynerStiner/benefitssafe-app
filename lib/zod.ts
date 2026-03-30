@@ -32,6 +32,7 @@ export const registerSchema = z
     email: emailField,
     password: passwordField,
     confirmPassword: z.string({ required_error: "Please confirm your password" }),
+    promoCode: z.string().max(50).optional().or(z.literal("")),
     acceptTerms: z.literal(true, {
       errorMap: () => ({ message: "You must accept the terms and conditions" }),
     }),

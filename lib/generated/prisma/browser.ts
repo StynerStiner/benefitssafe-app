@@ -112,3 +112,13 @@ export type Document = Prisma.DocumentModel
  * 
  */
 export type DisbursementPolicy = Prisma.DisbursementPolicyModel
+/**
+ * Model PromoCode
+ * 
+ */
+export type PromoCode = Prisma.PromoCodeModel
+/**
+ * Model PromoRedemption
+ * 
+ */
+export type PromoRedemption = Prisma.PromoRedemptionModel
