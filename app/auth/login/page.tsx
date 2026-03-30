@@ -39,8 +39,8 @@ const Login = () => {
               <Image
                 src={LogoIcon}
                 alt="BenefitsSafe"
-                width={72}
-                height={72}
+                width={64}
+                height={64}
                 priority
                 className="object-contain"
               />
