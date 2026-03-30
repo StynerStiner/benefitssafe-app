@@ -41,8 +41,8 @@ const ForgotPassword = () => {
               <Image
                 src={LogoIcon}
                 alt="BenefitsSafe"
-                width={48}
-                height={48}
+                width={72}
+                height={72}
                 priority
                 className="object-contain"
               />
