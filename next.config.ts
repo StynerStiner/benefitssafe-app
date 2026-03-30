@@ -42,8 +42,6 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ['apexcharts'],
   experimental: {
-    reactOwnerStack: false,
-    clientRouterFilter: false,
     reactCompiler: false,
   },
   images: {
