@@ -92,6 +92,7 @@ export const OrganizationScalarFieldEnum = {
   id: 'id',
   name: 'name',
   ein: 'ein',
+  einVerified: 'einVerified',
   address: 'address',
   phone: 'phone',
   website: 'website',

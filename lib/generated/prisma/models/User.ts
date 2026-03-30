@@ -848,10 +848,6 @@ export type EnumUserRoleFieldUpdateOperationsInput = {
   set?: $Enums.UserRole
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type UserUpdatemfaBackupCodesInput = {
   set?: string[]
   push?: string | string[]

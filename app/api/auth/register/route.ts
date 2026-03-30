@@ -7,6 +7,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const registerApiSchema = z.object({
+  ein: z.string().regex(/^\d{2}-?\d{7}$/, "EIN must be 9 digits").optional(),
+  einVerified: z.boolean().optional(),
   organizationName: z.string().min(2, "Organization name is required"),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
@@ -42,7 +44,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const { organizationName, firstName, lastName, email, password } = parsed.data;
+    const { ein, einVerified, organizationName, firstName, lastName, email, password } = parsed.data;
+
+    // Normalize EIN: strip dashes for storage
+    const normalizedEIN = ein ? ein.replace(/-/g, "") : undefined;
 
     // Check for existing email
     const existingUser = await prisma.user.findUnique({
@@ -99,10 +104,12 @@ export async function POST(request: Request) {
       const organization = await tx.organization.create({
         data: {
           name: organizationName.trim(),
+          ein: normalizedEIN,
+          einVerified: einVerified === true,
           stripeAccountId,
           stripeCardholderIdId,
         },
-        select: { id: true, name: true, stripeAccountId: true },
+        select: { id: true, name: true, stripeAccountId: true, ein: true, einVerified: true },
       });
 
       const user = await tx.user.create({
@@ -127,6 +134,8 @@ export async function POST(request: Request) {
           entityId: organization.id,
           newValue: JSON.parse(JSON.stringify({
             organizationName: organization.name,
+            ein: organization.ein || null,
+            einVerified: organization.einVerified,
             adminEmail: user.email,
             adminName: `${user.firstName} ${user.lastName}`,
             stripeConnected: !!stripeAccountId,
@@ -142,6 +151,7 @@ export async function POST(request: Request) {
         message: "Organization created successfully",
         organizationId: result.organization.id,
         userId: result.user.id,
+        einVerified: result.organization.einVerified,
         stripeConnected: !!stripeAccountId,
         onboardingRequired: !stripeAccountId,
       },

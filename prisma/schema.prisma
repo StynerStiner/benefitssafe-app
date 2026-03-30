@@ -18,6 +18,7 @@ model Organization {
   id              String   @id @default(cuid())
   name            String
   ein             String?  // Tax ID
+  einVerified     Boolean  @default(false) // Whether EIN was verified via IRS/ProPublica lookup
   address         String?
   phone           String?
   website         String?
