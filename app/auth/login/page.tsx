@@ -5,6 +5,7 @@ import AuthImage from "@/public/assets/images/auth/auth-img.png";
 import { StaticImg } from "@/types/static-image";
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 
@@ -73,6 +74,13 @@ const Login = () => {
 
           {/* Login Form */}
           <LoginForm />
+
+          {/* Footer links */}
+          <div className="mt-6 text-center text-xs text-neutral-400 dark:text-neutral-500">
+            <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
+            {" | "}
+            <Link href="/privacy" className="hover:underline">Terms of Service</Link>
+          </div>
         </div>
       </div>
     </section>
