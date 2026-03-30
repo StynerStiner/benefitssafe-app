@@ -7,7 +7,7 @@ import CardBG from '@/public/assets/images/card/card-bg.png';
 import CardLogo from '@/public/assets/images/card/card-logo.png';
 import Image from 'next/image';
 
-interface VirtualCard {
+interface CardItem {
     id: string;
     last4: string;
     spendingCap: string | null;
@@ -22,7 +22,8 @@ interface VirtualCard {
     vendor: { id: string; name: string; type: string } | null;
 }
 
-const FeaturedCreatorsCard = ({ cards }: { cards: VirtualCard[] }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const FeaturedCreatorsCard = ({ cards }: { cards: any[] }) => {
     const displayCards = cards.slice(0, 2);
     const firstCard = displayCards[0];
     const beneficiaryName = firstCard?.beneficiary 

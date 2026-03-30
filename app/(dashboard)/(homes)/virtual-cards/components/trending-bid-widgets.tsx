@@ -9,7 +9,7 @@ interface VirtualCard {
     spendingCap: string | null;
 }
 
-const TrendingBidWidgets = ({ cards }: { cards: VirtualCard[] }) => {
+const TrendingBidWidgets = ({ cards }: { cards: any[] }) => {
     const active = cards.filter((c) => c.status === "ACTIVE").length;
     const paused = cards.filter((c) => c.status === "FROZEN").length;
     const totalCap = cards

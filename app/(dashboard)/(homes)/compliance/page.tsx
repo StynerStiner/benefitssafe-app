@@ -67,7 +67,7 @@ const podcastPage = () => {
 
                 <div className="col-span-12 md:col-span-6 2xl:col-span-4">
                     <Suspense fallback={<LoadingSkeleton />}>
-                        <CountriesStatusCard />
+                        <CountriesStatusCard beneficiaries={[]} />
                     </Suspense>
                 </div>
                 

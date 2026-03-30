@@ -16,9 +16,16 @@ interface VirtualCard {
     id: string;
     last4: string;
     spendingCap: string | null;
+    spendingLimit?: string | number;
     cardType: string;
     status: string;
     createdAt: string;
+    beneficiary?: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        avatarUrl: string | null;
+    } | null;
     vendor: { id: string; name: string; type: string } | null;
     expense: { id: string; description: string; amount: string } | null;
 }

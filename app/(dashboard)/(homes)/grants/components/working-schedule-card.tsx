@@ -17,7 +17,7 @@ interface Grant {
 }
 
 const WorkingScheduleCard = ({ grants }: { grants: Grant[] }) => {
-    const today = new Date();
+    const today = useMemo(() => new Date(), []);
     const currentDay = today.getDate();
 
     const weekDays = useMemo(() => {
@@ -34,7 +34,7 @@ const WorkingScheduleCard = ({ grants }: { grants: Grant[] }) => {
             });
         }
         return days;
-    }, [currentDay]);
+    }, [today, currentDay]);
 
     const upcomingGrants = useMemo(() => {
         const colors = ["border-purple", "border-yellow-600", "border-cyan-600", "border-green-600", "border-red-600"];

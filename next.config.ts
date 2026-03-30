@@ -44,6 +44,7 @@ const nextConfig: NextConfig = {
   experimental: {
     reactOwnerStack: false,
     clientRouterFilter: false,
+    reactCompiler: false,
   },
   images: {
     remotePatterns: [
@@ -70,7 +71,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
+export default process.env.SENTRY_AUTH_TOKEN ? withSentryConfig(nextConfig, {
   // Suppress source map upload warnings when SENTRY_AUTH_TOKEN is not set
   silent: !process.env.SENTRY_AUTH_TOKEN,
 
@@ -79,4 +80,4 @@ export default withSentryConfig(nextConfig, {
 
   // Automatically tree-shake Sentry logger statements to reduce bundle size
   disableLogger: true,
-});
+}) : nextConfig;

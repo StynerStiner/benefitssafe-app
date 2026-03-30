@@ -35,7 +35,7 @@ const ViewProfileSidebar = () => {
               lastName: session.user.lastName || session.user.name?.split(' ').slice(1).join(' ') || '',
               email: session.user.email || '',
               phone: '',
-              image: session.user.image,
+              image: session.user.image ?? undefined,
             });
           }
         })

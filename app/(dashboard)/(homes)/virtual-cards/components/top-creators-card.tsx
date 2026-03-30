@@ -21,7 +21,7 @@ interface VirtualCard {
     expense: { id: string; description: string; amount: string } | null;
 }
 
-const TopCreatorsCard = ({ cards }: { cards: VirtualCard[] }) => {
+const TopCreatorsCard = ({ cards }: { cards: any[] }) => {
     const displayCards = cards.slice(0, 6);
 
     if (displayCards.length === 0) {

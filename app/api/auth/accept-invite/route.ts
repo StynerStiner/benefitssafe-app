@@ -2,7 +2,7 @@
 // POST /api/auth/accept-invite         — Accept invite and set password
 
 import { prisma } from "@/lib/db";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -12,8 +12,8 @@ export async function GET(request: Request) {
   try {
     // Rate limit: 10 token verifications per minute per IP
     const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
-    const { success } = rateLimit("auth", ip, 10);
-    if (!success) {
+    const rateLimitResult = rateLimit(`auth:${ip}`, RATE_LIMIT_CONFIGS.auth);
+    if (!rateLimitResult.allowed) {
       return NextResponse.json(
         { error: "server", message: "Too many requests. Please try again later." },
         { status: 429 },
@@ -105,8 +105,8 @@ export async function POST(request: Request) {
   try {
     // Rate limit: 5 password set attempts per minute per IP
     const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
-    const { success } = rateLimit("auth", ip, 5);
-    if (!success) {
+    const rateLimitResult2 = rateLimit(`auth:${ip}`, RATE_LIMIT_CONFIGS.auth);
+    if (!rateLimitResult2.allowed) {
       return NextResponse.json(
         { error: "server", message: "Too many requests. Please try again later." },
         { status: 429 },

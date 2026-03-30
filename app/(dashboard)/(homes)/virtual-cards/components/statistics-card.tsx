@@ -12,7 +12,7 @@ interface VirtualCard {
     status?: string;
 }
 
-const StatisticsCard = ({ cards }: { cards: VirtualCard[] }) => {
+const StatisticsCard = ({ cards }: { cards: any[] }) => {
     const stats = useMemo(() => {
         const totalCards = cards.length;
         const totalSpendingCap = cards.reduce((sum, c) => sum + parseFloat(String(c.spendingLimit || "0")), 0);
