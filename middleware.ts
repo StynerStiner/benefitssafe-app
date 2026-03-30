@@ -28,28 +28,31 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check for valid session token
+  // NextAuth v5 uses AUTH_SECRET, try both env var names
+  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+
   const token = await getToken({
     req: request,
-    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+    secret,
+    // NextAuth v5 uses a different cookie name format
+    cookieName: process.env.NODE_ENV === "production"
+      ? "__Secure-authjs.session-token"
+      : "authjs.session-token",
   });
 
   if (!token) {
-    // Build the login redirect URL, preserving the intended destination
-    const loginUrl = new URL("/auth/login", request.url);
-    loginUrl.searchParams.set("callbackUrl", encodeURI(request.url));
-    return NextResponse.redirect(loginUrl);
-  }
+    // Try the legacy cookie name as fallback
+    const legacyToken = await getToken({
+      req: request,
+      secret,
+      cookieName: process.env.NODE_ENV === "production"
+        ? "__Secure-next-auth.session-token"
+        : "next-auth.session-token",
+    });
 
-  // If MFA is pending, only allow MFA-related and auth routes
-  if (token.mfaPending) {
-    const allowedMfaPaths = ["/api/mfa/verify", "/api/auth", "/auth"];
-    const isAllowedDuringMfa = allowedMfaPaths.some((p) =>
-      pathname.startsWith(p),
-    );
-    if (!isAllowedDuringMfa) {
-      // Redirect to login so the MFA step can be completed
+    if (!legacyToken) {
       const loginUrl = new URL("/auth/login", request.url);
-      loginUrl.searchParams.set("mfaPending", "true");
+      loginUrl.searchParams.set("callbackUrl", encodeURI(request.url));
       return NextResponse.redirect(loginUrl);
     }
   }
