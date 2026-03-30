@@ -65,43 +65,50 @@ const LoginForm = () => {
         if (res?.error) {
           if (res.error === 'EMAIL_NOT_VERIFIED') {
             setEmailNotVerified(true)
+            setLoading(false)
+            setIsSubmitting(false)
             return
           }
           toast.error(res.error)
-        } else {
-          // Use redirect: false so we can check for MFA
-          const signInResult = await signIn('credentials', {
-            redirect: false,
-            email: values.email,
-            password: values.password,
-          })
+          setLoading(false)
+          setIsSubmitting(false)
+          return
+        }
 
-          if (signInResult?.error) {
-            toast.error('Invalid email or password.')
-          } else if (signInResult?.ok) {
-            // Check session for MFA pending status
-            const sessionRes = await fetch('/api/auth/session')
-            const sessionData = await sessionRes.json()
+        // Use redirect: false so we can check for MFA
+        const signInResult = await signIn('credentials', {
+          redirect: false,
+          email: values.email,
+          password: values.password,
+        })
 
-            if (sessionData?.user?.mfaPending) {
-              setMfaRequired(true)
-              setMfaUserId(sessionData.user.id)
-            } else {
-              toast.success('Login successful!')
-              window.location.href = '/dashboard'
-            }
+        if (signInResult?.error) {
+          toast.error('Invalid email or password.')
+          setLoading(false)
+          setIsSubmitting(false)
+        } else if (signInResult?.ok) {
+          // Check session for MFA pending status
+          const sessionRes = await fetch('/api/auth/session')
+          const sessionData = await sessionRes.json()
+
+          if (sessionData?.user?.mfaPending) {
+            setMfaRequired(true)
+            setMfaUserId(sessionData.user.id)
+            setLoading(false)
+            setIsSubmitting(false)
+          } else {
+            toast.success('Login successful!')
+            // Hard redirect -- don't reset loading state, let the page navigate
+            window.location.href = '/dashboard'
+            return
           }
         }
       } catch {
         toast.error('Something went wrong. Please try again.')
-      } finally {
         setLoading(false)
+        setIsSubmitting(false)
       }
     })
-
-    setTimeout(() => {
-      setIsSubmitting(false)
-    }, 2000)
   }
 
   const handleMfaVerify = async () => {
