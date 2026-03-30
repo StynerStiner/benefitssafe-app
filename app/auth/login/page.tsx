@@ -2,7 +2,6 @@
 import LoginForm from "@/components/auth/login-form";
 import LogoFull from "@/public/assets/images/logo-full.png";
 import AuthImage from "@/public/assets/images/auth/auth-img.png";
-import Image from "next/image";
 import { StaticImg } from "@/types/static-image";
 import type { Metadata } from "next";
 import Image from "next/image";
