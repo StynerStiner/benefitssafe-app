@@ -6,9 +6,13 @@ import { getToken } from "next-auth/jwt";
 const PUBLIC_PATHS = [
   "/auth",
   "/api/auth",
+  "/api/verify-ein",
+  "/api/promo-codes/verify",
   "/_next",
   "/public",
   "/favicon.ico",
+  "/privacy",
+  "/terms",
 ];
 
 function isPublicPath(pathname: string): boolean {
