@@ -29,7 +29,6 @@ function LogoSidebar() {
       {!isCollapsed && (
         <div className="min-w-0">
           <h2 className="text-base font-bold text-neutral-900 dark:text-white leading-tight truncate">BenefitsSafe</h2>
-          <p className="text-[10px] text-neutral-500 dark:text-neutral-400 leading-tight truncate">Protecting Health, Security, and Growth.</p>
         </div>
       )}
     </Link>
