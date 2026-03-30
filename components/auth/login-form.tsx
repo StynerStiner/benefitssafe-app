@@ -88,7 +88,7 @@ const LoginForm = () => {
               setMfaUserId(sessionData.user.id)
             } else {
               toast.success('Login successful!')
-              router.push('/dashboard')
+              window.location.href = '/dashboard'
             }
           }
         }
