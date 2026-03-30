@@ -22,10 +22,10 @@ const NftPromoBanner = ({ cards }: { cards: { status: string; spendingCap: strin
                 <div className="nft-promo-card__thumb w-full lg:px-10">
                     <Image
                         src={NftCardImage}
-                        alt="NFT Card"
-                        className="w-full h-full object-cover"
-                        width={358}
-                        height={306}
+                        alt="Virtual Cards"
+                        className="w-full h-auto object-contain"
+                        width={400}
+                        height={400}
                         priority
                     />
                 </div>
