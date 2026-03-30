@@ -1,7 +1,7 @@
 "use client";
 
 import ForgotPasswordComponent from "@/components/auth/forgot-password";
-import ThemeLogo from "@/components/shared/theme-logo";
+import LogoFull from "@/public/assets/images/logo-full.png";
 import AuthImage from "@/public/assets/images/auth/forgot-pass-img.png";
 import { StaticImg } from "@/types/static-image";
 import type { Metadata } from "next";
@@ -37,8 +37,15 @@ const ForgotPassword = () => {
         <div className="lg:max-w-[464px] w-full mx-auto">
           {/* Logo and heading */}
           <div>
-            <div className="mb-2.5 inline-block max-w-[290px]">
-              <ThemeLogo />
+            <div className="mb-4 inline-block">
+              <Image
+                src={LogoFull}
+                alt="BenefitsSafe"
+                width={280}
+                height={80}
+                priority
+                className="object-contain"
+              />
             </div>
 
             <h4 className="font-semibold mb-3">Forgot Password</h4>

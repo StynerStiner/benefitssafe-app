@@ -1,7 +1,8 @@
 "use client";
 import LoginForm from "@/components/auth/login-form";
-import ThemeLogo from "@/components/shared/theme-logo";
+import LogoFull from "@/public/assets/images/logo-full.png";
 import AuthImage from "@/public/assets/images/auth/auth-img.png";
+import Image from "next/image";
 import { StaticImg } from "@/types/static-image";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -35,8 +36,15 @@ const Login = () => {
         <div className="lg:max-w-[464px] w-full mx-auto">
           {/* Logo and heading */}
           <div>
-            <div className="mb-2.5 inline-block max-w-[290px]">
-              <ThemeLogo />
+            <div className="mb-4 inline-block">
+              <Image
+                src={LogoFull}
+                alt="BenefitsSafe"
+                width={280}
+                height={80}
+                priority
+                className="object-contain"
+              />
             </div>
 
             <h4 className="font-semibold mb-3">Sign In to your Account</h4>
