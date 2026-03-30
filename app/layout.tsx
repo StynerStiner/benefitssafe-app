@@ -25,8 +25,8 @@ export const metadata: Metadata = {
     description: "Secure grant disbursement for nonprofits. Keep beneficiaries safe. Keep grants compliant.",
   },
   icons: {
-    icon: "/favicon.svg",
-    apple: "/favicon.svg",
+    icon: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 

@@ -1,12 +1,27 @@
 'use client';
 
+import { useTheme } from 'next-themes';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+
 import { useSidebarCollapsed } from '@/hooks/useSidebarCollapsed';
 import { cn } from '@/lib/utils';
-import { Shield } from 'lucide-react';
-import Link from 'next/link';
+import LogoIcon from '@/public/assets/images/logo-icon.png';
+import LogoWhite from '@/public/assets/images/logo-light.png';
+import LogoDark from '@/public/assets/images/logo.png';
 
 function LogoSidebar() {
+  const { theme } = useTheme();
   const isCollapsed = useSidebarCollapsed();
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
 
   return (
     <Link
@@ -16,16 +31,19 @@ function LogoSidebar() {
         isCollapsed ? 'px-1' : 'px-4'
       )}
     >
-      <div className="flex items-center gap-2.5">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-white">
-          <Shield className="h-4.5 w-4.5" />
-        </div>
-        {!isCollapsed && (
-          <span className="text-lg font-bold tracking-tight text-foreground dark:text-white">
-            BenefitsSafe
-          </span>
-        )}
-      </div>
+      <Image
+        src={
+          isCollapsed
+            ? LogoIcon
+            : theme === 'dark'
+              ? LogoWhite
+              : LogoDark
+        }
+        alt="Logo"
+        width={isCollapsed ? 44 : 168}
+        height={40}
+        priority
+      />
     </Link>
   );
 }
