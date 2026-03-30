@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input'
 import { useLoading } from '@/contexts/LoadingContext'
 import { loginSchema } from '@/lib/zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, Loader2, Lock, Mail, ShieldCheck } from 'lucide-react'
+import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail, RefreshCw, ShieldCheck } from 'lucide-react'
 import { signIn, useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -32,6 +32,10 @@ const LoginForm = () => {
   const formRef = useRef<HTMLFormElement>(null)
   const router = useRouter()
   const { update: updateSession } = useSession()
+
+  // Email verification state
+  const [emailNotVerified, setEmailNotVerified] = useState(false)
+  const [resendingVerification, setResendingVerification] = useState(false)
 
   // MFA state
   const [mfaRequired, setMfaRequired] = useState(false)
@@ -59,6 +63,10 @@ const LoginForm = () => {
         const res = await handleLoginAction(formData)
 
         if (res?.error) {
+          if (res.error === 'EMAIL_NOT_VERIFIED') {
+            setEmailNotVerified(true)
+            return
+          }
           toast.error(res.error)
         } else {
           // Use redirect: false so we can check for MFA
@@ -123,6 +131,80 @@ const LoginForm = () => {
     } finally {
       setMfaVerifying(false)
     }
+  }
+
+  const handleResendVerification = async () => {
+    const email = form.getValues('email')
+    if (!email) {
+      toast.error('Please enter your email address first.')
+      return
+    }
+
+    setResendingVerification(true)
+    try {
+      const res = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        toast.success('Verification email sent! Please check your inbox.')
+      } else {
+        toast.error(data.error || 'Could not resend verification email.')
+      }
+    } catch {
+      toast.error('Something went wrong. Please try again.')
+    } finally {
+      setResendingVerification(false)
+    }
+  }
+
+  // Email not verified step
+  if (emailNotVerified) {
+    return (
+      <div className="space-y-5">
+        <div className="flex items-center gap-3 mb-2">
+          <AlertCircle className="w-6 h-6 text-yellow-600" />
+          <h4 className="font-semibold">Email Not Verified</h4>
+        </div>
+        <p className="text-neutral-500 dark:text-neutral-300 text-sm">
+          Please verify your email address before signing in. Check your inbox for the verification link.
+        </p>
+
+        <Button
+          type="button"
+          onClick={handleResendVerification}
+          className="w-full rounded-lg h-[52px] text-sm"
+          disabled={resendingVerification}
+        >
+          {resendingVerification ? (
+            <>
+              <Loader2 className="animate-spin h-4.5 w-4.5 mr-2" />
+              Sending...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="h-4.5 w-4.5 mr-2" />
+              Resend Verification Email
+            </>
+          )}
+        </Button>
+
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => {
+            setEmailNotVerified(false)
+          }}
+          className="w-full text-sm text-neutral-500 hover:text-neutral-700"
+        >
+          Back to login
+        </Button>
+      </div>
+    )
   }
 
   // MFA verification step

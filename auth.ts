@@ -74,6 +74,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               organizationId: true,
               isActive: true,
               mfaEnabled: true,
+              emailVerified: true,
             },
           });
 
@@ -86,6 +87,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return null;
           }
 
+          // Check email verification status
+          if (!user.emailVerified) {
+            throw new Error("EMAIL_NOT_VERIFIED");
+          }
+
           return {
             id: user.id,
             email: user.email,
@@ -96,7 +102,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             organizationId: user.organizationId,
             mfaPending: user.mfaEnabled,
           };
-        } catch {
+        } catch (error) {
+          if (error instanceof Error && error.message === "EMAIL_NOT_VERIFIED") {
+            throw error;
+          }
           return null;
         }
       },

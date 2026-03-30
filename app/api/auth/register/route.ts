@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -271,6 +272,10 @@ export async function POST(request: Request) {
       // Organization can be connected to Stripe later
     }
 
+    // Generate email verification token
+    const emailVerifyToken = crypto.randomUUID();
+    const emailVerifyExpiry = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
+
     // Create Organization + Admin User + Promo Redemption in a transaction
     const result = await prisma.$transaction(async (tx) => {
       const organization = await tx.organization.create({
@@ -304,6 +309,9 @@ export async function POST(request: Request) {
           passwordHash,
           role: "nonprofit_admin",
           organizationId: organization.id,
+          emailVerified: false,
+          emailVerifyToken,
+          emailVerifyExpiry,
         },
         select: { id: true, email: true, firstName: true, lastName: true },
       });
@@ -366,6 +374,14 @@ export async function POST(request: Request) {
       return { organization, user };
     });
 
+    // TODO: Send verification email via Postmark/SendGrid
+    // For now, log the verification URL to console for development
+    const verificationUrl = `https://benefits-safe-app.vercel.app/api/auth/verify-email?token=${emailVerifyToken}`;
+    console.log("-----------------------------------------------------------");
+    console.log("EMAIL VERIFICATION LINK (dev only):");
+    console.log(verificationUrl);
+    console.log("-----------------------------------------------------------");
+
     return NextResponse.json(
       {
         message: "Organization created successfully",
@@ -377,6 +393,7 @@ export async function POST(request: Request) {
         trialDays,
         trialEndDate: trialEndDate.toISOString(),
         promoCodeApplied: validPromoCode?.code || null,
+        emailVerificationRequired: true,
       },
       { status: 201 },
     );

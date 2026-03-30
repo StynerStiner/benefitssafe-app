@@ -215,15 +215,13 @@ const RegisterForm = () => {
         return;
       }
 
-      const trialMsg = data.promoCodeApplied
-        ? `Promo code applied! You have ${data.trialDays} days free.`
-        : "You have a 14-day free trial.";
-
-      toast.success(`Registration successful! ${trialMsg} Redirecting to login...`);
+      toast.success(
+        "Account created! Please check your email to verify your account before signing in."
+      );
       form.reset();
       setTimeout(() => {
         router.push("/auth/login");
-      }, 1500);
+      }, 2500);
     } catch (error) {
       toast.error("Something went wrong. Please try again.");
       setIsSubmitting(false);
@@ -252,7 +250,7 @@ const RegisterForm = () => {
                       {...field}
                       type="text"
                       inputMode="numeric"
-                      placeholder="EIN (XX-XXXXXXX)"
+                      placeholder="EIN (XX-XXXXXXX) *"
                       className="ps-13 pe-12 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
                       disabled={loading}
                       maxLength={10}
@@ -328,7 +326,7 @@ const RegisterForm = () => {
                     <Input
                       {...field}
                       type="text"
-                      placeholder="Organization Name"
+                      placeholder="Organization Name *"
                       className="ps-13 pe-12 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
                       disabled={loading || einVerified}
                       readOnly={einVerified}
@@ -358,7 +356,7 @@ const RegisterForm = () => {
                       <Input
                         {...field}
                         type="text"
-                        placeholder="First Name"
+                        placeholder="First Name *"
                         className="ps-13 pe-4 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
                         disabled={loading}
                       />
@@ -380,7 +378,7 @@ const RegisterForm = () => {
                       <Input
                         {...field}
                         type="text"
-                        placeholder="Last Name"
+                        placeholder="Last Name *"
                         className="ps-13 pe-4 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
                         disabled={loading}
                       />
@@ -404,7 +402,7 @@ const RegisterForm = () => {
                     <Input
                       {...field}
                       type="email"
-                      placeholder="Email"
+                      placeholder="Email *"
                       className="ps-13 pe-12 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
                       disabled={loading}
                     />
@@ -427,7 +425,7 @@ const RegisterForm = () => {
                     <Input
                       {...field}
                       type={showPassword ? "text" : "password"}
-                      placeholder="Password"
+                      placeholder="Password *"
                       className="ps-13 pe-12 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
                       disabled={loading}
                     />
@@ -461,7 +459,7 @@ const RegisterForm = () => {
                     <Input
                       {...field}
                       type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm Password"
+                      placeholder="Confirm Password *"
                       className="ps-13 pe-12 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
                       disabled={loading}
                     />

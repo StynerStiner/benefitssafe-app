@@ -5,6 +5,8 @@ import AuthImage from "@/public/assets/images/auth/auth-img.png";
 import { StaticImg } from "@/types/static-image";
 import type { Metadata } from "next";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
+import { CheckCircle2 } from "lucide-react";
 
 const metadata: Metadata = {
   title: "Register & Create Account | BenefitsSafe Admin Dashboard",
@@ -17,6 +19,9 @@ const forgotPassImage: StaticImg = {
 };
 
 const Login = () => {
+  const searchParams = useSearchParams();
+  const verified = searchParams.get("verified") === "true";
+
   return (
     <section className="bg-white dark:bg-slate-900 flex flex-wrap min-h-screen">
       {/* Left Image */}
@@ -55,6 +60,16 @@ const Login = () => {
               Welcome back! Please enter your details.
             </p>
           </div>
+
+          {/* Email verification success banner */}
+          {verified && (
+            <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30 p-4">
+              <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
+              <p className="text-sm text-green-700 dark:text-green-400">
+                Email verified successfully! You can now sign in.
+              </p>
+            </div>
+          )}
 
           {/* Login Form */}
           <LoginForm />
