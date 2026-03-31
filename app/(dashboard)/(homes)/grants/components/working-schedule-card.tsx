@@ -1,8 +1,8 @@
 "use client";
 
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import MonthYearPicker from '@/components/shared/month-year-picker';
 
 interface Grant {
     id: string;
@@ -16,35 +16,10 @@ interface Grant {
     } | null;
 }
 
-const MONTH_NAMES = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
-];
-
 const WorkingScheduleCard = ({ grants }: { grants: Grant[] }) => {
     const now = useMemo(() => new Date(), []);
     const [selectedYear, setSelectedYear] = useState(now.getFullYear());
     const [selectedMonthIndex, setSelectedMonthIndex] = useState(now.getMonth());
-
-    const goToPreviousMonth = () => {
-        setSelectedMonthIndex((prev) => {
-            if (prev === 0) {
-                setSelectedYear((y) => y - 1);
-                return 11;
-            }
-            return prev - 1;
-        });
-    };
-
-    const goToNextMonth = () => {
-        setSelectedMonthIndex((prev) => {
-            if (prev === 11) {
-                setSelectedYear((y) => y + 1);
-                return 0;
-            }
-            return prev + 1;
-        });
-    };
 
     const selectedDate = useMemo(() => {
         return new Date(selectedYear, selectedMonthIndex, 1);
@@ -106,25 +81,11 @@ const WorkingScheduleCard = ({ grants }: { grants: Grant[] }) => {
             <CardContent className="p-0">
                 <div className="border-b border-neutral-200 dark:border-slate-500 py-4 px-6 flex items-center justify-between flex-wrap gap-2">
                     <h6 className="font-semibold text-lg mb-0 text-foreground">Grant Schedule</h6>
-                    <div className="flex items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={goToPreviousMonth}
-                            className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 w-9 border border-neutral-200 dark:border-slate-500 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors"
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                        </button>
-                        <span className="text-sm font-medium min-w-[140px] text-center">
-                            {MONTH_NAMES[selectedMonthIndex]} {selectedYear}
-                        </span>
-                        <button
-                            type="button"
-                            onClick={goToNextMonth}
-                            className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 w-9 border border-neutral-200 dark:border-slate-500 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors"
-                        >
-                            <ChevronRight className="h-4 w-4" />
-                        </button>
-                    </div>
+                    <MonthYearPicker
+                        selectedMonth={selectedMonthIndex}
+                        selectedYear={selectedYear}
+                        onChange={(m, y) => { setSelectedMonthIndex(m); setSelectedYear(y); }}
+                    />
                 </div>
                 <div className="card-body p-6">
                     <div className="flex items-center gap-4 justify-between flex-wrap">

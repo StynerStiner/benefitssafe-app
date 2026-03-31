@@ -2,8 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import UpDownSharpChart from "@/components/charts/up-down-sharp-chart";
+import MonthYearPicker from "@/components/shared/month-year-picker";
 
 interface VirtualCard {
     id: string;
@@ -23,35 +23,10 @@ interface VirtualCard {
     expense: { id: string; description: string; amount: string } | null;
 }
 
-const MONTH_NAMES = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
-];
-
 const EthPriceCard = ({ cards }: { cards: VirtualCard[] }) => {
     const now = useMemo(() => new Date(), []);
     const [selectedYear, setSelectedYear] = useState(now.getFullYear());
     const [selectedMonthIndex, setSelectedMonthIndex] = useState(now.getMonth());
-
-    const goToPreviousMonth = () => {
-        setSelectedMonthIndex((prev) => {
-            if (prev === 0) {
-                setSelectedYear((y) => y - 1);
-                return 11;
-            }
-            return prev - 1;
-        });
-    };
-
-    const goToNextMonth = () => {
-        setSelectedMonthIndex((prev) => {
-            if (prev === 11) {
-                setSelectedYear((y) => y + 1);
-                return 0;
-            }
-            return prev + 1;
-        });
-    };
 
     const selectedMonth = useMemo(() => {
         return `${selectedYear}-${String(selectedMonthIndex + 1).padStart(2, "0")}`;
@@ -81,25 +56,11 @@ const EthPriceCard = ({ cards }: { cards: VirtualCard[] }) => {
                     <div className="card-header border-b border-neutral-200 dark:border-slate-500 py-4 px-6">
                         <div className="flex items-center flex-wrap gap-2 justify-between">
                             <h6 className="font-bold text-lg mb-0">Card Spending</h6>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    onClick={goToPreviousMonth}
-                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 w-9 border border-neutral-200 dark:border-slate-500 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors"
-                                >
-                                    <ChevronLeft className="h-4 w-4" />
-                                </button>
-                                <span className="text-sm font-medium min-w-[140px] text-center">
-                                    {MONTH_NAMES[selectedMonthIndex]} {selectedYear}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={goToNextMonth}
-                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 w-9 border border-neutral-200 dark:border-slate-500 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors"
-                                >
-                                    <ChevronRight className="h-4 w-4" />
-                                </button>
-                            </div>
+                            <MonthYearPicker
+                                selectedMonth={selectedMonthIndex}
+                                selectedYear={selectedYear}
+                                onChange={(m, y) => { setSelectedMonthIndex(m); setSelectedYear(y); }}
+                            />
                         </div>
                     </div>
                     <div className="card-body py-4 px-6">
