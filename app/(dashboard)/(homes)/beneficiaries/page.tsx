@@ -13,7 +13,7 @@ import TopPerformerCard from '@/app/(dashboard)/(homes)/beneficiaries/components
 import AddBeneficiaryForm from '@/app/(dashboard)/(homes)/beneficiaries/components/add-beneficiary-form';
 import DashboardBreadcrumb from '@/components/layout/dashboard-breadcrumb';
 import LoadingSkeleton from '@/components/loading-skeleton';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface Beneficiary {
   id: string;
@@ -22,12 +22,16 @@ interface Beneficiary {
   email: string;
   phone: string | null;
   dateOfBirth: string | null;
+  addressStreet: string | null;
   addressCity: string | null;
   addressState: string | null;
+  addressZip: string | null;
   benefitPrograms: Record<string, boolean> | null;
+  emergencyContactName: string | null;
+  emergencyContactPhone: string | null;
+  notes: string | null;
   isActive: boolean;
   createdAt: string;
-  notes: string | null;
   _count?: { grantsAsBeneficiary?: number; expenseRequests?: number };
 }
 
@@ -36,8 +40,8 @@ const CrmPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch("/api/beneficiaries?limit=100")
+  const fetchBeneficiaries = useCallback(() => {
+    fetch("/api/beneficiaries?limit=100&includeInactive=true")
       .then((r) => r.ok ? r.json() : { data: [] })
       .then((json) => {
         const items = Array.isArray(json) ? json : json.data;
@@ -48,6 +52,14 @@ const CrmPage = () => {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    fetchBeneficiaries();
+  }, [fetchBeneficiaries]);
+
+  const handleRefresh = useCallback(() => {
+    fetchBeneficiaries();
+  }, [fetchBeneficiaries]);
 
   if (loading) {
     return (
@@ -69,7 +81,7 @@ const CrmPage = () => {
       )}
 
       <div className="flex justify-end mt-4">
-        <AddBeneficiaryForm />
+        <AddBeneficiaryForm onSuccess={handleRefresh} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
@@ -108,11 +120,11 @@ const CrmPage = () => {
         </div>
 
         <div className="lg:col-span-12 2xl:col-span-4">
-          <TopPerformerCard beneficiaries={beneficiaries} />
+          <TopPerformerCard beneficiaries={beneficiaries} onRefresh={handleRefresh} />
         </div>
 
         <div className="lg:col-span-12 2xl:col-span-6">
-          <TodoListRecentCard beneficiaries={beneficiaries} />
+          <TodoListRecentCard beneficiaries={beneficiaries} onRefresh={handleRefresh} />
         </div>
 
         <div className="lg:col-span-12 2xl:col-span-6">

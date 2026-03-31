@@ -3,7 +3,8 @@
 import NftPromoBanner from "@/app/(dashboard)/(homes)/virtual-cards/components/nft-promo-banner";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import CardDetailDialog from "./components/card-detail-dialog";
 import EthPriceCard from "./components/eth-price-card";
 import FeaturedCreatorsCard from "./components/featured-creators-card";
 import RecentBidCard from "./components/recent-bid-card";
@@ -34,8 +35,10 @@ const VirtualCardsPage = () => {
     const [cards, setCards] = useState<VirtualCard[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedCard, setSelectedCard] = useState<VirtualCard | null>(null);
+    const [detailOpen, setDetailOpen] = useState(false);
 
-    useEffect(() => {
+    const fetchCards = useCallback(() => {
         fetch("/api/virtual-cards?limit=100")
             .then((r) => r.ok ? r.json() : { data: [] })
             .then((json) => {
@@ -46,6 +49,19 @@ const VirtualCardsPage = () => {
                 setError("Failed to load virtual cards. Please try refreshing the page.");
             })
             .finally(() => setLoading(false));
+    }, []);
+
+    useEffect(() => {
+        fetchCards();
+    }, [fetchCards]);
+
+    const handleRefresh = useCallback(() => {
+        fetchCards();
+    }, [fetchCards]);
+
+    const handleCardClick = useCallback((card: VirtualCard) => {
+        setSelectedCard(card);
+        setDetailOpen(true);
     }, []);
 
     if (loading) {
@@ -97,14 +113,28 @@ const VirtualCardsPage = () => {
                             <StatisticsCard cards={cards} />
                         </div>
                         <div className="col-span-12 md:col-span-6 2xl:col-span-12">
-                            <FeaturedCreatorsCard cards={cards} />
+                            <FeaturedCreatorsCard
+                                cards={cards}
+                                onRefresh={handleRefresh}
+                                onCardClick={handleCardClick}
+                            />
                         </div>
                         <div className="col-span-12 md:col-span-6 2xl:col-span-12">
-                            <TopCreatorsCard cards={cards} />
+                            <TopCreatorsCard
+                                cards={cards}
+                                onRefresh={handleRefresh}
+                                onCardClick={handleCardClick}
+                            />
                         </div>
                     </div>
                 </div>
             </div>
+
+            <CardDetailDialog
+                card={selectedCard}
+                open={detailOpen}
+                onOpenChange={setDetailOpen}
+            />
         </>
     );
 };

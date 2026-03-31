@@ -132,3 +132,53 @@ export async function PATCH(
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { role, organizationId } = session.user;
+    if (role !== "nonprofit_admin" && role !== "platform_admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const { id } = await params;
+
+    const existing = await prisma.vendor.findFirst({
+      where: { id, organizationId, archivedAt: null },
+      select: { id: true, name: true, status: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
+    }
+
+    await prisma.vendor.update({
+      where: { id },
+      data: { archivedAt: new Date() },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: session.user.id,
+        organizationId,
+        action: "archive",
+        entityType: "vendor",
+        entityId: id,
+        oldValue: JSON.parse(JSON.stringify({ status: existing.status })),
+        newValue: JSON.parse(JSON.stringify({ archivedAt: new Date().toISOString() })),
+      },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("DELETE /api/vendors/[id] error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

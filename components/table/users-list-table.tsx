@@ -7,9 +7,9 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table";
-import { Edit, Eye, Trash2 } from "lucide-react";
+import { Check, Edit, Eye, Trash2, X } from "lucide-react";
 
-interface Vendor {
+interface TableVendor {
     id: string;
     name: string;
     email: string | null;
@@ -38,13 +38,15 @@ const statusColors: Record<string, string> = {
 };
 
 interface UserTableProps {
-    vendors?: Vendor[];
-    onView?: (vendor: Vendor) => void;
-    onEdit?: (vendor: Vendor) => void;
-    onDelete?: (vendor: Vendor) => void;
+    vendors?: TableVendor[];
+    onView?: (vendor: any) => void;
+    onEdit?: (vendor: any) => void;
+    onDelete?: (vendor: any) => void;
+    onApprove?: (vendor: any) => void;
+    onReject?: (vendor: any) => void;
 }
 
-export default function UserTable({ vendors, onView, onEdit, onDelete }: UserTableProps) {
+export default function UserTable({ vendors, onView, onEdit, onDelete, onApprove, onReject }: UserTableProps) {
     const list = vendors || [];
 
     const formatDate = (d: string) =>
@@ -75,6 +77,7 @@ export default function UserTable({ vendors, onView, onEdit, onDelete }: UserTab
                     list.map((vendor, index) => {
                         const isLast = index === list.length - 1;
                         const initials = vendor.name.split(" ").map(w => w[0] || "").join("").slice(0, 2).toUpperCase();
+                        const isPending = vendor.status === "PENDING";
                         return (
                             <TableRow key={vendor.id}>
                                 <TableCell
@@ -128,11 +131,34 @@ export default function UserTable({ vendors, onView, onEdit, onDelete }: UserTab
                                         }`}
                                 >
                                     <div className="flex justify-center gap-2">
+                                        {isPending && onApprove && (
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="rounded-[50%] text-green-600 bg-green-600/10"
+                                                title="Approve vendor"
+                                                onClick={() => onApprove(vendor)}
+                                            >
+                                                <Check className="w-5 h-5" />
+                                            </Button>
+                                        )}
+                                        {isPending && onReject && (
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="rounded-[50%] text-red-500 bg-red-500/10"
+                                                title="Reject vendor"
+                                                onClick={() => onReject(vendor)}
+                                            >
+                                                <X className="w-5 h-5" />
+                                            </Button>
+                                        )}
                                         <Button
                                             size="icon"
                                             variant="ghost"
                                             className="rounded-[50%] text-blue-500 bg-primary/10"
-                                            onClick={() => onView ? onView(vendor) : alert(`View vendor: ${vendor.name}`)}
+                                            title="View vendor details"
+                                            onClick={() => onView ? onView(vendor) : undefined}
                                         >
                                             <Eye className="w-5 h-5" />
                                         </Button>
@@ -140,7 +166,8 @@ export default function UserTable({ vendors, onView, onEdit, onDelete }: UserTab
                                             size="icon"
                                             variant="ghost"
                                             className="rounded-[50%] text-green-600 bg-green-600/10"
-                                            onClick={() => onEdit ? onEdit(vendor) : alert(`Edit vendor: ${vendor.name}`)}
+                                            title="Edit vendor"
+                                            onClick={() => onEdit ? onEdit(vendor) : undefined}
                                         >
                                             <Edit className="w-5 h-5" />
                                         </Button>
@@ -148,7 +175,8 @@ export default function UserTable({ vendors, onView, onEdit, onDelete }: UserTab
                                             size="icon"
                                             variant="ghost"
                                             className="rounded-[50%] text-red-500 bg-red-500/10"
-                                            onClick={() => onDelete ? onDelete(vendor) : alert(`Delete vendor: ${vendor.name}`)}
+                                            title="Delete vendor"
+                                            onClick={() => onDelete ? onDelete(vendor) : undefined}
                                         >
                                             <Trash2 className="w-5 h-5" />
                                         </Button>

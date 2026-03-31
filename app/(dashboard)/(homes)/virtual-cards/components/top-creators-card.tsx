@@ -1,17 +1,21 @@
 "use client";
 
 import CommonLink from "@/components/shared/common-link";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import React from "react";
+import CardActions from "./card-actions";
 
 interface VirtualCard {
     id: string;
     last4: string;
     spendingCap: string | null;
+    spendingLimit?: string | number;
     cardType: string;
     status: string;
-    beneficiary: {
+    createdAt: string;
+    beneficiary?: {
         id: string;
         firstName: string;
         lastName: string;
@@ -21,7 +25,26 @@ interface VirtualCard {
     expense: { id: string; description: string; amount: string } | null;
 }
 
-const TopCreatorsCard = ({ cards }: { cards: any[] }) => {
+interface TopCreatorsCardProps {
+    cards: VirtualCard[];
+    onRefresh: () => void;
+    onCardClick: (card: VirtualCard) => void;
+}
+
+function getStatusVariant(status: string) {
+    switch (status?.toUpperCase()) {
+        case "ACTIVE":
+            return "success";
+        case "FROZEN":
+            return "warning";
+        case "CANCELLED":
+            return "danger";
+        default:
+            return "secondary";
+    }
+}
+
+const TopCreatorsCard = ({ cards, onRefresh, onCardClick }: TopCreatorsCardProps) => {
     const displayCards = cards.slice(0, 6);
 
     if (displayCards.length === 0) {
@@ -58,7 +81,11 @@ const TopCreatorsCard = ({ cards }: { cards: any[] }) => {
                                 key={card.id}
                                 className={`flex items-center justify-between gap-2 flex-wrap ${index !== displayCards.length - 1 ? "mb-[32px]" : "mb-0"}`}
                             >
-                                <div className="flex items-center">
+                                <div
+                                    className="flex items-center cursor-pointer flex-1 min-w-0"
+                                    onClick={() => onCardClick(card)}
+                                    title="View card details"
+                                >
                                     {card.beneficiary?.avatarUrl ? (
                                         <Image
                                             src={card.beneficiary.avatarUrl}
@@ -76,11 +103,22 @@ const TopCreatorsCard = ({ cards }: { cards: any[] }) => {
                                         <h6 className="text-base mb-0 font-semibold">
                                             {card.beneficiary?.firstName} {card.beneficiary?.lastName}
                                         </h6>
-                                        <span className="text-sm text-neutral-500 dark:text-neutral-300 font-normal">
-                                            •••• {card.last4}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm text-neutral-500 dark:text-neutral-300 font-normal">
+                                                **** {card.last4}
+                                            </span>
+                                            <Badge variant={getStatusVariant(card.status)} className="text-[10px] px-2 py-0">
+                                                {card.status}
+                                            </Badge>
+                                        </div>
                                     </div>
                                 </div>
+                                <CardActions
+                                    cardId={card.id}
+                                    cardLast4={card.last4}
+                                    status={card.status}
+                                    onActionComplete={onRefresh}
+                                />
                             </div>
                         ))}
                     </div>

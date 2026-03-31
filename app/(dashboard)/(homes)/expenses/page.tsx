@@ -35,7 +35,7 @@ const EcommercePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchExpenses = () => {
     fetch("/api/expenses?limit=100")
       .then((r) => r.ok ? r.json() : { data: [] })
       .then((json) => {
@@ -46,6 +46,10 @@ const EcommercePage = () => {
         setError("Failed to load expenses. Please try refreshing the page.");
       })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchExpenses();
   }, []);
 
   if (loading) {
@@ -81,7 +85,7 @@ const EcommercePage = () => {
         </div>
 
         <div className="md:col-span-12 lg:col-span-6 2xl:col-span-9">
-          <RecentOrdersCard expenses={expenses} />
+          <RecentOrdersCard expenses={expenses} onRefresh={fetchExpenses} />
         </div>
 
         <div className="md:col-span-12 lg:col-span-6 2xl:col-span-3">

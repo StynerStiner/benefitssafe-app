@@ -231,6 +231,7 @@ export async function PATCH(
         ...(data.emergencyContactName !== undefined && { emergencyContactName: clean(data.emergencyContactName) }),
         ...(data.emergencyContactPhone !== undefined && { emergencyContactPhone: clean(data.emergencyContactPhone) }),
         ...(data.notes !== undefined && { notes: clean(data.notes) }),
+        ...(data.isActive !== undefined && { isActive: data.isActive }),
       },
       select: { id: true, firstName: true, lastName: true, email: true },
     });

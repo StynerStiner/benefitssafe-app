@@ -23,6 +23,15 @@ export const rejectExpenseSchema = z.object({
   notes: z.string().max(2000).optional(),
 });
 
+export const updateExpenseSchema = z.object({
+  description: z.string().min(1, "Description is required").max(2000).optional(),
+  amount: z.coerce.number().positive("Amount must be positive").optional(),
+  categoryId: z.string().min(1).optional(),
+  vendorName: z.string().max(200).or(z.literal("")).optional(),
+  notes: z.string().max(2000).optional(),
+});
+
 export type CreateExpenseInput = z.infer<typeof createExpenseSchema>;
 export type ApproveExpenseInput = z.infer<typeof approveExpenseSchema>;
 export type RejectExpenseInput = z.infer<typeof rejectExpenseSchema>;
+export type UpdateExpenseInput = z.infer<typeof updateExpenseSchema>;

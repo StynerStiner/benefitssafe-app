@@ -36,7 +36,11 @@ const labelClassName = "text-[#4b5563] dark:text-white mb-2";
 const textareaClassName =
     "border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-[120px] rounded-lg !shadow-none !ring-0";
 
-const AddBeneficiaryForm = () => {
+interface AddBeneficiaryFormProps {
+    onSuccess?: () => void;
+}
+
+const AddBeneficiaryForm = ({ onSuccess }: AddBeneficiaryFormProps = {}) => {
     const router = useRouter();
     const [open, setOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -318,6 +322,7 @@ const AddBeneficiaryForm = () => {
             setOpen(false);
             resetForm();
             router.refresh();
+            if (onSuccess) onSuccess();
         } catch {
             toast.error("Something went wrong. Please try again.");
         } finally {

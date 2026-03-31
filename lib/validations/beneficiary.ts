@@ -35,6 +35,8 @@ export type CreateBeneficiaryInput = z.infer<typeof createBeneficiarySchema>;
 
 export const updateBeneficiarySchema = createBeneficiarySchema.partial().omit({
   email: true,
+}).extend({
+  isActive: z.boolean().optional(),
 });
 
 export type UpdateBeneficiaryInput = z.infer<typeof updateBeneficiarySchema>;

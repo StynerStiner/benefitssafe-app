@@ -29,10 +29,11 @@ export async function GET(request: Request) {
     const limit = Math.min(Math.max(Number.isNaN(rawLimit) ? 25 : rawLimit, 1), 100);
     const offset = Math.max(Number.isNaN(rawOffset) ? 0 : rawOffset, 0);
 
+    const includeInactive = searchParams.get("includeInactive") === "true";
     const userWhere = {
       organizationId,
       role: "beneficiary" as const,
-      isActive: true,
+      ...(includeInactive ? {} : { isActive: true }),
     };
 
     const [beneficiaries, total] = await Promise.all([

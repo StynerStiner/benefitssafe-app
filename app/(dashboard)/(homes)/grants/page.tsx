@@ -2,7 +2,7 @@
 
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import AverageEarningCard from "./components/average-earning-card";
 import MyTasksCard from "./components/my-tasks-card";
 import ProjectAnalysisCard from "./components/project-analysis-card";
@@ -46,7 +46,7 @@ const ProjectManagement = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
+    const fetchGrants = useCallback(() => {
         fetch("/api/grants?limit=100")
             .then((res) => {
                 if (!res.ok) return { data: [] };
@@ -61,6 +61,10 @@ const ProjectManagement = () => {
             })
             .finally(() => setLoading(false));
     }, []);
+
+    useEffect(() => {
+        fetchGrants();
+    }, [fetchGrants]);
 
     if (loading) {
         return (
@@ -117,7 +121,7 @@ const ProjectManagement = () => {
                 </div>
 
                 <div className="col-span-12 2xl:col-span-8">
-                    <ProjectsStatusCard grants={grants} />
+                    <ProjectsStatusCard grants={grants} onRefresh={fetchGrants} />
                 </div>
             </div>
         </>
