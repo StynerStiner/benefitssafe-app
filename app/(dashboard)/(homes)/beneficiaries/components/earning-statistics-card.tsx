@@ -6,13 +6,29 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowBigUp, ShoppingCart, SquareKanban } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
+function filterByPeriod(items: { createdAt?: string }[], period: string) {
+    const now = new Date();
+    return items.filter(item => {
+        if (!item.createdAt) return true;
+        const date = new Date(item.createdAt);
+        switch (period) {
+            case "Today": return date.toDateString() === now.toDateString();
+            case "Weekly": { const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7); return date >= weekAgo; }
+            case "Monthly": { const monthAgo = new Date(now); monthAgo.setMonth(now.getMonth() - 1); return date >= monthAgo; }
+            case "Yearly": default: { const yearAgo = new Date(now); yearAgo.setFullYear(now.getFullYear() - 1); return date >= yearAgo; }
+        }
+    });
+}
+
 interface Beneficiary {
     id: string;
+    createdAt?: string;
     _count?: { grantsAsBeneficiary?: number; expenseRequests?: number };
 }
 
 const EarningStatisticsCard = ({ beneficiaries }: { beneficiaries: Beneficiary[] }) => {
-    const [grants, setGrants] = useState<{ totalAmount: string; spentAmount: string; remainingAmount: string }[]>([]);
+    const [grants, setGrants] = useState<{ totalAmount: string; spentAmount: string; remainingAmount: string; createdAt?: string }[]>([]);
+    const [selectedPeriod, setSelectedPeriod] = useState("Yearly");
 
     useEffect(() => {
         fetch("/api/grants?limit=100")
@@ -24,12 +40,14 @@ const EarningStatisticsCard = ({ beneficiaries }: { beneficiaries: Beneficiary[]
             .catch(() => {});
     }, []);
 
+    const filteredGrants = useMemo(() => filterByPeriod(grants, selectedPeriod) as typeof grants, [grants, selectedPeriod]);
+
     const totals = useMemo(() => {
-        const totalAllocated = grants.reduce((sum, g) => sum + parseFloat(g.totalAmount || "0"), 0);
-        const totalSpent = grants.reduce((sum, g) => sum + parseFloat(g.spentAmount || "0"), 0);
-        const totalRemaining = grants.reduce((sum, g) => sum + parseFloat(g.remainingAmount || "0"), 0);
+        const totalAllocated = filteredGrants.reduce((sum, g) => sum + parseFloat(g.totalAmount || "0"), 0);
+        const totalSpent = filteredGrants.reduce((sum, g) => sum + parseFloat(g.spentAmount || "0"), 0);
+        const totalRemaining = filteredGrants.reduce((sum, g) => sum + parseFloat(g.remainingAmount || "0"), 0);
         return { totalAllocated, totalSpent, totalRemaining };
-    }, [grants]);
+    }, [filteredGrants]);
 
     const formatAmount = (amount: number) => {
         if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
@@ -49,6 +67,8 @@ const EarningStatisticsCard = ({ beneficiaries }: { beneficiaries: Beneficiary[]
                         <CustomSelect
                             placeholder="Yearly"
                             options={["Yearly", "Monthly", "Weekly", "Today"]}
+                            value={selectedPeriod}
+                            onValueChange={setSelectedPeriod}
                         />
                     </div>
                 </div>

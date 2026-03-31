@@ -1,16 +1,51 @@
+"use client";
+
+import { useState } from "react";
 import ExpenseStatisticsChart from "@/components/charts/expense-statistics-chart";
 import CustomSelect from "@/components/shared/custom-select";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface Expense {
     status: string;
+    createdAt: string;
+}
+
+function filterByPeriod(items: any[], period: string) {
+    const now = new Date();
+    return items.filter((item) => {
+        const date = new Date(item.createdAt);
+        switch (period) {
+            case "Today":
+                return date.toDateString() === now.toDateString();
+            case "Weekly": {
+                const weekAgo = new Date(now);
+                weekAgo.setDate(now.getDate() - 7);
+                return date >= weekAgo;
+            }
+            case "Monthly": {
+                const monthAgo = new Date(now);
+                monthAgo.setMonth(now.getMonth() - 1);
+                return date >= monthAgo;
+            }
+            case "Yearly":
+            default: {
+                const yearAgo = new Date(now);
+                yearAgo.setFullYear(now.getFullYear() - 1);
+                return date >= yearAgo;
+            }
+        }
+    });
 }
 
 const ExpenseStatisticsCard = ({ expenses }: { expenses: Expense[] }) => {
-    const pending = expenses.filter((e) => e.status === "PENDING").length;
-    const approved = expenses.filter((e) => e.status === "APPROVED").length;
-    const rejected = expenses.filter((e) => e.status === "REJECTED").length;
-    const paid = expenses.filter((e) => e.status === "PAID").length;
+    const [period, setPeriod] = useState("Yearly");
+
+    const filtered = filterByPeriod(expenses, period);
+
+    const pending = filtered.filter((e) => e.status === "PENDING").length;
+    const approved = filtered.filter((e) => e.status === "APPROVED").length;
+    const rejected = filtered.filter((e) => e.status === "REJECTED").length;
+    const paid = filtered.filter((e) => e.status === "PAID").length;
 
     return (
         <Card className="card h-full rounded-lg border-0 !p-0 block">
@@ -22,6 +57,8 @@ const ExpenseStatisticsCard = ({ expenses }: { expenses: Expense[] }) => {
                             <CustomSelect
                                 placeholder="Yearly"
                                 options={["Yearly", "Monthly", "Weekly", "Today"]}
+                                value={period}
+                                onValueChange={setPeriod}
                             />
                         </div>
                     </div>

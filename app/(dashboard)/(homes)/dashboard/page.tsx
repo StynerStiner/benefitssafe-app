@@ -20,6 +20,7 @@ interface Grant {
     totalAmount: string;
     spentAmount: string;
     remainingAmount: string;
+    createdAt: string;
     categories: { id: string; name: string; allocatedAmount: string; spentAmount: string }[];
     beneficiary: { id: string; firstName: string; lastName: string; email: string } | null;
 }

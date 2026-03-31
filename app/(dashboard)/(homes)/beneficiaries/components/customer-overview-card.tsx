@@ -1,16 +1,37 @@
+"use client";
+
 import CustomerOverviewChart from '@/components/charts/customer-overview-chart';
 import CustomSelect from '@/components/shared/custom-select';
 import { Card, CardContent } from '@/components/ui/card';
+import { useState, useMemo } from 'react';
+
+function filterByPeriod(items: any[], period: string) {
+  const now = new Date();
+  return items.filter(item => {
+    const date = new Date(item.createdAt);
+    switch (period) {
+      case "Today": return date.toDateString() === now.toDateString();
+      case "Weekly": { const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7); return date >= weekAgo; }
+      case "Monthly": { const monthAgo = new Date(now); monthAgo.setMonth(now.getMonth() - 1); return date >= monthAgo; }
+      case "Yearly": default: { const yearAgo = new Date(now); yearAgo.setFullYear(now.getFullYear() - 1); return date >= yearAgo; }
+    }
+  });
+}
 
 interface Beneficiary {
+  createdAt: string;
   benefitPrograms: Record<string, boolean> | null;
   isActive: boolean;
 }
 
 const CustomerOverviewCard = ({ beneficiaries }: { beneficiaries: Beneficiary[] }) => {
-    const total = beneficiaries.length;
-    const active = beneficiaries.filter((b) => b.isActive).length;
-    const onSSI = beneficiaries.filter((b) => b.benefitPrograms?.ssi).length;
+    const [selectedPeriod, setSelectedPeriod] = useState("Yearly");
+
+    const filtered = useMemo(() => filterByPeriod(beneficiaries, selectedPeriod), [beneficiaries, selectedPeriod]);
+
+    const total = filtered.length;
+    const active = filtered.filter((b) => b.isActive).length;
+    const onSSI = filtered.filter((b) => b.benefitPrograms?.ssi).length;
 
     return (
         <Card className="card h-full rounded-lg border-0 overflow-hidden">
@@ -20,6 +41,8 @@ const CustomerOverviewCard = ({ beneficiaries }: { beneficiaries: Beneficiary[] 
                     <CustomSelect
                         placeholder="Yearly"
                         options={["Yearly", "Monthly", "Weekly", "Today"]}
+                        value={selectedPeriod}
+                        onValueChange={setSelectedPeriod}
                     />
                 </div>
 

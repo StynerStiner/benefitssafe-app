@@ -1,15 +1,63 @@
-import { Card, CardContent } from '@/components/ui/card';
-import CustomSelect from '@/components/shared/custom-select';
+"use client";
+
+import { useState, useMemo } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import CustomSelect from "@/components/shared/custom-select";
 
 interface Expense {
     category: { name: string } | null;
     amount: string;
+    createdAt: string;
+}
+
+function filterByPeriod(items: any[], period: string) {
+    const now = new Date();
+    return items.filter((item) => {
+        const date = new Date(item.createdAt);
+        switch (period) {
+            case "Today":
+                return date.toDateString() === now.toDateString();
+            case "This Week":
+            case "Weekly": {
+                const weekAgo = new Date(now);
+                weekAgo.setDate(now.getDate() - 7);
+                return date >= weekAgo;
+            }
+            case "This Month":
+            case "Monthly": {
+                const monthAgo = new Date(now);
+                monthAgo.setMonth(now.getMonth() - 1);
+                return date >= monthAgo;
+            }
+            case "Last Month": {
+                const twoMonthsAgo = new Date(now);
+                twoMonthsAgo.setMonth(now.getMonth() - 2);
+                const oneMonthAgo = new Date(now);
+                oneMonthAgo.setMonth(now.getMonth() - 1);
+                return date >= twoMonthsAgo && date < oneMonthAgo;
+            }
+            case "This Year":
+            case "Yearly":
+            default: {
+                const yearAgo = new Date(now);
+                yearAgo.setFullYear(now.getFullYear() - 1);
+                return date >= yearAgo;
+            }
+        }
+    });
 }
 
 const TransactionsCard = ({ expenses }: { expenses: Expense[] }) => {
+    const [period, setPeriod] = useState("This Month");
+
+    const filtered = useMemo(
+        () => filterByPeriod(expenses, period) as Expense[],
+        [expenses, period]
+    );
+
     // Group by category
     const catMap = new Map<string, { count: number; total: number }>();
-    for (const e of expenses) {
+    for (const e of filtered) {
         const name = e.category?.name || "Uncategorized";
         const existing = catMap.get(name) || { count: 0, total: 0 };
         existing.count += 1;
@@ -30,6 +78,8 @@ const TransactionsCard = ({ expenses }: { expenses: Expense[] }) => {
                     <h6 className="mb-0 font-bold text-lg">Expenses by Category</h6>
                     <CustomSelect
                         placeholder="This Month"
+                        value={period}
+                        onValueChange={setPeriod}
                         options={["This Month", "Last Month", "This Year", "This Week"]}
                     />
                 </div>

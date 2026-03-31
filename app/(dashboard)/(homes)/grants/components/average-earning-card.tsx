@@ -1,15 +1,36 @@
+"use client";
+
 import DoubleLineChartTwo from "@/components/charts/double-line-chart-two";
 import CustomSelect from "@/components/shared/custom-select";
 import { Card, CardContent } from '@/components/ui/card';
+import { useMemo, useState } from 'react';
 
 interface Grant {
     totalAmount: string;
     spentAmount: string;
+    createdAt: string;
+}
+
+function filterByPeriod(items: any[], period: string) {
+    const now = new Date();
+    return items.filter(item => {
+        const date = new Date(item.createdAt);
+        switch (period) {
+            case "Today": return date.toDateString() === now.toDateString();
+            case "Weekly": { const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7); return date >= weekAgo; }
+            case "Monthly": { const monthAgo = new Date(now); monthAgo.setMonth(now.getMonth() - 1); return date >= monthAgo; }
+            case "Yearly": default: { const yearAgo = new Date(now); yearAgo.setFullYear(now.getFullYear() - 1); return date >= yearAgo; }
+        }
+    });
 }
 
 const AverageEarningCard = ({ grants }: { grants: Grant[] }) => {
-    const totalAllocated = grants.reduce((sum, g) => sum + parseFloat(g.totalAmount || "0"), 0);
-    const totalDisbursed = grants.reduce((sum, g) => sum + parseFloat(g.spentAmount || "0"), 0);
+    const [period, setPeriod] = useState("Yearly");
+
+    const filteredGrants = useMemo(() => filterByPeriod(grants, period) as Grant[], [grants, period]);
+
+    const totalAllocated = useMemo(() => filteredGrants.reduce((sum, g) => sum + parseFloat(g.totalAmount || "0"), 0), [filteredGrants]);
+    const totalDisbursed = useMemo(() => filteredGrants.reduce((sum, g) => sum + parseFloat(g.spentAmount || "0"), 0), [filteredGrants]);
 
     return (
         <>
@@ -20,6 +41,8 @@ const AverageEarningCard = ({ grants }: { grants: Grant[] }) => {
                         <CustomSelect
                             placeholder="Yearly"
                             options={["Yearly", "Monthly", "Weekly", "Today"]}
+                            value={period}
+                            onValueChange={setPeriod}
                         />
                     </div>
 

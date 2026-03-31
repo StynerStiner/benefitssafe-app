@@ -1,16 +1,65 @@
-import StatsCard from '@/app/(dashboard)/(homes)/expenses/component/stats-card';
-import GenerateContentChart from '@/components/charts/generate-content-chart';
-import CustomSelect from '@/components/shared/custom-select';
-import { Card, CardContent } from '@/components/ui/card';
+"use client";
+
+import { useState, useMemo } from "react";
+import StatsCard from "@/app/(dashboard)/(homes)/expenses/component/stats-card";
+import GenerateContentChart from "@/components/charts/generate-content-chart";
+import CustomSelect from "@/components/shared/custom-select";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Expense {
     amount: string;
     status: string;
+    createdAt: string;
+}
+
+function filterByPeriod(items: any[], period: string) {
+    const now = new Date();
+    return items.filter((item) => {
+        const date = new Date(item.createdAt);
+        switch (period) {
+            case "Today":
+                return date.toDateString() === now.toDateString();
+            case "This Week":
+            case "Weekly": {
+                const weekAgo = new Date(now);
+                weekAgo.setDate(now.getDate() - 7);
+                return date >= weekAgo;
+            }
+            case "This Month":
+            case "Monthly": {
+                const monthAgo = new Date(now);
+                monthAgo.setMonth(now.getMonth() - 1);
+                return date >= monthAgo;
+            }
+            case "Last Month": {
+                const twoMonthsAgo = new Date(now);
+                twoMonthsAgo.setMonth(now.getMonth() - 2);
+                const oneMonthAgo = new Date(now);
+                oneMonthAgo.setMonth(now.getMonth() - 1);
+                return date >= twoMonthsAgo && date < oneMonthAgo;
+            }
+            case "This Year":
+            case "Yearly":
+            default: {
+                const yearAgo = new Date(now);
+                yearAgo.setFullYear(now.getFullYear() - 1);
+                return date >= yearAgo;
+            }
+        }
+    });
 }
 
 const RevenueReportCard = ({ expenses }: { expenses: Expense[] }) => {
-    const totalRequested = expenses.reduce((sum, e) => sum + parseFloat(e.amount || "0"), 0);
-    const approvedTotal = expenses.filter((e) => e.status === "APPROVED" || e.status === "PAID")
+    const [period, setPeriod] = useState("Yearly");
+
+    const filtered = useMemo(
+        () => filterByPeriod(expenses, period) as Expense[],
+        [expenses, period]
+    );
+
+    const totalRequested = filtered.reduce((sum, e) => sum + parseFloat(e.amount || "0"), 0);
+    const approvedTotal = filtered
+        .filter((e) => e.status === "APPROVED" || e.status === "PAID")
         .reduce((sum, e) => sum + parseFloat(e.amount || "0"), 0);
 
     return (
@@ -23,6 +72,8 @@ const RevenueReportCard = ({ expenses }: { expenses: Expense[] }) => {
                                 <h6 className="mb-0 font-bold text-lg">Expense Trends</h6>
                                 <CustomSelect
                                     placeholder="Yearly"
+                                    value={period}
+                                    onValueChange={setPeriod}
                                     options={["Yearly", "Monthly", "Weekly", "Today"]}
                                 />
                             </div>
@@ -50,7 +101,7 @@ const RevenueReportCard = ({ expenses }: { expenses: Expense[] }) => {
 
                     <div className="xl:col-span-12 2xl:col-span-6 2xl:border-l border-neutral-200 dark:border-neutral-600">
                         <div className="grid grid-cols-1 sm:grid-cols-2 border-s-neutral-300">
-                            <StatsCard expenses={expenses} />
+                            <StatsCard expenses={filtered} />
                         </div>
                     </div>
                 </div>

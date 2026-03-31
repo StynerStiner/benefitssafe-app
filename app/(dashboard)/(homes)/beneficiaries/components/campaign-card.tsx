@@ -1,8 +1,48 @@
+"use client";
+
 import CustomSelect from '@/components/shared/custom-select';
 import { Card, CardContent } from '@/components/ui/card';
 import { UserPlus, UserCheck, Mail, FileUp } from 'lucide-react';
+import { useState, useMemo } from 'react';
 
-const CampaignCard = ({ beneficiaries }: { beneficiaries: unknown[] }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function filterByPeriod(items: any[], period: string) {
+  const now = new Date();
+  return items.filter(item => {
+    const date = new Date(item.createdAt);
+    switch (period) {
+      case "Today": return date.toDateString() === now.toDateString();
+      case "Weekly": { const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7); return date >= weekAgo; }
+      case "Monthly": { const monthAgo = new Date(now); monthAgo.setMonth(now.getMonth() - 1); return date >= monthAgo; }
+      case "Yearly": default: { const yearAgo = new Date(now); yearAgo.setFullYear(now.getFullYear() - 1); return date >= yearAgo; }
+    }
+  });
+}
+
+interface Beneficiary {
+  createdAt: string;
+  enrollmentSource?: string;
+}
+
+const CampaignCard = ({ beneficiaries }: { beneficiaries: Beneficiary[] }) => {
+  const [selectedPeriod, setSelectedPeriod] = useState("Yearly");
+
+  const filtered = useMemo(() => filterByPeriod(beneficiaries, selectedPeriod), [beneficiaries, selectedPeriod]);
+
+  const stats = useMemo(() => {
+    const total = filtered.length || 1;
+    const adminAdded = filtered.filter(b => !b.enrollmentSource || b.enrollmentSource === "admin").length;
+    const selfEnrolled = filtered.filter(b => b.enrollmentSource === "self").length;
+    const invited = filtered.filter(b => b.enrollmentSource === "invite").length;
+    const imported = filtered.filter(b => b.enrollmentSource === "import").length;
+    return {
+      adminAdded: Math.round((adminAdded / total) * 100),
+      selfEnrolled: Math.round((selfEnrolled / total) * 100),
+      invited: Math.round((invited / total) * 100),
+      imported: Math.round((imported / total) * 100),
+    };
+  }, [filtered]);
+
   return (
     <Card className="card h-full rounded-lg border-0">
       <CardContent className="card-body p-0">
@@ -11,6 +51,8 @@ const CampaignCard = ({ beneficiaries }: { beneficiaries: unknown[] }) => {
           <CustomSelect
             placeholder="Yearly"
             options={["Yearly", "Monthly", "Weekly", "Today"]}
+            value={selectedPeriod}
+            onValueChange={setSelectedPeriod}
           />
         </div>
 
@@ -25,10 +67,10 @@ const CampaignCard = ({ beneficiaries }: { beneficiaries: unknown[] }) => {
             <div className="flex items-center gap-2 w-full">
               <div className="ms-auto">
                 <div className="w-[66px] bg-gray-200 rounded-full h-2.5 dark:bg-gray-600">
-                  <div className="bg-orange-500 h-2.5 rounded-full w-[60%]"></div>
+                  <div className="bg-orange-500 h-2.5 rounded-full" style={{ width: `${stats.adminAdded}%` }}></div>
                 </div>
               </div>
-              <span className="text-neutral-500 dark:text-neutral-300 font-xs font-semibold">60%</span>
+              <span className="text-neutral-500 dark:text-neutral-300 font-xs font-semibold">{stats.adminAdded}%</span>
             </div>
           </div>
 
@@ -42,10 +84,10 @@ const CampaignCard = ({ beneficiaries }: { beneficiaries: unknown[] }) => {
             <div className="flex items-center gap-2 w-full">
               <div className="ms-auto">
                 <div className="w-[66px] bg-gray-200 rounded-full h-2.5 dark:bg-gray-600">
-                  <div className="bg-green-500 h-2.5 rounded-full w-[20%]"></div>
+                  <div className="bg-green-500 h-2.5 rounded-full" style={{ width: `${stats.selfEnrolled}%` }}></div>
                 </div>
               </div>
-              <span className="text-neutral-500 dark:text-neutral-300 font-xs font-semibold">20%</span>
+              <span className="text-neutral-500 dark:text-neutral-300 font-xs font-semibold">{stats.selfEnrolled}%</span>
             </div>
           </div>
 
@@ -59,10 +101,10 @@ const CampaignCard = ({ beneficiaries }: { beneficiaries: unknown[] }) => {
             <div className="flex items-center gap-2 w-full">
               <div className="ms-auto">
                 <div className="w-[66px] bg-gray-200 rounded-full h-2.5 dark:bg-gray-600">
-                  <div className="bg-primary h-2.5 rounded-full w-[15%]"></div>
+                  <div className="bg-primary h-2.5 rounded-full" style={{ width: `${stats.invited}%` }}></div>
                 </div>
               </div>
-              <span className="text-neutral-500 dark:text-neutral-300 font-xs font-semibold">15%</span>
+              <span className="text-neutral-500 dark:text-neutral-300 font-xs font-semibold">{stats.invited}%</span>
             </div>
           </div>
 
@@ -76,10 +118,10 @@ const CampaignCard = ({ beneficiaries }: { beneficiaries: unknown[] }) => {
             <div className="flex items-center gap-2 w-full">
               <div className="ms-auto">
                 <div className="w-[66px] bg-gray-200 rounded-full h-2.5 dark:bg-gray-600">
-                  <div className="bg-purple-600 h-2.5 rounded-full w-[5%]"></div>
+                  <div className="bg-purple-600 h-2.5 rounded-full" style={{ width: `${stats.imported}%` }}></div>
                 </div>
               </div>
-              <span className="text-neutral-500 dark:text-neutral-300 font-xs font-semibold">5%</span>
+              <span className="text-neutral-500 dark:text-neutral-300 font-xs font-semibold">{stats.imported}%</span>
             </div>
           </div>
         </div>

@@ -1,15 +1,63 @@
-import CustomersStatisticsChart from '@/components/charts/customers-statistics-chart';
-import CustomSelect from '@/components/shared/custom-select';
-import { Card, CardContent } from '@/components/ui/card';
+"use client";
+
+import { useState, useMemo } from "react";
+import CustomersStatisticsChart from "@/components/charts/customers-statistics-chart";
+import CustomSelect from "@/components/shared/custom-select";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Expense {
     status: string;
+    createdAt: string;
+}
+
+function filterByPeriod(items: any[], period: string) {
+    const now = new Date();
+    return items.filter((item) => {
+        const date = new Date(item.createdAt);
+        switch (period) {
+            case "Today":
+                return date.toDateString() === now.toDateString();
+            case "This Week":
+            case "Weekly": {
+                const weekAgo = new Date(now);
+                weekAgo.setDate(now.getDate() - 7);
+                return date >= weekAgo;
+            }
+            case "This Month":
+            case "Monthly": {
+                const monthAgo = new Date(now);
+                monthAgo.setMonth(now.getMonth() - 1);
+                return date >= monthAgo;
+            }
+            case "Last Month": {
+                const twoMonthsAgo = new Date(now);
+                twoMonthsAgo.setMonth(now.getMonth() - 2);
+                const oneMonthAgo = new Date(now);
+                oneMonthAgo.setMonth(now.getMonth() - 1);
+                return date >= twoMonthsAgo && date < oneMonthAgo;
+            }
+            case "This Year":
+            case "Yearly":
+            default: {
+                const yearAgo = new Date(now);
+                yearAgo.setFullYear(now.getFullYear() - 1);
+                return date >= yearAgo;
+            }
+        }
+    });
 }
 
 const CustomersStatisticsCard = ({ expenses }: { expenses: Expense[] }) => {
-    const approved = expenses.filter((e) => e.status === "APPROVED" || e.status === "PAID").length;
-    const pending = expenses.filter((e) => e.status === "PENDING").length;
-    const total = expenses.length;
+    const [period, setPeriod] = useState("Yearly");
+
+    const filtered = useMemo(
+        () => filterByPeriod(expenses, period) as Expense[],
+        [expenses, period]
+    );
+
+    const approved = filtered.filter((e) => e.status === "APPROVED" || e.status === "PAID").length;
+    const pending = filtered.filter((e) => e.status === "PENDING").length;
+    const total = filtered.length;
     const approvedPct = total > 0 ? Math.round((approved / total) * 100) : 0;
     const pendingPct = total > 0 ? Math.round((pending / total) * 100) : 0;
 
@@ -20,6 +68,8 @@ const CustomersStatisticsCard = ({ expenses }: { expenses: Expense[] }) => {
                     <h6 className="mb-0 font-bold text-lg">Expense Statistics</h6>
                     <CustomSelect
                         placeholder="Yearly"
+                        value={period}
+                        onValueChange={setPeriod}
                         options={["Yearly", "Monthly", "Weekly", "Today"]}
                     />
                 </div>

@@ -2,7 +2,7 @@
 
 import CustomSelect from "@/components/shared/custom-select";
 import { Card, CardContent } from '@/components/ui/card';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 interface Grant {
     id: string;
@@ -17,39 +17,6 @@ interface Grant {
 }
 
 const WorkingScheduleCard = ({ grants }: { grants: Grant[] }) => {
-    const today = useMemo(() => new Date(), []);
-    const currentDay = today.getDate();
-
-    const weekDays = useMemo(() => {
-        const days = [];
-        const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-        const startOffset = -3;
-        for (let i = startOffset; i <= 6; i++) {
-            const d = new Date(today);
-            d.setDate(currentDay + i);
-            days.push({
-                label: dayNames[d.getDay()],
-                date: d.getDate(),
-                isToday: i === 0,
-            });
-        }
-        return days;
-    }, [today, currentDay]);
-
-    const upcomingGrants = useMemo(() => {
-        const colors = ["border-purple", "border-yellow-600", "border-cyan-600", "border-green-600", "border-red-600"];
-        return grants
-            .filter((g) => g.status === "ACTIVE" || g.status === "DRAFT")
-            .slice(0, 5)
-            .map((g, i) => ({
-                name: g.name,
-                status: g.status,
-                lead: g.beneficiary ? `${g.beneficiary.firstName} ${g.beneficiary.lastName}` : "Unassigned",
-                endDate: g.endDate ? new Date(g.endDate).toLocaleDateString() : "No end date",
-                color: colors[i % colors.length],
-            }));
-    }, [grants]);
-
     const months = useMemo(() => {
         const m = [];
         const now = new Date();
@@ -60,6 +27,67 @@ const WorkingScheduleCard = ({ grants }: { grants: Grant[] }) => {
         return m;
     }, []);
 
+    const [selectedMonth, setSelectedMonth] = useState(months[0]);
+
+    const selectedDate = useMemo(() => {
+        const parts = selectedMonth.split(" ");
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const monthIndex = monthNames.indexOf(parts[0]);
+        const year = parseInt(parts[1], 10);
+        return new Date(year, monthIndex, 1);
+    }, [selectedMonth]);
+
+    const today = useMemo(() => new Date(), []);
+
+    const weekDays = useMemo(() => {
+        const days = [];
+        const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+        const isCurrentMonth =
+            selectedDate.getMonth() === today.getMonth() &&
+            selectedDate.getFullYear() === today.getFullYear();
+
+        const centerDay = isCurrentMonth ? today.getDate() : 15;
+        const startOffset = -3;
+
+        for (let i = startOffset; i <= 6; i++) {
+            const d = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), centerDay + i);
+            const isTodayDate =
+                d.getDate() === today.getDate() &&
+                d.getMonth() === today.getMonth() &&
+                d.getFullYear() === today.getFullYear();
+            days.push({
+                label: dayNames[d.getDay()],
+                date: d.getDate(),
+                isToday: isTodayDate,
+            });
+        }
+        return days;
+    }, [selectedDate, today]);
+
+    const upcomingGrants = useMemo(() => {
+        const colors = ["border-purple", "border-yellow-600", "border-cyan-600", "border-green-600", "border-red-600"];
+        return grants
+            .filter((g) => {
+                if (g.status !== "ACTIVE" && g.status !== "DRAFT") return false;
+                const start = new Date(g.startDate);
+                const end = g.endDate ? new Date(g.endDate) : null;
+                const monthStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+                const monthEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+                if (start > monthEnd) return false;
+                if (end && end < monthStart) return false;
+                return true;
+            })
+            .slice(0, 5)
+            .map((g, i) => ({
+                name: g.name,
+                status: g.status,
+                lead: g.beneficiary ? `${g.beneficiary.firstName} ${g.beneficiary.lastName}` : "Unassigned",
+                endDate: g.endDate ? new Date(g.endDate).toLocaleDateString() : "No end date",
+                color: colors[i % colors.length],
+            }));
+    }, [grants, selectedDate]);
+
     return (
         <Card className="card !p-0 border-0 rounded-xl shadow-none">
             <CardContent className="p-0">
@@ -68,6 +96,8 @@ const WorkingScheduleCard = ({ grants }: { grants: Grant[] }) => {
                     <CustomSelect
                         placeholder={months[0]}
                         options={months}
+                        value={selectedMonth}
+                        onValueChange={setSelectedMonth}
                     />
                 </div>
                 <div className="card-body p-6">

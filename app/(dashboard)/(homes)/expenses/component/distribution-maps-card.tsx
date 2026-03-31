@@ -1,8 +1,49 @@
-import CustomSelect from '@/components/shared/custom-select';
-import { Card, CardContent } from '@/components/ui/card';
+"use client";
+
+import { useState, useMemo } from "react";
+import CustomSelect from "@/components/shared/custom-select";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Expense {
     riskClassification: string | null;
+    createdAt: string;
+}
+
+function filterByPeriod(items: any[], period: string) {
+    const now = new Date();
+    return items.filter((item) => {
+        const date = new Date(item.createdAt);
+        switch (period) {
+            case "Today":
+                return date.toDateString() === now.toDateString();
+            case "This Week":
+            case "Weekly": {
+                const weekAgo = new Date(now);
+                weekAgo.setDate(now.getDate() - 7);
+                return date >= weekAgo;
+            }
+            case "This Month":
+            case "Monthly": {
+                const monthAgo = new Date(now);
+                monthAgo.setMonth(now.getMonth() - 1);
+                return date >= monthAgo;
+            }
+            case "Last Month": {
+                const twoMonthsAgo = new Date(now);
+                twoMonthsAgo.setMonth(now.getMonth() - 2);
+                const oneMonthAgo = new Date(now);
+                oneMonthAgo.setMonth(now.getMonth() - 1);
+                return date >= twoMonthsAgo && date < oneMonthAgo;
+            }
+            case "This Year":
+            case "Yearly":
+            default: {
+                const yearAgo = new Date(now);
+                yearAgo.setFullYear(now.getFullYear() - 1);
+                return date >= yearAgo;
+            }
+        }
+    });
 }
 
 const riskColors: Record<string, string> = {
@@ -22,9 +63,16 @@ const riskLabels: Record<string, string> = {
 };
 
 const DistributionMapsCard = ({ expenses }: { expenses: Expense[] }) => {
+    const [period, setPeriod] = useState("Yearly");
+
+    const filtered = useMemo(
+        () => filterByPeriod(expenses, period) as Expense[],
+        [expenses, period]
+    );
+
     // Count by risk level
     const riskMap = new Map<string, number>();
-    for (const e of expenses) {
+    for (const e of filtered) {
         const level = e.riskClassification || "PENDING";
         riskMap.set(level, (riskMap.get(level) || 0) + 1);
     }
@@ -32,7 +80,7 @@ const DistributionMapsCard = ({ expenses }: { expenses: Expense[] }) => {
     const riskItems = Array.from(riskMap.entries())
         .sort((a, b) => b[1] - a[1]);
 
-    const total = expenses.length;
+    const total = filtered.length;
 
     return (
         <Card className="card h-full rounded-lg border-0 !p-0">
@@ -41,6 +89,8 @@ const DistributionMapsCard = ({ expenses }: { expenses: Expense[] }) => {
                     <h6 className="mb-0 font-bold text-lg">Compliance Risk Overview</h6>
                     <CustomSelect
                         placeholder="Yearly"
+                        value={period}
+                        onValueChange={setPeriod}
                         options={["Yearly", "Monthly", "Weekly", "Today"]}
                     />
                 </div>

@@ -1,3 +1,5 @@
+"use client";
+
 import CustomSelect from "@/components/shared/custom-select";
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -9,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { useMemo, useState } from 'react';
 
 interface Grant {
     id: string;
@@ -26,7 +29,23 @@ const statusVariantMap: Record<string, "warning" | "success" | "info" | "danger"
     ARCHIVED: "danger",
 };
 
+const statusFilterMap: Record<string, string> = {
+    Active: "ACTIVE",
+    Draft: "DRAFT",
+    Completed: "COMPLETED",
+    Paused: "PAUSED",
+};
+
 const MyTasksCard = ({ grants }: { grants: Grant[] }) => {
+    const [statusFilter, setStatusFilter] = useState("All");
+
+    const filteredGrants = useMemo(() => {
+        if (statusFilter === "All") return grants;
+        const dbStatus = statusFilterMap[statusFilter];
+        if (!dbStatus) return grants;
+        return grants.filter((g) => g.status === dbStatus);
+    }, [grants, statusFilter]);
+
     const formatCurrency = (val: string) => {
         const num = parseFloat(val || "0");
         return `$${num.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
@@ -45,6 +64,8 @@ const MyTasksCard = ({ grants }: { grants: Grant[] }) => {
                     <CustomSelect
                         placeholder="All"
                         options={["All", "Active", "Draft", "Completed", "Paused"]}
+                        value={statusFilter}
+                        onValueChange={setStatusFilter}
                     />
                 </div>
                 <div className="p-0">
@@ -64,15 +85,15 @@ const MyTasksCard = ({ grants }: { grants: Grant[] }) => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {grants.length === 0 ? (
+                                {filteredGrants.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={3} className="py-4.5 px-4 border-b first:border-s last:border-e border-neutral-200 dark:border-slate-600 text-center text-neutral-500">
                                             No grants found
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    grants.map((grant, index) => {
-                                        const isLast = index === grants.length - 1;
+                                    filteredGrants.map((grant, index) => {
+                                        const isLast = index === filteredGrants.length - 1;
                                         return (
                                             <TableRow key={grant.id}>
                                                 <TableCell

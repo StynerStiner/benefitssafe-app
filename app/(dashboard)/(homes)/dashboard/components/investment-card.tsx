@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import CustomSelect from "@/components/shared/custom-select";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -5,17 +8,51 @@ interface Grant {
     totalAmount: string;
     spentAmount: string;
     status: string;
+    createdAt: string;
 }
 
 interface Expense {
     status: string;
     amount: string;
+    createdAt: string;
+}
+
+function filterByPeriod(items: any[], period: string) {
+    const now = new Date();
+    return items.filter((item) => {
+        const date = new Date(item.createdAt);
+        switch (period) {
+            case "Today":
+                return date.toDateString() === now.toDateString();
+            case "Weekly": {
+                const weekAgo = new Date(now);
+                weekAgo.setDate(now.getDate() - 7);
+                return date >= weekAgo;
+            }
+            case "Monthly": {
+                const monthAgo = new Date(now);
+                monthAgo.setMonth(now.getMonth() - 1);
+                return date >= monthAgo;
+            }
+            case "Yearly":
+            default: {
+                const yearAgo = new Date(now);
+                yearAgo.setFullYear(now.getFullYear() - 1);
+                return date >= yearAgo;
+            }
+        }
+    });
 }
 
 const InvestmentCard = ({ grants, expenses }: { grants: Grant[]; expenses: Expense[] }) => {
-    const totalAllocated = grants.reduce((sum, g) => sum + parseFloat(g.totalAmount || "0"), 0);
-    const totalSpent = grants.reduce((sum, g) => sum + parseFloat(g.spentAmount || "0"), 0);
-    const totalPending = expenses
+    const [period, setPeriod] = useState("Yearly");
+
+    const filteredGrants = filterByPeriod(grants, period) as Grant[];
+    const filteredExpenses = filterByPeriod(expenses, period) as Expense[];
+
+    const totalAllocated = filteredGrants.reduce((sum, g) => sum + parseFloat(g.totalAmount || "0"), 0);
+    const totalSpent = filteredGrants.reduce((sum, g) => sum + parseFloat(g.spentAmount || "0"), 0);
+    const totalPending = filteredExpenses
         .filter((e) => e.status === "PENDING")
         .reduce((sum, e) => sum + parseFloat(e.amount || "0"), 0);
 
@@ -33,6 +70,8 @@ const InvestmentCard = ({ grants, expenses }: { grants: Grant[]; expenses: Expen
                             <CustomSelect
                                 placeholder="Yearly"
                                 options={["Yearly", "Monthly", "Weekly", "Today"]}
+                                value={period}
+                                onValueChange={setPeriod}
                             />
                         </div>
                     </div>

@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import GenerateContentChart from '@/components/charts/generate-content-chart';
 import CustomSelect from "@/components/shared/custom-select";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,10 +11,41 @@ interface Expense {
     createdAt: string;
 }
 
+function filterByPeriod(items: any[], period: string) {
+    const now = new Date();
+    return items.filter((item) => {
+        const date = new Date(item.createdAt);
+        switch (period) {
+            case "Today":
+                return date.toDateString() === now.toDateString();
+            case "Weekly": {
+                const weekAgo = new Date(now);
+                weekAgo.setDate(now.getDate() - 7);
+                return date >= weekAgo;
+            }
+            case "Monthly": {
+                const monthAgo = new Date(now);
+                monthAgo.setMonth(now.getMonth() - 1);
+                return date >= monthAgo;
+            }
+            case "Yearly":
+            default: {
+                const yearAgo = new Date(now);
+                yearAgo.setFullYear(now.getFullYear() - 1);
+                return date >= yearAgo;
+            }
+        }
+    });
+}
+
 const BalanceStatistic = ({ expenses }: { expenses: Expense[] }) => {
-    const approved = expenses.filter((e) => e.status === "APPROVED" || e.status === "PAID");
+    const [period, setPeriod] = useState("Yearly");
+
+    const filtered = filterByPeriod(expenses, period) as Expense[];
+
+    const approved = filtered.filter((e) => e.status === "APPROVED" || e.status === "PAID");
     const totalApproved = approved.reduce((sum, e) => sum + parseFloat(e.amount || "0"), 0);
-    const pending = expenses.filter((e) => e.status === "PENDING");
+    const pending = filtered.filter((e) => e.status === "PENDING");
     const totalPending = pending.reduce((sum, e) => sum + parseFloat(e.amount || "0"), 0);
 
     return (
@@ -22,6 +56,8 @@ const BalanceStatistic = ({ expenses }: { expenses: Expense[] }) => {
                     <CustomSelect
                         placeholder="Yearly"
                         options={["Yearly", "Monthly", "Weekly", "Today"]}
+                        value={period}
+                        onValueChange={setPeriod}
                     />
                 </div>
                 <ul className="flex flex-wrap items-center justify-center mt-4 gap-3">

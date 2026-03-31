@@ -37,7 +37,12 @@ interface ExpenseTransaction {
     } | null;
 }
 
-const RecentBidTable = () => {
+interface RecentBidTableProps {
+    filterCardIds?: string[];
+    filterActive?: boolean;
+}
+
+const RecentBidTable = ({ filterCardIds, filterActive = false }: RecentBidTableProps) => {
     const [transactions, setTransactions] = useState<ExpenseTransaction[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -54,6 +59,12 @@ const RecentBidTable = () => {
             .finally(() => setLoading(false));
     }, []);
 
+    const displayedTransactions = filterActive && filterCardIds
+        ? transactions.filter((tx) =>
+            tx.virtualCard ? filterCardIds.includes(tx.virtualCard.id) : false
+        )
+        : transactions;
+
     const handleRemove = (id: string) => {
         setTransactions((prev) => prev.filter((t) => t.id !== id));
         toast.success('Transaction deleted successfully!')
@@ -63,7 +74,7 @@ const RecentBidTable = () => {
         return <div className="text-center py-8">Loading transactions...</div>;
     }
 
-    if (transactions.length === 0) {
+    if (displayedTransactions.length === 0) {
         return <div className="text-center py-8 text-neutral-500">No transactions yet</div>;
     }
 
@@ -92,8 +103,8 @@ const RecentBidTable = () => {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {transactions.map((tx, index) => {
-                    const isLast = index === transactions.length - 1;
+                {displayedTransactions.map((tx, index) => {
+                    const isLast = index === displayedTransactions.length - 1;
                     const initials = `${tx.requestedBy.firstName?.[0] || '?'}${tx.requestedBy.lastName?.[0] || '?'}`;
                     const cardLast4 = tx.virtualCard?.last4 || "N/A";
                     
