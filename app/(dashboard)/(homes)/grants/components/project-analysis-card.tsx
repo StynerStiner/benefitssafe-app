@@ -1,7 +1,7 @@
 "use client";
 
 import ClientPaymentStatusChart from "@/components/charts/client-payment-status-chart";
-import CustomSelect from "@/components/shared/custom-select";
+import MonthYearPicker from "@/components/shared/month-year-picker";
 import { Card, CardContent } from '@/components/ui/card';
 import { useMemo, useState } from 'react';
 
@@ -13,23 +13,19 @@ interface Grant {
     remainingAmount: string;
 }
 
-function filterByPeriod(items: any[], period: string) {
-    const now = new Date();
+function filterByMonth(items: Grant[], month: number, year: number) {
     return items.filter(item => {
         const date = new Date(item.createdAt);
-        switch (period) {
-            case "Today": return date.toDateString() === now.toDateString();
-            case "Weekly": { const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7); return date >= weekAgo; }
-            case "Monthly": { const monthAgo = new Date(now); monthAgo.setMonth(now.getMonth() - 1); return date >= monthAgo; }
-            case "Yearly": default: { const yearAgo = new Date(now); yearAgo.setFullYear(now.getFullYear() - 1); return date >= yearAgo; }
-        }
+        return date.getMonth() === month && date.getFullYear() === year;
     });
 }
 
 const ProjectAnalysisCard = ({ grants }: { grants: Grant[] }) => {
-    const [period, setPeriod] = useState("Yearly");
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
-    const filteredGrants = useMemo(() => filterByPeriod(grants, period) as Grant[], [grants, period]);
+    const filteredGrants = useMemo(() => filterByMonth(grants, selectedMonth, selectedYear), [grants, selectedMonth, selectedYear]);
 
     const summary = useMemo(() => ({
         allocated: filteredGrants.reduce((sum, g) => sum + parseFloat(g.totalAmount || "0"), 0),
@@ -43,11 +39,13 @@ const ProjectAnalysisCard = ({ grants }: { grants: Grant[] }) => {
             <CardContent className="p-0">
                 <div className="border-b border-neutral-200 dark:border-slate-500 py-4 px-6 flex items-center justify-between flex-wrap gap-2">
                     <h6 className="font-semibold text-lg mb-0 text-foreground">Grant Analysis</h6>
-                    <CustomSelect
-                        placeholder="Yearly"
-                        options={["Yearly", "Monthly", "Weekly", "Today"]}
-                        value={period}
-                        onValueChange={setPeriod}
+                    <MonthYearPicker
+                        selectedMonth={selectedMonth}
+                        selectedYear={selectedYear}
+                        onChange={(month, year) => {
+                            setSelectedMonth(month);
+                            setSelectedYear(year);
+                        }}
                     />
                 </div>
                 <div className="card-body p-6">

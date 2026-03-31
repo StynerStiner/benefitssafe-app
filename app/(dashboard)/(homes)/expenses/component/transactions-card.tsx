@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import CustomSelect from "@/components/shared/custom-select";
+import MonthYearPicker from "@/components/shared/month-year-picker";
 
 interface Expense {
     category: { name: string } | null;
@@ -10,49 +10,21 @@ interface Expense {
     createdAt: string;
 }
 
-function filterByPeriod(items: any[], period: string) {
-    const now = new Date();
-    return items.filter((item) => {
+function filterByMonth(items: Expense[], month: number, year: number) {
+    return items.filter(item => {
         const date = new Date(item.createdAt);
-        switch (period) {
-            case "Today":
-                return date.toDateString() === now.toDateString();
-            case "This Week":
-            case "Weekly": {
-                const weekAgo = new Date(now);
-                weekAgo.setDate(now.getDate() - 7);
-                return date >= weekAgo;
-            }
-            case "This Month":
-            case "Monthly": {
-                const monthAgo = new Date(now);
-                monthAgo.setMonth(now.getMonth() - 1);
-                return date >= monthAgo;
-            }
-            case "Last Month": {
-                const twoMonthsAgo = new Date(now);
-                twoMonthsAgo.setMonth(now.getMonth() - 2);
-                const oneMonthAgo = new Date(now);
-                oneMonthAgo.setMonth(now.getMonth() - 1);
-                return date >= twoMonthsAgo && date < oneMonthAgo;
-            }
-            case "This Year":
-            case "Yearly":
-            default: {
-                const yearAgo = new Date(now);
-                yearAgo.setFullYear(now.getFullYear() - 1);
-                return date >= yearAgo;
-            }
-        }
+        return date.getMonth() === month && date.getFullYear() === year;
     });
 }
 
 const TransactionsCard = ({ expenses }: { expenses: Expense[] }) => {
-    const [period, setPeriod] = useState("This Month");
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
     const filtered = useMemo(
-        () => filterByPeriod(expenses, period) as Expense[],
-        [expenses, period]
+        () => filterByMonth(expenses, selectedMonth, selectedYear),
+        [expenses, selectedMonth, selectedYear]
     );
 
     // Group by category
@@ -76,11 +48,13 @@ const TransactionsCard = ({ expenses }: { expenses: Expense[] }) => {
             <CardContent className="card-body p-0">
                 <div className="flex items-center flex-wrap gap-2 justify-between">
                     <h6 className="mb-0 font-bold text-lg">Expenses by Category</h6>
-                    <CustomSelect
-                        placeholder="This Month"
-                        value={period}
-                        onValueChange={setPeriod}
-                        options={["This Month", "Last Month", "This Year", "This Week"]}
+                    <MonthYearPicker
+                        selectedMonth={selectedMonth}
+                        selectedYear={selectedYear}
+                        onChange={(month, year) => {
+                            setSelectedMonth(month);
+                            setSelectedYear(year);
+                        }}
                     />
                 </div>
 

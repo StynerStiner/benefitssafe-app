@@ -2,20 +2,14 @@
 
 import WorldMapChart from '@/components/charts/world-map-chart';
 import CountryList from '@/components/shared/country-list';
-import CustomSelect from '@/components/shared/custom-select';
+import MonthYearPicker from '@/components/shared/month-year-picker';
 import { Card, CardContent } from '@/components/ui/card';
 import { useState, useMemo } from 'react';
 
-function filterByPeriod(items: any[], period: string) {
-    const now = new Date();
+function filterByMonth(items: any[], month: number, year: number) {
     return items.filter(item => {
         const date = new Date(item.createdAt);
-        switch (period) {
-            case "Today": return date.toDateString() === now.toDateString();
-            case "Weekly": { const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7); return date >= weekAgo; }
-            case "Monthly": { const monthAgo = new Date(now); monthAgo.setMonth(now.getMonth() - 1); return date >= monthAgo; }
-            case "Yearly": default: { const yearAgo = new Date(now); yearAgo.setFullYear(now.getFullYear() - 1); return date >= yearAgo; }
-        }
+        return date.getMonth() === month && date.getFullYear() === year;
     });
 }
 
@@ -25,9 +19,11 @@ interface Beneficiary {
 }
 
 const CountriesStatusCard = ({ beneficiaries }: { beneficiaries: Beneficiary[] }) => {
-    const [selectedPeriod, setSelectedPeriod] = useState("Yearly");
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
-    const filtered = useMemo(() => filterByPeriod(beneficiaries, selectedPeriod), [beneficiaries, selectedPeriod]);
+    const filtered = useMemo(() => filterByMonth(beneficiaries, selectedMonth, selectedYear), [beneficiaries, selectedMonth, selectedYear]);
 
     const stateData = useMemo(() => {
         const counts: Record<string, number> = {};
@@ -45,11 +41,13 @@ const CountriesStatusCard = ({ beneficiaries }: { beneficiaries: Beneficiary[] }
             <CardContent className="card-body p-0">
                 <div className="flex items-center flex-wrap gap-2 justify-between p-6">
                     <h6 className="mb-0 font-bold text-lg">Beneficiary Locations</h6>
-                    <CustomSelect
-                      placeholder="Yearly"
-                      options={["Yearly", "Monthly", "Weekly", "Today"]}
-                      value={selectedPeriod}
-                      onValueChange={setSelectedPeriod}
+                    <MonthYearPicker
+                        selectedMonth={selectedMonth}
+                        selectedYear={selectedYear}
+                        onChange={(month, year) => {
+                            setSelectedMonth(month);
+                            setSelectedYear(year);
+                        }}
                     />
                 </div>
 

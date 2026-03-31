@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import CustomSelect from "@/components/shared/custom-select";
+import MonthYearPicker from "@/components/shared/month-year-picker";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface Grant {
@@ -17,38 +17,20 @@ interface Expense {
     createdAt: string;
 }
 
-function filterByPeriod(items: any[], period: string) {
-    const now = new Date();
-    return items.filter((item) => {
+function filterByMonth(items: any[], month: number, year: number) {
+    return items.filter(item => {
         const date = new Date(item.createdAt);
-        switch (period) {
-            case "Today":
-                return date.toDateString() === now.toDateString();
-            case "Weekly": {
-                const weekAgo = new Date(now);
-                weekAgo.setDate(now.getDate() - 7);
-                return date >= weekAgo;
-            }
-            case "Monthly": {
-                const monthAgo = new Date(now);
-                monthAgo.setMonth(now.getMonth() - 1);
-                return date >= monthAgo;
-            }
-            case "Yearly":
-            default: {
-                const yearAgo = new Date(now);
-                yearAgo.setFullYear(now.getFullYear() - 1);
-                return date >= yearAgo;
-            }
-        }
+        return date.getMonth() === month && date.getFullYear() === year;
     });
 }
 
 const InvestmentCard = ({ grants, expenses }: { grants: Grant[]; expenses: Expense[] }) => {
-    const [period, setPeriod] = useState("Yearly");
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
-    const filteredGrants = filterByPeriod(grants, period) as Grant[];
-    const filteredExpenses = filterByPeriod(expenses, period) as Expense[];
+    const filteredGrants = filterByMonth(grants, selectedMonth, selectedYear) as Grant[];
+    const filteredExpenses = filterByMonth(expenses, selectedMonth, selectedYear) as Expense[];
 
     const totalAllocated = filteredGrants.reduce((sum, g) => sum + parseFloat(g.totalAmount || "0"), 0);
     const totalSpent = filteredGrants.reduce((sum, g) => sum + parseFloat(g.spentAmount || "0"), 0);
@@ -67,11 +49,13 @@ const InvestmentCard = ({ grants, expenses }: { grants: Grant[]; expenses: Expen
                     <div className="card-header border-b border-neutral-200 dark:border-slate-500 py-3 px-6">
                         <div className="flex items-center flex-wrap gap-2 justify-between">
                             <h6 className="font-bold text-lg mb-0">Grant Allocation</h6>
-                            <CustomSelect
-                                placeholder="Yearly"
-                                options={["Yearly", "Monthly", "Weekly", "Today"]}
-                                value={period}
-                                onValueChange={setPeriod}
+                            <MonthYearPicker
+                                selectedMonth={selectedMonth}
+                                selectedYear={selectedYear}
+                                onChange={(month, year) => {
+                                    setSelectedMonth(month);
+                                    setSelectedYear(year);
+                                }}
                             />
                         </div>
                     </div>

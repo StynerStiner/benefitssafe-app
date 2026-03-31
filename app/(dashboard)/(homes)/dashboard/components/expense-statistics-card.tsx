@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import ExpenseStatisticsChart from "@/components/charts/expense-statistics-chart";
-import CustomSelect from "@/components/shared/custom-select";
+import MonthYearPicker from "@/components/shared/month-year-picker";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface Expense {
@@ -10,37 +10,19 @@ interface Expense {
     createdAt: string;
 }
 
-function filterByPeriod(items: any[], period: string) {
-    const now = new Date();
-    return items.filter((item) => {
+function filterByMonth(items: Expense[], month: number, year: number) {
+    return items.filter(item => {
         const date = new Date(item.createdAt);
-        switch (period) {
-            case "Today":
-                return date.toDateString() === now.toDateString();
-            case "Weekly": {
-                const weekAgo = new Date(now);
-                weekAgo.setDate(now.getDate() - 7);
-                return date >= weekAgo;
-            }
-            case "Monthly": {
-                const monthAgo = new Date(now);
-                monthAgo.setMonth(now.getMonth() - 1);
-                return date >= monthAgo;
-            }
-            case "Yearly":
-            default: {
-                const yearAgo = new Date(now);
-                yearAgo.setFullYear(now.getFullYear() - 1);
-                return date >= yearAgo;
-            }
-        }
+        return date.getMonth() === month && date.getFullYear() === year;
     });
 }
 
 const ExpenseStatisticsCard = ({ expenses }: { expenses: Expense[] }) => {
-    const [period, setPeriod] = useState("Yearly");
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
-    const filtered = filterByPeriod(expenses, period);
+    const filtered = filterByMonth(expenses, selectedMonth, selectedYear);
 
     const pending = filtered.filter((e) => e.status === "PENDING").length;
     const approved = filtered.filter((e) => e.status === "APPROVED").length;
@@ -54,11 +36,13 @@ const ExpenseStatisticsCard = ({ expenses }: { expenses: Expense[] }) => {
                     <div className="card-header border-b border-neutral-200 dark:border-slate-500 py-3 px-6">
                         <div className="flex items-center flex-wrap gap-2 justify-between">
                             <h6 className="font-bold text-lg mb-0">Expense Status</h6>
-                            <CustomSelect
-                                placeholder="Yearly"
-                                options={["Yearly", "Monthly", "Weekly", "Today"]}
-                                value={period}
-                                onValueChange={setPeriod}
+                            <MonthYearPicker
+                                selectedMonth={selectedMonth}
+                                selectedYear={selectedYear}
+                                onChange={(month, year) => {
+                                    setSelectedMonth(month);
+                                    setSelectedYear(year);
+                                }}
                             />
                         </div>
                     </div>

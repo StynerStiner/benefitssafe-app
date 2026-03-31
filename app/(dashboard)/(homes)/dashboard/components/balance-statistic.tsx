@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import GenerateContentChart from '@/components/charts/generate-content-chart';
-import CustomSelect from "@/components/shared/custom-select";
+import MonthYearPicker from "@/components/shared/month-year-picker";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface Expense {
@@ -11,37 +11,19 @@ interface Expense {
     createdAt: string;
 }
 
-function filterByPeriod(items: any[], period: string) {
-    const now = new Date();
-    return items.filter((item) => {
+function filterByMonth(items: Expense[], month: number, year: number) {
+    return items.filter(item => {
         const date = new Date(item.createdAt);
-        switch (period) {
-            case "Today":
-                return date.toDateString() === now.toDateString();
-            case "Weekly": {
-                const weekAgo = new Date(now);
-                weekAgo.setDate(now.getDate() - 7);
-                return date >= weekAgo;
-            }
-            case "Monthly": {
-                const monthAgo = new Date(now);
-                monthAgo.setMonth(now.getMonth() - 1);
-                return date >= monthAgo;
-            }
-            case "Yearly":
-            default: {
-                const yearAgo = new Date(now);
-                yearAgo.setFullYear(now.getFullYear() - 1);
-                return date >= yearAgo;
-            }
-        }
+        return date.getMonth() === month && date.getFullYear() === year;
     });
 }
 
 const BalanceStatistic = ({ expenses }: { expenses: Expense[] }) => {
-    const [period, setPeriod] = useState("Yearly");
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
-    const filtered = filterByPeriod(expenses, period) as Expense[];
+    const filtered = filterByMonth(expenses, selectedMonth, selectedYear);
 
     const approved = filtered.filter((e) => e.status === "APPROVED" || e.status === "PAID");
     const totalApproved = approved.reduce((sum, e) => sum + parseFloat(e.amount || "0"), 0);
@@ -53,11 +35,13 @@ const BalanceStatistic = ({ expenses }: { expenses: Expense[] }) => {
             <CardContent className="px-0">
                 <div className="flex flex-wrap items-center justify-between">
                     <h6 className="text-lg mb-0">Monthly Disbursements</h6>
-                    <CustomSelect
-                        placeholder="Yearly"
-                        options={["Yearly", "Monthly", "Weekly", "Today"]}
-                        value={period}
-                        onValueChange={setPeriod}
+                    <MonthYearPicker
+                        selectedMonth={selectedMonth}
+                        selectedYear={selectedYear}
+                        onChange={(month, year) => {
+                            setSelectedMonth(month);
+                            setSelectedYear(year);
+                        }}
                     />
                 </div>
                 <ul className="flex flex-wrap items-center justify-center mt-4 gap-3">

@@ -1,22 +1,16 @@
 "use client";
 
 import EarningStatisticsChart from '@/components/charts/earning-statistics-chart';
-import CustomSelect from '@/components/shared/custom-select';
+import MonthYearPicker from '@/components/shared/month-year-picker';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowBigUp, ShoppingCart, SquareKanban } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
-function filterByPeriod(items: { createdAt?: string }[], period: string) {
-    const now = new Date();
+function filterByMonth(items: { createdAt?: string }[], month: number, year: number) {
     return items.filter(item => {
-        if (!item.createdAt) return true;
+        if (!item.createdAt) return false;
         const date = new Date(item.createdAt);
-        switch (period) {
-            case "Today": return date.toDateString() === now.toDateString();
-            case "Weekly": { const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7); return date >= weekAgo; }
-            case "Monthly": { const monthAgo = new Date(now); monthAgo.setMonth(now.getMonth() - 1); return date >= monthAgo; }
-            case "Yearly": default: { const yearAgo = new Date(now); yearAgo.setFullYear(now.getFullYear() - 1); return date >= yearAgo; }
-        }
+        return date.getMonth() === month && date.getFullYear() === year;
     });
 }
 
@@ -28,7 +22,9 @@ interface Beneficiary {
 
 const EarningStatisticsCard = ({ beneficiaries }: { beneficiaries: Beneficiary[] }) => {
     const [grants, setGrants] = useState<{ totalAmount: string; spentAmount: string; remainingAmount: string; createdAt?: string }[]>([]);
-    const [selectedPeriod, setSelectedPeriod] = useState("Yearly");
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
     useEffect(() => {
         fetch("/api/grants?limit=100")
@@ -40,7 +36,7 @@ const EarningStatisticsCard = ({ beneficiaries }: { beneficiaries: Beneficiary[]
             .catch(() => {});
     }, []);
 
-    const filteredGrants = useMemo(() => filterByPeriod(grants, selectedPeriod) as typeof grants, [grants, selectedPeriod]);
+    const filteredGrants = useMemo(() => filterByMonth(grants, selectedMonth, selectedYear) as typeof grants, [grants, selectedMonth, selectedYear]);
 
     const totals = useMemo(() => {
         const totalAllocated = filteredGrants.reduce((sum, g) => sum + parseFloat(g.totalAmount || "0"), 0);
@@ -64,11 +60,13 @@ const EarningStatisticsCard = ({ beneficiaries }: { beneficiaries: Beneficiary[]
                         <span className="text-sm font-medium text-neutral-600 dark:text-neutral-100">Enrollment overview</span>
                     </div>
                     <div className="">
-                        <CustomSelect
-                            placeholder="Yearly"
-                            options={["Yearly", "Monthly", "Weekly", "Today"]}
-                            value={selectedPeriod}
-                            onValueChange={setSelectedPeriod}
+                        <MonthYearPicker
+                            selectedMonth={selectedMonth}
+                            selectedYear={selectedYear}
+                            onChange={(month, year) => {
+                                setSelectedMonth(month);
+                                setSelectedYear(year);
+                            }}
                         />
                     </div>
                 </div>
