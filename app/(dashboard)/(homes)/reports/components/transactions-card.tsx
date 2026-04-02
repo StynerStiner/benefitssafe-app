@@ -2,59 +2,32 @@
 
 import CommonLink from "@/components/shared/common-link";
 import { Card, CardContent } from "@/components/ui/card";
-import Image, { StaticImageData } from "next/image";
+import Image from "next/image";
 
 import PaymentIcon1 from "@/public/assets/images/home-nine/payment1.png";
 import PaymentIcon2 from "@/public/assets/images/home-nine/payment2.png";
 import PaymentIcon3 from "@/public/assets/images/home-nine/payment3.png";
 import PaymentIcon4 from "@/public/assets/images/home-nine/payment4.png";
 
-// Transaction type for TypeScript
-interface Transaction {
-    id: number;
-    title: string;
-    subtitle: string;
+interface Expense {
+    description: string;
     amount: string;
-    icon: StaticImageData;
-    bgColor: string; // Tailwind class for bg
+    status: string;
+    category: { name: string } | null;
+    createdAt: string;
 }
 
-const transactions: Transaction[] = [
-    {
-        id: 1,
-        title: "Wallet",
-        subtitle: "Payment",
-        amount: "+$6200",
-        icon: PaymentIcon1,
-        bgColor: "bg-green-200 dark:bg-green-600/20",
-    },
-    {
-        id: 2,
-        title: "PayPal",
-        subtitle: "Payment",
-        amount: "+$6200",
-        icon: PaymentIcon2,
-        bgColor: "bg-cyan-200 dark:bg-cyan-600/20",
-    },
-    {
-        id: 3,
-        title: "Credit Card",
-        subtitle: "Bill Payment",
-        amount: "-$6200",
-        icon: PaymentIcon3,
-        bgColor: "bg-yellow-200 dark:bg-yellow-600/20",
-    },
-    {
-        id: 4,
-        title: "Bank",
-        subtitle: "Bill Payment",
-        amount: "+$6200",
-        icon: PaymentIcon4,
-        bgColor: "bg-violet-200 dark:bg-violet-600/20",
-    },
+const icons = [PaymentIcon1, PaymentIcon2, PaymentIcon3, PaymentIcon4];
+const bgColors = [
+    "bg-green-200 dark:bg-green-600/20",
+    "bg-cyan-200 dark:bg-cyan-600/20",
+    "bg-yellow-200 dark:bg-yellow-600/20",
+    "bg-violet-200 dark:bg-violet-600/20",
 ];
 
-const TransactionsCard = ({ expenses }: { expenses?: unknown[] }) => {
+const TransactionsCard = ({ expenses }: { expenses?: Expense[] }) => {
+    const recentExpenses = (expenses || []).slice(0, 4);
+
     return (
         <Card className="card h-full rounded-lg border-0 !p-0 block">
             <CardContent className="card-body p-6 h-full flex flex-col justify-between">
@@ -66,30 +39,41 @@ const TransactionsCard = ({ expenses }: { expenses?: unknown[] }) => {
 
                 {/* Transactions List */}
                 <div className="mt-8">
-                    {transactions.map((tx, index) => (
-                        <div
-                            key={tx.id}
-                            className={`flex items-center justify-between gap-4 ${index === transactions.length - 1 ? "mb-0" : "mb-6"
-                                }`}
-                        >
-                            <div className="flex items-center gap-4">
-                                <div
-                                    className={`w-[40px] h-[40px] rounded-full flex justify-center items-center shrink-0 ${tx.bgColor}`}
-                                >
-                                    <Image src={tx.icon} alt={tx.title} />
+                    {recentExpenses.map((exp, index) => {
+                        const num = parseFloat(exp.amount) || 0;
+                        const isPositive = exp.status === "APPROVED" || exp.status === "PAID";
+                        const formatted = `${isPositive ? "+" : "-"}$${Math.abs(num).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+                        return (
+                            <div
+                                key={index}
+                                className={`flex items-center justify-between gap-4 ${index === recentExpenses.length - 1 ? "mb-0" : "mb-6"
+                                    }`}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div
+                                        className={`w-[40px] h-[40px] rounded-full flex justify-center items-center shrink-0 ${bgColors[index % bgColors.length]}`}
+                                    >
+                                        <Image src={icons[index % icons.length]} alt={exp.description} />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <h6 className="text-base mb-0 font-normal">{exp.description}</h6>
+                                        <span className="text-sm text-neutral-600  dark:text-neutral-200 font-normal">
+                                            {exp.category?.name || "Uncategorized"}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="flex-grow">
-                                    <h6 className="text-base mb-0 font-normal">{tx.title}</h6>
-                                    <span className="text-sm text-neutral-600  dark:text-neutral-200 font-normal">
-                                        {tx.subtitle}
-                                    </span>
-                                </div>
+                                <span className="text-neutral-600  dark:text-neutral-200 text-base font-medium">
+                                    {formatted}
+                                </span>
                             </div>
-                            <span className="text-neutral-600  dark:text-neutral-200 text-base font-medium">
-                                {tx.amount}
-                            </span>
+                        );
+                    })}
+                    {recentExpenses.length === 0 && (
+                        <div className="text-center text-neutral-500 text-sm py-4">
+                            No expenses yet
                         </div>
-                    ))}
+                    )}
                 </div>
             </CardContent>
         </Card>

@@ -55,7 +55,9 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
       select: {
         id: true,
         name: true,
+        website: true,
         stripeAccountId: true,
+        stripeFinancialAccountId: true,
       },
     });
 
@@ -71,20 +73,61 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
     // If organization doesn't have a Stripe account yet, create one
     if (!accountId) {
       const account = await stripe.accounts.create({
-        type: "express",
+        type: "custom",
         country: "US",
         email: session.user.email || undefined,
+        capabilities: {
+          card_issuing: { requested: true },
+          treasury: { requested: true },
+          transfers: { requested: true },
+        },
         business_profile: {
           name: organization.name,
           product_category: "non_profit",
+          url: organization.website || undefined,
+        },
+        business_type: "non_profit",
+        tos_acceptance: {
+          service_agreement: "full",
         },
       });
       accountId = account.id;
 
-      // Save the account ID
+      // Create a Treasury Financial Account for this connected account
+      let financialAccountId: string | null = null;
+      try {
+        const financialAccount = await stripe.treasury.financialAccounts.create({
+          supported_currencies: ["usd"],
+          features: {
+            card_issuing: { requested: true },
+            deposit_insurance: { requested: true },
+            financial_addresses: { aba: { requested: true } },
+            inbound_transfers: { ach: { requested: true } },
+            intra_stripe_flows: { requested: true },
+            outbound_payments: {
+              ach: { requested: true },
+              us_domestic_wire: { requested: true },
+            },
+            outbound_transfers: {
+              ach: { requested: true },
+              us_domestic_wire: { requested: true },
+            },
+          },
+        }, { stripeAccount: account.id });
+        financialAccountId = financialAccount.id;
+      } catch (treasuryError) {
+        console.warn("Treasury Financial Account creation failed (dev mode?):", treasuryError);
+        // In development without proper Stripe keys, store a mock ID
+        financialAccountId = `fa_mock_${account.id}`;
+      }
+
+      // Save the account ID and financial account ID
       await prisma.organization.update({
         where: { id: organization.id },
-        data: { stripeAccountId: accountId },
+        data: {
+          stripeAccountId: accountId,
+          stripeFinancialAccountId: financialAccountId,
+        },
       });
     }
 

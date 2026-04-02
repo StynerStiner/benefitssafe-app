@@ -93,6 +93,22 @@ export async function PATCH(
       },
     });
 
+    // Notify the beneficiary who submitted the expense
+    if (updatedExpense.requestedBy) {
+      await prisma.notification.create({
+        data: {
+          userId: updatedExpense.requestedBy.id,
+          organizationId,
+          type: "expense_rejected",
+          title: "Expense request rejected",
+          message: `Your expense for "${updatedExpense.description}" (${updatedExpense.grant.name}) was rejected. Reason: ${parsed.data.reason}`,
+          entityType: "expense",
+          entityId: id,
+          href: `/expenses`,
+        },
+      });
+    }
+
     return NextResponse.json(updatedExpense);
   } catch (error) {
     captureApiError(error, { route: "PATCH /api/expenses/[id]/reject" });

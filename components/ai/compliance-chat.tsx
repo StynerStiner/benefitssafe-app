@@ -22,9 +22,26 @@ import {
   Minus,
   Paperclip,
   Send,
-  Shield,
   X,
 } from "lucide-react";
+
+const COMPLIANCE_ICON = "/assets/images/Compliance-Assistant-icon/icon-only.png";
+
+function ComplianceIcon({ size = 20, className }: { size?: number; className?: string }) {
+  return (
+    <img
+      src={COMPLIANCE_ICON}
+      alt=""
+      className={className}
+      style={{
+        width: size,
+        height: size,
+        objectFit: "contain",
+        flexShrink: 0,
+      }}
+    />
+  );
+}
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 
@@ -240,10 +257,10 @@ export function ComplianceChat() {
         className="fixed bottom-6 right-6 z-50 group"
         title="AI Compliance Assistant"
       >
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-white shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 transition-all duration-200">
+        <div className="flex h-[72px] w-[72px] items-center justify-center rounded-2xl bg-white dark:bg-slate-800 shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 hover:scale-105 transition-all duration-200 border border-primary/20">
           <div className="relative">
-            <Shield className="h-6 w-6" />
-            <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-green-400 border-2 border-white" />
+            <ComplianceIcon size={56} />
+            <div className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-green-400 border-2 border-white" />
           </div>
         </div>
       </button>
@@ -257,7 +274,7 @@ export function ComplianceChat() {
         className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-primary to-primary/90 text-white shadow-lg shadow-primary/20 px-4 py-3 cursor-pointer hover:shadow-xl transition-all duration-200"
         onClick={() => setMinimized(false)}
       >
-        <Shield className="h-4 w-4" />
+        <ComplianceIcon size={32} />
         <span className="text-lg font-semibold mb-0">Compliance AI</span>
         {messages.length > 0 && (
           <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-white/20 text-xs font-bold px-1">
@@ -280,8 +297,8 @@ export function ComplianceChat() {
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-primary via-primary to-primary/90 text-white shrink-0">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
-            <Shield className="h-5 w-5" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
+            <ComplianceIcon size={38} />
           </div>
           <div>
             <p className="text-sm font-bold tracking-tight leading-none">Compliance Assistant</p>
@@ -365,8 +382,8 @@ export function ComplianceChat() {
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center px-6">
             <div className="relative mb-5">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 border border-primary/10">
-                <Shield className="h-8 w-8 text-primary" />
+              <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 border border-primary/10">
+                <ComplianceIcon size={72} />
               </div>
               <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 border-2 border-background">
                 <span className="h-2 w-2 rounded-full bg-green-500" />
@@ -406,8 +423,8 @@ export function ComplianceChat() {
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             {msg.role === "assistant" && (
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 shrink-0 mr-2 mt-0.5">
-                <Shield className="h-3.5 w-3.5 text-primary" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/5 shrink-0 mr-2 mt-0.5">
+                <ComplianceIcon size={28} />
               </div>
             )}
             <div
@@ -451,8 +468,8 @@ export function ComplianceChat() {
 
         {loading && (
           <div className="flex justify-start">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 shrink-0 mr-2 mt-0.5">
-              <Shield className="h-3.5 w-3.5 text-primary" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/5 shrink-0 mr-2 mt-0.5">
+              <ComplianceIcon size={20} />
             </div>
             <div className="bg-muted/40 border rounded-2xl rounded-bl-md px-4 py-3">
               <div className="flex items-center gap-2.5">

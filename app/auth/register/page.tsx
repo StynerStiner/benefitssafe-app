@@ -1,7 +1,7 @@
 "use client";
 
 import RegisterForm from "@/components/auth/register-form";
-import LogoIcon from "@/public/assets/images/logo-icon.png";
+import LogoIcon from "@/public/assets/images/benefitssafe-logo-icon.png";
 import AuthImage from "@/public/assets/images/auth/auth-img.png";
 import { StaticImg } from "@/types/static-image";
 import type { Metadata } from "next";
@@ -36,23 +36,23 @@ const Register = () => {
         <div className="lg:max-w-[464px] w-full mx-auto">
           {/* Logo and heading */}
           <div>
-            <div className="mb-6 flex items-center gap-4">
+            <div className="mb-6 flex items-center gap-3">
               <Image
                 src={LogoIcon}
                 alt="BenefitsSafe"
-                width={64}
-                height={64}
+                width={48}
+                height={48}
                 priority
                 className="object-contain"
               />
               <div>
-                <h2 className="text-3xl font-bold text-neutral-900 dark:text-white leading-tight">BenefitsSafe</h2>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">Protecting Health, Security, and Growth.</p>
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white leading-none">BenefitsSafe</h2>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Protecting Health, Security, and Growth.</p>
               </div>
             </div>
 
-            <h4 className="font-semibold mb-3">Create your Account</h4>
-            <p className="mb-8 text-neutral-500 dark:text-neutral-300 text-lg">
+            <h4 className="font-semibold text-lg mb-1">Create your Account</h4>
+            <p className="mb-4 text-neutral-500 dark:text-neutral-300 text-sm">
               Get started with your nonprofit organization.
             </p>
           </div>

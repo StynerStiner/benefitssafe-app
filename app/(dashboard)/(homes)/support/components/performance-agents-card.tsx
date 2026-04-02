@@ -4,7 +4,28 @@ import CommonLink from "@/components/shared/common-link";
 import PerformanceAgentsTable from "@/components/table/performance-agents-table";
 import { Card, CardContent } from "@/components/ui/card";
 
-const PerformanceAgentsCard = () => {
+interface UserItem {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string;
+    role: string;
+}
+
+interface AuditLogItem {
+    id: string;
+    userId: string;
+    action: string;
+    entityType: string;
+    createdAt: string;
+}
+
+interface PerformanceAgentsCardProps {
+    users: UserItem[];
+    auditLogs: AuditLogItem[];
+}
+
+const PerformanceAgentsCard = ({ users, auditLogs }: PerformanceAgentsCardProps) => {
     return (
         <Card className="card h-full rounded-lg border-0 !p-0 block">
             <CardContent className="card-body p-0 h-full">
@@ -15,7 +36,7 @@ const PerformanceAgentsCard = () => {
 
                 {/* Transactions List */}
                 <div className="">
-                    <PerformanceAgentsTable />
+                    <PerformanceAgentsTable users={users} auditLogs={auditLogs} />
                 </div>
             </CardContent>
         </Card>

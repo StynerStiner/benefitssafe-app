@@ -5,7 +5,14 @@ import { ApexOptions } from "apexcharts";
 import dynamic from 'next/dynamic';
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 
-const chartOptions: ApexOptions = {
+interface TicketPriorityChartProps {
+    series?: number[];
+}
+
+const TicketPriorityChart = ({ series }: TicketPriorityChartProps) => {
+    const chartData = series && series.some(v => v > 0) ? series : [0, 0, 0, 0];
+
+    const chartOptions: ApexOptions = {
         chart: {
             animations: { enabled: false },
             type: 'bar',
@@ -69,12 +76,10 @@ const chartOptions: ApexOptions = {
         ]
     };
 
-const chartSeries = [{
-    data: [10, 8, 6, 4]
-}]
+    const chartSeries = [{
+        data: chartData
+    }];
 
-
-const TicketPriorityChart = () => {
     return (
             <Chart
                 options={chartOptions}

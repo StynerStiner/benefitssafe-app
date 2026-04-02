@@ -1,7 +1,7 @@
-'use client';
+"use client";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { DollarSign, FileBarChart2, LucideIcon, Users, Wallet } from "lucide-react";
+import { Building2, CheckCircle, Clock, CreditCard, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export interface StatCardData {
@@ -15,37 +15,67 @@ export interface StatCardData {
   changeType: "increase" | "decrease";
 }
 
-const defaultStats: StatCardData[] = [
-  { id: 1, title: "Active Invoices", value: "0", difference: "+0", Icon: FileBarChart2, iconBgColor: "bg-primary", gradientFrom: "from-blue-600/10", changeType: "increase" },
-  { id: 2, title: "Total Payments", value: "$0", difference: "+$0", Icon: DollarSign, iconBgColor: "bg-green-600", gradientFrom: "from-green-600/10", changeType: "increase" },
-];
-
-interface StatsCardProps {
-  stats?: StatCardData[];
-}
-
-const StatsCard = ({ stats = defaultStats }: StatsCardProps) => {
-  const [displayStats, setDisplayStats] = useState<StatCardData[]>(defaultStats);
+const StatsCard = () => {
+  const [displayStats, setDisplayStats] = useState<StatCardData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // If stats are passed as props, use them
-    if (stats && stats.length > 0) {
-      setDisplayStats(stats);
-      setLoading(false);
-      return;
-    }
+    fetch("/api/vendor/profile")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((vendor) => {
+        if (!vendor) {
+          setDisplayStats([]);
+          return;
+        }
 
-    // Otherwise try to fetch from API
-    fetch("/api/vendor/stats")
-      .then((res) => res.ok ? res.json() : { stats: defaultStats })
-      .then((data) => {
-        const statsList = Array.isArray(data) ? data : (data?.stats || defaultStats);
-        setDisplayStats(statsList);
+        const statusMap: Record<string, string> = {
+          PENDING: "Pending Review",
+          APPROVED: "Approved",
+          ACTIVE: "Active",
+          DRAFT: "Draft",
+          AWAITING_PAYMENT_SETUP: "Awaiting Payment",
+          REJECTED: "Rejected",
+          BLOCKED: "Blocked",
+          SUSPENDED: "Suspended",
+        };
+
+        const stats: StatCardData[] = [
+          {
+            id: 1,
+            title: "Organization",
+            value: vendor.organization?.name || "N/A",
+            difference: vendor.type || "vendor",
+            Icon: Building2,
+            iconBgColor: "bg-primary",
+            gradientFrom: "from-blue-600/10",
+            changeType: "increase",
+          },
+          {
+            id: 2,
+            title: "Status",
+            value: statusMap[vendor.status] || vendor.status,
+            difference: vendor.status === "ACTIVE" ? "Verified" : "In progress",
+            Icon: vendor.status === "ACTIVE" ? CheckCircle : Clock,
+            iconBgColor: vendor.status === "ACTIVE" ? "bg-green-600" : "bg-amber-600",
+            gradientFrom: vendor.status === "ACTIVE" ? "from-green-600/10" : "from-amber-600/10",
+            changeType: vendor.status === "ACTIVE" ? "increase" : "decrease",
+          },
+          {
+            id: 3,
+            title: "Payment Method",
+            value: vendor.paymentMethod || "Not set",
+            difference: vendor.taxIdCollected ? "Tax ID collected" : "Tax ID needed",
+            Icon: CreditCard,
+            iconBgColor: "bg-purple-600",
+            gradientFrom: "from-purple-600/10",
+            changeType: vendor.paymentMethod ? "increase" : "decrease",
+          },
+        ];
+        setDisplayStats(stats);
       })
-      .catch(() => setDisplayStats(defaultStats))
+      .catch(() => setDisplayStats([]))
       .finally(() => setLoading(false));
-  }, [stats]);
+  }, []);
 
   if (loading) {
     return (

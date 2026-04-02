@@ -242,7 +242,7 @@ export type PromoCodeGroupByOutputType = {
   _max: PromoCodeMaxAggregateOutputType | null
 }
 
-type GetPromoCodeGroupByPayload<T extends PromoCodeGroupByArgs> = Prisma.PrismaPromise<
+export type GetPromoCodeGroupByPayload<T extends PromoCodeGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<PromoCodeGroupByOutputType, T['by']> &
       {

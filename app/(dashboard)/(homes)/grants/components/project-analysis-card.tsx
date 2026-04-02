@@ -1,9 +1,8 @@
 "use client";
 
 import ClientPaymentStatusChart from "@/components/charts/client-payment-status-chart";
-import MonthYearPicker from "@/components/shared/month-year-picker";
 import { Card, CardContent } from '@/components/ui/card';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 interface Grant {
     createdAt: string;
@@ -20,11 +19,7 @@ function filterByMonth(items: Grant[], month: number, year: number) {
     });
 }
 
-const ProjectAnalysisCard = ({ grants }: { grants: Grant[] }) => {
-    const now = new Date();
-    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-
+const ProjectAnalysisCard = ({ grants, selectedMonth, selectedYear }: { grants: Grant[]; selectedMonth: number; selectedYear: number }) => {
     const filteredGrants = useMemo(() => filterByMonth(grants, selectedMonth, selectedYear), [grants, selectedMonth, selectedYear]);
 
     const summary = useMemo(() => ({
@@ -39,14 +34,6 @@ const ProjectAnalysisCard = ({ grants }: { grants: Grant[] }) => {
             <CardContent className="p-0">
                 <div className="border-b border-neutral-200 dark:border-slate-500 py-4 px-6 flex items-center justify-between flex-wrap gap-2">
                     <h6 className="font-semibold text-lg mb-0 text-foreground">Grant Analysis</h6>
-                    <MonthYearPicker
-                        selectedMonth={selectedMonth}
-                        selectedYear={selectedYear}
-                        onChange={(month, year) => {
-                            setSelectedMonth(month);
-                            setSelectedYear(year);
-                        }}
-                    />
                 </div>
                 <div className="card-body p-6">
                     <ul className="flex flex-wrap items-center justify-center gap-6">

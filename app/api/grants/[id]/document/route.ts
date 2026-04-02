@@ -144,11 +144,33 @@ export async function DELETE(
 
     const { id } = await params;
 
+    // Verify grant belongs to org before modifying
+    const grant = await prisma.grant.findFirst({
+      where: { id, organizationId, archivedAt: null },
+      select: { id: true },
+    });
+
+    if (!grant) {
+      return NextResponse.json({ error: "Grant not found" }, { status: 404 });
+    }
+
     await prisma.grant.update({
       where: { id },
       data: {
         grantDocumentText: null,
         grantDocumentName: null,
+      },
+    });
+
+    // Audit log
+    await prisma.auditLog.create({
+      data: {
+        userId: session.user.id,
+        organizationId,
+        action: "delete_document",
+        entityType: "grant",
+        entityId: id,
+        newValue: { documentRemoved: true },
       },
     });
 

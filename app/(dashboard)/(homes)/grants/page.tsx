@@ -2,6 +2,7 @@
 
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import PageDateFilter from "@/components/shared/page-date-filter";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import AverageEarningCard from "./components/average-earning-card";
 import MyTasksCard from "./components/my-tasks-card";
@@ -25,6 +26,8 @@ interface Grant {
     endDate: string | null;
     grantIssuerName: string;
     grantIssuerContact: string | null;
+    purpose: string | null;
+    blockedMCCs: string[] | null;
     beneficiaryId: string | null;
     beneficiary: {
         id: string;
@@ -45,6 +48,9 @@ const ProjectManagement = () => {
     const [grants, setGrants] = useState<Grant[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
     const fetchGrants = useCallback(() => {
         fetch("/api/grants?limit=100")
@@ -79,7 +85,17 @@ const ProjectManagement = () => {
         <>
             <div className="flex items-center justify-between">
                 <DashboardBreadcrumb title="Grants" text="Grant Management" />
-                <AddGrantForm />
+                <div className="flex items-center gap-3">
+                    <PageDateFilter
+                        selectedMonth={selectedMonth}
+                        selectedYear={selectedYear}
+                        onChange={(month, year) => {
+                            setSelectedMonth(month);
+                            setSelectedYear(year);
+                        }}
+                    />
+                    <AddGrantForm />
+                </div>
             </div>
 
             {error && (
@@ -91,11 +107,11 @@ const ProjectManagement = () => {
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
 
                 <div className="col-span-12 2xl:col-span-8">
-                    <AverageEarningCard grants={grants} />
+                    <AverageEarningCard grants={grants} selectedMonth={selectedMonth} selectedYear={selectedYear} />
                 </div>
 
                 <div className="col-span-12 2xl:col-span-4">
-                    <WorkingScheduleCard grants={grants} />
+                    <WorkingScheduleCard grants={grants} selectedMonth={selectedMonth} selectedYear={selectedYear} />
                 </div>
 
                 <div className="col-span-12 sm:col-span-12">
@@ -109,7 +125,7 @@ const ProjectManagement = () => {
                 </div>
 
                 <div className="col-span-12 sm:col-span-6 2xl:col-span-4">
-                    <ProjectAnalysisCard grants={grants} />
+                    <ProjectAnalysisCard grants={grants} selectedMonth={selectedMonth} selectedYear={selectedYear} />
                 </div>
 
                 <div className="col-span-12 sm:col-span-6 2xl:col-span-4">

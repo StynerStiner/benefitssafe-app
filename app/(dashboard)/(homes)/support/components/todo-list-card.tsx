@@ -4,7 +4,30 @@ import CommonLink from "@/components/shared/common-link";
 import TodoListTable from "@/components/table/todo-list-table";
 import { Card, CardContent } from "@/components/ui/card";
 
-const TodoListCard = () => {
+interface NotificationItem {
+    id: string;
+    userId: string;
+    type: string;
+    title: string;
+    message: string;
+    read: boolean;
+    createdAt: string;
+}
+
+interface UserItem {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string;
+    role: string;
+}
+
+interface TodoListCardProps {
+    notifications: NotificationItem[];
+    users: UserItem[];
+}
+
+const TodoListCard = ({ notifications, users }: TodoListCardProps) => {
     return (
         <Card className="card h-full rounded-lg border-0 !p-0 block">
             <CardContent className="card-body p-0 h-full">
@@ -15,7 +38,7 @@ const TodoListCard = () => {
 
                 {/* Transactions List */}
                 <div className="">
-                    <TodoListTable />
+                    <TodoListTable notifications={notifications} users={users} />
                 </div>
             </CardContent>
         </Card>

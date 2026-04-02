@@ -62,6 +62,15 @@ const nonprofitAdminNav: NavItem[] = [
       { title: "Documents", url: "/documents", circleColor: "bg-yellow-500" },
     ],
   },
+  {
+    title: "Beneficiary View",
+    url: "#",
+    icon: Users,
+    items: [
+      { title: "My Dashboard", url: "/my-dashboard", circleColor: "bg-primary" },
+      { title: "My Documents", url: "/my-documents", circleColor: "bg-yellow-500" },
+    ],
+  },
   { label: "People" },
   {
     title: "Team",
@@ -115,6 +124,7 @@ const beneficiaryNav: NavItem[] = [
       { title: "My Expenses", url: "/expenses", circleColor: "bg-cyan-500" },
       { title: "My Subscriptions", url: "/subscriptions", circleColor: "bg-cyan-500" },
       { title: "My Cards", url: "/virtual-cards", circleColor: "bg-purple-600" },
+      { title: "My Documents", url: "/my-documents", circleColor: "bg-yellow-500" },
     ],
   },
   { label: "Communication" },

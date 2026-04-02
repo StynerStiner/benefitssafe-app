@@ -1,52 +1,31 @@
 "use client";
 
-import UserOverviewChart from '@/components/charts/user-overview-chart';
-import CustomSelect from '@/components/shared/custom-select';
-import { Card, CardContent } from '@/components/ui/card';
-import { useEffect, useState } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
+import { Bell } from "lucide-react";
+import { useEffect, useState } from "react";
 
-interface Beneficiary {
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  read: boolean;
   createdAt: string;
-}
-
-interface Subscription {
-  createdAt: string;
+  href?: string;
 }
 
 const UserOverviewCard = () => {
-  const [newBeneficiaries, setNewBeneficiaries] = useState(0);
-  const [activeSubscriptions, setActiveSubscriptions] = useState(0);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [benefRes, subRes] = await Promise.all([
-          fetch("/api/beneficiaries?limit=100"),
-          fetch("/api/subscriptions"),
-        ]);
-
-        const benefJson = await benefRes.json();
-        const beneficiaries = (Array.isArray(benefJson) ? benefJson : benefJson.data ?? []) as Beneficiary[];
-        const subscriptions = (await subRes.json()) as Subscription[];
-
-        // Count new beneficiaries this month
-        const now = new Date();
-        const newBenefs = beneficiaries.filter((b) => {
-          const date = new Date(b.createdAt);
-          return (
-            date.getMonth() === now.getMonth() &&
-            date.getFullYear() === now.getFullYear()
-          );
-        }).length;
-
-        // Count active subscriptions
-        const activeSubs = subscriptions.filter((s: unknown) => (s as { status: string }).status === "ACTIVE").length;
-
-        setNewBeneficiaries(newBenefs);
-        setActiveSubscriptions(activeSubs);
+        const res = await fetch("/api/notifications?limit=5");
+        const json = await res.json();
+        setNotifications(Array.isArray(json) ? json : json.data ?? []);
       } catch (error) {
-        console.error("Failed to fetch user overview:", error);
+        console.error("Failed to fetch notifications:", error);
       } finally {
         setLoading(false);
       }
@@ -65,42 +44,37 @@ const UserOverviewCard = () => {
     );
   }
 
+  const timeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+  };
+
   return (
     <Card className="card">
       <CardContent className="card-body p-0">
-        <div className="flex items-center justify-between">
-          <h6 className="mb-3 font-semibold text-lg">Users Overview</h6>
-          <CustomSelect
-            placeholder="Monthly"
-            options={["Yearly", "Monthly", "Weekly", "Today"]}
-          />
-        </div>
+        <h6 className="mb-3 font-semibold text-lg">Recent Notifications</h6>
 
-        <div className="apexcharts-tooltip-z-none">
-          <UserOverviewChart />
-        </div>
-
-        <ul className="flex flex-wrap items-center justify-between mt-4 gap-3">
-          <li className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-[2px] bg-blue-500"></span>
-            <span className="text-neutral-500 dark:text-neutral-300 text-sm font-normal">
-              New:
-              <span className="text-neutral-500 dark:text-neutral-300 font-semibold">
-                {newBeneficiaries}
-              </span>
-            </span>
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-[2px] bg-yellow-500"></span>
-            <span className="text-neutral-500 dark:text-neutral-300 text-sm font-normal">
-              Subscribed:
-              <span className="text-neutral-500 dark:text-neutral-300 font-semibold">
-                {activeSubscriptions}
-              </span>
-            </span>
-          </li>
-        </ul>
-
+        {notifications.length === 0 ? (
+          <p className="text-sm text-neutral-500 text-center py-8">No notifications yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {notifications.map((n) => (
+              <div key={n.id} className="flex items-start gap-3">
+                <div className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center ${n.read ? "bg-neutral-100 dark:bg-neutral-700" : "bg-blue-100 dark:bg-blue-600/25"}`}>
+                  <Bell className={`w-4 h-4 ${n.read ? "text-neutral-500" : "text-blue-600 dark:text-blue-400"}`} />
+                </div>
+                <div className="grow min-w-0">
+                  <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">{n.title}</p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">{timeAgo(n.createdAt)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

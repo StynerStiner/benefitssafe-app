@@ -23,9 +23,18 @@ export async function POST(request: Request) {
     const body = await request.text();
     const signature = request.headers.get("stripe-signature");
 
-    // Verify webhook signature
+    // Verify webhook signature — REQUIRED in production
     let event: FraudEvent | null = null;
-    if (process.env.STRIPE_WEBHOOK_SECRET && signature) {
+    if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      if (process.env.NODE_ENV === "production") {
+        console.error("STRIPE_WEBHOOK_SECRET is not set in production — rejecting fraud webhook");
+        return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+      }
+      // Development only: allow unsigned payloads
+      event = JSON.parse(body);
+    } else if (!signature) {
+      return NextResponse.json({ error: "Missing stripe-signature header" }, { status: 400 });
+    } else {
       try {
         event = stripe.webhooks.constructEvent(
           body,
@@ -36,9 +45,6 @@ export async function POST(request: Request) {
         console.error("Stripe fraud webhook signature verification failed");
         return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
       }
-    } else {
-      // In development
-      event = JSON.parse(body);
     }
 
     if (!event) {
@@ -105,7 +111,7 @@ async function handleEarlyFraudWarning(warning: any) {
             entityId: transaction.cardId,
             title: "Early fraud warning",
             message: `Stripe has flagged a potential fraud risk: ${fraudType}. Charge: ${chargeId}. Please review immediately.`,
-            actionUrl: `/audit-trail?filter=fraud&chargeId=${chargeId}`,
+            href: `/audit-trail?filter=fraud&chargeId=${chargeId}`,
           },
         });
       }
@@ -154,7 +160,7 @@ async function handleChargeFraudDetected(charge: any) {
             entityId: chargeId,
             title: "Fraud detected on charge",
             message: `Fraud has been detected on charge ${chargeId}. Stripe Radar detected: ${fraudDetails?.user_report || "automatic detection"}. Amount: $${(charge.amount / 100).toFixed(2)}. Status: ${charge.status}`,
-            actionUrl: `/audit-trail?filter=fraud&chargeId=${chargeId}`,
+            href: `/audit-trail?filter=fraud&chargeId=${chargeId}`,
           },
         });
       }

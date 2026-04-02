@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import MonthYearPicker from "@/components/shared/month-year-picker";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface Grant {
@@ -17,18 +15,14 @@ interface Expense {
     createdAt: string;
 }
 
-function filterByMonth(items: any[], month: number, year: number) {
+function filterByMonth(items: { createdAt: string }[], month: number, year: number) {
     return items.filter(item => {
         const date = new Date(item.createdAt);
         return date.getMonth() === month && date.getFullYear() === year;
     });
 }
 
-const InvestmentCard = ({ grants, expenses }: { grants: Grant[]; expenses: Expense[] }) => {
-    const now = new Date();
-    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-
+const InvestmentCard = ({ grants, expenses, selectedMonth, selectedYear }: { grants: Grant[]; expenses: Expense[]; selectedMonth: number; selectedYear: number }) => {
     const filteredGrants = filterByMonth(grants, selectedMonth, selectedYear) as Grant[];
     const filteredExpenses = filterByMonth(expenses, selectedMonth, selectedYear) as Expense[];
 
@@ -49,14 +43,6 @@ const InvestmentCard = ({ grants, expenses }: { grants: Grant[]; expenses: Expen
                     <div className="card-header border-b border-neutral-200 dark:border-slate-500 py-3 px-6">
                         <div className="flex items-center flex-wrap gap-2 justify-between">
                             <h6 className="font-bold text-lg mb-0">Grant Allocation</h6>
-                            <MonthYearPicker
-                                selectedMonth={selectedMonth}
-                                selectedYear={selectedYear}
-                                onChange={(month, year) => {
-                                    setSelectedMonth(month);
-                                    setSelectedYear(year);
-                                }}
-                            />
                         </div>
                     </div>
 

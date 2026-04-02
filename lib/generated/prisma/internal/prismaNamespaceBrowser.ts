@@ -60,6 +60,7 @@ export const ModelName = {
   Vendor: 'Vendor',
   Subscription: 'Subscription',
   VirtualCard: 'VirtualCard',
+  CardholderEligibility: 'CardholderEligibility',
   Transaction: 'Transaction',
   LedgerEntry: 'LedgerEntry',
   Approval: 'Approval',
@@ -71,7 +72,9 @@ export const ModelName = {
   Document: 'Document',
   DisbursementPolicy: 'DisbursementPolicy',
   PromoCode: 'PromoCode',
-  PromoRedemption: 'PromoRedemption'
+  PromoRedemption: 'PromoRedemption',
+  CalendarEvent: 'CalendarEvent',
+  OrganizationMembership: 'OrganizationMembership'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -99,6 +102,7 @@ export const OrganizationScalarFieldEnum = {
   phone: 'phone',
   website: 'website',
   stripeAccountId: 'stripeAccountId',
+  stripeFinancialAccountId: 'stripeFinancialAccountId',
   plaidItemId: 'plaidItemId',
   logoUrl: 'logoUrl',
   trialStartDate: 'trialStartDate',
@@ -128,6 +132,11 @@ export const UserScalarFieldEnum = {
   mfaEnabled: 'mfaEnabled',
   mfaSecret: 'mfaSecret',
   mfaBackupCodes: 'mfaBackupCodes',
+  lastLoginIp: 'lastLoginIp',
+  lastLoginUserAgent: 'lastLoginUserAgent',
+  lastLoginAt: 'lastLoginAt',
+  trustedDevices: 'trustedDevices',
+  beneficiaryCode: 'beneficiaryCode',
   dateOfBirth: 'dateOfBirth',
   addressStreet: 'addressStreet',
   addressCity: 'addressCity',
@@ -178,6 +187,11 @@ export const GrantScalarFieldEnum = {
   benefitFlags: 'benefitFlags',
   grantDocumentText: 'grantDocumentText',
   grantDocumentName: 'grantDocumentName',
+  purpose: 'purpose',
+  funderRequirements: 'funderRequirements',
+  approvedMCCs: 'approvedMCCs',
+  blockedMCCs: 'blockedMCCs',
+  whitelistedVendorIds: 'whitelistedVendorIds',
   archivedAt: 'archivedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -291,6 +305,7 @@ export const VirtualCardScalarFieldEnum = {
   spendingCap: 'spendingCap',
   merchantLock: 'merchantLock',
   cardType: 'cardType',
+  cardLabel: 'cardLabel',
   status: 'status',
   expiresAt: 'expiresAt',
   createdAt: 'createdAt',
@@ -298,6 +313,28 @@ export const VirtualCardScalarFieldEnum = {
 } as const
 
 export type VirtualCardScalarFieldEnum = (typeof VirtualCardScalarFieldEnum)[keyof typeof VirtualCardScalarFieldEnum]
+
+
+export const CardholderEligibilityScalarFieldEnum = {
+  id: 'id',
+  beneficiaryId: 'beneficiaryId',
+  organizationId: 'organizationId',
+  hasActiveWarrant: 'hasActiveWarrant',
+  isCurrentlyIncarcerated: 'isCurrentlyIncarcerated',
+  hasDrugTraffickingConviction: 'hasDrugTraffickingConviction',
+  probationParoleRestrictions: 'probationParoleRestrictions',
+  eligibilityStatus: 'eligibilityStatus',
+  ofacScreened: 'ofacScreened',
+  ofacMatchFound: 'ofacMatchFound',
+  ofacScreenedAt: 'ofacScreenedAt',
+  ofacMatches: 'ofacMatches',
+  verifiedBy: 'verifiedBy',
+  verifiedAt: 'verifiedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CardholderEligibilityScalarFieldEnum = (typeof CardholderEligibilityScalarFieldEnum)[keyof typeof CardholderEligibilityScalarFieldEnum]
 
 
 export const TransactionScalarFieldEnum = {
@@ -356,6 +393,7 @@ export const AuditLogScalarFieldEnum = {
   oldValue: 'oldValue',
   newValue: 'newValue',
   ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
   createdAt: 'createdAt'
 } as const
 
@@ -476,6 +514,41 @@ export const PromoRedemptionScalarFieldEnum = {
 } as const
 
 export type PromoRedemptionScalarFieldEnum = (typeof PromoRedemptionScalarFieldEnum)[keyof typeof PromoRedemptionScalarFieldEnum]
+
+
+export const CalendarEventScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  title: 'title',
+  description: 'description',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  category: 'category',
+  color: 'color',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CalendarEventScalarFieldEnum = (typeof CalendarEventScalarFieldEnum)[keyof typeof CalendarEventScalarFieldEnum]
+
+
+export const OrganizationMembershipScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  organizationId: 'organizationId',
+  role: 'role',
+  status: 'status',
+  invitedBy: 'invitedBy',
+  joinedAt: 'joinedAt',
+  isDefaultOrg: 'isDefaultOrg',
+  lastAccessedAt: 'lastAccessedAt',
+  orgSpecificTitle: 'orgSpecificTitle',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OrganizationMembershipScalarFieldEnum = (typeof OrganizationMembershipScalarFieldEnum)[keyof typeof OrganizationMembershipScalarFieldEnum]
 
 
 export const SortOrder = {

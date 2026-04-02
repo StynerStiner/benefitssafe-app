@@ -249,7 +249,7 @@ export type VendorGroupByOutputType = {
   _max: VendorMaxAggregateOutputType | null
 }
 
-type GetVendorGroupByPayload<T extends VendorGroupByArgs> = Prisma.PrismaPromise<
+export type GetVendorGroupByPayload<T extends VendorGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<VendorGroupByOutputType, T['by']> &
       {

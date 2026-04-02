@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 import { useSidebarCollapsed } from '@/hooks/useSidebarCollapsed';
 import { cn } from '@/lib/utils';
-import LogoIcon from '@/public/assets/images/logo-sidebar-icon.png';
+import LogoIcon from '@/public/assets/images/benefitssafe-logo-icon.png';
 
 function LogoSidebar() {
   const isCollapsed = useSidebarCollapsed();
@@ -21,8 +21,8 @@ function LogoSidebar() {
       <Image
         src={LogoIcon}
         alt="BenefitsSafe"
-        width={isCollapsed ? 28 : 32}
-        height={isCollapsed ? 36 : 40}
+        width={isCollapsed ? 36 : 48}
+        height={isCollapsed ? 36 : 48}
         priority
         className="object-contain shrink-0"
       />

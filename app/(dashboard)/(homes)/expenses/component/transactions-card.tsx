@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import MonthYearPicker from "@/components/shared/month-year-picker";
 
 interface Expense {
     category: { name: string } | null;
@@ -17,11 +16,7 @@ function filterByMonth(items: Expense[], month: number, year: number) {
     });
 }
 
-const TransactionsCard = ({ expenses }: { expenses: Expense[] }) => {
-    const now = new Date();
-    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-
+const TransactionsCard = ({ expenses, selectedMonth, selectedYear }: { expenses: Expense[]; selectedMonth: number; selectedYear: number }) => {
     const filtered = useMemo(
         () => filterByMonth(expenses, selectedMonth, selectedYear),
         [expenses, selectedMonth, selectedYear]
@@ -48,14 +43,6 @@ const TransactionsCard = ({ expenses }: { expenses: Expense[] }) => {
             <CardContent className="card-body p-0">
                 <div className="flex items-center flex-wrap gap-2 justify-between">
                     <h6 className="mb-0 font-bold text-lg">Expenses by Category</h6>
-                    <MonthYearPicker
-                        selectedMonth={selectedMonth}
-                        selectedYear={selectedYear}
-                        onChange={(month, year) => {
-                            setSelectedMonth(month);
-                            setSelectedYear(year);
-                        }}
-                    />
                 </div>
 
                 <div className="mt-6">

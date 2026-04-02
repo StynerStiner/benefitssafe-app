@@ -467,6 +467,23 @@ export type EnumCardStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumCardStatusFilter<$PrismaModel>
 }
 
+export type EnumEligibilityStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.EligibilityStatus | Prisma.EnumEligibilityStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.EligibilityStatus[] | Prisma.ListEnumEligibilityStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EligibilityStatus[] | Prisma.ListEnumEligibilityStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEligibilityStatusFilter<$PrismaModel> | $Enums.EligibilityStatus
+}
+
+export type EnumEligibilityStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EligibilityStatus | Prisma.EnumEligibilityStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.EligibilityStatus[] | Prisma.ListEnumEligibilityStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EligibilityStatus[] | Prisma.ListEnumEligibilityStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEligibilityStatusWithAggregatesFilter<$PrismaModel> | $Enums.EligibilityStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEligibilityStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEligibilityStatusFilter<$PrismaModel>
+}
+
 export type EnumLedgerTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.LedgerType | Prisma.EnumLedgerTypeFieldRefInput<$PrismaModel>
   in?: $Enums.LedgerType[] | Prisma.ListEnumLedgerTypeFieldRefInput<$PrismaModel>
@@ -955,6 +972,23 @@ export type NestedEnumCardStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumCardStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumCardStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumEligibilityStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.EligibilityStatus | Prisma.EnumEligibilityStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.EligibilityStatus[] | Prisma.ListEnumEligibilityStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EligibilityStatus[] | Prisma.ListEnumEligibilityStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEligibilityStatusFilter<$PrismaModel> | $Enums.EligibilityStatus
+}
+
+export type NestedEnumEligibilityStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EligibilityStatus | Prisma.EnumEligibilityStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.EligibilityStatus[] | Prisma.ListEnumEligibilityStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EligibilityStatus[] | Prisma.ListEnumEligibilityStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEligibilityStatusWithAggregatesFilter<$PrismaModel> | $Enums.EligibilityStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEligibilityStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEligibilityStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumLedgerTypeFilter<$PrismaModel = never> = {

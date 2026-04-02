@@ -3,6 +3,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { validateRecipientEmail, sanitizeEmailForLog, buildSecureLink } from "@/lib/email-security";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -46,6 +47,15 @@ export async function POST(request: Request) {
     }
 
     const { email, firstName, lastName, role: inviteRole } = parsed.data;
+
+    // Validate recipient email against disposable domains and injection attacks
+    const emailCheck = validateRecipientEmail(email);
+    if (!emailCheck.valid) {
+      return NextResponse.json(
+        { error: emailCheck.reason || "Invalid email address" },
+        { status: 400 },
+      );
+    }
 
     // Check if email already exists
     const existing = await prisma.user.findUnique({
@@ -94,12 +104,40 @@ export async function POST(request: Request) {
       select: { token: true, expiresAt: true },
     });
 
-    const baseUrl = process.env.NEXTAUTH_URL;
-    if (!baseUrl) throw new Error("NEXTAUTH_URL environment variable not set");
-    const inviteUrl = `${baseUrl}/auth/accept-invite?token=${invite.token}`;
+    const inviteUrl = buildSecureLink(`/auth/accept-invite?token=${invite.token}`);
 
-    // Log invite URL (in production, send via Postmark)
-    if (!process.env.POSTMARK_API_TOKEN) {
+    let emailSent = false;
+
+    if (process.env.POSTMARK_API_TOKEN) {
+      try {
+        const emailRes = await fetch("https://api.postmarkapp.com/email", {
+          method: "POST",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "X-Postmark-Server-Token": process.env.POSTMARK_API_TOKEN,
+          },
+          body: JSON.stringify({
+            From: process.env.POSTMARK_FROM_EMAIL || "noreply@benefitssafe.com",
+            To: email,
+            Subject: "You've been invited to BenefitsSafe",
+            TextBody: `Hi ${firstName},\n\nYou've been invited to join BenefitsSafe as a ${inviteRole}.\n\nSet up your account: ${inviteUrl}\n\nThis link expires in 7 days.`,
+            MessageStream: "outbound",
+            Headers: [
+              { Name: "X-BenefitsSafe-Invite", Value: "true" },
+            ],
+          }),
+        });
+
+        emailSent = emailRes.ok;
+        if (!emailRes.ok) {
+          console.error("Postmark team invite email failed:", await emailRes.text());
+        }
+      } catch (emailError) {
+        console.error("Failed to send team invite email:", emailError);
+      }
+    } else {
+      // Log to console when Postmark not configured (dev mode)
       console.log("\n========================================");
       console.log("TEAM INVITE (Postmark not configured)");
       console.log("========================================");
@@ -109,6 +147,7 @@ export async function POST(request: Request) {
       console.log(`Link: ${inviteUrl}`);
       console.log(`Expires: ${invite.expiresAt.toISOString()}`);
       console.log("========================================\n");
+      emailSent = true; // In dev, console log counts as "sent"
     }
 
     // Audit log
@@ -120,10 +159,11 @@ export async function POST(request: Request) {
         entityType: "user",
         entityId: newUser.id,
         newValue: JSON.parse(JSON.stringify({
-          email,
+          email: sanitizeEmailForLog(email),
           role: inviteRole,
           firstName,
           lastName,
+          emailSent,
         })),
       },
     });

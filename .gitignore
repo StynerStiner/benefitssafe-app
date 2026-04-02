@@ -35,3 +35,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# design source files (keep only exported PNGs/JPGs)
+*.ai
+*.eps
+*.psd
+*.pdf
+!docs/*.pdf

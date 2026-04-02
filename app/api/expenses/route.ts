@@ -244,6 +244,31 @@ export async function POST(request: Request) {
       },
     });
 
+    // Notify org admins about new expense submission
+    const admins = await prisma.user.findMany({
+      where: { organizationId, role: { in: ["nonprofit_admin", "platform_admin"] }, isActive: true },
+      select: { id: true },
+    });
+    const submitterName = expense.requestedBy
+      ? `${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`
+      : "A user";
+    for (const admin of admins) {
+      if (admin.id !== userId) {
+        await prisma.notification.create({
+          data: {
+            userId: admin.id,
+            organizationId,
+            type: "expense_submitted",
+            title: "New expense request submitted",
+            message: `${submitterName} submitted a $${parseFloat(expense.amount.toString()).toFixed(2)} expense for "${expense.description}" (${expense.grant.name}).`,
+            entityType: "expense",
+            entityId: expense.id,
+            href: `/expenses`,
+          },
+        });
+      }
+    }
+
     return NextResponse.json(
       {
         ...expense,

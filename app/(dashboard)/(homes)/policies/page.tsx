@@ -3,7 +3,6 @@
 import StatisticBarChart from "@/components/charts/statistic-bar-chart";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
-import CustomSelect from "@/components/shared/custom-select";
 import { useEffect, useState } from "react";
 import AvailableRoom from "./components/available-room";
 import BookingCountriesStatus from "./components/booking-countries-status";
@@ -33,22 +32,33 @@ interface Grant {
     totalAmount: string;
     spentAmount: string;
     status: string;
+    createdAt: string;
+}
+
+interface Expense {
+    id: string;
+    status: string;
+    amount: string;
 }
 
 const PoliciesPage = () => {
     const [policy, setPolicy] = useState<Policy | null>(null);
     const [grants, setGrants] = useState<Grant[]>([]);
+    const [expenses, setExpenses] = useState<Expense[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         Promise.all([
             fetch("/api/policies").then((r) => r.ok ? r.json() : null),
             fetch("/api/grants?limit=100").then((r) => r.ok ? r.json() : { data: [] }),
+            fetch("/api/expenses?limit=100").then((r) => r.ok ? r.json() : { data: [] }),
         ])
-            .then(([p, gJson]) => {
+            .then(([p, gJson, eJson]) => {
                 setPolicy(p);
                 const g = Array.isArray(gJson) ? gJson : gJson.data;
                 if (Array.isArray(g)) setGrants(g);
+                const e = Array.isArray(eJson) ? eJson : eJson.data;
+                if (Array.isArray(e)) setExpenses(e);
             })
             .catch(() => {})
             .finally(() => setLoading(false));
@@ -82,10 +92,6 @@ const PoliciesPage = () => {
                         <div className="shadow-7 p-5 rounded-xl bg-white dark:bg-[#273142] h-full">
                             <div className="flex items-center flex-wrap gap-2 justify-between">
                                 <h6 className="mb-0 font-bold text-lg">Policy Overview</h6>
-                                <CustomSelect
-                                    placeholder="Monthly"
-                                    options={["Monthly", "Weekly", "Yearly"]}
-                                />
                             </div>
                             <div className="relative text-style label-bold">
                                 <StatisticBarChart />
@@ -99,15 +105,15 @@ const PoliciesPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
                 <div className="col-span-12 md:col-span-6 xl:col-span-8">
                     <div className="flex flex-col gap-6">
-                        <ExclusiveTravelPackages policy={policy} />
-                        <EarningStatisticCard policy={policy} />
+                        <ExclusiveTravelPackages grants={grants} />
+                        <EarningStatisticCard grants={grants} />
                         <TransactionHistory grants={grants} />
                     </div>
                 </div>
                 <div className="col-span-12 md:col-span-6 xl:col-span-4">
                     <div className="flex flex-col gap-6">
                         <BookingCountriesStatus policy={policy} />
-                        <CheckInOut policy={policy} />
+                        <CheckInOut expenses={expenses} />
                         <SpendOverview policy={policy} />
                     </div>
                 </div>

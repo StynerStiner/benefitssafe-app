@@ -21,7 +21,7 @@ const metadata: Metadata = {
 const InvestmentPage = () => {
   return (
     <>
-      <DashboardBreadcrumb title="Investment" text="Investment" />
+      <DashboardBreadcrumb title="Vendor Dashboard" text="Vendor Dashboard" />
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4 gap-6">
         <Suspense fallback={<LoadingSkeleton />}>
           <StatsCard />

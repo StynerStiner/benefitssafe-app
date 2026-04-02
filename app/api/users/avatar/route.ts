@@ -7,7 +7,7 @@ import { uploadAvatarToS3 } from "@/lib/s3-upload";
 import { NextResponse } from "next/server";
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
 
 export async function POST(request: Request) {
   try {
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     }
 
     if (!ALLOWED_TYPES.includes(file.type)) {
-      return NextResponse.json({ error: "Only PNG, JPEG, and WebP images are supported" }, { status: 400 });
+      return NextResponse.json({ error: "Only PNG, JPEG, GIF, and WebP images are supported" }, { status: 400 });
     }
 
     if (file.size > MAX_SIZE) {
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ avatarUrl });
   } catch (error) {
     console.error("POST /api/users/avatar error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Internal server error";
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    // Never expose internal error messages to the client (A05)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

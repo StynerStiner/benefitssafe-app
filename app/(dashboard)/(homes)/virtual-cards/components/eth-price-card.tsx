@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import UpDownSharpChart from "@/components/charts/up-down-sharp-chart";
-import MonthYearPicker from "@/components/shared/month-year-picker";
 
 interface VirtualCard {
     id: string;
@@ -23,11 +22,7 @@ interface VirtualCard {
     expense: { id: string; description: string; amount: string } | null;
 }
 
-const EthPriceCard = ({ cards }: { cards: VirtualCard[] }) => {
-    const now = useMemo(() => new Date(), []);
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-    const [selectedMonthIndex, setSelectedMonthIndex] = useState(now.getMonth());
-
+const EthPriceCard = ({ cards, selectedMonth: selectedMonthIndex, selectedYear }: { cards: VirtualCard[]; selectedMonth: number; selectedYear: number }) => {
     const selectedMonth = useMemo(() => {
         return `${selectedYear}-${String(selectedMonthIndex + 1).padStart(2, "0")}`;
     }, [selectedYear, selectedMonthIndex]);
@@ -56,11 +51,6 @@ const EthPriceCard = ({ cards }: { cards: VirtualCard[] }) => {
                     <div className="card-header border-b border-neutral-200 dark:border-slate-500 py-4 px-6">
                         <div className="flex items-center flex-wrap gap-2 justify-between">
                             <h6 className="font-bold text-lg mb-0">Card Spending</h6>
-                            <MonthYearPicker
-                                selectedMonth={selectedMonthIndex}
-                                selectedYear={selectedYear}
-                                onChange={(m, y) => { setSelectedMonthIndex(m); setSelectedYear(y); }}
-                            />
                         </div>
                     </div>
                     <div className="card-body py-4 px-6">

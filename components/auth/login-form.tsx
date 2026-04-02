@@ -97,6 +97,8 @@ const LoginForm = () => {
             setLoading(false)
             setIsSubmitting(false)
           } else {
+            // Record login device fingerprint (fire-and-forget)
+            fetch('/api/auth/record-login', { method: 'POST' }).catch(() => {})
             toast.success('Login successful!')
             // Hard redirect -- don't reset loading state, let the page navigate
             window.location.href = '/dashboard'
@@ -127,6 +129,8 @@ const LoginForm = () => {
       if (data.verified) {
         // Clear the mfaPending flag in the session
         await updateSession({ mfaPending: false })
+        // Record login device fingerprint (fire-and-forget)
+        fetch('/api/auth/record-login', { method: 'POST' }).catch(() => {})
         toast.success('Login successful!')
         router.push('/dashboard')
       } else {

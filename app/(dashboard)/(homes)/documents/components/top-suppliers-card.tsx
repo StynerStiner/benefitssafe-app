@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import CommonLink from "@/components/shared/common-link";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -11,48 +12,36 @@ import {
     TableRow,
 } from "@/components/ui/table";
 
+interface Document {
+    id: string;
+    entityType: string;
+    entityId: string;
+    fileName: string;
+    fileUrl: string;
+    fileType: string;
+    uploadedById: string;
+    organizationId: string;
+    createdAt: string;
+}
 
-interface ProjectStatus {
-    sl: string;
-    name: string;
-    amount: string;
-};
+const TopSuppliersCard = ({ documents }: { documents: Document[] }) => {
+    const uploaderBreakdown = useMemo(() => {
+        const counts: Record<string, number> = {};
+        documents.forEach((d) => {
+            const uploader = d.uploadedById || "Unknown";
+            counts[uploader] = (counts[uploader] || 0) + 1;
+        });
 
-const projectStates: ProjectStatus[] = [
-    {
-        sl: "1",
-        name: "Sarah Mitchell",
-        amount: "12 files",
-    },
-    {
-        sl: "2",
-        name: "James Carter",
-        amount: "8 files",
-    },
-    {
-        sl: "3",
-        name: "Jordan Lee",
-        amount: "5 files",
-    },
-    {
-        sl: "4",
-        name: "Maria Rodriguez",
-        amount: "3 files",
-    },
-    {
-        sl: "5",
-        name: "Taylor Davis",
-        amount: "2 files",
-    },
-    {
-        sl: "6",
-        name: "Pat Williams",
-        amount: "1 file",
-    },
-];
+        return Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 6)
+            .map(([uploaderId, count], index) => ({
+                sl: String(index + 1),
+                name: uploaderId.slice(0, 12) + "...",
+                amount: `${count} ${count === 1 ? "file" : "files"}`,
+            }));
+    }, [documents]);
 
-
-const TopSuppliersCard = ({ documents }: { documents: unknown[] }) => {
     return (
         <Card className="card h-full rounded-lg border-0 !p-0 block">
             <CardContent className="card-body p-0 h-full">
@@ -82,31 +71,39 @@ const TopSuppliersCard = ({ documents }: { documents: unknown[] }) => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {projectStates.map((order, index) => {
-                                    const isLast = index === projectStates.length - 1;
-                                    return (
-                                        <TableRow key={index}>
-                                            <TableCell
-                                                className={`py-4.5 px-4 text-neutral-500 dark:text-neutral-200 font-medium first:border-s last:border-e border-b border-neutral-200 dark:border-slate-600 text-start ${isLast ? "rounded-bl-lg" : ""
-                                                    }`}
-                                            >
-                                                {order.sl}
-                                            </TableCell>
-                                            <TableCell
-                                                className={`py-4.5 px-4 text-neutral-500 dark:text-neutral-200 font-medium first:border-s last:border-e border-b border-neutral-200 dark:border-slate-600 text-center ${isLast ? "" : ""
-                                                    }`}
-                                            >
-                                                {order.name}
-                                            </TableCell>
-                                            <TableCell
-                                                className={`py-4.5 px-4 text-neutral-500 dark:text-neutral-200 font-medium first:border-s last:border-e border-b border-neutral-200 dark:border-slate-600 text-center ${isLast ? "rounded-br-lg" : ""
-                                                    }`}
-                                            >
-                                                {order.amount}
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
+                                {uploaderBreakdown.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={3} className="py-4.5 px-4 text-center text-neutral-500 dark:text-neutral-200 border-b border-neutral-200 dark:border-slate-600">
+                                            No uploaders yet
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    uploaderBreakdown.map((order, index) => {
+                                        const isLast = index === uploaderBreakdown.length - 1;
+                                        return (
+                                            <TableRow key={index}>
+                                                <TableCell
+                                                    className={`py-4.5 px-4 text-neutral-500 dark:text-neutral-200 font-medium first:border-s last:border-e border-b border-neutral-200 dark:border-slate-600 text-start ${isLast ? "rounded-bl-lg" : ""
+                                                        }`}
+                                                >
+                                                    {order.sl}
+                                                </TableCell>
+                                                <TableCell
+                                                    className={`py-4.5 px-4 text-neutral-500 dark:text-neutral-200 font-medium first:border-s last:border-e border-b border-neutral-200 dark:border-slate-600 text-center ${isLast ? "" : ""
+                                                        }`}
+                                                >
+                                                    {order.name}
+                                                </TableCell>
+                                                <TableCell
+                                                    className={`py-4.5 px-4 text-neutral-500 dark:text-neutral-200 font-medium first:border-s last:border-e border-b border-neutral-200 dark:border-slate-600 text-center ${isLast ? "rounded-br-lg" : ""
+                                                        }`}
+                                                >
+                                                    {order.amount}
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })
+                                )}
                             </TableBody>
                         </Table>
                     </div>

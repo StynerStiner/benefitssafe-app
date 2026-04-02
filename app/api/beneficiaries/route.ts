@@ -3,6 +3,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { validateRecipientEmail } from "@/lib/email-security";
 import { captureApiError } from "@/lib/error-handler";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { createBeneficiarySchema } from "@/lib/validations/beneficiary";
@@ -41,6 +42,7 @@ export async function GET(request: Request) {
         where: userWhere,
         select: {
           id: true,
+          beneficiaryCode: true,
           firstName: true,
           lastName: true,
           email: true,
@@ -77,6 +79,7 @@ export async function GET(request: Request) {
       );
       return {
         id: b.id,
+        beneficiaryCode: b.beneficiaryCode,
         firstName: b.firstName,
         lastName: b.lastName,
         email: b.email,
@@ -147,6 +150,15 @@ export async function POST(request: Request) {
 
     const data = parsed.data;
 
+    // Validate email against disposable domains and injection attacks
+    const emailCheck = validateRecipientEmail(data.email);
+    if (!emailCheck.valid) {
+      return NextResponse.json(
+        { error: emailCheck.reason || "Invalid email address" },
+        { status: 400 },
+      );
+    }
+
     // Check for existing email globally (email has unique constraint)
     const existing = await prisma.user.findUnique({
       where: { email: data.email },
@@ -163,6 +175,19 @@ export async function POST(request: Request) {
     const clean = (val: string | undefined): string | null =>
       val && val.trim() ? val.trim() : null;
 
+    // Generate collision-safe beneficiary code: BS-{orgSeq}-{benSeq}
+    // Count existing beneficiaries in this org to determine sequence number
+    const beneficiaryCount = await prisma.user.count({
+      where: { organizationId, role: "beneficiary" },
+    });
+
+    // Get org sequence from creation order
+    const orgCount = await prisma.organization.count({
+      where: { createdAt: { lte: new Date() } },
+    });
+
+    const beneficiaryCode = `BS-${String(orgCount).padStart(4, "0")}-${String(beneficiaryCount + 1).padStart(5, "0")}`;
+
     const createData = {
       email: data.email,
       firstName: data.firstName.trim(),
@@ -170,6 +195,7 @@ export async function POST(request: Request) {
       phone: clean(data.phone),
       role: "beneficiary" as const,
       organizationId,
+      beneficiaryCode,
       avatarUrl: (data as any).avatarUrl || null,
       dateOfBirth: data.dateOfBirth && data.dateOfBirth.trim() ? new Date(data.dateOfBirth) : null,
       addressStreet: clean(data.addressStreet),
@@ -190,6 +216,7 @@ export async function POST(request: Request) {
         firstName: true,
         lastName: true,
         email: true,
+        beneficiaryCode: true,
         createdAt: true,
       },
     });

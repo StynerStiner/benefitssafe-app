@@ -3,6 +3,7 @@
 import WorldMapChart from "@/components/charts/world-map-chart";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import PageDateFilter from "@/components/shared/page-date-filter";
 import CountryList from "@/components/shared/country-list";
 import CustomSelect from "@/components/shared/custom-select";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,6 +36,9 @@ const SubscriptionsPage = () => {
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
     useEffect(() => {
         fetch("/api/subscriptions")
@@ -59,7 +63,17 @@ const SubscriptionsPage = () => {
         <>
             <div className="flex items-center justify-between">
                 <DashboardBreadcrumb title="Subscriptions" text="Subscription Management" />
-                <AddSubscriptionForm />
+                <div className="flex items-center gap-3">
+                    <PageDateFilter
+                        selectedMonth={selectedMonth}
+                        selectedYear={selectedYear}
+                        onChange={(month, year) => {
+                            setSelectedMonth(month);
+                            setSelectedYear(year);
+                        }}
+                    />
+                    <AddSubscriptionForm />
+                </div>
             </div>
 
             {error && (

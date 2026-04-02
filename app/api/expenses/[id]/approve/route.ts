@@ -161,6 +161,22 @@ export async function PATCH(
       },
     });
 
+    // Notify the beneficiary who submitted the expense
+    if (result.requestedBy) {
+      await prisma.notification.create({
+        data: {
+          userId: result.requestedBy.id,
+          organizationId,
+          type: "expense_approved",
+          title: "Expense request approved",
+          message: `Your $${amount.toFixed(2)} expense for "${result.description}" (${result.grant.name}) has been approved.`,
+          entityType: "expense",
+          entityId: id,
+          href: `/expenses`,
+        },
+      });
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     captureApiError(error, { route: "PATCH /api/expenses/[id]/approve" });

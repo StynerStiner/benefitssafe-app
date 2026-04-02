@@ -9,6 +9,7 @@ const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 interface DoubleLineChartProps {
     colors: [string, string];
+    series?: { name: string; data: number[] }[];
 }
 
 const chartSeries = [
@@ -22,7 +23,7 @@ const chartSeries = [
     },
 ];
 
-const DoubleLineChart: React.FC<DoubleLineChartProps> = ({ colors }) => {
+const DoubleLineChart: React.FC<DoubleLineChartProps> = ({ colors, series: seriesProp }) => {
     const chartOptions: ApexOptions = {
         legend: {
             show: false,
@@ -80,7 +81,7 @@ const DoubleLineChart: React.FC<DoubleLineChartProps> = ({ colors }) => {
         },
         yaxis: {
             labels: {
-                formatter: (value) => "$" + value + "k",
+                formatter: (value) => String(value),
                 style: { fontSize: "14px" },
             },
         },
@@ -93,7 +94,7 @@ const DoubleLineChart: React.FC<DoubleLineChartProps> = ({ colors }) => {
         <div className="label--20-px">
             <Chart
                 options={chartOptions}
-                series={chartSeries}
+                series={seriesProp || chartSeries}
                 type="area"
                 height={270}
             />

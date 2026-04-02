@@ -51,50 +51,54 @@ const chartOptions: ApexOptions = {
     yaxis: {
         labels: {
             formatter: function (value) {
-                return (value / 1000).toFixed(0) + 'k';
+                return String(value);
             }
         }
     },
     tooltip: {
         y: {
             formatter: function (value) {
-                return value / 1000 + 'k';
+                return String(value);
             }
         }
     }
 };
-const chartSeries = [{
-    name: "Sales",
+const defaultChartSeries = [{
+    name: "Actions",
     data: [{
         x: 'Sun',
-        y: 85000,
+        y: 0,
     }, {
         x: 'Mon',
-        y: 70000,
+        y: 0,
     }, {
         x: 'Tue',
-        y: 40000,
+        y: 0,
     }, {
         x: 'Wed',
-        y: 50000,
+        y: 0,
     }, {
         x: 'Thu',
-        y: 60000,
+        y: 0,
     }, {
         x: 'Fri',
-        y: 50000,
+        y: 0,
     }, {
-        x: 'Sun',
-        y: 40000,
+        x: 'Sat',
+        y: 0,
     }]
 }]
 
-const AgentEarningsChart = () => {
+interface AgentEarningsChartProps {
+    series?: typeof defaultChartSeries;
+}
+
+const AgentEarningsChart = ({ series }: AgentEarningsChartProps) => {
     return (
         <div className="-m-4 mt-0">
             <Chart
                 options={chartOptions}
-                series={chartSeries}
+                series={series || defaultChartSeries}
                 type="bar"
                 height={310}
             />

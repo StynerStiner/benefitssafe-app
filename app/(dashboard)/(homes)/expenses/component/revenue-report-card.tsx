@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import StatsCard from "@/app/(dashboard)/(homes)/expenses/component/stats-card";
 import GenerateContentChart from "@/components/charts/generate-content-chart";
-import MonthYearPicker from "@/components/shared/month-year-picker";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface Expense {
@@ -19,11 +18,7 @@ function filterByMonth(items: Expense[], month: number, year: number) {
     });
 }
 
-const RevenueReportCard = ({ expenses }: { expenses: Expense[] }) => {
-    const now = new Date();
-    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-
+const RevenueReportCard = ({ expenses, selectedMonth, selectedYear }: { expenses: Expense[]; selectedMonth: number; selectedYear: number }) => {
     const filtered = useMemo(
         () => filterByMonth(expenses, selectedMonth, selectedYear),
         [expenses, selectedMonth, selectedYear]
@@ -42,14 +37,6 @@ const RevenueReportCard = ({ expenses }: { expenses: Expense[] }) => {
                         <div className="card-body p-6">
                             <div className="flex items-center flex-wrap gap-2 justify-between">
                                 <h6 className="mb-0 font-bold text-lg">Expense Trends</h6>
-                                <MonthYearPicker
-                                    selectedMonth={selectedMonth}
-                                    selectedYear={selectedYear}
-                                    onChange={(month, year) => {
-                                        setSelectedMonth(month);
-                                        setSelectedYear(year);
-                                    }}
-                                />
                             </div>
                             <ul className="flex flex-wrap items-center mt-4 gap-3">
                                 <li className="flex items-center gap-2">

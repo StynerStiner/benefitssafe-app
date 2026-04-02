@@ -39,8 +39,8 @@ function isValidDate(date: Date | undefined) {
 }
 
 interface EditEventProps {
-    onEditEvent: (event: any) => void;
-    event: any;
+    onEditEvent: (event: { id: string; title: string; label: string; description: string; startTime: string; endTime: string }) => void;
+    event: { id: string; title: string; label: string; description: string; startTime: string; endTime: string };
 }
 
 const EditEvent: React.FC<EditEventProps> = ({ onEditEvent, event }) => {
@@ -89,11 +89,6 @@ const EditEvent: React.FC<EditEventProps> = ({ onEditEvent, event }) => {
         const updatedEvent = {
             id: event.id,
             title: name,
-            color: label === "Personal" ? "bg-green-500" :
-                label === "Business" ? "bg-primary" :
-                    label === "Family" ? "bg-yellow-500" :
-                        label === "Important" ? "bg-purple-500" :
-                            "bg-red-500",
             label,
             startTime: value,
             endTime: endValue,
@@ -105,7 +100,6 @@ const EditEvent: React.FC<EditEventProps> = ({ onEditEvent, event }) => {
         setTimeout(() => {
             setDialogOpen(false)
             setSubmitForm(false)
-            toast.success("Event updated successfully!")
         }, 500)
     }
 
@@ -266,33 +260,33 @@ const EditEvent: React.FC<EditEventProps> = ({ onEditEvent, event }) => {
                                         className="flex items-center flex-wrap gap-7"
                                     >
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="Personal" id="Personal" className="border border-neutral-400" required />
-                                            <Label htmlFor="Personal" className="font-medium text-sm flex items-center gap-1">
-                                                <span className="w-2 h-2 bg-green-500 rounded-full"></span> Personal
+                                            <RadioGroupItem value="Grants" id="edit-Grants" className="border border-neutral-400" required />
+                                            <Label htmlFor="edit-Grants" className="font-medium text-sm flex items-center gap-1">
+                                                <span className="w-2 h-2 bg-blue-500 rounded-full"></span> Grants
                                             </Label>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="Business" id="Business" className="border border-neutral-400" required />
-                                            <Label htmlFor="Business" className="font-medium text-sm flex items-center gap-1">
-                                                <span className="w-2 h-2 bg-blue-500 rounded-full"></span> Business
+                                            <RadioGroupItem value="Payments" id="edit-Payments" className="border border-neutral-400" required />
+                                            <Label htmlFor="edit-Payments" className="font-medium text-sm flex items-center gap-1">
+                                                <span className="w-2 h-2 bg-green-500 rounded-full"></span> Payments
                                             </Label>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="Family" id="Family" className="border border-neutral-400" required />
-                                            <Label htmlFor="Family" className="font-medium text-sm flex items-center gap-1">
-                                                <span className="w-2 h-2 bg-yellow-500 rounded-full"></span> Family
+                                            <RadioGroupItem value="Compliance" id="edit-Compliance" className="border border-neutral-400" required />
+                                            <Label htmlFor="edit-Compliance" className="font-medium text-sm flex items-center gap-1">
+                                                <span className="w-2 h-2 bg-yellow-500 rounded-full"></span> Compliance
                                             </Label>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="Important" id="Important" className="border border-neutral-400" required />
-                                            <Label htmlFor="Important" className="font-medium text-sm flex items-center gap-1">
-                                                <span className="w-2 h-2 bg-purple-500 rounded-full"></span> Important
+                                            <RadioGroupItem value="Subscriptions" id="edit-Subscriptions" className="border border-neutral-400" required />
+                                            <Label htmlFor="edit-Subscriptions" className="font-medium text-sm flex items-center gap-1">
+                                                <span className="w-2 h-2 bg-purple-500 rounded-full"></span> Subscriptions
                                             </Label>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="Holiday" id="Holiday" className="border border-neutral-400" required />
-                                            <Label htmlFor="Holiday" className="font-medium text-sm flex items-center gap-1">
-                                                <span className="w-2 h-2 bg-red-500 rounded-full"></span> Holiday
+                                            <RadioGroupItem value="General" id="edit-General" className="border border-neutral-400" required />
+                                            <Label htmlFor="edit-General" className="font-medium text-sm flex items-center gap-1">
+                                                <span className="w-2 h-2 bg-red-500 rounded-full"></span> General
                                             </Label>
                                         </div>
                                     </RadioGroup>

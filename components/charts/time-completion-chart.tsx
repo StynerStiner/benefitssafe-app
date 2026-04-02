@@ -9,17 +9,18 @@ const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 interface TimeCompletionChartProps {
     colors: [string, string];
+    series?: number[];
 }
 
-const chartSeries = [{
-    name: 'series1',
-    data: [48, 35, 55, 32, 48, 30, 55, 50, 57]
-}]
+const TimeCompletionChart: React.FC<TimeCompletionChartProps> = ({ colors, series }) => {
+    const chartSeries = [{
+        name: 'series1',
+        data: series && series.length > 0 ? series : [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    }];
 
-const TimeCompletionChart: React.FC<TimeCompletionChartProps> = ({ colors }) => {
     const chartOptions: ApexOptions =  {
             legend: {
-                show: false 
+                show: false
             },
             chart: {
             animations: { enabled: false },
@@ -42,7 +43,7 @@ const TimeCompletionChart: React.FC<TimeCompletionChartProps> = ({ colors }) => 
                 colors: colors // Use solid colors for the lines
             },
             fill: {
-                type: "solid", 
+                type: "solid",
                 opacity: 0 // No gradient or shadow fill
             },
             grid: {

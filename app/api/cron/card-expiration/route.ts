@@ -15,9 +15,12 @@ import { stripe } from "@/lib/stripe";
 
 export async function GET(request: Request) {
   try {
-    // Verify cron secret for security
+    // Verify cron secret via Authorization header (not query params, to avoid logging)
+    // Supports both: ?secret=X (legacy) and Authorization: Bearer X
+    const authHeader = request.headers.get("authorization");
     const { searchParams } = new URL(request.url);
-    const secret = searchParams.get("secret");
+    const querySecret = searchParams.get("secret");
+    const secret = authHeader?.replace("Bearer ", "") || querySecret;
 
     if (!secret || secret !== process.env.CRON_SECRET) {
       return NextResponse.json(
@@ -112,7 +115,7 @@ export async function GET(request: Request) {
               type: "card_expired",
               title: "Your virtual card has expired",
               message: `Your virtual card ending in ${card.id.slice(-4)} has expired and can no longer be used.`,
-              actionUrl: "/virtual-cards",
+              href: "/virtual-cards",
             },
           });
         }
@@ -153,7 +156,7 @@ export async function GET(request: Request) {
             type: "card_expiring_soon",
             title: `Your virtual card expires in ${daysUntilExpiry} days`,
             message: `Your virtual card will expire on ${card.expiresAt?.toLocaleDateString()}. Request a new card if you'll need it.`,
-            actionUrl: `/virtual-cards/${card.id}`,
+            href: `/virtual-cards/${card.id}`,
           },
         });
       }
@@ -185,10 +188,7 @@ export async function GET(request: Request) {
     console.error("Card expiration cron job failed:", error);
 
     return NextResponse.json(
-      {
-        error: "Cron job failed",
-        message: error instanceof Error ? error.message : String(error),
-      },
+      { error: "Cron job failed" },
       { status: 500 },
     );
   }

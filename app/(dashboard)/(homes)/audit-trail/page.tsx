@@ -21,16 +21,38 @@ interface AuditLog {
     newValue: Record<string, unknown> | null;
 }
 
+interface UserInfo {
+    id: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    avatarUrl: string | null;
+}
+
 const AuditTrailPage = () => {
     const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+    const [users, setUsers] = useState<Record<string, UserInfo>>({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch("/api/audit-logs")
-            .then((r) => r.ok ? r.json() : [])
-            .then((data) => {
-                const logs = Array.isArray(data) ? data : (data?.logs && Array.isArray(data.logs) ? data.logs : []);
+        Promise.all([
+            fetch("/api/audit-logs?limit=100").then((r) => {
+                if (!r.ok) return [];
+                return r.json();
+            }),
+            fetch("/api/users?limit=200").then((r) => {
+                if (!r.ok) return [];
+                return r.json();
+            }),
+        ])
+            .then(([logData, userData]) => {
+                const logs = Array.isArray(logData) ? logData : (logData?.logs && Array.isArray(logData.logs) ? logData.logs : []);
                 setAuditLogs(logs);
+
+                const userList = Array.isArray(userData) ? userData : [];
+                const userMap: Record<string, UserInfo> = {};
+                userList.forEach((u: UserInfo) => { userMap[u.id] = u; });
+                setUsers(userMap);
             })
             .catch(() => {})
             .finally(() => setLoading(false));
@@ -66,11 +88,11 @@ const AuditTrailPage = () => {
                 </div>
 
                 <div className="col-span-12 2xl:col-span-6">
-                    <BestAgentsCard auditLogs={auditLogs} />
+                    <BestAgentsCard auditLogs={auditLogs} users={users} />
                 </div>
 
                 <div className="col-span-12 2xl:col-span-8">
-                    <RecentCallsCard auditLogs={auditLogs} />
+                    <RecentCallsCard auditLogs={auditLogs} users={users} />
                 </div>
 
                 <div className="col-span-12 2xl:col-span-4">

@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { prisma } from "@/lib/db";
+import { validateRecipientEmail, buildSecureLink } from "@/lib/email-security";
 import { stripe } from "@/lib/stripe";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
@@ -85,11 +86,21 @@ export async function POST(request: Request) {
 
     const { ein, einVerified, organizationName, firstName, lastName, email, password, promoCode } = parsed.data;
 
+    // Validate email against disposable domains and injection attacks
+    const emailCheck = validateRecipientEmail(email);
+    if (!emailCheck.valid) {
+      return NextResponse.json(
+        { error: emailCheck.reason || "Invalid email address" },
+        { status: 400 },
+      );
+    }
+
     // Normalize EIN: strip dashes for storage
     const normalizedEIN = ein ? ein.replace(/-/g, "") : undefined;
 
     // ----------------------------------------------------------------
     // ANTI-ABUSE CHECK 1: Duplicate email
+    // Generic message prevents email enumeration (A02/A04)
     // ----------------------------------------------------------------
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -97,7 +108,7 @@ export async function POST(request: Request) {
     });
     if (existingUser) {
       return NextResponse.json(
-        { error: "A user with this email already exists" },
+        { error: "Unable to create account. If you already have an account, try signing in." },
         { status: 409 },
       );
     }
@@ -376,7 +387,7 @@ export async function POST(request: Request) {
 
     // TODO: Send verification email via Postmark/SendGrid
     // For now, log the verification URL to console for development
-    const verificationUrl = `https://benefits-safe-app.vercel.app/api/auth/verify-email?token=${emailVerifyToken}`;
+    const verificationUrl = buildSecureLink(`/api/auth/verify-email?token=${emailVerifyToken}`);
     console.log("-----------------------------------------------------------");
     console.log("EMAIL VERIFICATION LINK (dev only):");
     console.log(verificationUrl);

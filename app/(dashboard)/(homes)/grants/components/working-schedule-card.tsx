@@ -1,8 +1,7 @@
 "use client";
 
 import { Card, CardContent } from '@/components/ui/card';
-import { useMemo, useState } from 'react';
-import MonthYearPicker from '@/components/shared/month-year-picker';
+import { useMemo } from 'react';
 
 interface Grant {
     id: string;
@@ -16,10 +15,7 @@ interface Grant {
     } | null;
 }
 
-const WorkingScheduleCard = ({ grants }: { grants: Grant[] }) => {
-    const now = useMemo(() => new Date(), []);
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-    const [selectedMonthIndex, setSelectedMonthIndex] = useState(now.getMonth());
+const WorkingScheduleCard = ({ grants, selectedMonth: selectedMonthIndex, selectedYear }: { grants: Grant[]; selectedMonth: number; selectedYear: number }) => {
 
     const selectedDate = useMemo(() => {
         return new Date(selectedYear, selectedMonthIndex, 1);
@@ -81,11 +77,6 @@ const WorkingScheduleCard = ({ grants }: { grants: Grant[] }) => {
             <CardContent className="p-0">
                 <div className="border-b border-neutral-200 dark:border-slate-500 py-4 px-6 flex items-center justify-between flex-wrap gap-2">
                     <h6 className="font-semibold text-lg mb-0 text-foreground">Grant Schedule</h6>
-                    <MonthYearPicker
-                        selectedMonth={selectedMonthIndex}
-                        selectedYear={selectedYear}
-                        onChange={(m, y) => { setSelectedMonthIndex(m); setSelectedYear(y); }}
-                    />
                 </div>
                 <div className="card-body p-6">
                     <div className="flex items-center gap-4 justify-between flex-wrap">

@@ -1,3 +1,5 @@
+"use client";
+
 import {
     Table,
     TableBody,
@@ -6,95 +8,68 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import UserGridImage1 from "@/public/assets/images/home-twelve/transaction-img1.png";
-import UserGridImage2 from "@/public/assets/images/home-twelve/transaction-img2.png";
-import UserGridImage3 from "@/public/assets/images/home-twelve/transaction-img3.png";
-import UserGridImage4 from "@/public/assets/images/home-twelve/transaction-img4.png";
-import UserGridImage5 from "@/public/assets/images/home-twelve/transaction-img5.png";
-import Image, { StaticImageData } from "next/image";
+import UserAvatar from "@/components/shared/user-avatar";
 
-interface ActivityStatus {
-    label: string;
-    type: "success" | "warning" | "purple";
-}
-
-interface PerformanceAgentsTableTypeItem {
-    customer: {
-        name: string;
-        image: string | StaticImageData;
-    };
+interface UserItem {
     id: string;
-    totalTicket: string;
-    openTicket: string;
-    resolvedTicket: string;
-    progressBg: string;
-    stock: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string;
+    role: string;
 }
 
-const PerformanceAgentsTableTableContents: PerformanceAgentsTableTypeItem[] = [
-    {
-        customer: {
-            name: "Taylor Davis",
-            image: UserGridImage1,
-        },
-        id: "#63254",
-        totalTicket: "300",
-        openTicket: "250",
-        resolvedTicket: "50",
-        progressBg: "bg-red-600",
-        stock: "30%",
-    },
-    {
-        customer: {
-            name: "Sarah Mitchell",
-            image: UserGridImage2,
-        },
-        id: "#63254",
-        totalTicket: "300",
-        openTicket: "250",
-        resolvedTicket: "50",
-        progressBg: "bg-yellow-600",
-        stock: "50%",
-    },
-    {
-        customer: {
-            name: "Jordan Lee",
-            image: UserGridImage3,
-        },
-        id: "#63254",
-        totalTicket: "300",
-        openTicket: "250",
-        resolvedTicket: "50",
-        progressBg: "bg-cyan-600",
-        stock: "60%",
-    },
-    {
-        customer: {
-            name: "Maria Rodriguez",
-            image: UserGridImage4,
-        },
-        id: "#63254",
-        totalTicket: "300",
-        openTicket: "250",
-        resolvedTicket: "50",
-        progressBg: "bg-green-600",
-        stock: "80%",
-    },
-    {
-        customer: {
-            name: "Pat Williams",
-            image: UserGridImage5,
-        },
-        id: "#63254",
-        totalTicket: "300",
-        openTicket: "250",
-        resolvedTicket: "50",
-        progressBg: "bg-primary",
-        stock: "70%",
-    },
+interface AuditLogItem {
+    id: string;
+    userId: string;
+    action: string;
+    entityType: string;
+    createdAt: string;
+}
+
+interface PerformanceAgentsTableProps {
+    users: UserItem[];
+    auditLogs: AuditLogItem[];
+}
+
+const PROGRESS_COLORS = [
+    "bg-red-600",
+    "bg-yellow-600",
+    "bg-cyan-600",
+    "bg-green-600",
+    "bg-primary",
 ];
 
-const PerformanceAgentsTable = () => {
+const PerformanceAgentsTable = ({ users, auditLogs }: PerformanceAgentsTableProps) => {
+    if (!users || users.length === 0) {
+        return (
+            <div className="p-6 text-center text-neutral-500 dark:text-neutral-400">
+                No data yet
+            </div>
+        );
+    }
+
+    // Build per-user audit log stats
+    const userLogStats = users.map((user, index) => {
+        const userLogs = auditLogs.filter(log => log.userId === user.id);
+        const totalTickets = userLogs.length;
+        const createLogs = userLogs.filter(log => log.action === "create").length;
+        const resolveLogs = userLogs.filter(log =>
+            log.action === "approve" || log.action === "update" || log.action === "delete"
+        ).length;
+        const openTickets = Math.max(0, totalTickets - resolveLogs);
+        const satisfaction = totalTickets > 0 ? Math.round((resolveLogs / totalTickets) * 100) : 0;
+        const progressBg = PROGRESS_COLORS[index % PROGRESS_COLORS.length];
+
+        return {
+            user,
+            totalTickets,
+            openTickets,
+            resolvedTickets: resolveLogs,
+            satisfaction,
+            progressBg,
+        };
+    });
+
     return (
         <Table className="table-auto border-spacing-0 border-separate">
             <TableHeader>
@@ -120,35 +95,36 @@ const PerformanceAgentsTable = () => {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {PerformanceAgentsTableTableContents.map((item, index) => (
+                {userLogStats.map((item, index) => (
                     <TableRow key={index}>
                         {/* Customer */}
                         <TableCell className="py-3.5 px-6 text-start">
                             <div className="flex items-center">
-                                <Image
-                                    src={item.customer.image}
-                                    alt={item.customer.name}
-                                    width={40}
-                                    height={40}
+                                <UserAvatar
+                                    firstName={item.user.firstName || undefined}
+                                    lastName={item.user.lastName || undefined}
+                                    size={40}
                                     className="w-10 h-10 rounded-md me-3"
                                 />
                                 <div>
-                                    <h6 className="text-base !font-medium mb-0">{item.customer.name}</h6>
+                                    <h6 className="text-base !font-medium mb-0">
+                                        {item.user.firstName || ""} {item.user.lastName || ""}
+                                    </h6>
                                 </div>
                             </div>
                         </TableCell>
 
                         {/* ID */}
-                        <TableCell className="py-3.5 px-6 text-center">{item.id}</TableCell>
+                        <TableCell className="py-3.5 px-6 text-center">#{item.user.id.slice(-5)}</TableCell>
 
                         {/* totalTicket */}
-                        <TableCell className="py-3.5 px-6 text-center">{item.totalTicket}</TableCell>
+                        <TableCell className="py-3.5 px-6 text-center">{item.totalTickets}</TableCell>
 
                         {/* Amount */}
-                        <TableCell className="py-3.5 px-6 text-center">{item.openTicket}</TableCell>
+                        <TableCell className="py-3.5 px-6 text-center">{item.openTickets}</TableCell>
 
                         {/* date */}
-                        <TableCell className="py-3.5 px-6 text-center">{item.resolvedTicket}</TableCell>
+                        <TableCell className="py-3.5 px-6 text-center">{item.resolvedTickets}</TableCell>
 
                         {/* Status */}
                         <TableCell
@@ -159,11 +135,11 @@ const PerformanceAgentsTable = () => {
                                     <div className="rounded-full h-2 bg-gray-200 dark:bg-neutral-700">
                                         <div
                                             className={`${item.progressBg} h-2 rounded-full`}
-                                            style={{ width: `${item.stock}` }}
+                                            style={{ width: `${item.satisfaction}%` }}
                                         ></div>
                                     </div>
                                 </div>
-                                <span className="mt-.5 inline-block">{item.stock}</span>
+                                <span className="mt-.5 inline-block">{item.satisfaction}%</span>
                             </div>
                         </TableCell>
                     </TableRow>

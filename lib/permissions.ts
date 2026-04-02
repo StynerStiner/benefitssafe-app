@@ -4,24 +4,26 @@ import type { UserRole } from "@/lib/generated/prisma/client";
 const routePermissions: Record<string, UserRole[]> = {
   // Nonprofit admin + staff routes
   "/dashboard": ["nonprofit_admin", "nonprofit_staff", "platform_admin"],
-  "/grants": ["nonprofit_admin", "nonprofit_staff", "auditor", "attorney", "grant_officer", "platform_admin"],
+  "/grants": ["nonprofit_admin", "nonprofit_staff", "beneficiary", "auditor", "attorney", "grant_officer", "platform_admin"],
   "/beneficiaries": ["nonprofit_admin", "nonprofit_staff", "grant_officer", "platform_admin"],
-  "/expenses": ["nonprofit_admin", "nonprofit_staff", "auditor", "attorney", "grant_officer", "compliance_officer", "platform_admin"],
+  "/expenses": ["nonprofit_admin", "nonprofit_staff", "beneficiary", "auditor", "attorney", "grant_officer", "compliance_officer", "platform_admin"],
   "/vendors": ["nonprofit_admin", "platform_admin"],
-  "/cards": ["nonprofit_admin", "platform_admin"],
-  "/subscriptions": ["nonprofit_admin", "platform_admin"],
+  "/cards": ["nonprofit_admin", "beneficiary", "platform_admin"],
+  "/virtual-cards": ["nonprofit_admin", "beneficiary", "platform_admin"],
+  "/subscriptions": ["nonprofit_admin", "beneficiary", "platform_admin"],
   "/reports": ["nonprofit_admin", "cpa", "auditor", "grant_officer", "compliance_officer", "platform_admin"],
   "/users": ["nonprofit_admin", "platform_admin"],
   "/policies": ["nonprofit_admin", "platform_admin"],
   "/settings": ["nonprofit_admin", "platform_admin"],
 
-  // Beneficiary routes
-  "/my-dashboard": ["beneficiary"],
-  "/my-expenses": ["beneficiary"],
-  "/my-subscriptions": ["beneficiary"],
+  // Beneficiary routes (admin + platform_admin can view for dev/support)
+  "/my-dashboard": ["beneficiary", "nonprofit_admin", "platform_admin"],
+  "/my-documents": ["beneficiary", "nonprofit_admin", "platform_admin"],
+  "/my-expenses": ["beneficiary", "nonprofit_admin", "platform_admin"],
+  "/my-subscriptions": ["beneficiary", "nonprofit_admin", "platform_admin"],
 
   // Shared document/export routes
-  "/documents": ["beneficiary", "auditor", "attorney", "grant_officer", "platform_admin"],
+  "/documents": ["nonprofit_admin", "beneficiary", "auditor", "attorney", "grant_officer", "platform_admin"],
   "/export": ["cpa", "auditor", "platform_admin"],
 
   // CPA + Auditor + Attorney routes

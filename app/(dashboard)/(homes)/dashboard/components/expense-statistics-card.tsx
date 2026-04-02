@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import ExpenseStatisticsChart from "@/components/charts/expense-statistics-chart";
-import MonthYearPicker from "@/components/shared/month-year-picker";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface Expense {
@@ -17,11 +15,7 @@ function filterByMonth(items: Expense[], month: number, year: number) {
     });
 }
 
-const ExpenseStatisticsCard = ({ expenses }: { expenses: Expense[] }) => {
-    const now = new Date();
-    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-
+const ExpenseStatisticsCard = ({ expenses, selectedMonth, selectedYear }: { expenses: Expense[]; selectedMonth: number; selectedYear: number }) => {
     const filtered = filterByMonth(expenses, selectedMonth, selectedYear);
 
     const pending = filtered.filter((e) => e.status === "PENDING").length;
@@ -36,14 +30,6 @@ const ExpenseStatisticsCard = ({ expenses }: { expenses: Expense[] }) => {
                     <div className="card-header border-b border-neutral-200 dark:border-slate-500 py-3 px-6">
                         <div className="flex items-center flex-wrap gap-2 justify-between">
                             <h6 className="font-bold text-lg mb-0">Expense Status</h6>
-                            <MonthYearPicker
-                                selectedMonth={selectedMonth}
-                                selectedYear={selectedYear}
-                                onChange={(month, year) => {
-                                    setSelectedMonth(month);
-                                    setSelectedYear(year);
-                                }}
-                            />
                         </div>
                     </div>
 

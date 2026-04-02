@@ -2,6 +2,7 @@
 
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import PageDateFilter from "@/components/shared/page-date-filter";
 import { useEffect, useState } from "react";
 import CustomersStatisticsCard from "../expenses/component/customers-statistics-card";
 import DailySalesCard from "../expenses/component/daily-sales-card";
@@ -33,6 +34,9 @@ interface Expense {
 const InvoicesPage = () => {
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [loading, setLoading] = useState(true);
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
     useEffect(() => {
         fetch("/api/expenses?limit=100")
@@ -56,7 +60,17 @@ const InvoicesPage = () => {
 
     return (
         <>
-            <DashboardBreadcrumb title="Invoices" text="Invoices & Payments" />
+            <div className="flex items-center justify-between">
+                <DashboardBreadcrumb title="Invoices" text="Invoices & Payments" />
+                <PageDateFilter
+                    selectedMonth={selectedMonth}
+                    selectedYear={selectedYear}
+                    onChange={(month, year) => {
+                        setSelectedMonth(month);
+                        setSelectedYear(year);
+                    }}
+                />
+            </div>
 
             <div className="">
                 <SalesWidgetsCard expenses={expenses} />
@@ -65,7 +79,7 @@ const InvoicesPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
 
                 <div className="col-span-12 2xl:col-span-4 lg:col-span-6">
-                    <TransactionsCard expenses={expenses} />
+                    <TransactionsCard expenses={expenses} selectedMonth={selectedMonth} selectedYear={selectedYear} />
                 </div>
 
                 <div className="col-span-12 2xl:col-span-8 lg:col-span-6">
@@ -81,10 +95,10 @@ const InvoicesPage = () => {
                 </div>
 
                 <div className="col-span-12 2xl:col-span-4 lg:col-span-6">
-                    <CustomersStatisticsCard expenses={expenses} />
+                    <CustomersStatisticsCard expenses={expenses} selectedMonth={selectedMonth} selectedYear={selectedYear} />
                 </div>
                 <div className="col-span-12 2xl:col-span-4 lg:col-span-6">
-                    <DistributionMapsCard expenses={expenses} />
+                    <DistributionMapsCard expenses={expenses} selectedMonth={selectedMonth} selectedYear={selectedYear} />
                 </div>
                 <div className="col-span-12 2xl:col-span-4 lg:col-span-6">
                     <TopCustomersCard expenses={expenses} />

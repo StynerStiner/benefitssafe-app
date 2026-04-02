@@ -52,6 +52,7 @@ export type VirtualCardMinAggregateOutputType = {
   spendingCap: runtime.Decimal | null
   merchantLock: string | null
   cardType: string | null
+  cardLabel: string | null
   status: $Enums.CardStatus | null
   expiresAt: Date | null
   createdAt: Date | null
@@ -72,6 +73,7 @@ export type VirtualCardMaxAggregateOutputType = {
   spendingCap: runtime.Decimal | null
   merchantLock: string | null
   cardType: string | null
+  cardLabel: string | null
   status: $Enums.CardStatus | null
   expiresAt: Date | null
   createdAt: Date | null
@@ -92,6 +94,7 @@ export type VirtualCardCountAggregateOutputType = {
   spendingCap: number
   merchantLock: number
   cardType: number
+  cardLabel: number
   status: number
   expiresAt: number
   createdAt: number
@@ -126,6 +129,7 @@ export type VirtualCardMinAggregateInputType = {
   spendingCap?: true
   merchantLock?: true
   cardType?: true
+  cardLabel?: true
   status?: true
   expiresAt?: true
   createdAt?: true
@@ -146,6 +150,7 @@ export type VirtualCardMaxAggregateInputType = {
   spendingCap?: true
   merchantLock?: true
   cardType?: true
+  cardLabel?: true
   status?: true
   expiresAt?: true
   createdAt?: true
@@ -166,6 +171,7 @@ export type VirtualCardCountAggregateInputType = {
   spendingCap?: true
   merchantLock?: true
   cardType?: true
+  cardLabel?: true
   status?: true
   expiresAt?: true
   createdAt?: true
@@ -273,6 +279,7 @@ export type VirtualCardGroupByOutputType = {
   spendingCap: runtime.Decimal | null
   merchantLock: string | null
   cardType: string
+  cardLabel: string | null
   status: $Enums.CardStatus
   expiresAt: Date | null
   createdAt: Date
@@ -284,7 +291,7 @@ export type VirtualCardGroupByOutputType = {
   _max: VirtualCardMaxAggregateOutputType | null
 }
 
-type GetVirtualCardGroupByPayload<T extends VirtualCardGroupByArgs> = Prisma.PrismaPromise<
+export type GetVirtualCardGroupByPayload<T extends VirtualCardGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<VirtualCardGroupByOutputType, T['by']> &
       {
@@ -316,6 +323,7 @@ export type VirtualCardWhereInput = {
   spendingCap?: Prisma.DecimalNullableFilter<"VirtualCard"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   cardType?: Prisma.StringFilter<"VirtualCard"> | string
+  cardLabel?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   status?: Prisma.EnumCardStatusFilter<"VirtualCard"> | $Enums.CardStatus
   expiresAt?: Prisma.DateTimeNullableFilter<"VirtualCard"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"VirtualCard"> | Date | string
@@ -342,6 +350,7 @@ export type VirtualCardOrderByWithRelationInput = {
   spendingCap?: Prisma.SortOrderInput | Prisma.SortOrder
   merchantLock?: Prisma.SortOrderInput | Prisma.SortOrder
   cardType?: Prisma.SortOrder
+  cardLabel?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -371,6 +380,7 @@ export type VirtualCardWhereUniqueInput = Prisma.AtLeast<{
   spendingCap?: Prisma.DecimalNullableFilter<"VirtualCard"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   cardType?: Prisma.StringFilter<"VirtualCard"> | string
+  cardLabel?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   status?: Prisma.EnumCardStatusFilter<"VirtualCard"> | $Enums.CardStatus
   expiresAt?: Prisma.DateTimeNullableFilter<"VirtualCard"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"VirtualCard"> | Date | string
@@ -397,6 +407,7 @@ export type VirtualCardOrderByWithAggregationInput = {
   spendingCap?: Prisma.SortOrderInput | Prisma.SortOrder
   merchantLock?: Prisma.SortOrderInput | Prisma.SortOrder
   cardType?: Prisma.SortOrder
+  cardLabel?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -425,6 +436,7 @@ export type VirtualCardScalarWhereWithAggregatesInput = {
   spendingCap?: Prisma.DecimalNullableWithAggregatesFilter<"VirtualCard"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.StringNullableWithAggregatesFilter<"VirtualCard"> | string | null
   cardType?: Prisma.StringWithAggregatesFilter<"VirtualCard"> | string
+  cardLabel?: Prisma.StringNullableWithAggregatesFilter<"VirtualCard"> | string | null
   status?: Prisma.EnumCardStatusWithAggregatesFilter<"VirtualCard"> | $Enums.CardStatus
   expiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"VirtualCard"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"VirtualCard"> | Date | string
@@ -441,6 +453,7 @@ export type VirtualCardCreateInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -467,6 +480,7 @@ export type VirtualCardUncheckedCreateInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -485,6 +499,7 @@ export type VirtualCardUpdateInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -511,6 +526,7 @@ export type VirtualCardUncheckedUpdateInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -533,6 +549,7 @@ export type VirtualCardCreateManyInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -549,6 +566,7 @@ export type VirtualCardUpdateManyMutationInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -569,6 +587,7 @@ export type VirtualCardUncheckedUpdateManyInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -604,6 +623,7 @@ export type VirtualCardCountOrderByAggregateInput = {
   spendingCap?: Prisma.SortOrder
   merchantLock?: Prisma.SortOrder
   cardType?: Prisma.SortOrder
+  cardLabel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -630,6 +650,7 @@ export type VirtualCardMaxOrderByAggregateInput = {
   spendingCap?: Prisma.SortOrder
   merchantLock?: Prisma.SortOrder
   cardType?: Prisma.SortOrder
+  cardLabel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -650,6 +671,7 @@ export type VirtualCardMinOrderByAggregateInput = {
   spendingCap?: Prisma.SortOrder
   merchantLock?: Prisma.SortOrder
   cardType?: Prisma.SortOrder
+  cardLabel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -895,6 +917,7 @@ export type VirtualCardCreateWithoutOrganizationInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -919,6 +942,7 @@ export type VirtualCardUncheckedCreateWithoutOrganizationInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -970,6 +994,7 @@ export type VirtualCardScalarWhereInput = {
   spendingCap?: Prisma.DecimalNullableFilter<"VirtualCard"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   cardType?: Prisma.StringFilter<"VirtualCard"> | string
+  cardLabel?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   status?: Prisma.EnumCardStatusFilter<"VirtualCard"> | $Enums.CardStatus
   expiresAt?: Prisma.DateTimeNullableFilter<"VirtualCard"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"VirtualCard"> | Date | string
@@ -986,6 +1011,7 @@ export type VirtualCardCreateWithoutCategoryInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -1010,6 +1036,7 @@ export type VirtualCardUncheckedCreateWithoutCategoryInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -1054,6 +1081,7 @@ export type VirtualCardCreateWithoutExpenseInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -1078,6 +1106,7 @@ export type VirtualCardUncheckedCreateWithoutExpenseInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -1122,6 +1151,7 @@ export type VirtualCardCreateWithoutVendorInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -1146,6 +1176,7 @@ export type VirtualCardUncheckedCreateWithoutVendorInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -1190,6 +1221,7 @@ export type VirtualCardCreateWithoutSubscriptionsInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -1215,6 +1247,7 @@ export type VirtualCardUncheckedCreateWithoutSubscriptionsInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -1248,6 +1281,7 @@ export type VirtualCardUpdateWithoutSubscriptionsInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1273,6 +1307,7 @@ export type VirtualCardUncheckedUpdateWithoutSubscriptionsInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1290,6 +1325,7 @@ export type VirtualCardCreateWithoutTransactionsInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -1315,6 +1351,7 @@ export type VirtualCardUncheckedCreateWithoutTransactionsInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -1348,6 +1385,7 @@ export type VirtualCardUpdateWithoutTransactionsInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1373,6 +1411,7 @@ export type VirtualCardUncheckedUpdateWithoutTransactionsInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1393,6 +1432,7 @@ export type VirtualCardCreateManyOrganizationInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -1409,6 +1449,7 @@ export type VirtualCardUpdateWithoutOrganizationInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1433,6 +1474,7 @@ export type VirtualCardUncheckedUpdateWithoutOrganizationInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1454,6 +1496,7 @@ export type VirtualCardUncheckedUpdateManyWithoutOrganizationInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1473,6 +1516,7 @@ export type VirtualCardCreateManyCategoryInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -1489,6 +1533,7 @@ export type VirtualCardUpdateWithoutCategoryInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1513,6 +1558,7 @@ export type VirtualCardUncheckedUpdateWithoutCategoryInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1534,6 +1580,7 @@ export type VirtualCardUncheckedUpdateManyWithoutCategoryInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1553,6 +1600,7 @@ export type VirtualCardCreateManyExpenseInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -1569,6 +1617,7 @@ export type VirtualCardUpdateWithoutExpenseInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1593,6 +1642,7 @@ export type VirtualCardUncheckedUpdateWithoutExpenseInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1614,6 +1664,7 @@ export type VirtualCardUncheckedUpdateManyWithoutExpenseInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1633,6 +1684,7 @@ export type VirtualCardCreateManyVendorInput = {
   spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: string | null
   cardType?: string
+  cardLabel?: string | null
   status?: $Enums.CardStatus
   expiresAt?: Date | string | null
   createdAt?: Date | string
@@ -1649,6 +1701,7 @@ export type VirtualCardUpdateWithoutVendorInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1673,6 +1726,7 @@ export type VirtualCardUncheckedUpdateWithoutVendorInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1694,6 +1748,7 @@ export type VirtualCardUncheckedUpdateManyWithoutVendorInput = {
   spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1754,6 +1809,7 @@ export type VirtualCardSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   spendingCap?: boolean
   merchantLock?: boolean
   cardType?: boolean
+  cardLabel?: boolean
   status?: boolean
   expiresAt?: boolean
   createdAt?: boolean
@@ -1781,6 +1837,7 @@ export type VirtualCardSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   spendingCap?: boolean
   merchantLock?: boolean
   cardType?: boolean
+  cardLabel?: boolean
   status?: boolean
   expiresAt?: boolean
   createdAt?: boolean
@@ -1805,6 +1862,7 @@ export type VirtualCardSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   spendingCap?: boolean
   merchantLock?: boolean
   cardType?: boolean
+  cardLabel?: boolean
   status?: boolean
   expiresAt?: boolean
   createdAt?: boolean
@@ -1829,13 +1887,14 @@ export type VirtualCardSelectScalar = {
   spendingCap?: boolean
   merchantLock?: boolean
   cardType?: boolean
+  cardLabel?: boolean
   status?: boolean
   expiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type VirtualCardOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "categoryId" | "expenseId" | "vendorId" | "beneficiaryId" | "stripeCardId" | "last4" | "expirationMonth" | "expirationYear" | "spendingCap" | "merchantLock" | "cardType" | "status" | "expiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["virtualCard"]>
+export type VirtualCardOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "categoryId" | "expenseId" | "vendorId" | "beneficiaryId" | "stripeCardId" | "last4" | "expirationMonth" | "expirationYear" | "spendingCap" | "merchantLock" | "cardType" | "cardLabel" | "status" | "expiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["virtualCard"]>
 export type VirtualCardInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   category?: boolean | Prisma.VirtualCard$categoryArgs<ExtArgs>
@@ -1882,6 +1941,7 @@ export type $VirtualCardPayload<ExtArgs extends runtime.Types.Extensions.Interna
     spendingCap: runtime.Decimal | null
     merchantLock: string | null
     cardType: string
+    cardLabel: string | null
     status: $Enums.CardStatus
     expiresAt: Date | null
     createdAt: Date
@@ -2328,6 +2388,7 @@ export interface VirtualCardFieldRefs {
   readonly spendingCap: Prisma.FieldRef<"VirtualCard", 'Decimal'>
   readonly merchantLock: Prisma.FieldRef<"VirtualCard", 'String'>
   readonly cardType: Prisma.FieldRef<"VirtualCard", 'String'>
+  readonly cardLabel: Prisma.FieldRef<"VirtualCard", 'String'>
   readonly status: Prisma.FieldRef<"VirtualCard", 'CardStatus'>
   readonly expiresAt: Prisma.FieldRef<"VirtualCard", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"VirtualCard", 'DateTime'>

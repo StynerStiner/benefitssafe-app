@@ -3,6 +3,7 @@
 import NftPromoBanner from "@/app/(dashboard)/(homes)/virtual-cards/components/nft-promo-banner";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import PageDateFilter from "@/components/shared/page-date-filter";
 import { useCallback, useEffect, useState } from "react";
 import CardDetailDialog from "./components/card-detail-dialog";
 import EthPriceCard from "./components/eth-price-card";
@@ -37,6 +38,9 @@ const VirtualCardsPage = () => {
     const [error, setError] = useState<string | null>(null);
     const [selectedCard, setSelectedCard] = useState<VirtualCard | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
     const fetchCards = useCallback(() => {
         fetch("/api/virtual-cards?limit=100")
@@ -75,7 +79,17 @@ const VirtualCardsPage = () => {
 
     return (
         <>
-            <DashboardBreadcrumb title="Virtual Cards" text="Card Management" />
+            <div className="flex items-center justify-between">
+                <DashboardBreadcrumb title="Virtual Cards" text="Card Management" />
+                <PageDateFilter
+                    selectedMonth={selectedMonth}
+                    selectedYear={selectedYear}
+                    onChange={(month, year) => {
+                        setSelectedMonth(month);
+                        setSelectedYear(year);
+                    }}
+                />
+            </div>
 
             {error && (
                 <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
@@ -107,7 +121,7 @@ const VirtualCardsPage = () => {
                 <div className="col-span-12 2xl:col-span-4">
                     <div className="gap-6 grid grid-cols-1 sm:grid-cols-12">
                         <div className="col-span-12 md:col-span-6 2xl:col-span-12">
-                            <EthPriceCard cards={cards} />
+                            <EthPriceCard cards={cards} selectedMonth={selectedMonth} selectedYear={selectedYear} />
                         </div>
                         <div className="col-span-12 md:col-span-6 2xl:col-span-12">
                             <StatisticsCard cards={cards} />

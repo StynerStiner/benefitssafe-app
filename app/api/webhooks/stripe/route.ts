@@ -18,14 +18,43 @@ import { stripe } from "@/lib/stripe";
 import { validateMCC } from "@/lib/mcc-controls";
 import { NextResponse } from "next/server";
 
+const MCC_NAMES: Record<string, string> = {
+  "5921": "Liquor Stores", "5813": "Bars & Nightclubs", "7995": "Gambling",
+  "5541": "Gas Stations", "6011": "ATM/Cash Withdrawal", "5812": "Restaurants",
+  "5814": "Fast Food", "5651": "Clothing Stores", "7832": "Entertainment",
+  "5912": "Pharmacies", "7011": "Hotels/Lodging", "4121": "Taxis/Rideshare",
+  "5411": "Grocery Stores", "5422": "Meat Markets", "5441": "Candy Stores",
+  "5451": "Dairy Products", "5462": "Bakeries", "5499": "Food Stores",
+  "8011": "Doctors", "8021": "Dentists", "8211": "Schools",
+  "8220": "Colleges/Universities", "4111": "Public Transit",
+};
+
+function categorizeDecline(failed: { reason: string }[]): string {
+  const reasons = failed.map(f => f.reason.toLowerCase());
+  if (reasons.some(r => r.includes("merchant") || r.includes("mcc") || r.includes("category"))) return "DECLINED_BLOCKED_CATEGORY";
+  if (reasons.some(r => r.includes("whitelist") || r.includes("vendor"))) return "DECLINED_VENDOR_NOT_WHITELISTED";
+  if (reasons.some(r => r.includes("remaining") || r.includes("cap") || r.includes("amount"))) return "DECLINED_INSUFFICIENT_FUNDS";
+  if (reasons.some(r => r.includes("eligib") || r.includes("warrant") || r.includes("incarcerated"))) return "DECLINED_INELIGIBLE";
+  return "DECLINED_OTHER";
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.text();
     const signature = request.headers.get("stripe-signature");
 
-    // Verify webhook signature in production
+    // Verify webhook signature — REQUIRED in production
     let event;
-    if (process.env.STRIPE_WEBHOOK_SECRET && signature) {
+    if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      if (process.env.NODE_ENV === "production") {
+        console.error("STRIPE_WEBHOOK_SECRET is not set in production — rejecting webhook");
+        return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+      }
+      // Development only: allow unsigned payloads
+      event = JSON.parse(body);
+    } else if (!signature) {
+      return NextResponse.json({ error: "Missing stripe-signature header" }, { status: 400 });
+    } else {
       try {
         event = stripe.webhooks.constructEvent(
           body,
@@ -36,9 +65,6 @@ export async function POST(request: Request) {
         console.error("Stripe webhook signature verification failed");
         return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
       }
-    } else {
-      // In development without webhook secret
-      event = JSON.parse(body);
     }
 
     switch (event.type) {
@@ -71,7 +97,9 @@ export async function POST(request: Request) {
 }
 
 // JIT Authorization — the core decision engine
+// CRITICAL: Must respond within 2 seconds or Stripe auto-declines
 async function handleAuthorizationRequest(authorization: Record<string, unknown>) {
+  const startTime = Date.now();
   const card = authorization.card as Record<string, unknown>;
   const stripeCardId = card?.id as string;
   const amount = (authorization.pending_request as Record<string, unknown>)?.amount as number; // in cents
@@ -107,6 +135,8 @@ async function handleAuthorizationRequest(authorization: Record<string, unknown>
               status: true,
               remainingAmount: true,
               organizationId: true,
+              blockedMCCs: true,
+              approvedMCCs: true,
             },
           },
         },
@@ -121,6 +151,29 @@ async function handleAuthorizationRequest(authorization: Record<string, unknown>
 
   // CHECKS — every one must pass
   const checks: { pass: boolean; reason: string }[] = [];
+
+  // Check cardholder eligibility
+  if (virtualCard.beneficiaryId) {
+    const eligibility = await prisma.cardholderEligibility.findUnique({
+      where: { beneficiaryId: virtualCard.beneficiaryId },
+      select: { eligibilityStatus: true },
+    });
+
+    checks.push({
+      pass: !eligibility || eligibility.eligibilityStatus === "ELIGIBLE" || eligibility.eligibilityStatus === "RESTRICTED_CALFRESH_ONLY",
+      reason: eligibility ? `Eligibility: ${eligibility.eligibilityStatus}` : "Eligibility: not verified (allowed)",
+    });
+
+    // For RESTRICTED_CALFRESH_ONLY, block food merchant categories
+    if (eligibility?.eligibilityStatus === "RESTRICTED_CALFRESH_ONLY") {
+      const foodMCCs = ["5411", "5422", "5441", "5451", "5462", "5499"];
+      const mcc = (merchantData?.category as string) || "";
+      checks.push({
+        pass: !foodMCCs.includes(mcc),
+        reason: `CalFresh restriction: food merchant ${mcc} blocked for this cardholder`,
+      });
+    }
+  }
 
   // 1. Card must be active
   checks.push({
@@ -191,11 +244,34 @@ async function handleAuthorizationRequest(authorization: Record<string, unknown>
     reason: mccValidation.reason || "Merchant category approved",
   });
 
+  // Grant-level MCC blocking
+  if (virtualCard.expense?.grant?.blockedMCCs) {
+    const grantBlocked = virtualCard.expense.grant.blockedMCCs as string[];
+    if (Array.isArray(grantBlocked) && mcc && grantBlocked.includes(mcc)) {
+      checks.push({
+        pass: false,
+        reason: `Grant blocks merchant category ${mcc}`,
+      });
+    }
+  }
+
+  // Grant-level MCC whitelist (if set, ONLY these categories allowed)
+  if (virtualCard.expense?.grant?.approvedMCCs) {
+    const grantApproved = virtualCard.expense.grant.approvedMCCs as string[];
+    if (Array.isArray(grantApproved) && grantApproved.length > 0 && mcc) {
+      checks.push({
+        pass: grantApproved.includes(mcc),
+        reason: `Grant whitelist check: ${mcc} ${grantApproved.includes(mcc) ? "allowed" : "not in approved list"}`,
+      });
+    }
+  }
+
   const allPassed = checks.every((c) => c.pass);
   const failedChecks = checks.filter((c) => !c.pass);
 
-  // Log the decision
-  await prisma.auditLog.create({
+  // Log the decision — fire-and-forget so we respond to Stripe immediately
+  // Stripe auto-declines if we take longer than 2 seconds
+  prisma.auditLog.create({
     data: {
       userId: virtualCard.beneficiaryId || "system",
       organizationId: virtualCard.organizationId,
@@ -207,16 +283,23 @@ async function handleAuthorizationRequest(authorization: Record<string, unknown>
         amount: amount / 100,
         merchantName: merchantData?.name,
         merchantCategory: merchantData?.category,
+        merchantCategoryName: MCC_NAMES[mcc || ""] || "Unknown",
+        grantId: virtualCard.expense?.grant?.id || null,
         approved: allPassed,
+        decision: allPassed ? "APPROVED" : "DECLINED",
         checks: checks.map((c) => ({ ...c })),
         failedReasons: failedChecks.map((c) => c.reason),
+        declineCategory: failedChecks.length > 0 ? categorizeDecline(failedChecks) : null,
       })),
     },
-  });
+  }).catch((err) => console.error("Audit log failed:", err));
 
   if (!allPassed) {
     console.log(`JIT DECLINED: Card ${stripeCardId}, reasons: ${failedChecks.map((c) => c.reason).join(", ")}`);
   }
+
+  const duration = Date.now() - startTime;
+  console.log(`JIT authorization: ${duration}ms, approved: ${allPassed}, card: ${stripeCardId}`);
 
   return NextResponse.json({ approved: allPassed });
 }
@@ -429,7 +512,7 @@ async function handleDisputeCreated(dispute: Record<string, unknown>) {
           entityId: disputeId,
           title: `Dispute filed on card transaction: $${(amount / 100).toFixed(2)}`,
           message: `A ${reason} dispute has been filed. Amount: $${(amount / 100).toFixed(2)}. Please review and respond within 7 days.`,
-          actionUrl: `/audit-trail?filter=dispute&id=${disputeId}`,
+          href: `/audit-trail?filter=dispute&id=${disputeId}`,
         },
       });
     }

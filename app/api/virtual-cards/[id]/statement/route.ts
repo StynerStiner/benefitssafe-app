@@ -23,9 +23,15 @@ export async function GET(
 
     const { id: cardId } = await params;
 
-    // Get card with org isolation
-    const card = await prisma.virtualCard.findUnique({
-      where: { id: cardId },
+    const { role, organizationId } = session.user;
+
+    // Get card with org isolation — scope query by organizationId directly
+    const card = await prisma.virtualCard.findFirst({
+      where: {
+        id: cardId,
+        organizationId,
+        ...(role === "beneficiary" ? { beneficiaryId: session.user.id } : {}),
+      },
       select: {
         id: true,
         organizationId: true,
@@ -51,22 +57,6 @@ export async function GET(
       return NextResponse.json(
         { error: "Card not found" },
         { status: 404 },
-      );
-    }
-
-    // Authorization: beneficiary can view own card, admins can view all
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true, organizationId: true },
-    });
-
-    if (
-      user?.organizationId !== card.organizationId ||
-      (user?.role === "beneficiary" && session.user.id !== card.beneficiaryId)
-    ) {
-      return NextResponse.json(
-        { error: "Forbidden" },
-        { status: 403 },
       );
     }
 

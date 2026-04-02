@@ -12,6 +12,7 @@ import TransactionsCard from '@/app/(dashboard)/(homes)/expenses/component/trans
 import AddExpenseForm from "./component/add-expense-form";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import PageDateFilter from "@/components/shared/page-date-filter";
 import { useEffect, useState } from "react";
 
 interface Expense {
@@ -34,6 +35,9 @@ const EcommercePage = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
   const fetchExpenses = () => {
     fetch("/api/expenses?limit=100")
@@ -65,7 +69,17 @@ const EcommercePage = () => {
     <>
       <div className="flex items-center justify-between">
         <DashboardBreadcrumb title="Expenses" text="Expense Management" />
-        <AddExpenseForm />
+        <div className="flex items-center gap-3">
+          <PageDateFilter
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            onChange={(month, year) => {
+              setSelectedMonth(month);
+              setSelectedYear(year);
+            }}
+          />
+          <AddExpenseForm />
+        </div>
       </div>
 
       {error && (
@@ -77,11 +91,11 @@ const EcommercePage = () => {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
 
         <div className="md:col-span-12 2xl:col-span-9">
-          <RevenueReportCard expenses={expenses} />
+          <RevenueReportCard expenses={expenses} selectedMonth={selectedMonth} selectedYear={selectedYear} />
         </div>
 
         <div className="md:col-span-12 lg:col-span-6 2xl:col-span-3">
-          <CustomersStatisticsCard expenses={expenses} />
+          <CustomersStatisticsCard expenses={expenses} selectedMonth={selectedMonth} selectedYear={selectedYear} />
         </div>
 
         <div className="md:col-span-12 lg:col-span-6 2xl:col-span-9">
@@ -89,7 +103,7 @@ const EcommercePage = () => {
         </div>
 
         <div className="md:col-span-12 lg:col-span-6 2xl:col-span-3">
-          <TransactionsCard expenses={expenses} />
+          <TransactionsCard expenses={expenses} selectedMonth={selectedMonth} selectedYear={selectedYear} />
         </div>
 
         <div className="md:col-span-12 lg:col-span-6 2xl:col-span-4">
@@ -97,7 +111,7 @@ const EcommercePage = () => {
         </div>
 
         <div className="md:col-span-12 lg:col-span-6 2xl:col-span-4">
-          <DistributionMapsCard expenses={expenses} />
+          <DistributionMapsCard expenses={expenses} selectedMonth={selectedMonth} selectedYear={selectedYear} />
         </div>
 
         <div className="md:col-span-12 lg:col-span-6 2xl:col-span-4">

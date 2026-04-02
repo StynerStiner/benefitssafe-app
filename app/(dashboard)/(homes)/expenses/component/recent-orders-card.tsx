@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import CommonLink from "@/components/shared/common-link";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,7 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle, XCircle, Pencil, Trash2 } from "lucide-react";
+import { CheckCircle, CreditCard, XCircle, Pencil, Trash2 } from "lucide-react";
 import EditExpenseForm from "./edit-expense-form";
 
 interface Expense {
@@ -57,6 +58,8 @@ interface RecentOrdersCardProps {
 }
 
 const RecentOrdersCard = ({ expenses, onRefresh }: RecentOrdersCardProps) => {
+    const { data: session } = useSession();
+    const orgName = (session?.user as { organizationName?: string })?.organizationName || "this organization";
     const recent = expenses.slice(0, 8);
 
     // Edit state
@@ -75,6 +78,9 @@ const RecentOrdersCard = ({ expenses, onRefresh }: RecentOrdersCardProps) => {
     // Approve loading state
     const [approveLoadingId, setApproveLoadingId] = useState<string | null>(null);
 
+    // Issue card loading state
+    const [issueCardLoadingId, setIssueCardLoadingId] = useState<string | null>(null);
+
     const formatDate = (d: string) =>
         new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 
@@ -82,6 +88,10 @@ const RecentOrdersCard = ({ expenses, onRefresh }: RecentOrdersCardProps) => {
         `$${parseFloat(a || "0").toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
 
     const handleApprove = async (expense: Expense) => {
+        const confirmed = window.confirm(
+            `Approve this $${parseFloat(expense.amount).toFixed(2)} expense under "${orgName}"?`,
+        );
+        if (!confirmed) return;
         setApproveLoadingId(expense.id);
         try {
             const res = await fetch(`/api/expenses/${expense.id}/approve`, {
@@ -100,6 +110,36 @@ const RecentOrdersCard = ({ expenses, onRefresh }: RecentOrdersCardProps) => {
             toast.error("Something went wrong");
         } finally {
             setApproveLoadingId(null);
+        }
+    };
+
+    const handleIssueCard = async (expense: Expense) => {
+        const beneficiary = expense.requestedBy
+            ? `${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`
+            : "this beneficiary";
+        const confirmed = window.confirm(
+            `Issue virtual card under "${orgName}" for ${beneficiary}?`,
+        );
+        if (!confirmed) return;
+        setIssueCardLoadingId(expense.id);
+        try {
+            const res = await fetch(`/api/expenses/${expense.id}/issue-card`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ cardType: "one_time" }),
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => null);
+                toast.error(data?.error || "Failed to issue card");
+                return;
+            }
+            const data = await res.json();
+            toast.success(`Virtual card issued (ending ${data.card?.last4 || "****"})`);
+            onRefresh?.();
+        } catch {
+            toast.error("Something went wrong");
+        } finally {
+            setIssueCardLoadingId(null);
         }
     };
 
@@ -250,6 +290,16 @@ const RecentOrdersCard = ({ expenses, onRefresh }: RecentOrdersCardProps) => {
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>
                                                     </div>
+                                                ) : exp.status === "APPROVED" ? (
+                                                    <Button
+                                                        size="sm"
+                                                        className="h-8 gap-1.5 text-xs"
+                                                        disabled={issueCardLoadingId === exp.id}
+                                                        onClick={() => handleIssueCard(exp)}
+                                                    >
+                                                        <CreditCard className="h-3.5 w-3.5" />
+                                                        {issueCardLoadingId === exp.id ? "Issuing..." : "Issue Card"}
+                                                    </Button>
                                                 ) : (
                                                     <span className="text-sm text-neutral-400">--</span>
                                                 )}

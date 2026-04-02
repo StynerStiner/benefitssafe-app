@@ -2,11 +2,10 @@
 
 import WorldMapChart from '@/components/charts/world-map-chart';
 import CountryList from '@/components/shared/country-list';
-import MonthYearPicker from '@/components/shared/month-year-picker';
 import { Card, CardContent } from '@/components/ui/card';
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 
-function filterByMonth(items: any[], month: number, year: number) {
+function filterByMonth(items: Beneficiary[], month: number, year: number) {
     return items.filter(item => {
         const date = new Date(item.createdAt);
         return date.getMonth() === month && date.getFullYear() === year;
@@ -18,11 +17,7 @@ interface Beneficiary {
     addressState?: string | null;
 }
 
-const CountriesStatusCard = ({ beneficiaries }: { beneficiaries: Beneficiary[] }) => {
-    const now = new Date();
-    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-
+const CountriesStatusCard = ({ beneficiaries, selectedMonth, selectedYear }: { beneficiaries: Beneficiary[]; selectedMonth: number; selectedYear: number }) => {
     const filtered = useMemo(() => filterByMonth(beneficiaries, selectedMonth, selectedYear), [beneficiaries, selectedMonth, selectedYear]);
 
     const stateData = useMemo(() => {
@@ -41,14 +36,6 @@ const CountriesStatusCard = ({ beneficiaries }: { beneficiaries: Beneficiary[] }
             <CardContent className="card-body p-0">
                 <div className="flex items-center flex-wrap gap-2 justify-between p-6">
                     <h6 className="mb-0 font-bold text-lg">Beneficiary Locations</h6>
-                    <MonthYearPicker
-                        selectedMonth={selectedMonth}
-                        selectedYear={selectedYear}
-                        onChange={(month, year) => {
-                            setSelectedMonth(month);
-                            setSelectedYear(year);
-                        }}
-                    />
                 </div>
 
                 <div className="bg-neutral-100 dark:bg-slate-700/50 h-[200px] overflow-hidden">

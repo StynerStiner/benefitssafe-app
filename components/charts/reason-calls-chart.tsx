@@ -70,16 +70,22 @@ const chartOptions: ApexOptions = {
         ]
     };
 
-const chartSeries = [{
-    data: [10, 8, 6, 4, 2]
+const defaultChartSeries = [{
+    data: [0, 0, 0, 0, 0]
 }]
 
-const ReasonCallsChart = () => {
+interface ReasonCallsChartProps {
+    series?: typeof defaultChartSeries;
+    categories?: string[];
+}
+
+const ReasonCallsChart = ({ series, categories }: ReasonCallsChartProps) => {
+    const options = categories ? { ...chartOptions, xaxis: { ...chartOptions.xaxis, categories } } : chartOptions;
     return (
         <div className="-mt-[54px]">
             <Chart
-                options={chartOptions}
-                series={chartSeries}
+                options={options}
+                series={series || defaultChartSeries}
                 type="bar"
                 height={470}
             />

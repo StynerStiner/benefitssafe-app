@@ -1,3 +1,5 @@
+"use client";
+
 import TimeCompletionChart from "@/components/charts/time-completion-chart";
 import taskSummaryIcon1 from "@/public/assets/images/homeThirteen/icon/task-summary-icon1.svg";
 import taskSummaryIcon2 from "@/public/assets/images/homeThirteen/icon/task-summary-icon2.svg";
@@ -6,7 +8,43 @@ import taskSummaryIcon4 from "@/public/assets/images/homeThirteen/icon/task-summ
 import moonShapeBorder from "@/public/assets/images/homeThirteen/shape/moon-shape-border.png";
 import Image from "next/image";
 
-const TaskSummaryCard = () => {
+interface NotificationItem {
+    id: string;
+    type: string;
+    title: string;
+    read: boolean;
+    createdAt: string;
+}
+
+interface TaskSummaryCardProps {
+    notifications: NotificationItem[];
+}
+
+const TaskSummaryCard = ({ notifications }: TaskSummaryCardProps) => {
+    const total = notifications.length;
+    const unread = notifications.filter(n => !n.read).length;
+    const read = notifications.filter(n => n.read).length;
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const due = notifications.filter(n => new Date(n.createdAt) >= sevenDaysAgo).length;
+
+    const completionRate = total > 0 ? Math.round((read / total) * 100) : 0;
+    const changePercent = total > 0 ? ((read / total) * 2.73).toFixed(2) : "0.00";
+
+    // Build monthly series for completion chart (last 9 months)
+    const monthlyCounts: number[] = [];
+    const now = new Date();
+    for (let i = 8; i >= 0; i--) {
+        const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
+        const count = notifications.filter(n => {
+            const d = new Date(n.createdAt);
+            return d >= monthStart && d <= monthEnd && n.read;
+        }).length;
+        monthlyCounts.push(count);
+    }
+
     return (
         <div className="shadow-7 p-5 rounded-xl bg-white dark:bg-[#273142] h-full gradient-bg-chart relative z-[1]">
             <div className="flex items-center flex-wrap gap-2 justify-between mb-6">
@@ -19,7 +57,7 @@ const TaskSummaryCard = () => {
                             <Image src={moonShapeBorder} alt="Shape" className="absolute start-0 bottom-0 mb-2.5 -z-[1]" width={158} height={70} />
                             <span className="block text-white mb-6">New Tickets</span>
                             <div className="flex items-center justify-between gap-3">
-                                <h5 className="text-white">2.5k</h5>
+                                <h5 className="text-white">{unread}</h5>
                                 <span className="opacity-25">
                                     <Image src={taskSummaryIcon1} alt="Icon" width={46} height={41} />
                                 </span>
@@ -31,7 +69,7 @@ const TaskSummaryCard = () => {
                             <Image src={moonShapeBorder} alt="Shape" className="absolute start-0 bottom-0 mb-2.5 -z-[1]" width={158} height={70} />
                             <span className="block text-white mb-6">Tickets In Progress</span>
                             <div className="flex items-center justify-between gap-3">
-                                <h5 className="text-white">2.5k</h5>
+                                <h5 className="text-white">{unread}</h5>
                                 <span className="opacity-25">
                                     <Image src={taskSummaryIcon2} alt="Icon" width={46} height={41} />
                                 </span>
@@ -43,7 +81,7 @@ const TaskSummaryCard = () => {
                             <Image src={moonShapeBorder} alt="Shape" className="absolute start-0 bottom-0 mb-2.5 -z-[1]" width={158} height={70} />
                             <span className="block text-white mb-6">Tickets Due</span>
                             <div className="flex items-center justify-between gap-3">
-                                <h5 className="text-white">2.5k</h5>
+                                <h5 className="text-white">{due}</h5>
                                 <span className="opacity-25">
                                     <Image src={taskSummaryIcon3} alt="Icon" width={46} height={41} />
                                 </span>
@@ -55,7 +93,7 @@ const TaskSummaryCard = () => {
                             <Image src={moonShapeBorder} alt="Shape" className="absolute start-0 bottom-0 mb-2.5 -z-[1]" width={158} height={70} />
                             <span className="block text-white mb-6">Tickets Resolved</span>
                             <div className="flex items-center justify-between gap-3">
-                                <h5 className="text-white">2.5k</h5>
+                                <h5 className="text-white">{read}</h5>
                                 <span className="opacity-25">
                                     <Image src={taskSummaryIcon4} alt="Icon" width={46} height={41} />
                                 </span>
@@ -68,16 +106,16 @@ const TaskSummaryCard = () => {
                     <div className="">
                         <span className="text-neutral-600 dark:text-neutral-200">On Time Completion Rate</span>
                         <div className="flex items-center gap-3 mt-2">
-                            <h5 className="mb-0">98%</h5>
+                            <h5 className="mb-0">{completionRate}%</h5>
                             <div className="flex items-center gap-1 text-success-600 font-semibold">
                                 <span className="line-height-1 flex"><i className="ri-arrow-right-up-line"></i></span>
-                                <span className="">2.73%</span>
+                                <span className="">{changePercent}%</span>
                             </div>
                         </div>
                     </div>
                     <div className="">
                         <div className="apexcharts-tooltip-style-1">
-                            <TimeCompletionChart colors={["#487FFF", "#FF9F29"]} />
+                            <TimeCompletionChart colors={["#487FFF", "#FF9F29"]} series={monthlyCounts} />
                         </div>
                     </div>
                 </div>

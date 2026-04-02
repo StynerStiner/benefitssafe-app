@@ -165,7 +165,7 @@ export type ApprovalGroupByOutputType = {
   _max: ApprovalMaxAggregateOutputType | null
 }
 
-type GetApprovalGroupByPayload<T extends ApprovalGroupByArgs> = Prisma.PrismaPromise<
+export type GetApprovalGroupByPayload<T extends ApprovalGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<ApprovalGroupByOutputType, T['by']> &
       {

@@ -335,7 +335,7 @@ export type ExpenseRequestGroupByOutputType = {
   _max: ExpenseRequestMaxAggregateOutputType | null
 }
 
-type GetExpenseRequestGroupByPayload<T extends ExpenseRequestGroupByArgs> = Prisma.PrismaPromise<
+export type GetExpenseRequestGroupByPayload<T extends ExpenseRequestGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<ExpenseRequestGroupByOutputType, T['by']> &
       {

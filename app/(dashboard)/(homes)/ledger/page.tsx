@@ -18,6 +18,7 @@ interface Grant {
   totalAmount: string;
   spentAmount: string;
   remainingAmount: string;
+  createdAt: string;
 }
 
 interface LedgerEntry {
@@ -85,7 +86,7 @@ const LedgerPage = () => {
             </div>
 
             <div className="col-span-12 2xl:col-span-6">
-              <MarketInfoCard ledgerEntries={ledgerEntries} />
+              <MarketInfoCard grants={grants} />
             </div>
 
             <div className="col-span-12 2xl:col-span-6">
@@ -93,7 +94,7 @@ const LedgerPage = () => {
             </div>
 
             <div className="col-span-12">
-              <RecentTransactionCard ledgerEntries={ledgerEntries} />
+              <RecentTransactionCard ledgerEntries={ledgerEntries} grants={grants} />
             </div>
           </div>
         </div>

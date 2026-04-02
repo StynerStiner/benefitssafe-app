@@ -8,15 +8,17 @@ const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 interface OverallReportChartType {
     showDataLabels?: boolean;
-} 
+    seriesData?: number[];
+    labels?: string[];
+}
 
-const OverallReportChart = ({showDataLabels = true} : OverallReportChartType) => {
+const OverallReportChart = ({showDataLabels = true, seriesData, labels: labelsProp} : OverallReportChartType) => {
 
-    const series = [30, 30, 20, 20];
+    const series = seriesData || [30, 30, 20, 20];
     const chartOptions: ApexOptions = {
         series,
         colors: ['#FF9F29', '#487FFF', '#45B369', '#9935FE'],
-        labels: ['Purchase', 'Sales', 'Expense', 'Gross Profit'],
+        labels: labelsProp || ['Purchase', 'Sales', 'Expense', 'Gross Profit'],
         legend: {
             show: false
         },

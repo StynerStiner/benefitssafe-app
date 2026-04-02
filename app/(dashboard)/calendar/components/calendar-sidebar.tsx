@@ -2,8 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import React, { useState } from "react";
-import toast from "react-hot-toast";
+import React from "react";
 
 import {
     DropdownMenu,
@@ -15,45 +14,115 @@ import { EllipsisVertical, Trash } from "lucide-react";
 import AddEvent from "./add-event";
 import EditEvent from "./edit-event";
 import ViewEvent from "./view-event";
+import type { CalendarEventData } from "../page";
 
-export interface CalendarEvent {
-    id: number;
+const CATEGORY_COLORS: Record<string, string> = {
+    grants: "bg-blue-500",
+    payments: "bg-green-600",
+    compliance: "bg-yellow-500",
+    subscriptions: "bg-violet-600",
+    general: "bg-cyan-600",
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+    grants: "Grants",
+    payments: "Payments",
+    compliance: "Compliance",
+    subscriptions: "Subscriptions",
+    general: "General",
+};
+
+export interface SidebarEvent {
+    id: string;
     title: string;
     label: string;
     color: string;
     startTime: string;
     endTime: string;
     description: string;
+    category: string;
 }
 
-const eventsData: CalendarEvent[] = [
-    { id: 1, title: 'Grant Review — Creative Writing', label: 'Grants', color: 'bg-red-500', startTime: 'Today, 09:00 AM', endTime: "11:00 AM", description: "Quarterly review of Creative Writing Fellowship spending and compliance" },
-    { id: 2, title: 'Vendor Payment — Adobe CC', label: 'Payments', color: 'bg-green-600', startTime: 'Today, 01:30 PM', endTime: "02:00 PM", description: "Monthly Adobe Creative Cloud subscription payment due" },
-    { id: 3, title: 'Budget Review — Digital Skills', label: 'Finance', color: 'bg-cyan-600', startTime: 'Today, 10:15 AM', endTime: "12:45 PM", description: "Review Digital Skills Training budget categories and remaining funds" },
-    { id: 4, title: 'Compliance Check — Housing', label: 'Compliance', color: 'bg-yellow-500', startTime: 'Today, 03:00 PM', endTime: "05:30 PM", description: "Housing Stability Support grant compliance review with auditor" },
-    { id: 5, title: 'Subscription Renewal — Scrivener', label: 'Subscriptions', color: 'bg-violet-600', startTime: 'Today, 06:00 PM', endTime: "08:15 PM", description: "Scrivener annual license renewal for James Carter" },
-];
+function toSidebarEvent(event: CalendarEventData): SidebarEvent {
+    const start = new Date(event.startDate);
+    const end = event.endDate ? new Date(event.endDate) : null;
 
+    return {
+        id: event.id,
+        title: event.title,
+        label: CATEGORY_LABELS[event.category] || "General",
+        color: CATEGORY_COLORS[event.category] || "bg-cyan-600",
+        startTime: start.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
+            ", " + start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+        endTime: end
+            ? end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+            : "",
+        description: event.description || "",
+        category: event.category,
+    };
+}
 
-const CalendarSidebar: React.FC = () => {
-    const [events, setEvents] = useState<CalendarEvent[]>(eventsData);
+interface CalendarSidebarProps {
+    events: CalendarEventData[];
+    onAddEvent: (eventData: {
+        title: string;
+        description?: string;
+        startDate: string;
+        endDate?: string;
+        category?: string;
+        color?: string;
+    }) => void;
+    onEditEvent: (id: string, eventData: {
+        title?: string;
+        description?: string;
+        startDate?: string;
+        endDate?: string;
+        category?: string;
+    }) => void;
+    onDeleteEvent: (id: string) => void;
+}
 
-    // Add new event
-    const handleAddEvent = (newEvent: CalendarEvent) => {
-        setEvents((prev) => [...prev, newEvent]);
+const CalendarSidebar: React.FC<CalendarSidebarProps> = ({ events, onAddEvent, onEditEvent, onDeleteEvent }) => {
+    const sidebarEvents = events.map(toSidebarEvent);
+
+    const handleAddEvent = (newEvent: { title: string; label: string; description: string; startTime: string; endTime: string; category?: string }) => {
+        const categoryMap: Record<string, string> = {
+            "Grants": "grants",
+            "Payments": "payments",
+            "Compliance": "compliance",
+            "Subscriptions": "subscriptions",
+            "General": "general",
+        };
+
+        onAddEvent({
+            title: newEvent.title,
+            description: newEvent.description || undefined,
+            startDate: new Date(newEvent.startTime).toISOString(),
+            endDate: newEvent.endTime ? new Date(newEvent.endTime).toISOString() : undefined,
+            category: categoryMap[newEvent.label] || newEvent.category || "general",
+        });
     };
 
-    // Remove event
-    const handleRemoveEvent = (id: number) => {
-        setEvents((prev) => prev.filter((e) => e.id !== id));
-        toast.success("Event deleted successfully!");
+    const handleUpdateEvent = (updatedEvent: { id: string; title: string; label: string; description: string; startTime: string; endTime: string }) => {
+        const categoryMap: Record<string, string> = {
+            "Grants": "grants",
+            "Payments": "payments",
+            "Compliance": "compliance",
+            "Subscriptions": "subscriptions",
+            "General": "general",
+        };
+
+        onEditEvent(updatedEvent.id, {
+            title: updatedEvent.title,
+            description: updatedEvent.description || undefined,
+            startDate: new Date(updatedEvent.startTime).toISOString(),
+            endDate: updatedEvent.endTime ? new Date(updatedEvent.endTime).toISOString() : undefined,
+            category: categoryMap[updatedEvent.label] || "general",
+        });
     };
 
-    // Update event
-    const handleUpdateEvent = (updatedEvent: CalendarEvent) => {
-        setEvents((prev) =>
-            prev.map((e) => (e.id === updatedEvent.id ? updatedEvent : e))
-        );
+    const handleRemoveEvent = (id: string) => {
+        onDeleteEvent(id);
     };
 
     return (
@@ -64,8 +133,8 @@ const CalendarSidebar: React.FC = () => {
                 </div>
 
                 <div className="space-y-4 max-h-[700px] overflow-y-auto p-6 pt-0">
-                    {events.length > 0 ? (
-                        events.map((event) => (
+                    {sidebarEvents.length > 0 ? (
+                        sidebarEvents.map((event) => (
                             <div
                                 key={event.id}
                                 className="flex items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-600"
@@ -77,10 +146,14 @@ const CalendarSidebar: React.FC = () => {
                                             <span className="text-gray-800 dark:text-gray-200">
                                                 {event.startTime}
                                             </span>
-                                            <span>-</span>
-                                            <span className="text-gray-800 dark:text-gray-200">
-                                                {event.endTime}
-                                            </span>
+                                            {event.endTime && (
+                                                <>
+                                                    <span>-</span>
+                                                    <span className="text-gray-800 dark:text-gray-200">
+                                                        {event.endTime}
+                                                    </span>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                     <span className="text-neutral-600 dark:text-neutral-200 font-semibold text-base mt-1.5">
@@ -112,7 +185,7 @@ const CalendarSidebar: React.FC = () => {
                         ))
                     ) : (
                         <div className="text-center">
-                            <span className="text-xl text-neutral-800 ">Event not found!</span>
+                            <span className="text-xl text-neutral-800 ">No events found</span>
                         </div>
                     )}
                 </div>

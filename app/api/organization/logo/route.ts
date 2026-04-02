@@ -38,10 +38,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Logo must be under 5MB" }, { status: 400 });
     }
 
-    const ext = file.name.split(".").pop() || "png";
+    // Sanitize extension: only allow known safe extensions (prevent path traversal)
+    const rawExt = file.name.split(".").pop()?.toLowerCase() || "";
+    const SAFE_EXTENSIONS: Record<string, string> = {
+      png: "png", jpeg: "jpeg", jpg: "jpg", webp: "webp", svg: "svg",
+    };
+    const ext = SAFE_EXTENSIONS[rawExt] || "png";
     const filename = `${organizationId}-${Date.now()}.${ext}`;
     const uploadDir = path.join(process.cwd(), "public", "uploads", "logos");
     const filePath = path.join(uploadDir, filename);
+
+    // Ensure resolved path stays within the upload directory (prevent directory traversal)
+    const resolvedPath = path.resolve(filePath);
+    if (!resolvedPath.startsWith(path.resolve(uploadDir))) {
+      return NextResponse.json({ error: "Invalid file path" }, { status: 400 });
+    }
 
     const buffer = Buffer.from(await file.arrayBuffer());
     await writeFile(filePath, buffer);

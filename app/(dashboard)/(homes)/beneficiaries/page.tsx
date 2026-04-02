@@ -13,6 +13,7 @@ import TopPerformerCard from '@/app/(dashboard)/(homes)/beneficiaries/components
 import AddBeneficiaryForm from '@/app/(dashboard)/(homes)/beneficiaries/components/add-beneficiary-form';
 import DashboardBreadcrumb from '@/components/layout/dashboard-breadcrumb';
 import LoadingSkeleton from '@/components/loading-skeleton';
+import PageDateFilter from '@/components/shared/page-date-filter';
 import { useCallback, useEffect, useState } from 'react';
 
 interface Beneficiary {
@@ -39,6 +40,9 @@ const CrmPage = () => {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
   const fetchBeneficiaries = useCallback(() => {
     fetch("/api/beneficiaries?limit=100&includeInactive=true")
@@ -72,7 +76,17 @@ const CrmPage = () => {
 
   return (
     <>
-      <DashboardBreadcrumb title="Beneficiaries" text="Beneficiary Management" />
+      <div className="flex items-center justify-between">
+        <DashboardBreadcrumb title="Beneficiaries" text="Beneficiary Management" />
+        <PageDateFilter
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+          onChange={(month, year) => {
+            setSelectedMonth(month);
+            setSelectedYear(year);
+          }}
+        />
+      </div>
 
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
@@ -97,16 +111,16 @@ const CrmPage = () => {
         </div>
 
         <div className="lg:col-span-12 2xl:col-span-8">
-          <EarningStatisticsCard beneficiaries={beneficiaries} />
+          <EarningStatisticsCard beneficiaries={beneficiaries} selectedMonth={selectedMonth} selectedYear={selectedYear} />
         </div>
 
         <div className="lg:col-span-12 2xl:col-span-4">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-6 2xl:col-span-12 col-xxl-12 col-sm-6">
-              <CampaignCard beneficiaries={beneficiaries} />
+              <CampaignCard beneficiaries={beneficiaries} selectedMonth={selectedMonth} selectedYear={selectedYear} />
             </div>
             <div className="lg:col-span-6 2xl:col-span-12 col-xxl-12 col-sm-6">
-              <CustomerOverviewCard beneficiaries={beneficiaries} />
+              <CustomerOverviewCard beneficiaries={beneficiaries} selectedMonth={selectedMonth} selectedYear={selectedYear} />
             </div>
           </div>
         </div>
@@ -116,7 +130,7 @@ const CrmPage = () => {
         </div>
 
         <div className="lg:col-span-6 2xl:col-span-4">
-          <CountriesStatusCard beneficiaries={beneficiaries} />
+          <CountriesStatusCard beneficiaries={beneficiaries} selectedMonth={selectedMonth} selectedYear={selectedYear} />
         </div>
 
         <div className="lg:col-span-12 2xl:col-span-4">

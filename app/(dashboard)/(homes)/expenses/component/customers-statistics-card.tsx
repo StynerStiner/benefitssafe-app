@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import CustomersStatisticsChart from "@/components/charts/customers-statistics-chart";
-import MonthYearPicker from "@/components/shared/month-year-picker";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface Expense {
@@ -17,11 +16,7 @@ function filterByMonth(items: Expense[], month: number, year: number) {
     });
 }
 
-const CustomersStatisticsCard = ({ expenses }: { expenses: Expense[] }) => {
-    const now = new Date();
-    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-
+const CustomersStatisticsCard = ({ expenses, selectedMonth, selectedYear }: { expenses: Expense[]; selectedMonth: number; selectedYear: number }) => {
     const filtered = useMemo(
         () => filterByMonth(expenses, selectedMonth, selectedYear),
         [expenses, selectedMonth, selectedYear]
@@ -38,14 +33,6 @@ const CustomersStatisticsCard = ({ expenses }: { expenses: Expense[] }) => {
             <CardContent className="card-body p-0">
                 <div className="flex items-center flex-wrap gap-2 justify-between">
                     <h6 className="mb-0 font-bold text-lg">Expense Statistics</h6>
-                    <MonthYearPicker
-                        selectedMonth={selectedMonth}
-                        selectedYear={selectedYear}
-                        onChange={(month, year) => {
-                            setSelectedMonth(month);
-                            setSelectedYear(year);
-                        }}
-                    />
                 </div>
 
                 <div className="relative">

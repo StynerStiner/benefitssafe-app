@@ -18,7 +18,8 @@ const GenerateContentCard = () => {
     const fetchData = async () => {
       try {
         const res = await fetch("/api/documents");
-        const documents = (await res.json()) as Document[];
+        const json = await res.json();
+        const documents: Document[] = Array.isArray(json) ? json : (json?.documents || []);
 
         // Count document types
         const now = new Date();

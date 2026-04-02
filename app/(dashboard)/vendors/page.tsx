@@ -1,6 +1,7 @@
 "use client";
 
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
+import PageDateFilter from "@/components/shared/page-date-filter";
 import CustomSelect from "@/components/shared/custom-select";
 import UsersListTable from '@/components/table/users-list-table';
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,9 @@ const UsersList = () => {
     const [vendors, setVendors] = useState<Vendor[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
     const [pageSize, setPageSize] = useState("10");
@@ -204,7 +208,17 @@ const UsersList = () => {
 
     return (
         <>
-            <DashboardBreadcrumb title="Vendors" text="Vendor Management" />
+            <div className="flex items-center justify-between">
+                <DashboardBreadcrumb title="Vendors" text="Vendor Management" />
+                <PageDateFilter
+                    selectedMonth={selectedMonth}
+                    selectedYear={selectedYear}
+                    onChange={(month, year) => {
+                        setSelectedMonth(month);
+                        setSelectedYear(year);
+                    }}
+                />
+            </div>
 
             {error && (
                 <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">

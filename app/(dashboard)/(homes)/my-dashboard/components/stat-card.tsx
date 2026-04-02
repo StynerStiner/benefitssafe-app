@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowDown, ArrowUp, FileText, Medal, UsersRound, Wallet } from "lucide-react";
+import { ArrowDown, ArrowUp, FileText, Medal, Wallet } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 interface CardData {
@@ -28,10 +28,6 @@ interface Expense {
   createdAt: string;
 }
 
-interface Beneficiary {
-  id: string;
-}
-
 const StatCard = () => {
   const [cardsDatas, setCardsDatas] = useState<CardData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,122 +35,93 @@ const StatCard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [grantsRes, expensesRes, beneficiariesRes] = await Promise.all([
+        const [grantsRes, expensesRes, cardsRes] = await Promise.all([
           fetch("/api/grants?limit=100"),
           fetch("/api/expenses?limit=100"),
-          fetch("/api/beneficiaries?limit=100"),
+          fetch("/api/virtual-cards?limit=100"),
         ]);
 
         const grantsJson = await grantsRes.json();
         const expensesJson = await expensesRes.json();
-        const beneficiariesJson = await beneficiariesRes.json();
+        const cardsJson = await cardsRes.json();
         const grants = (Array.isArray(grantsJson) ? grantsJson : grantsJson.data ?? []) as Grant[];
         const expenses = (Array.isArray(expensesJson) ? expensesJson : expensesJson.data ?? []) as Expense[];
-        const beneficiaries = (Array.isArray(beneficiariesJson) ? beneficiariesJson : beneficiariesJson.data ?? []) as Beneficiary[];
+        const cards = (Array.isArray(cardsJson) ? cardsJson : cardsJson.data ?? []) as { id: string; status: string }[];
 
-        // Calculate metrics
-        const totalAllocated = grants.reduce(
-          (sum, g) => sum + parseFloat(g.totalAmount || "0"),
+        // Personal metrics — API already filters to this beneficiary's data
+        const availableBalance = grants.reduce(
+          (sum, g) => sum + parseFloat(g.totalAmount || "0") - parseFloat(g.spentAmount || "0"),
           0
         );
-        const totalDisbursed = grants.reduce(
+        const totalSpent = grants.reduce(
           (sum, g) => sum + parseFloat(g.spentAmount || "0"),
           0
         );
-        const approvedExpenses = expenses
-          .filter((e) => e.status === "APPROVED" || e.status === "PAID")
-          .reduce((sum, e) => sum + parseFloat(e.amount || "0"), 0);
-
-        // Calculate month-over-month growth
-        const now = new Date();
-        const thisMonth = expenses.filter((e) => {
-          const date = new Date(e.createdAt);
-          return (
-            date.getMonth() === now.getMonth() &&
-            date.getFullYear() === now.getFullYear()
-          );
-        });
-        const thisMonthTotal = thisMonth.reduce(
+        const pendingExpenses = expenses.filter((e) => e.status === "PENDING");
+        const pendingTotal = pendingExpenses.reduce(
           (sum, e) => sum + parseFloat(e.amount || "0"),
           0
         );
+        const activeCards = cards.filter((c) => c.status === "ACTIVE");
 
-        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const lastMonthExpenses = expenses.filter((e) => {
-          const date = new Date(e.createdAt);
-          return (
-            date.getMonth() === lastMonth.getMonth() &&
-            date.getFullYear() === lastMonth.getFullYear()
-          );
-        });
-        const lastMonthTotal = lastMonthExpenses.reduce(
-          (sum, e) => sum + parseFloat(e.amount || "0"),
-          0
-        );
-
-        const monthGrowth =
-          lastMonthTotal > 0
-            ? ((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100
-            : 0;
-        const growthTrend = monthGrowth >= 0;
+        const formatAmount = (amount: number) =>
+          amount >= 1000 ? `$${(amount / 1000).toFixed(1)}k` : `$${amount.toFixed(0)}`;
 
         const data: CardData[] = [
           {
-            title: "Total Beneficiaries",
-            value: beneficiaries.length.toLocaleString(),
-            icon: UsersRound,
-            iconBg: "bg-cyan-600",
-            gradientFrom: "from-cyan-600/10",
-            growth: `${beneficiaries.length > 0 ? "+" : ""}${beneficiaries.length}`,
-            growthIcon: ArrowUp,
-            growthColor: "text-green-600 dark:text-green-400",
-            description: "Total in system",
-          },
-          {
-            title: "Total Grants",
+            title: "My Grants",
             value: grants.length.toLocaleString(),
             icon: Medal,
             iconBg: "bg-purple-600",
             gradientFrom: "from-purple-600/10",
-            growth: `${grants.length > 0 ? "+" : ""}${grants.length}`,
+            growth: `${grants.filter((g) => g.createdAt && new Date(g.createdAt) > new Date(Date.now() - 30 * 86400000)).length} this month`,
             growthIcon: ArrowUp,
             growthColor: "text-green-600 dark:text-green-400",
-            description: "Active grants",
+            description: "Assigned to you",
           },
           {
-            title: "Allocated Funds",
-            value: `$${(totalAllocated / 1000).toFixed(1)}k`,
+            title: "Available Balance",
+            value: formatAmount(availableBalance),
             icon: Wallet,
             iconBg: "bg-primary",
             gradientFrom: "from-primary/10",
-            growth: `+$${(approvedExpenses / 1000).toFixed(1)}k`,
+            growth: formatAmount(totalSpent) + " spent",
             growthIcon: ArrowUp,
             growthColor: "text-green-600 dark:text-green-400",
-            description: "Total allocated",
+            description: "Across all grants",
           },
           {
-            title: "Disbursed",
-            value: `$${(totalDisbursed / 1000).toFixed(1)}k`,
+            title: "Pending Requests",
+            value: pendingExpenses.length.toLocaleString(),
             icon: FileText,
+            iconBg: "bg-amber-600",
+            gradientFrom: "from-amber-600/10",
+            growth: formatAmount(pendingTotal),
+            growthIcon: ArrowUp,
+            growthColor: "text-amber-600 dark:text-amber-400",
+            description: "Awaiting approval",
+          },
+          {
+            title: "Active Cards",
+            value: activeCards.length.toLocaleString(),
+            icon: Wallet,
             iconBg: "bg-green-600",
             gradientFrom: "from-green-600/10",
-            growth: `${growthTrend ? "+" : ""}${monthGrowth.toFixed(1)}%`,
-            growthIcon: growthTrend ? ArrowUp : ArrowDown,
-            growthColor: growthTrend
-              ? "text-green-600 dark:text-green-400"
-              : "text-red-600 dark:text-red-400",
-            description: "Month-over-month",
+            growth: `${cards.length} total`,
+            growthIcon: ArrowUp,
+            growthColor: "text-green-600 dark:text-green-400",
+            description: "Virtual cards",
           },
           {
-            title: "Approved Expenses",
-            value: `$${(approvedExpenses / 1000).toFixed(1)}k`,
+            title: "My Expenses",
+            value: expenses.length.toLocaleString(),
             icon: FileText,
             iconBg: "bg-blue-600",
             gradientFrom: "from-blue-600/10",
             growth: `${expenses.filter((e) => e.status === "APPROVED" || e.status === "PAID").length} approved`,
             growthIcon: ArrowUp,
             growthColor: "text-green-600 dark:text-green-400",
-            description: "Total approved",
+            description: "Total submitted",
           },
         ];
 

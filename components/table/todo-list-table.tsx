@@ -1,3 +1,5 @@
+"use client";
+
 import {
     Table,
     TableBody,
@@ -6,71 +8,56 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import todoListImage1 from "@/public/assets/images/homeThirteen/todo-list-img1.png";
-import todoListImage2 from "@/public/assets/images/homeThirteen/todo-list-img2.png";
-import todoListImage3 from "@/public/assets/images/homeThirteen/todo-list-img3.png";
-import todoListImage4 from "@/public/assets/images/homeThirteen/todo-list-img4.png";
+import UserAvatar from "@/components/shared/user-avatar";
 import { Checkbox } from "@radix-ui/react-checkbox";
-import Image, { StaticImageData } from "next/image";
 
-interface ActivityStatus {
-    label: string;
-    type: "success" | "warning" | "purple";
-}
-
-interface todoListTypeItem {
+interface NotificationItem {
     id: string;
-    duration: string;
-    amount: StaticImageData;
-    date: string;
-    priority: string;
-    status: ActivityStatus;
+    userId: string;
+    type: string;
+    title: string;
+    message: string;
+    read: boolean;
+    createdAt: string;
 }
 
-const todoListTableContents: todoListTypeItem[] = [
-    {
-        id: "#10001",
-        duration: "How to add a new beneficiary",
-        amount: todoListImage1,
-        date: "Mar 15, 2026",
-        priority: "High",
-        status: { label: "Open", type: "warning" },
-    },
-    {
-        id: "#10002",
-        duration: "Virtual card not working",
-        amount: todoListImage2,
-        date: "Mar 14, 2026",
-        priority: "High",
-        status: { label: "Open", type: "warning" },
-    },
-    {
-        id: "#10003",
-        duration: "Expense stuck in pending",
-        amount: todoListImage3,
-        date: "Mar 12, 2026",
-        priority: "Medium",
-        status: { label: "Resolved", type: "success" },
-    },
-    {
-        id: "#10004",
-        duration: "Grant budget category question",
-        amount: todoListImage4,
-        date: "Mar 10, 2026",
-        priority: "Low",
-        status: { label: "Resolved", type: "success" },
-    },
-    {
-        id: "#10005",
-        duration: "Subscription billing issue",
-        amount: todoListImage1,
-        date: "Mar 8, 2026",
-        priority: "High",
-        status: { label: "Open", type: "warning" },
-    },
-];
+interface UserItem {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string;
+    role: string;
+}
 
-const TodoListTable = () => {
+interface TodoListTableProps {
+    notifications: NotificationItem[];
+    users: UserItem[];
+}
+
+function derivePriority(type: string): string {
+    const highTypes = ["card_issued", "expense_rejected", "dispute", "vendor_blocked"];
+    const mediumTypes = ["expense_submitted", "expense_approved", "vendor_profile_complete"];
+    if (highTypes.some(t => type.toLowerCase().includes(t.replace("_", "")))) return "High";
+    if (mediumTypes.some(t => type.toLowerCase().includes(t.replace("_", "")))) return "Medium";
+    return "Low";
+}
+
+function formatDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+const TodoListTable = ({ notifications, users }: TodoListTableProps) => {
+    if (!notifications || notifications.length === 0) {
+        return (
+            <div className="p-6 text-center text-neutral-500 dark:text-neutral-400">
+                No data yet
+            </div>
+        );
+    }
+
+    const userMap = new Map(users.map(u => [u.id, u]));
+
     return (
         <Table className="table-auto border-spacing-0 border-separate">
             <TableHeader>
@@ -101,49 +88,59 @@ const TodoListTable = () => {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {todoListTableContents.map((item, index) => (
-                    <TableRow key={index}>
-                        {/* Customer */}
-                        <TableCell className="py-3.5 px-6 text-start">
-                            <div className="">
-                                <Checkbox
-                                    className="border border-neutral-500 w-4 h-4"
-                                />
-                            </div>
-                        </TableCell>
+                {notifications.map((item, index) => {
+                    const user = userMap.get(item.userId);
+                    const priority = derivePriority(item.type);
+                    const statusLabel = item.read ? "Resolved" : "Open";
+                    const statusType = item.read ? "success" : "warning";
 
-                        {/* ID */}
-                        <TableCell className="py-3.5 px-6 text-center text-neutral-600 dark:text-neutral-200">{item.id}</TableCell>
+                    return (
+                        <TableRow key={index}>
+                            {/* Customer */}
+                            <TableCell className="py-3.5 px-6 text-start">
+                                <div className="">
+                                    <Checkbox
+                                        className="border border-neutral-500 w-4 h-4"
+                                    />
+                                </div>
+                            </TableCell>
 
-                        {/* duration */}
-                        <TableCell className="py-3.5 px-6 text-center text-neutral-600 dark:text-neutral-200">{item.duration}</TableCell>
+                            {/* ID */}
+                            <TableCell className="py-3.5 px-6 text-center text-neutral-600 dark:text-neutral-200">#{item.id.slice(-5)}</TableCell>
 
-                        {/* Amount */}
-                        <TableCell className="py-3.5 px-6 text-center text-neutral-600 dark:text-neutral-200">
-                            <div className="flex items-center justify-center">
-                                <Image src={item.amount} alt="Assigned To Image" />
-                            </div>
-                        </TableCell>
+                            {/* duration */}
+                            <TableCell className="py-3.5 px-6 text-center text-neutral-600 dark:text-neutral-200">{item.title}</TableCell>
 
-                        {/* date */}
-                        <TableCell className="py-3.5 px-6 text-center text-neutral-600 dark:text-neutral-200">{item.date}</TableCell>
+                            {/* Amount */}
+                            <TableCell className="py-3.5 px-6 text-center text-neutral-600 dark:text-neutral-200">
+                                <div className="flex items-center justify-center">
+                                    <UserAvatar
+                                        firstName={user?.firstName || undefined}
+                                        lastName={user?.lastName || undefined}
+                                        size={40}
+                                    />
+                                </div>
+                            </TableCell>
 
-                        <TableCell className="py-3.5 px-6 text-center text-neutral-600 dark:text-neutral-200">{item.priority}</TableCell>
+                            {/* date */}
+                            <TableCell className="py-3.5 px-6 text-center text-neutral-600 dark:text-neutral-200">{formatDate(item.createdAt)}</TableCell>
 
-                        {/* Status */}
-                        <TableCell className="py-3.5 px-6 text-center text-neutral-600 dark:text-neutral-200">
-                            <span
-                                className={`px-4 py-1.5 rounded-md font-medium text-sm
-                                    ${item.status.type === "success" && "bg-green-500/15 text-green-600 dark:text-green-600"}
-                                    ${item.status.type === "warning" && "bg-yellow-500/15 text-yellow-600 dark:text-yellow-600"}
-                                    ${item.status.type === "purple" && "bg-purple-500/15 text-purple-600 dark:text-purple-600"}
-                                `}
-                            >
-                                {item.status.label}
-                            </span>
-                        </TableCell>
-                    </TableRow>
-                ))}
+                            <TableCell className="py-3.5 px-6 text-center text-neutral-600 dark:text-neutral-200">{priority}</TableCell>
+
+                            {/* Status */}
+                            <TableCell className="py-3.5 px-6 text-center text-neutral-600 dark:text-neutral-200">
+                                <span
+                                    className={`px-4 py-1.5 rounded-md font-medium text-sm
+                                        ${statusType === "success" && "bg-green-500/15 text-green-600 dark:text-green-600"}
+                                        ${statusType === "warning" && "bg-yellow-500/15 text-yellow-600 dark:text-yellow-600"}
+                                    `}
+                                >
+                                    {statusLabel}
+                                </span>
+                            </TableCell>
+                        </TableRow>
+                    );
+                })}
             </TableBody>
         </Table>
     );

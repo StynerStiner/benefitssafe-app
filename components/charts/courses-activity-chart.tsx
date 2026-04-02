@@ -9,20 +9,24 @@ const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 interface CoursesActivityChartProps {
     height?: number; // optional prop, fallback if not passed
+    series?: { name: string; data: number[] }[];
+    categories?: string[];
 }
 
-const CoursesActivityChart: React.FC<CoursesActivityChartProps> = ({ height = 380 }) => {
+const CoursesActivityChart: React.FC<CoursesActivityChartProps> = ({ height = 380, series: seriesProp, categories: categoriesProp }) => {
+    const defaultSeries = [
+        {
+            name: "Net Profit",
+            data: [44, 100, 40, 56, 30, 58, 50],
+        },
+        {
+            name: "Free Cash",
+            data: [60, 120, 60, 90, 50, 95, 90],
+        },
+    ];
+    const activeSeries = seriesProp || defaultSeries;
     const chartOptions: ApexOptions = {
-        series: [
-            {
-                name: "Net Profit",
-                data: [44, 100, 40, 56, 30, 58, 50],
-            },
-            {
-                name: "Free Cash",
-                data: [60, 120, 60, 90, 50, 95, 90],
-            },
-        ],
+        series: activeSeries,
         colors: ["#45B369", "#FF9F29"],
         legend: { show: false },
         chart: {
@@ -53,7 +57,7 @@ const CoursesActivityChart: React.FC<CoursesActivityChartProps> = ({ height = 38
             colors: ["transparent"],
         },
         xaxis: {
-            categories: ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"],
+            categories: categoriesProp || ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"],
         },
         fill: { opacity: 1 },
     };
@@ -61,7 +65,7 @@ const CoursesActivityChart: React.FC<CoursesActivityChartProps> = ({ height = 38
     return (
         <Chart
             options={chartOptions}
-            series={chartOptions.series}
+            series={activeSeries}
             type="bar"
             height={height} // also passed here
         />

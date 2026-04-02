@@ -9,7 +9,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, ChevronLeft, ChevronRight, EllipsisVertical, MailOpen, RotateCw, Trash2 } from "lucide-react";
 
-const EmailHeader = () => {
+interface EmailHeaderProps {
+    totalCount?: number;
+    onMarkAllRead?: () => void;
+    onRefresh?: () => void;
+}
+
+const EmailHeader = ({ totalCount = 0, onMarkAllRead, onRefresh }: EmailHeaderProps) => {
     return (
         <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -36,7 +42,7 @@ const EmailHeader = () => {
                 <Button variant="link" className="!p-0 bg-transparent text-neutral-800 dark:text-white flex">
                     <Trash2 className="w-5 h-5" />
                 </Button>
-                <Button variant="link" className="!p-0 bg-transparent text-neutral-800 dark:text-white flex">
+                <Button variant="link" className="!p-0 bg-transparent text-neutral-800 dark:text-white flex" onClick={onRefresh}>
                     <RotateCw className="w-5 h-5" />
                 </Button>
 
@@ -46,7 +52,7 @@ const EmailHeader = () => {
                             <EllipsisVertical className="w-5 h-5" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={onMarkAllRead}>
                                 <div className="px-4 py-2 rounded text-neutral-500 dark:text-neutral-300 text-hover-neutral-900 flex items-center text-start gap-2.5">
                                     <MailOpen className="w-5 h-5" />
                                     Mark all as read
@@ -64,7 +70,9 @@ const EmailHeader = () => {
                 <SearchBox />
             </div>
             <div className="flex items-center gap-3">
-                <span className="text-neutral-500 dark:text-neutral-300 line-height-1">1-11 of 24</span>
+                <span className="text-neutral-500 dark:text-neutral-300 line-height-1">
+                    {totalCount > 0 ? `1-${totalCount} of ${totalCount}` : "0 notifications"}
+                </span>
                 <nav>
                     <ul className="pagination flex items-center gap-2">
                         <li className="page-item">

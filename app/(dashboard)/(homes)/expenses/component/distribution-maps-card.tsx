@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import MonthYearPicker from "@/components/shared/month-year-picker";
+import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface Expense {
@@ -32,11 +31,7 @@ const riskLabels: Record<string, string> = {
     PENDING: "Unclassified",
 };
 
-const DistributionMapsCard = ({ expenses }: { expenses: Expense[] }) => {
-    const now = new Date();
-    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-
+const DistributionMapsCard = ({ expenses, selectedMonth, selectedYear }: { expenses: Expense[]; selectedMonth: number; selectedYear: number }) => {
     const filtered = useMemo(
         () => filterByMonth(expenses, selectedMonth, selectedYear),
         [expenses, selectedMonth, selectedYear]
@@ -59,14 +54,6 @@ const DistributionMapsCard = ({ expenses }: { expenses: Expense[] }) => {
             <CardContent className="card-body p-0">
                 <div className="flex items-center flex-wrap gap-2 justify-between p-6">
                     <h6 className="mb-0 font-bold text-lg">Compliance Risk Overview</h6>
-                    <MonthYearPicker
-                        selectedMonth={selectedMonth}
-                        selectedYear={selectedYear}
-                        onChange={(month, year) => {
-                            setSelectedMonth(month);
-                            setSelectedYear(year);
-                        }}
-                    />
                 </div>
 
                 <div className="bg-neutral-100 dark:bg-slate-700/50 p-6">

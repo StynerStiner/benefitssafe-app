@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import FormDatePicker from "@/components/shared/form-date-picker";
 import { CloudUpload, FileText, CheckCircle, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -457,12 +458,11 @@ const AddBeneficiaryForm = ({ onSuccess }: AddBeneficiaryFormProps = {}) => {
                         <Label htmlFor="dateOfBirth" className={labelClassName}>
                             Date of Birth
                         </Label>
-                        <Input
-                            type="date"
+                        <FormDatePicker
                             id="dateOfBirth"
-                            className={inputClassName}
                             value={dateOfBirth}
-                            onChange={(e) => setDateOfBirth(e.target.value)}
+                            onChange={setDateOfBirth}
+                            placeholder="Select date of birth"
                         />
                     </div>
 

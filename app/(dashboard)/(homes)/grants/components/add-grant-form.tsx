@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import FormDatePicker from "@/components/shared/form-date-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +30,21 @@ interface Beneficiary {
     lastName: string;
     email: string;
 }
+
+const GRANT_BLOCK_OPTIONS = [
+    { mcc: "5921", label: "Liquor Stores" },
+    { mcc: "5813", label: "Bars & Nightclubs" },
+    { mcc: "7995", label: "Gambling" },
+    { mcc: "5541", label: "Gas Stations" },
+    { mcc: "6011", label: "ATM/Cash Withdrawal" },
+    { mcc: "5812", label: "Restaurants" },
+    { mcc: "5814", label: "Fast Food" },
+    { mcc: "5651", label: "Clothing Stores" },
+    { mcc: "7832", label: "Entertainment" },
+    { mcc: "5912", label: "Pharmacies" },
+    { mcc: "7011", label: "Hotels/Lodging" },
+    { mcc: "4121", label: "Taxis/Rideshare" },
+];
 
 const BENEFIT_FLAGS = [
     { key: "ssi", label: "SSI" },
@@ -65,6 +81,8 @@ const AddGrantForm = () => {
     const [description, setDescription] = useState("");
     const [restrictions, setRestrictions] = useState("");
     const [status, setStatus] = useState("ACTIVE");
+    const [purpose, setPurpose] = useState("");
+    const [blockedMCCs, setBlockedMCCs] = useState<string[]>([]);
     const [benefitFlags, setBenefitFlags] = useState<Record<string, boolean>>({
         ssi: false,
         ssdi: false,
@@ -99,6 +117,8 @@ const AddGrantForm = () => {
         setBeneficiaryId("");
         setDescription("");
         setRestrictions("");
+        setPurpose("");
+        setBlockedMCCs([]);
         setStatus("ACTIVE");
         setBenefitFlags({
             ssi: false,
@@ -185,6 +205,12 @@ const AddGrantForm = () => {
             if (restrictions.trim()) {
                 body.restrictions = restrictions.trim();
             }
+            if (purpose.trim()) {
+                body.purpose = purpose.trim();
+            }
+            if (blockedMCCs.length > 0) {
+                body.blockedMCCs = blockedMCCs;
+            }
 
             const res = await fetch("/api/grants", {
                 method: "POST",
@@ -213,6 +239,12 @@ const AddGrantForm = () => {
 
     const toggleBenefitFlag = (key: string) => {
         setBenefitFlags((prev) => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    const toggleBlockedMCC = (mcc: string) => {
+        setBlockedMCCs((prev) =>
+            prev.includes(mcc) ? prev.filter((m) => m !== mcc) : [...prev, mcc]
+        );
     };
 
     return (
@@ -318,13 +350,11 @@ const AddGrantForm = () => {
                             Start Date{" "}
                             <span className="text-red-600">*</span>
                         </Label>
-                        <Input
-                            type="date"
+                        <FormDatePicker
                             id="startDate"
-                            className={inputClassName}
                             value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            required
+                            onChange={setStartDate}
+                            placeholder="Select start date"
                         />
                     </div>
 
@@ -334,13 +364,11 @@ const AddGrantForm = () => {
                             End Date{" "}
                             <span className="text-red-600">*</span>
                         </Label>
-                        <Input
-                            type="date"
+                        <FormDatePicker
                             id="endDate"
-                            className={inputClassName}
                             value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            required
+                            onChange={setEndDate}
+                            placeholder="Select end date"
                         />
                     </div>
 
@@ -386,6 +414,53 @@ const AddGrantForm = () => {
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         />
+                    </div>
+
+                    {/* Grant Purpose */}
+                    <div>
+                        <Label htmlFor="purpose" className={labelClassName}>
+                            Grant Purpose
+                        </Label>
+                        <Input
+                            type="text"
+                            id="purpose"
+                            className={inputClassName}
+                            placeholder="e.g., Medical expenses, writing supplies, housing assistance"
+                            value={purpose}
+                            onChange={(e) => setPurpose(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Blocked Merchant Categories */}
+                    <div>
+                        <Label className={labelClassName}>
+                            Blocked Merchant Categories
+                        </Label>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
+                            Select categories this grant's funds CANNOT be used for
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 mt-1">
+                            {GRANT_BLOCK_OPTIONS.map((opt) => (
+                                <div
+                                    key={opt.mcc}
+                                    className="flex items-center gap-2"
+                                >
+                                    <Checkbox
+                                        id={`block-${opt.mcc}`}
+                                        checked={blockedMCCs.includes(opt.mcc)}
+                                        onCheckedChange={() =>
+                                            toggleBlockedMCC(opt.mcc)
+                                        }
+                                    />
+                                    <Label
+                                        htmlFor={`block-${opt.mcc}`}
+                                        className="text-[#4b5563] dark:text-white cursor-pointer text-sm"
+                                    >
+                                        {opt.label}
+                                    </Label>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     {/* Restrictions */}

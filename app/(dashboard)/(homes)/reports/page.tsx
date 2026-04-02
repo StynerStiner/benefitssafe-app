@@ -20,6 +20,7 @@ interface Grant {
     spentAmount: string;
     remainingAmount: string;
     status: string;
+    createdAt: string;
 }
 
 interface Expense {

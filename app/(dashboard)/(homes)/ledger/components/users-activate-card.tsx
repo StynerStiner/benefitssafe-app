@@ -1,8 +1,41 @@
+"use client";
+
+import { useState } from "react";
 import CustomersStatisticsChart from "@/components/charts/customers-statistics-chart";
 import CustomSelect from "@/components/shared/custom-select";
 import { Card, CardContent } from "@/components/ui/card";
 
-const UsersActivateCard = ({ grants }: { grants: unknown[] }) => {
+interface GrantData {
+  id: string;
+  name: string;
+  totalAmount: string;
+  spentAmount: string;
+  remainingAmount: string;
+  createdAt: string;
+}
+
+function filterByPeriod<T extends { createdAt: string }>(items: T[], period: string): T[] {
+  const now = new Date();
+  return items.filter(item => {
+    const date = new Date(item.createdAt);
+    switch (period) {
+      case "Today": return date.toDateString() === now.toDateString();
+      case "Weekly": return now.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000;
+      case "Monthly": return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+      case "Yearly": return date.getFullYear() === now.getFullYear();
+      default: return true;
+    }
+  });
+}
+
+const UsersActivateCard = ({ grants }: { grants: GrantData[] }) => {
+  const [period, setPeriod] = useState("Yearly");
+  const filtered = filterByPeriod(grants, period);
+  const totalCredits = filtered.reduce((sum, g) => sum + parseFloat(g.totalAmount || "0"), 0);
+  const totalDebits = filtered.reduce((sum, g) => sum + parseFloat(g.spentAmount || "0"), 0);
+  const netPct = totalCredits > 0 ? Math.round(((totalCredits - totalDebits) / totalCredits) * 100) : 0;
+  const formattedCredits = totalCredits.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 });
+  const formattedDebits = totalDebits.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 });
   return (
     <Card className="card h-full rounded-lg border-0">
       <CardContent className="card-body p-0">
@@ -11,12 +44,14 @@ const UsersActivateCard = ({ grants }: { grants: unknown[] }) => {
           <CustomSelect
             placeholder="Yearly"
             options={["Yearly", "Monthly", "Weekly", "Today"]}
+            value={period}
+            onValueChange={setPeriod}
           />
         </div>
 
         <div className="relative">
           <span className="w-[80px] h-[80px] bg-white dark:bg-slate-700 shadow-lg text-neutral-600 dark:text-neutral-200 font-semibold text-xl flex justify-center items-center rounded-full absolute end-0 top-0 z-1 me-11 mt-6">
-            +80%
+            +{netPct}%
           </span>
           <div className="mt-9 grow apexcharts-tooltip-z-none title-style circle-none">
             <CustomersStatisticsChart />
@@ -32,7 +67,7 @@ const UsersActivateCard = ({ grants }: { grants: unknown[] }) => {
             <span className="text-neutral-500 dark:text-neutral-300 text-sm font-normal">
               Credits:
               <span className="text-neutral-600 dark:text-neutral-200 font-bold">
-                $98,000
+                {formattedCredits}
               </span>
             </span>
           </li>
@@ -41,7 +76,7 @@ const UsersActivateCard = ({ grants }: { grants: unknown[] }) => {
             <span className="text-neutral-500 dark:text-neutral-300 text-sm font-normal">
               Debits:
               <span className="text-neutral-600 dark:text-neutral-200 font-bold">
-                $19,204
+                {formattedDebits}
               </span>
             </span>
           </li>

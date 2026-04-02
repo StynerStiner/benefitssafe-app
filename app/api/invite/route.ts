@@ -8,6 +8,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { validateRecipientEmail, sanitizeEmailForLog, buildSecureLink } from "@/lib/email-security";
 import { NextResponse } from "next/server";
 
 const INVITE_EXPIRY_DAYS = 7;
@@ -42,8 +43,11 @@ export async function POST(request: Request) {
     }
 
     // Validate overrideEmail if provided
-    if (overrideEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(overrideEmail)) {
-      return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
+    if (overrideEmail) {
+      const emailCheck = validateRecipientEmail(overrideEmail);
+      if (!emailCheck.valid) {
+        return NextResponse.json({ error: emailCheck.reason || "Invalid email address" }, { status: 400 });
+      }
     }
 
     // Verify the user exists, belongs to the org, and has an invitable role
@@ -146,14 +150,21 @@ export async function POST(request: Request) {
       },
     });
 
-    const baseUrl = process.env.NEXTAUTH_URL;
-    if (!baseUrl) throw new Error("NEXTAUTH_URL environment variable not set");
-    const inviteUrl = `${baseUrl}/auth/accept-invite?token=${invite.token}`;
+    const inviteUrl = buildSecureLink(`/auth/accept-invite?token=${invite.token}`);
 
     let emailSent = false;
 
     // Only send email if mode is send_email
     if (mode === "send_email") {
+      // Validate recipient email before sending
+      const recipientCheck = validateRecipientEmail(user.email);
+      if (!recipientCheck.valid) {
+        return NextResponse.json(
+          { error: recipientCheck.reason || "Invalid recipient email" },
+          { status: 400 },
+        );
+      }
+
       if (process.env.POSTMARK_API_TOKEN) {
         try {
           const emailRes = await fetch("https://api.postmarkapp.com/email", {
@@ -169,6 +180,10 @@ export async function POST(request: Request) {
               Subject: "You've been invited to BenefitsSafe",
               HtmlBody: buildInviteEmailHtml(user.firstName, user.organization.name, user.email, inviteUrl),
               TextBody: `Hi ${user.firstName},\n\n${user.organization.name} has invited you to BenefitsSafe.\n\nYour login email is: ${user.email}\n\nSet up your account: ${inviteUrl}\n\nThis link expires in ${INVITE_EXPIRY_DAYS} days.`,
+              MessageStream: "outbound",
+              Headers: [
+                { Name: "X-BenefitsSafe-Invite", Value: "true" },
+              ],
             }),
           });
 
@@ -204,7 +219,7 @@ export async function POST(request: Request) {
         entityType: "user",
         entityId: user.id,
         newValue: JSON.parse(JSON.stringify({
-          invitedEmail: user.email,
+          invitedEmail: sanitizeEmailForLog(user.email),
           invitedRole: user.role,
           mode,
           emailSent,

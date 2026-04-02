@@ -233,7 +233,7 @@ export type DisbursementPolicyGroupByOutputType = {
   _max: DisbursementPolicyMaxAggregateOutputType | null
 }
 
-type GetDisbursementPolicyGroupByPayload<T extends DisbursementPolicyGroupByArgs> = Prisma.PrismaPromise<
+export type GetDisbursementPolicyGroupByPayload<T extends DisbursementPolicyGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<DisbursementPolicyGroupByOutputType, T['by']> &
       {

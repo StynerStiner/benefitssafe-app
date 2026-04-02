@@ -1,9 +1,8 @@
 "use client";
 
 import DoubleLineChartTwo from "@/components/charts/double-line-chart-two";
-import MonthYearPicker from "@/components/shared/month-year-picker";
 import { Card, CardContent } from '@/components/ui/card';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 interface Grant {
     totalAmount: string;
@@ -18,11 +17,7 @@ function filterByMonth(items: Grant[], month: number, year: number) {
     });
 }
 
-const AverageEarningCard = ({ grants }: { grants: Grant[] }) => {
-    const now = new Date();
-    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-
+const AverageEarningCard = ({ grants, selectedMonth, selectedYear }: { grants: Grant[]; selectedMonth: number; selectedYear: number }) => {
     const filteredGrants = useMemo(() => filterByMonth(grants, selectedMonth, selectedYear), [grants, selectedMonth, selectedYear]);
 
     const totalAllocated = useMemo(() => filteredGrants.reduce((sum, g) => sum + parseFloat(g.totalAmount || "0"), 0), [filteredGrants]);
@@ -34,14 +29,6 @@ const AverageEarningCard = ({ grants }: { grants: Grant[] }) => {
                 <CardContent className="p-0">
                     <div className="border-b border-neutral-200 dark:border-slate-500 py-4 px-6 flex items-center justify-between flex-wrap gap-2">
                         <h6 className="font-semibold text-lg mb-0 text-foreground">Average Disbursements</h6>
-                        <MonthYearPicker
-                            selectedMonth={selectedMonth}
-                            selectedYear={selectedYear}
-                            onChange={(month, year) => {
-                                setSelectedMonth(month);
-                                setSelectedYear(year);
-                            }}
-                        />
                     </div>
 
                     <div className="card-body p-6">

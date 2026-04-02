@@ -7,22 +7,24 @@ import React from "react";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-interface DoubleLineChartTwoProps {
+interface PendingSolvedTicketsChartProps {
     colors: [string, string];
+    pendingSeries?: number[];
+    solvedSeries?: number[];
 }
 
-const chartSeries = [
-    {
-        name: "series1",
-        data: [48, 35, 55, 32, 48, 30, 55, 50, 57],
-    },
-    {
-        name: "series2",
-        data: [12, 20, 15, 26, 22, 60, 40, 48, 25],
-    },
-];
+const PendingSolvedTicketsChart: React.FC<PendingSolvedTicketsChartProps> = ({ colors, pendingSeries, solvedSeries }) => {
+    const chartSeries = [
+        {
+            name: "Pending",
+            data: pendingSeries && pendingSeries.length > 0 ? pendingSeries : [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        },
+        {
+            name: "Solved",
+            data: solvedSeries && solvedSeries.length > 0 ? solvedSeries : [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        },
+    ];
 
-const PendingSolvedTicketsChart: React.FC<DoubleLineChartTwoProps> = ({ colors }) => {
     const chartOptions: ApexOptions = {
         legend: {
             show: false,

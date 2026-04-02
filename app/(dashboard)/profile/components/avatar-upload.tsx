@@ -4,22 +4,77 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import DefaultUploadedImage from "@/public/assets/images/user-grid/user-grid-img13.png";
-import { Camera } from "lucide-react";
+import { Camera, Loader2 } from "lucide-react";
 import { StaticImageData } from "next/image";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
 
 const AvatarUpload = () => {
+    const { data: session, update: updateSession } = useSession();
     const [imagePreview, setImagePreview] = useState<string | StaticImageData>(DefaultUploadedImage);
+    const [uploading, setUploading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Load current avatar from session on mount
+    useEffect(() => {
+        if (session?.user?.image) {
+            setImagePreview(session.user.image);
+        }
+    }, [session?.user?.image]);
+
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+        if (!file) return;
+
+        setError(null);
+
+        // Validate file type
+        const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
+        if (!allowedTypes.includes(file.type)) {
+            setError("Only PNG, JPG, GIF, and WebP images are supported.");
+            return;
+        }
+
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            setError("Image must be under 5MB.");
+            return;
+        }
+
+        // Show preview immediately
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+
+        // Upload to API
+        setUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const res = await fetch("/api/users/avatar", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                setError(data.error || "Upload failed. Please try again.");
+                return;
+            }
+
+            const data = await res.json();
+            // Update the session so the new avatar shows everywhere
+            if (data.avatarUrl) {
+                await updateSession({ image: data.avatarUrl });
+            }
+        } catch {
+            setError("Upload failed. Please try again.");
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -29,16 +84,21 @@ const AvatarUpload = () => {
                 <Input
                     type="file"
                     id="imageUpload"
-                    accept=".png, .jpg, .jpeg"
+                    accept=".png, .jpg, .jpeg, .gif, .webp"
                     ref={fileInputRef}
                     onChange={handleImageChange}
                     hidden
+                    disabled={uploading}
                 />
                 <Label
                     htmlFor="imageUpload"
                     className="w-8 h-8 flex justify-center items-center bg-blue-100 dark:bg-primary/25 text-primary dark:text-blue-400 border border-primary hover:bg-blue-100 text-lg rounded-full cursor-pointer"
                 >
-                    <Camera className="w-4 h-4" />
+                    {uploading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                        <Camera className="w-4 h-4" />
+                    )}
                 </Label>
             </div>
 
@@ -51,6 +111,9 @@ const AvatarUpload = () => {
                     }}
                 />
             </div>
+            {error && (
+                <p className="text-red-500 text-xs mt-2">{error}</p>
+            )}
         </div>
     );
 };

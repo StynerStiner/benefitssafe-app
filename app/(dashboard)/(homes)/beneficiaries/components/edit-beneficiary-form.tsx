@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import FormDatePicker from "@/components/shared/form-date-picker";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +15,8 @@ import {
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/sheet";
+import { Download, FileText, Shield } from "lucide-react";
+import EligibilityVerification from "./eligibility-verification";
 
 interface Beneficiary {
     id: string;
@@ -31,6 +35,36 @@ interface Beneficiary {
     notes: string | null;
     isActive: boolean;
 }
+
+interface BeneficiaryDocument {
+    id: string;
+    entityType?: string;
+    entityId?: string;
+    fileName: string;
+    fileUrl: string;
+    fileType: string;
+    uploadedById?: string;
+    createdAt: string;
+}
+
+const FILE_TYPE_LABELS: Record<string, string> = {
+    benefits_letter: "Benefits Letter",
+    id_document: "ID Document",
+    verification: "Verification",
+    receipt: "Receipt",
+    invoice: "Invoice",
+    contract: "Contract",
+    grant_letter: "Grant Letter",
+    other: "Other",
+};
+
+const FILE_TYPE_COLORS: Record<string, string> = {
+    benefits_letter: "bg-blue-500/15 text-blue-600",
+    id_document: "bg-purple-500/15 text-purple-600",
+    verification: "bg-green-500/15 text-green-600",
+    receipt: "bg-yellow-500/15 text-yellow-600",
+    other: "bg-neutral-500/15 text-neutral-600",
+};
 
 interface EditBeneficiaryFormProps {
     beneficiary: Beneficiary;
@@ -65,6 +99,7 @@ const EditBeneficiaryForm = ({
 }: EditBeneficiaryFormProps) => {
     const [submitting, setSubmitting] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [documents, setDocuments] = useState<BeneficiaryDocument[]>([]);
 
     // Form state
     const [firstName, setFirstName] = useState("");
@@ -128,6 +163,22 @@ const EditBeneficiaryForm = ({
                 toast.error("Failed to load beneficiary details");
             })
             .finally(() => setLoading(false));
+
+        // Fetch documents for this beneficiary
+        fetch(`/api/documents?limit=100`)
+            .then((r) => r.ok ? r.json() : { documents: [] })
+            .then((data) => {
+                const allDocs: BeneficiaryDocument[] = Array.isArray(data) ? data : data?.documents || [];
+                // Filter to only this beneficiary's documents
+                const beneficiaryDocs = allDocs.filter(
+                    (d: BeneficiaryDocument) =>
+                        (d.entityType === "beneficiary" && d.entityId === beneficiary.id) ||
+                        (d.entityType === "user" && d.entityId === beneficiary.id) ||
+                        (d.uploadedById === beneficiary.id)
+                );
+                setDocuments(beneficiaryDocs);
+            })
+            .catch(() => {});
     }, [open, beneficiary.id]);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -336,12 +387,11 @@ const EditBeneficiaryForm = ({
                             <Label htmlFor="edit-dateOfBirth" className={labelClassName}>
                                 Date of Birth
                             </Label>
-                            <Input
-                                type="date"
+                            <FormDatePicker
                                 id="edit-dateOfBirth"
-                                className={inputClassName}
                                 value={dateOfBirth}
-                                onChange={(e) => setDateOfBirth(e.target.value)}
+                                onChange={setDateOfBirth}
+                                placeholder="Select date of birth"
                             />
                         </div>
 
@@ -486,6 +536,75 @@ const EditBeneficiaryForm = ({
                                 onChange={(e) => setNotes(e.target.value)}
                             />
                         </div>
+
+                        {/* Eligibility Verification */}
+                        <EligibilityVerification
+                            beneficiaryId={beneficiary.id}
+                            beneficiaryName={`${beneficiary.firstName} ${beneficiary.lastName}`}
+                        />
+
+                        {/* Uploaded Documents */}
+                        <Card className="border border-neutral-200 dark:border-neutral-700">
+                            <CardHeader className="pb-3">
+                                <div className="flex items-center gap-2">
+                                    <Shield className="w-5 h-5 text-primary" />
+                                    <CardTitle className="text-base">Uploaded Documents</CardTitle>
+                                </div>
+                                <CardDescription>
+                                    Documents uploaded by this beneficiary or by admins on their behalf
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {documents.length === 0 ? (
+                                    <div className="flex flex-col items-center py-6 text-center">
+                                        <FileText className="w-8 h-8 text-neutral-300 dark:text-neutral-600 mb-2" />
+                                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                                            No documents uploaded yet
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {documents.map((doc) => {
+                                            const colorClass = FILE_TYPE_COLORS[doc.fileType] || FILE_TYPE_COLORS.other;
+                                            return (
+                                                <div
+                                                    key={doc.id}
+                                                    className="flex items-center justify-between gap-2 bg-neutral-50 dark:bg-neutral-800 px-3 py-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700"
+                                                >
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 shrink-0">
+                                                            <FileText className="w-4 h-4 text-primary" />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-medium truncate max-w-[180px]">
+                                                                {doc.fileName}
+                                                            </p>
+                                                            <div className="flex items-center gap-2 mt-0.5">
+                                                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${colorClass}`}>
+                                                                    {FILE_TYPE_LABELS[doc.fileType] || doc.fileType}
+                                                                </span>
+                                                                <span className="text-xs text-neutral-400">
+                                                                    {new Date(doc.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <a
+                                                        href={doc.fileUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 font-medium shrink-0"
+                                                    >
+                                                        <Download className="w-3.5 h-3.5" />
+                                                        View
+                                                    </a>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
 
                         {/* Submit */}
                         <div className="mt-2">

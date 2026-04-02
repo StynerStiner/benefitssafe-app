@@ -6,22 +6,17 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import UserGridImage1 from "@/public/assets/images/user-grid/user-grid-img1.png";
-import UserGridImage2 from "@/public/assets/images/user-grid/user-grid-img2.png";
-import UserGridImage3 from "@/public/assets/images/user-grid/user-grid-img3.png";
-import UserGridImage4 from "@/public/assets/images/user-grid/user-grid-img4.png";
-import UserGridImage5 from "@/public/assets/images/user-grid/user-grid-img5.png";
-import Image, { StaticImageData } from "next/image";
+import UserAvatar from "@/components/shared/user-avatar";
 
 interface ActivityStatus {
     label: string;
     type: "resolved" | "dropped" | "pending" | "danger" | "info";
 }
 
-interface RecentCallsTableTypeItem {
+export interface RecentCallsTableTypeItem {
     customer: {
         name: string;
-        image: string | StaticImageData;
+        avatarUrl?: string | null;
     };
     type: string;
     duration: string;
@@ -29,71 +24,15 @@ interface RecentCallsTableTypeItem {
     status: ActivityStatus;
 }
 
-const RecentCallsTableContents: RecentCallsTableTypeItem[] = [
-    {
-        customer: {
-            name: "Sarah Mitchell",
-            image: UserGridImage1,
-        },
-        type: "Approved",
-        duration: "expense",
-        time: "Mar 6",
-        status: { label: "Completed", type: "resolved" },
-    },
-    {
-        customer: {
-            name: "James Carter",
-            image: UserGridImage2,
-        },
-        type: "Created",
-        duration: "expense",
-        time: "Jan 15",
-        status: { label: "Completed", type: "resolved" },
-    },
-    {
-        customer: {
-            name: "Sarah Mitchell",
-            image: UserGridImage3,
-        },
-        type: "Created",
-        duration: "card",
-        time: "Jan 10",
-        status: { label: "Completed", type: "resolved" },
-    },
-    {
-        customer: {
-            name: "James Carter",
-            image: UserGridImage4,
-        },
-        type: "Created",
-        duration: "expense",
-        time: "Jan 7",
-        status: { label: "Completed", type: "resolved" },
-    },
-    {
-        customer: {
-            name: "Sarah Mitchell",
-            image: UserGridImage5,
-        },
-        type: "Approved",
-        duration: "vendor",
-        time: "Jan 5",
-        status: { label: "Completed", type: "resolved" },
-    },
-    {
-        customer: {
-            name: "Sarah Mitchell",
-            image: UserGridImage3,
-        },
-        type: "Approved",
-        duration: "expense",
-        time: "Dec 28",
-        status: { label: "Completed", type: "resolved" },
-    },
-];
+interface RecentCallsTableProps {
+    data?: RecentCallsTableTypeItem[];
+}
+
+const RecentCallsTableContents: RecentCallsTableTypeItem[] = [];
 
 
-const RecentCallsTable = () => {
+const RecentCallsTable = ({ data }: RecentCallsTableProps) => {
+    const tableData = data || [];
     return (
         <Table className="table-auto border-spacing-0 border-separate">
             <TableHeader>
@@ -116,20 +55,27 @@ const RecentCallsTable = () => {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {RecentCallsTableContents.map((item, index) => {
-                    const isLast = index === RecentCallsTableContents.length - 1;
+                {tableData.length === 0 && (
+                    <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-neutral-500 dark:text-neutral-400">
+                            No audit entries recorded yet
+                        </TableCell>
+                    </TableRow>
+                )}
+                {tableData.map((item, index) => {
+                    const isLast = index === tableData.length - 1;
 
                     return (
                         <TableRow key={index}>
                             {/* Customer */}
                             <TableCell className={` ${isLast ? "border-0" : "border-b border-neutral-200"} dark:border-neutral-600 py-3.5 px-6 text-start`}>
                                 <div className="flex items-center">
-                                    <Image
-                                        src={item.customer.image}
-                                        alt={item.customer.name}
-                                        width={40}
-                                        height={40}
-                                        className="w-10 h-10 rounded-md me-3"
+                                    <UserAvatar
+                                        firstName={item.customer.name.split(" ")[0]}
+                                        lastName={item.customer.name.split(" ").slice(1).join(" ")}
+                                        avatarUrl={item.customer.avatarUrl}
+                                        size={40}
+                                        className="me-3"
                                     />
                                     <div>
                                         <h6 className="text-base mb-0 font-medium">{item.customer.name}</h6>

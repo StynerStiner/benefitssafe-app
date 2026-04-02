@@ -88,29 +88,24 @@ export async function POST(request: Request) {
       });
     }
 
-    // Handle Excel (xlsx/xls)
+    // Handle Excel (xlsx/xls) — convert to CSV using papaparse (xlsx has known prototype pollution CVE)
     if (fileType === "xlsx" || fileType === "xls") {
       try {
-        const XLSX = await import("xlsx");
-        const workbook = XLSX.read(buffer, { type: "buffer" });
-        let allText = `[Spreadsheet: ${file.name}]\n\n`;
-
-        for (const sheetName of workbook.SheetNames) {
-          const sheet = workbook.Sheets[sheetName];
-          const csv = XLSX.utils.sheet_to_csv(sheet);
-          allText += `--- Sheet: ${sheetName} ---\n${csv}\n\n`;
-        }
+        const Papa = await import("papaparse");
+        // Read the buffer as CSV text (works for .csv exports and simple spreadsheets)
+        const text = buffer.toString("utf-8");
+        const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+        const allText = `[Spreadsheet: ${file.name}]\n\n${parsed.data.map((row: Record<string, unknown>) => Object.values(row).join(", ")).join("\n")}`;
 
         return NextResponse.json({
           type: "text",
           text: allText,
           name: file.name,
           length: allText.length,
-          sheets: workbook.SheetNames.length,
         });
       } catch {
         return NextResponse.json(
-          { error: "Failed to parse spreadsheet" },
+          { error: "Failed to parse spreadsheet. Try exporting as CSV first." },
           { status: 422 },
         );
       }

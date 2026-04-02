@@ -8,6 +8,15 @@ import {
     CommandList,
 } from "@/components/ui/command";
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -15,6 +24,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from '@/components/ui/input';
 import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from '@/components/ui/textarea';
 import {
     Tooltip,
@@ -22,19 +38,22 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from '@/lib/utils';
-import { Ban, CircleX, EllipsisVertical, ImageIcon, LinkIcon, Phone, Send, Settings, User, Video } from 'lucide-react';
-import Image, { StaticImageData } from 'next/image';
+import { Ban, CircleX, EllipsisVertical, ImageIcon, LinkIcon, Loader2, MessageSquarePlus, Phone, Send, Settings, User, Video } from 'lucide-react';
 import Link from 'next/link';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
-
-import ChatImage1 from '@/public/assets/images/chat/1.png';
-import ChatImage11 from '@/public/assets/images/chat/11.png';
+import UserAvatar from "@/components/shared/user-avatar";
 
 // --- CHANGED: Types for API data ---
-interface ConvoParticipant { userId: string; }
+interface ConvoParticipant { userId: string; firstName?: string; lastName?: string; email?: string; }
+interface ConvoLastMessage { content: string; senderId: string; createdAt: string; }
+interface ConversationItem { id: string; subject: string | null; type: string; updatedAt: string; participants: ConvoParticipant[]; lastMessage: ConvoLastMessage | null; unreadCount: number; }
+// Legacy types kept for backward compat with message fetching
+interface ConvoParticipantLegacy { userId: string; }
 interface ConvoLastMsg { id: string; content: string; senderId: string; createdAt: string; }
-interface Conversation { id: string; subject: string | null; type: string; updatedAt: string; participants: ConvoParticipant[]; messages: ConvoLastMsg[]; }
+interface Conversation { id: string; subject: string | null; type: string; updatedAt: string; participants: ConvoParticipantLegacy[]; messages: ConvoLastMsg[]; }
+
+interface OrgUser { id: string; firstName: string; lastName: string; email: string; role: string; }
 interface ApiMessage { id: string; senderId: string; content: string; createdAt: string; }
 
 type ChatItem = {
@@ -43,16 +62,15 @@ type ChatItem = {
     message: string;
     time: string;
     unreadCount: number;
-    imgSrc: StaticImageData | string;
     isActive?: boolean;
 };
 
 type PrevChatMessage = {
     id: number | string;
     sender: "me" | "other";
+    senderName?: string;
     text: string;
     time: string;
-    avatar?: StaticImageData | string;
 };
 
 function formatTime(d: string) {
@@ -87,44 +105,133 @@ const ChatBox = () => {
     const [message, setMessage] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // New message dialog state
+    const [newMsgOpen, setNewMsgOpen] = useState(false);
+    const [orgUsers, setOrgUsers] = useState<OrgUser[]>([]);
+    const [newMsgRecipient, setNewMsgRecipient] = useState("");
+    const [newMsgSubject, setNewMsgSubject] = useState("");
+    const [newMsgBody, setNewMsgBody] = useState("");
+    const [newMsgSending, setNewMsgSending] = useState(false);
+    const [newMsgError, setNewMsgError] = useState<string | null>(null);
+
     const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
-    // --- CHANGED: Fetch conversations on mount, fallback to demo data ---
+    // Fetch org users when dialog opens
     useEffect(() => {
+        if (!newMsgOpen) return;
+        fetch("/api/users?limit=50")
+            .then((r) => r.ok ? r.json() : null)
+            .then((data) => {
+                if (data?.users) {
+                    // Filter out the current user
+                    setOrgUsers(data.users.filter((u: OrgUser) => u.id !== currentUserId));
+                }
+            })
+            .catch(() => {});
+    }, [newMsgOpen, currentUserId]);
+
+    // Handle creating a new conversation
+    const handleNewConversation = async () => {
+        if (!newMsgRecipient || !newMsgBody.trim()) return;
+        setNewMsgSending(true);
+        setNewMsgError(null);
+
+        try {
+            const res = await fetch("/api/messages/conversations", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    recipientId: newMsgRecipient,
+                    subject: newMsgSubject.trim() || undefined,
+                    message: newMsgBody.trim(),
+                }),
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                setNewMsgError(err.error || "Failed to create conversation.");
+                return;
+            }
+
+            const data = await res.json();
+
+            // Reset form and close dialog
+            setNewMsgRecipient("");
+            setNewMsgSubject("");
+            setNewMsgBody("");
+            setNewMsgOpen(false);
+
+            // Refresh conversations and select the new one
+            fetchConversations(false);
+            if (data.conversationId) {
+                setSelectedConvoId(data.conversationId);
+                const recipient = orgUsers.find((u) => u.id === newMsgRecipient);
+                setSelectedName(
+                    newMsgSubject.trim() ||
+                    (recipient ? `${recipient.firstName} ${recipient.lastName}` : "Conversation")
+                );
+            }
+        } catch {
+            setNewMsgError("Failed to send message. Please try again.");
+        } finally {
+            setNewMsgSending(false);
+        }
+    };
+
+    // Shared function to fetch and map conversations
+    const fetchConversations = useCallback((selectFirst = false) => {
         fetch("/api/messages/conversations")
-            .then((r) => r.ok ? r.json() : [])
-            .then((data: Conversation[] | unknown) => {
-                const convos = Array.isArray(data) ? data : [];
-                if (convos.length === 0) {
-                    // No real conversations — show template demo contacts
-                    const demoAvatars = [ChatImage1];
-                    setChatList([
-                        { id: "demo-1", name: "No conversations yet", message: "Start a new conversation", time: "", unreadCount: 0, imgSrc: demoAvatars[0], isActive: false },
-                    ]);
-                    // Show demo messages so design looks right
-                    setPrevData([
-                        { id: 1, sender: "other", text: "Hi There!", time: "6:30 pm", avatar: ChatImage11 },
-                        { id: 2, sender: "me", text: "Hello! Nice to meet you! How are you dear..??", time: "6:31 pm" },
-                        { id: 3, sender: "other", text: "I am very well. How about you.??", time: "6:32 pm", avatar: ChatImage11 },
-                        { id: 4, sender: "me", text: "I am also very well. So, How is going on your study.??", time: "6:33 pm" },
-                        { id: 5, sender: "other", text: "My study is going nice. Some day ago I have given my final exam. My result also published.", time: "6:34 pm", avatar: ChatImage11 },
-                        { id: 6, sender: "me", text: "Oh great! How is your result??", time: "6:35 pm" },
-                        { id: 7, sender: "other", text: "I have got Golden A+ in the examination.", time: "6:36 pm", avatar: ChatImage11 },
-                        { id: 8, sender: "me", text: "Wow!! such a good news.", time: "6:37 pm" },
-                    ]);
+            .then((r) => r.ok ? r.json() : null)
+            .then((data: { conversations?: ConversationItem[] } | Conversation[] | null) => {
+                // Handle both response formats: { conversations: [...] } or flat array
+                let convos: ConversationItem[];
+                if (data && "conversations" in data && Array.isArray(data.conversations)) {
+                    convos = data.conversations;
+                } else if (Array.isArray(data)) {
+                    // Legacy flat array format
+                    convos = (data as Conversation[]).map((c) => ({
+                        id: c.id,
+                        subject: c.subject,
+                        type: c.type,
+                        updatedAt: c.updatedAt,
+                        participants: c.participants,
+                        lastMessage: c.messages?.[0] ? {
+                            content: c.messages[0].content,
+                            senderId: c.messages[0].senderId,
+                            createdAt: c.messages[0].createdAt,
+                        } : null,
+                        unreadCount: 0,
+                    }));
+                } else {
+                    setChatList([]);
+                    setPrevData([]);
                     return;
                 }
-                const mapped: ChatItem[] = convos.map((c: Conversation, i: number) => ({
-                    id: c.id,
-                    name: c.subject || c.type || "Conversation",
-                    message: c.messages?.[0]?.content?.substring(0, 30) || "No messages",
-                    time: relativeTime(c.updatedAt || c.messages?.[0]?.createdAt || new Date().toISOString()),
-                    unreadCount: 0,
-                    imgSrc: ChatImage1,
-                    isActive: i < 5,
-                }));
+
+                if (convos.length === 0) {
+                    setChatList([]);
+                    setPrevData([]);
+                    return;
+                }
+                const mapped: ChatItem[] = convos.map((c, i) => {
+                    // Build a display name from participants or subject
+                    const participantName = c.participants
+                        ?.map((p) => p.firstName && p.lastName ? `${p.firstName} ${p.lastName}` : null)
+                        .filter(Boolean)
+                        .join(", ");
+                    const displayName = c.subject || participantName || c.type || "Conversation";
+
+                    return {
+                        id: c.id,
+                        name: displayName,
+                        message: c.lastMessage?.content?.substring(0, 30) || "No messages",
+                        time: relativeTime(c.updatedAt || c.lastMessage?.createdAt || new Date().toISOString()),
+                        unreadCount: c.unreadCount || 0,
+                        isActive: i < 5,
+                    };
+                });
                 setChatList(mapped);
-                if (mapped.length > 0) {
+                if (selectFirst && mapped.length > 0) {
                     setSelectedConvoId(mapped[0].id as string);
                     setSelectedName(mapped[0].name);
                 }
@@ -132,24 +239,62 @@ const ChatBox = () => {
             .catch(() => {});
     }, []);
 
-    // --- CHANGED: Fetch messages when conversation selected ---
+    // Fetch conversations on mount
     useEffect(() => {
-        if (!selectedConvoId) return;
-        fetch(`/api/messages/conversations/${selectedConvoId}`)
+        fetchConversations(true);
+    }, [fetchConversations]);
+
+    // Poll conversation list every 10 seconds for new conversations and unread counts
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchConversations(false);
+        }, 10000);
+
+        return () => clearInterval(interval);
+    }, [fetchConversations]);
+
+    // Track message count for efficient polling comparison
+    const messageCountRef = useRef(0);
+
+    // Shared function to fetch messages for a conversation
+    const fetchMessages = useCallback((convoId: string) => {
+        fetch(`/api/messages/conversations/${convoId}`)
             .then((r) => r.ok ? r.json() : null)
             .then((data) => {
                 const msgs: ApiMessage[] = data?.messages || (Array.isArray(data) ? data : []);
-                const mapped: PrevChatMessage[] = msgs.map((m) => ({
-                    id: m.id,
-                    sender: m.senderId === currentUserId ? "me" as const : "other" as const,
-                    text: m.content,
-                    time: formatTime(m.createdAt),
-                    avatar: m.senderId !== currentUserId ? ChatImage11 : undefined,
-                }));
-                setPrevData(mapped);
+                // Only update state if message count changed (avoids unnecessary re-renders)
+                if (msgs.length !== messageCountRef.current) {
+                    messageCountRef.current = msgs.length;
+                    const mapped: PrevChatMessage[] = msgs.map((m) => ({
+                        id: m.id,
+                        sender: m.senderId === currentUserId ? "me" as const : "other" as const,
+                        senderName: selectedName,
+                        text: m.content,
+                        time: formatTime(m.createdAt),
+                    }));
+                    setPrevData(mapped);
+                }
             })
             .catch(() => {});
-    }, [selectedConvoId, currentUserId]);
+    }, [currentUserId]);
+
+    // Fetch messages when conversation selected
+    useEffect(() => {
+        if (!selectedConvoId) return;
+        messageCountRef.current = 0; // Reset on conversation change
+        fetchMessages(selectedConvoId);
+    }, [selectedConvoId, fetchMessages]);
+
+    // Poll messages every 5 seconds for near real-time updates
+    useEffect(() => {
+        if (!selectedConvoId) return;
+
+        const interval = setInterval(() => {
+            fetchMessages(selectedConvoId);
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [selectedConvoId, fetchMessages]);
 
     useEffect(() => {
         if (chatContainerRef.current) {
@@ -205,7 +350,7 @@ const ChatBox = () => {
                 <div className="flex items-center justify-between gap-2 px-5 pt-5 pb-4">
                     <div className="flex items-center gap-4">
                         <div className="">
-                            <Image src={ChatImage1} alt="image" width={40} height={40} />
+                            <UserAvatar firstName={session?.user?.name?.split(" ")[0]} lastName={session?.user?.name?.split(" ").slice(1).join(" ")} size={40} />
                         </div>
                         <div className="">
                             <h6 className="text-base mb-0">{session?.user?.name || "User"}</h6>
@@ -231,13 +376,96 @@ const ChatBox = () => {
                 </div>
 
                 <Command>
-                    <div className="border-t border-neutral-200">
+                    <div className="border-t border-neutral-200 flex items-center gap-2 pr-2">
                         <CommandInput placeholder="Search user..." className='' />
+                        <Dialog open={newMsgOpen} onOpenChange={setNewMsgOpen}>
+                            <DialogTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="shrink-0 text-primary hover:bg-primary/10"
+                                >
+                                    <MessageSquarePlus width={20} />
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>New Message</DialogTitle>
+                                    <DialogDescription>
+                                        Start a new conversation with a team member.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="newMsgRecipient" className="text-sm font-semibold text-neutral-600 dark:text-neutral-200">
+                                            Recipient <span className="text-red-600">*</span>
+                                        </Label>
+                                        <Select value={newMsgRecipient} onValueChange={setNewMsgRecipient}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a recipient" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {orgUsers.map((u) => (
+                                                    <SelectItem key={u.id} value={u.id}>
+                                                        {u.firstName} {u.lastName} ({u.role})
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="newMsgSubject" className="text-sm font-semibold text-neutral-600 dark:text-neutral-200">
+                                            Subject
+                                        </Label>
+                                        <Input
+                                            id="newMsgSubject"
+                                            placeholder="Optional subject"
+                                            value={newMsgSubject}
+                                            onChange={(e) => setNewMsgSubject(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="newMsgBody" className="text-sm font-semibold text-neutral-600 dark:text-neutral-200">
+                                            Message <span className="text-red-600">*</span>
+                                        </Label>
+                                        <Textarea
+                                            id="newMsgBody"
+                                            placeholder="Write your message..."
+                                            value={newMsgBody}
+                                            onChange={(e) => setNewMsgBody(e.target.value)}
+                                            rows={4}
+                                        />
+                                    </div>
+                                    {newMsgError && (
+                                        <p className="text-red-500 text-sm">{newMsgError}</p>
+                                    )}
+                                </div>
+                                <DialogFooter>
+                                    <Button
+                                        onClick={handleNewConversation}
+                                        disabled={!newMsgRecipient || !newMsgBody.trim() || newMsgSending}
+                                        className="rounded-lg inline-flex items-center gap-1"
+                                    >
+                                        {newMsgSending ? (
+                                            <>
+                                                <Loader2 width={16} className="animate-spin" />
+                                                Sending
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Send width={16} />
+                                                Send
+                                            </>
+                                        )}
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                     <CommandList className='max-h-[580px]'>
                         <CommandEmpty>No conversations found.</CommandEmpty>
                         <CommandGroup className='p-0'>
-                            {chatList.map(({ id, name, message, time, unreadCount, imgSrc, isActive }) => (
+                            {chatList.map(({ id, name, message, time, unreadCount, isActive }) => (
                                 <CommandItem
                                     key={id}
                                     value={name}
@@ -252,7 +480,7 @@ const ChatBox = () => {
                                     >
                                         <div className="flex items-center gap-2">
                                             <div className="img">
-                                                <Image src={imgSrc} alt={`${name} image`} width={40} height={40} />
+                                                <UserAvatar firstName={name.split(" ")[0]} lastName={name.split(" ").slice(1).join(" ")} size={40} />
                                             </div>
                                             <div className="info">
                                                 <h6 className="text-sm mb-1 line-clamp-1">{name}</h6>
@@ -284,7 +512,7 @@ const ChatBox = () => {
                     <div className="flex items-center justify-between gap-2  px-6 py-2.5 active border-b border-neutral-200 dark:border-neutral-600">
                         <div className="flex items-center gap-2">
                             <div className="img">
-                                <Image src={ChatImage11} alt="image" width={40} height={40} />
+                                <UserAvatar firstName={selectedName.split(" ")[0]} lastName={selectedName.split(" ").slice(1).join(" ")} size={40} />
                             </div>
                             <div className="info">
                                 <h6 className="text-base mb-0">{selectedName}</h6>
@@ -341,15 +569,11 @@ const ChatBox = () => {
                                     key={msg.id}
                                     className="max-w-[700px] duration-500 text-neutral-900 flex items-end gap-3"
                                 >
-                                    {msg.avatar && (
-                                        <Image
-                                            src={msg.avatar}
-                                            alt="avatar"
-                                            className="avatar-lg object-cover rounded-full"
-                                            width={40}
-                                            height={40}
-                                        />
-                                    )}
+                                    <UserAvatar
+                                        firstName={msg.senderName?.split(" ")[0]}
+                                        lastName={msg.senderName?.split(" ").slice(1).join(" ")}
+                                        size={40}
+                                    />
                                     <div className="bg-neutral-50 dark:bg-slate-800 dark:text-white rounded-2xl rounded-es-none p-5">
                                         <p className="mb-3">{msg.text}</p>
                                         <p className="chat-time mb-0 text-xs text-end text-neutral-500 dark:text-neutral-100">

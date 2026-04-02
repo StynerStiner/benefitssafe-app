@@ -46,21 +46,21 @@ function isValidDate(date: Date | undefined) {
 }
 
 interface AddEventProps {
-    onAddEvent: (event: any) => void;
+    onAddEvent: (event: { title: string; label: string; description: string; startTime: string; endTime: string; category?: string }) => void;
 }
 
 
 const AddEvent: React.FC<AddEventProps> = ({ onAddEvent }) => {
     const [open, setOpen] = React.useState(false)
     const [date, setDate] = React.useState<Date | undefined>(
-        new Date("2025-06-01")
+        new Date()
     )
     const [month, setMonth] = React.useState<Date | undefined>(date)
     const [value, setValue] = React.useState(formatDate(date))
 
     // End date states
     const [openEnd, setOpenEnd] = React.useState(false)
-    const [endDate, setEndDate] = React.useState<Date | undefined>(new Date("2025-06-01"))
+    const [endDate, setEndDate] = React.useState<Date | undefined>(new Date())
     const [endMonth, setEndMonth] = React.useState<Date | undefined>(endDate)
     const [endValue, setEndValue] = React.useState(formatDate(endDate))
 
@@ -68,12 +68,12 @@ const AddEvent: React.FC<AddEventProps> = ({ onAddEvent }) => {
     const [dialogOpen, setDialogOpen] = React.useState(false);
     const [submitForm, setSubmitForm] = React.useState(false);
 
-    // Data send to the event list 
+    // Data send to the event list
     const [name, setName] = React.useState("");
     const [label, setLabel] = React.useState("");
     const [description, setDescription] = React.useState("");
 
-    const handleModalFormSubmit = (event: any) => {
+    const handleModalFormSubmit = (event: React.FormEvent) => {
         event.preventDefault();
         if (!label) {
             toast.error("Please select an event type!");
@@ -81,21 +81,15 @@ const AddEvent: React.FC<AddEventProps> = ({ onAddEvent }) => {
         }
         setSubmitForm(true);
 
-        const newEvent = {
-            id: Date.now(),
+        onAddEvent({
             title: name,
-            color: label === "Personal" ? "bg-green-500" :
-                label === "Business" ? "bg-primary" :
-                    label === "Family" ? "bg-yellow-500" :
-                        label === "Important" ? "bg-purple-500" :
-                            "bg-red-500",
             label: label,
             startTime: value,
             endTime: endValue,
             description: description,
-        };
+            category: label,
+        });
 
-        onAddEvent(newEvent);
         setName("");
         setValue("");
         setEndValue("");
@@ -105,11 +99,6 @@ const AddEvent: React.FC<AddEventProps> = ({ onAddEvent }) => {
         setTimeout(() => {
             setDialogOpen(false);
             setSubmitForm(false);
-            toast.success(
-                <span>
-                    <strong>{name}</strong> <br /> Event added successfully!
-                </span>
-            );
         }, 500);
     }
 
@@ -266,49 +255,49 @@ const AddEvent: React.FC<AddEventProps> = ({ onAddEvent }) => {
                                 </div>
                                 <div className="col-span-12">
                                     <RadioGroup
-                                        defaultValue="Personal"
+                                        defaultValue="General"
                                         value={label}
                                         onValueChange={(val) => setLabel(val)}
                                         className='flex items-center flex-wrap gap-7'
                                     >
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="Personal" id="Personal" className='border border-neutral-400'
+                                            <RadioGroupItem value="Grants" id="Grants" className='border border-neutral-400'
                                                 required />
-                                            <Label className="form-check-label line-height-1 font-medium text-neutral-500 dark:text-neutral-300 text-sm flex items-center gap-1" htmlFor="Personal">
-                                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                                                Personal
-                                            </Label>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="Business" id="Business" className='border border-neutral-400'
-                                                required />
-                                            <Label className="form-check-label line-height-1 font-medium text-neutral-500 dark:text-neutral-300 text-sm flex items-center gap-1" htmlFor="Business">
+                                            <Label className="form-check-label line-height-1 font-medium text-neutral-500 dark:text-neutral-300 text-sm flex items-center gap-1" htmlFor="Grants">
                                                 <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                                                Business
+                                                Grants
                                             </Label>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="Family" id="Family" className='border border-neutral-400'
+                                            <RadioGroupItem value="Payments" id="Payments" className='border border-neutral-400'
                                                 required />
-                                            <Label className="form-check-label line-height-1 font-medium text-neutral-500 dark:text-neutral-300 text-sm flex items-center gap-1" htmlFor="Family">
+                                            <Label className="form-check-label line-height-1 font-medium text-neutral-500 dark:text-neutral-300 text-sm flex items-center gap-1" htmlFor="Payments">
+                                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                                                Payments
+                                            </Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="Compliance" id="Compliance" className='border border-neutral-400'
+                                                required />
+                                            <Label className="form-check-label line-height-1 font-medium text-neutral-500 dark:text-neutral-300 text-sm flex items-center gap-1" htmlFor="Compliance">
                                                 <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
-                                                Family
+                                                Compliance
                                             </Label>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="Important" id="Important" className='border border-neutral-400'
+                                            <RadioGroupItem value="Subscriptions" id="Subscriptions" className='border border-neutral-400'
                                                 required />
-                                            <Label className="form-check-label line-height-1 font-medium text-neutral-500 dark:text-neutral-300 text-sm flex items-center gap-1" htmlFor="Important">
+                                            <Label className="form-check-label line-height-1 font-medium text-neutral-500 dark:text-neutral-300 text-sm flex items-center gap-1" htmlFor="Subscriptions">
                                                 <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-                                                Important
+                                                Subscriptions
                                             </Label>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="Holiday" id="Holiday" className='border border-neutral-400'
+                                            <RadioGroupItem value="General" id="General" className='border border-neutral-400'
                                                 required />
-                                            <Label className="form-check-label line-height-1 font-medium text-neutral-500 dark:text-neutral-300 text-sm flex items-center gap-1" htmlFor="Holiday">
+                                            <Label className="form-check-label line-height-1 font-medium text-neutral-500 dark:text-neutral-300 text-sm flex items-center gap-1" htmlFor="General">
                                                 <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                                                Holiday
+                                                General
                                             </Label>
                                         </div>
                                     </RadioGroup>

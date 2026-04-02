@@ -18,7 +18,7 @@ interface StatItem {
     compare: string;
 }
 
-const StateCard = ({ auditLogs }: { auditLogs: AuditLog[] }) => {
+const StateCard = ({ auditLogs }: { auditLogs: { entityType: string; createdAt: string; action: string }[] }) => {
     const total = auditLogs.length;
     const today = new Date().toDateString();
     const todayCount = auditLogs.filter((l) => new Date(l.createdAt).toDateString() === today).length;
@@ -92,7 +92,7 @@ const StateCard = ({ auditLogs }: { auditLogs: AuditLog[] }) => {
                     <span className="w-[2px] h-full bg-neutral-200 dark:bg-neutral-600"></span>
                 </div>
 
-                <ServiceLevelRadialProgress />
+                <ServiceLevelRadialProgress auditLogs={auditLogs} />
             </div>
         </div>
     );

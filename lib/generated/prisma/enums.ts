@@ -131,6 +131,17 @@ export const CardStatus = {
 export type CardStatus = (typeof CardStatus)[keyof typeof CardStatus]
 
 
+export const EligibilityStatus = {
+  ELIGIBLE: 'ELIGIBLE',
+  RESTRICTED_CALFRESH_ONLY: 'RESTRICTED_CALFRESH_ONLY',
+  INELIGIBLE_WARRANT: 'INELIGIBLE_WARRANT',
+  INELIGIBLE_INCARCERATED: 'INELIGIBLE_INCARCERATED',
+  PENDING_VERIFICATION: 'PENDING_VERIFICATION'
+} as const
+
+export type EligibilityStatus = (typeof EligibilityStatus)[keyof typeof EligibilityStatus]
+
+
 export const LedgerType = {
   CREDIT: 'CREDIT',
   DEBIT: 'DEBIT'

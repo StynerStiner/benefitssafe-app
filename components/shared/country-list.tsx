@@ -15,6 +15,7 @@ export interface StateData {
 
 interface CountryListProps {
   data?: StateData[];
+  itemLabel?: string;
 }
 
 const stateFlags: Record<string, any> = {
@@ -31,7 +32,7 @@ const stateColors: Record<string, string> = {
   "default": "bg-green-600",
 };
 
-const CountryList = ({ data }: CountryListProps) => {
+const CountryList = ({ data, itemLabel }: CountryListProps) => {
   const [stateData, setStateData] = useState<StateData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -103,7 +104,7 @@ const CountryList = ({ data }: CountryListProps) => {
               <div className="grow">
                 <h6 className="text-sm mb-0">{state.name}</h6>
                 <span className="text-xs text-neutral-500 dark:text-neutral-300 font-medium">
-                  {state.count} {state.count === 1 ? "Beneficiary" : "Beneficiaries"}
+                  {state.count} {itemLabel ? (state.count === 1 ? itemLabel : itemLabel + "s") : (state.count === 1 ? "Beneficiary" : "Beneficiaries")}
                 </span>
               </div>
             </div>

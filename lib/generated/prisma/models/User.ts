@@ -40,6 +40,10 @@ export type UserMinAggregateOutputType = {
   emailVerifyExpiry: Date | null
   mfaEnabled: boolean | null
   mfaSecret: string | null
+  lastLoginIp: string | null
+  lastLoginUserAgent: string | null
+  lastLoginAt: Date | null
+  beneficiaryCode: string | null
   dateOfBirth: Date | null
   addressStreet: string | null
   addressCity: string | null
@@ -69,6 +73,10 @@ export type UserMaxAggregateOutputType = {
   emailVerifyExpiry: Date | null
   mfaEnabled: boolean | null
   mfaSecret: string | null
+  lastLoginIp: string | null
+  lastLoginUserAgent: string | null
+  lastLoginAt: Date | null
+  beneficiaryCode: string | null
   dateOfBirth: Date | null
   addressStreet: string | null
   addressCity: string | null
@@ -99,6 +107,11 @@ export type UserCountAggregateOutputType = {
   mfaEnabled: number
   mfaSecret: number
   mfaBackupCodes: number
+  lastLoginIp: number
+  lastLoginUserAgent: number
+  lastLoginAt: number
+  trustedDevices: number
+  beneficiaryCode: number
   dateOfBirth: number
   addressStreet: number
   addressCity: number
@@ -131,6 +144,10 @@ export type UserMinAggregateInputType = {
   emailVerifyExpiry?: true
   mfaEnabled?: true
   mfaSecret?: true
+  lastLoginIp?: true
+  lastLoginUserAgent?: true
+  lastLoginAt?: true
+  beneficiaryCode?: true
   dateOfBirth?: true
   addressStreet?: true
   addressCity?: true
@@ -160,6 +177,10 @@ export type UserMaxAggregateInputType = {
   emailVerifyExpiry?: true
   mfaEnabled?: true
   mfaSecret?: true
+  lastLoginIp?: true
+  lastLoginUserAgent?: true
+  lastLoginAt?: true
+  beneficiaryCode?: true
   dateOfBirth?: true
   addressStreet?: true
   addressCity?: true
@@ -190,6 +211,11 @@ export type UserCountAggregateInputType = {
   mfaEnabled?: true
   mfaSecret?: true
   mfaBackupCodes?: true
+  lastLoginIp?: true
+  lastLoginUserAgent?: true
+  lastLoginAt?: true
+  trustedDevices?: true
+  beneficiaryCode?: true
   dateOfBirth?: true
   addressStreet?: true
   addressCity?: true
@@ -294,6 +320,11 @@ export type UserGroupByOutputType = {
   mfaEnabled: boolean
   mfaSecret: string | null
   mfaBackupCodes: string[]
+  lastLoginIp: string | null
+  lastLoginUserAgent: string | null
+  lastLoginAt: Date | null
+  trustedDevices: runtime.JsonValue | null
+  beneficiaryCode: string | null
   dateOfBirth: Date | null
   addressStreet: string | null
   addressCity: string | null
@@ -311,7 +342,7 @@ export type UserGroupByOutputType = {
   _max: UserMaxAggregateOutputType | null
 }
 
-type GetUserGroupByPayload<T extends UserGroupByArgs> = Prisma.PrismaPromise<
+export type GetUserGroupByPayload<T extends UserGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<UserGroupByOutputType, T['by']> &
       {
@@ -346,6 +377,11 @@ export type UserWhereInput = {
   mfaEnabled?: Prisma.BoolFilter<"User"> | boolean
   mfaSecret?: Prisma.StringNullableFilter<"User"> | string | null
   mfaBackupCodes?: Prisma.StringNullableListFilter<"User">
+  lastLoginIp?: Prisma.StringNullableFilter<"User"> | string | null
+  lastLoginUserAgent?: Prisma.StringNullableFilter<"User"> | string | null
+  lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  trustedDevices?: Prisma.JsonNullableFilter<"User">
+  beneficiaryCode?: Prisma.StringNullableFilter<"User"> | string | null
   dateOfBirth?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   addressStreet?: Prisma.StringNullableFilter<"User"> | string | null
   addressCity?: Prisma.StringNullableFilter<"User"> | string | null
@@ -364,6 +400,8 @@ export type UserWhereInput = {
   grants?: Prisma.GrantListRelationFilter
   vendors?: Prisma.VendorListRelationFilter
   inviteTokens?: Prisma.InviteTokenListRelationFilter
+  cardholderEligibility?: Prisma.XOR<Prisma.CardholderEligibilityNullableScalarRelationFilter, Prisma.CardholderEligibilityWhereInput> | null
+  memberships?: Prisma.OrganizationMembershipListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -383,6 +421,11 @@ export type UserOrderByWithRelationInput = {
   mfaEnabled?: Prisma.SortOrder
   mfaSecret?: Prisma.SortOrderInput | Prisma.SortOrder
   mfaBackupCodes?: Prisma.SortOrder
+  lastLoginIp?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastLoginUserAgent?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  trustedDevices?: Prisma.SortOrderInput | Prisma.SortOrder
+  beneficiaryCode?: Prisma.SortOrderInput | Prisma.SortOrder
   dateOfBirth?: Prisma.SortOrderInput | Prisma.SortOrder
   addressStreet?: Prisma.SortOrderInput | Prisma.SortOrder
   addressCity?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -401,12 +444,15 @@ export type UserOrderByWithRelationInput = {
   grants?: Prisma.GrantOrderByRelationAggregateInput
   vendors?: Prisma.VendorOrderByRelationAggregateInput
   inviteTokens?: Prisma.InviteTokenOrderByRelationAggregateInput
+  cardholderEligibility?: Prisma.CardholderEligibilityOrderByWithRelationInput
+  memberships?: Prisma.OrganizationMembershipOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   email?: string
   emailVerifyToken?: string
+  beneficiaryCode?: string
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
@@ -423,6 +469,10 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   mfaEnabled?: Prisma.BoolFilter<"User"> | boolean
   mfaSecret?: Prisma.StringNullableFilter<"User"> | string | null
   mfaBackupCodes?: Prisma.StringNullableListFilter<"User">
+  lastLoginIp?: Prisma.StringNullableFilter<"User"> | string | null
+  lastLoginUserAgent?: Prisma.StringNullableFilter<"User"> | string | null
+  lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  trustedDevices?: Prisma.JsonNullableFilter<"User">
   dateOfBirth?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   addressStreet?: Prisma.StringNullableFilter<"User"> | string | null
   addressCity?: Prisma.StringNullableFilter<"User"> | string | null
@@ -441,7 +491,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   grants?: Prisma.GrantListRelationFilter
   vendors?: Prisma.VendorListRelationFilter
   inviteTokens?: Prisma.InviteTokenListRelationFilter
-}, "id" | "email" | "emailVerifyToken">
+  cardholderEligibility?: Prisma.XOR<Prisma.CardholderEligibilityNullableScalarRelationFilter, Prisma.CardholderEligibilityWhereInput> | null
+  memberships?: Prisma.OrganizationMembershipListRelationFilter
+}, "id" | "email" | "emailVerifyToken" | "beneficiaryCode">
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -460,6 +512,11 @@ export type UserOrderByWithAggregationInput = {
   mfaEnabled?: Prisma.SortOrder
   mfaSecret?: Prisma.SortOrderInput | Prisma.SortOrder
   mfaBackupCodes?: Prisma.SortOrder
+  lastLoginIp?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastLoginUserAgent?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  trustedDevices?: Prisma.SortOrderInput | Prisma.SortOrder
+  beneficiaryCode?: Prisma.SortOrderInput | Prisma.SortOrder
   dateOfBirth?: Prisma.SortOrderInput | Prisma.SortOrder
   addressStreet?: Prisma.SortOrderInput | Prisma.SortOrder
   addressCity?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -497,6 +554,11 @@ export type UserScalarWhereWithAggregatesInput = {
   mfaEnabled?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   mfaSecret?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   mfaBackupCodes?: Prisma.StringNullableListFilter<"User">
+  lastLoginIp?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  lastLoginUserAgent?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  lastLoginAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  trustedDevices?: Prisma.JsonNullableWithAggregatesFilter<"User">
+  beneficiaryCode?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   dateOfBirth?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   addressStreet?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   addressCity?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
@@ -527,6 +589,11 @@ export type UserCreateInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -545,6 +612,8 @@ export type UserCreateInput = {
   grants?: Prisma.GrantCreateNestedManyWithoutBeneficiaryInput
   vendors?: Prisma.VendorCreateNestedManyWithoutUserInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -564,6 +633,11 @@ export type UserUncheckedCreateInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -581,6 +655,8 @@ export type UserUncheckedCreateInput = {
   grants?: Prisma.GrantUncheckedCreateNestedManyWithoutBeneficiaryInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutUserInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -599,6 +675,11 @@ export type UserUpdateInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -617,6 +698,8 @@ export type UserUpdateInput = {
   grants?: Prisma.GrantUpdateManyWithoutBeneficiaryNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutUserNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -636,6 +719,11 @@ export type UserUncheckedUpdateInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -653,6 +741,8 @@ export type UserUncheckedUpdateInput = {
   grants?: Prisma.GrantUncheckedUpdateManyWithoutBeneficiaryNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutUserNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -672,6 +762,11 @@ export type UserCreateManyInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -702,6 +797,11 @@ export type UserUpdateManyMutationInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -733,6 +833,11 @@ export type UserUncheckedUpdateManyInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -782,6 +887,11 @@ export type UserCountOrderByAggregateInput = {
   mfaEnabled?: Prisma.SortOrder
   mfaSecret?: Prisma.SortOrder
   mfaBackupCodes?: Prisma.SortOrder
+  lastLoginIp?: Prisma.SortOrder
+  lastLoginUserAgent?: Prisma.SortOrder
+  lastLoginAt?: Prisma.SortOrder
+  trustedDevices?: Prisma.SortOrder
+  beneficiaryCode?: Prisma.SortOrder
   dateOfBirth?: Prisma.SortOrder
   addressStreet?: Prisma.SortOrder
   addressCity?: Prisma.SortOrder
@@ -812,6 +922,10 @@ export type UserMaxOrderByAggregateInput = {
   emailVerifyExpiry?: Prisma.SortOrder
   mfaEnabled?: Prisma.SortOrder
   mfaSecret?: Prisma.SortOrder
+  lastLoginIp?: Prisma.SortOrder
+  lastLoginUserAgent?: Prisma.SortOrder
+  lastLoginAt?: Prisma.SortOrder
+  beneficiaryCode?: Prisma.SortOrder
   dateOfBirth?: Prisma.SortOrder
   addressStreet?: Prisma.SortOrder
   addressCity?: Prisma.SortOrder
@@ -841,6 +955,10 @@ export type UserMinOrderByAggregateInput = {
   emailVerifyExpiry?: Prisma.SortOrder
   mfaEnabled?: Prisma.SortOrder
   mfaSecret?: Prisma.SortOrder
+  lastLoginIp?: Prisma.SortOrder
+  lastLoginUserAgent?: Prisma.SortOrder
+  lastLoginAt?: Prisma.SortOrder
+  beneficiaryCode?: Prisma.SortOrder
   dateOfBirth?: Prisma.SortOrder
   addressStreet?: Prisma.SortOrder
   addressCity?: Prisma.SortOrder
@@ -979,6 +1097,20 @@ export type UserUpdateOneWithoutVendorsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutVendorsInput, Prisma.UserUpdateWithoutVendorsInput>, Prisma.UserUncheckedUpdateWithoutVendorsInput>
 }
 
+export type UserCreateNestedOneWithoutCardholderEligibilityInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCardholderEligibilityInput, Prisma.UserUncheckedCreateWithoutCardholderEligibilityInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCardholderEligibilityInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutCardholderEligibilityNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCardholderEligibilityInput, Prisma.UserUncheckedCreateWithoutCardholderEligibilityInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCardholderEligibilityInput
+  upsert?: Prisma.UserUpsertWithoutCardholderEligibilityInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCardholderEligibilityInput, Prisma.UserUpdateWithoutCardholderEligibilityInput>, Prisma.UserUncheckedUpdateWithoutCardholderEligibilityInput>
+}
+
 export type UserCreateNestedOneWithoutApprovalsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutApprovalsInput, Prisma.UserUncheckedCreateWithoutApprovalsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutApprovalsInput
@@ -991,6 +1123,20 @@ export type UserUpdateOneRequiredWithoutApprovalsNestedInput = {
   upsert?: Prisma.UserUpsertWithoutApprovalsInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutApprovalsInput, Prisma.UserUpdateWithoutApprovalsInput>, Prisma.UserUncheckedUpdateWithoutApprovalsInput>
+}
+
+export type UserCreateNestedOneWithoutMembershipsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMembershipsInput, Prisma.UserUncheckedCreateWithoutMembershipsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMembershipsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutMembershipsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMembershipsInput, Prisma.UserUncheckedCreateWithoutMembershipsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMembershipsInput
+  upsert?: Prisma.UserUpsertWithoutMembershipsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutMembershipsInput, Prisma.UserUpdateWithoutMembershipsInput>, Prisma.UserUncheckedUpdateWithoutMembershipsInput>
 }
 
 export type UserCreateWithoutOrganizationInput = {
@@ -1009,6 +1155,11 @@ export type UserCreateWithoutOrganizationInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1026,6 +1177,8 @@ export type UserCreateWithoutOrganizationInput = {
   grants?: Prisma.GrantCreateNestedManyWithoutBeneficiaryInput
   vendors?: Prisma.VendorCreateNestedManyWithoutUserInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOrganizationInput = {
@@ -1044,6 +1197,11 @@ export type UserUncheckedCreateWithoutOrganizationInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1061,6 +1219,8 @@ export type UserUncheckedCreateWithoutOrganizationInput = {
   grants?: Prisma.GrantUncheckedCreateNestedManyWithoutBeneficiaryInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutUserInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOrganizationInput = {
@@ -1109,6 +1269,11 @@ export type UserScalarWhereInput = {
   mfaEnabled?: Prisma.BoolFilter<"User"> | boolean
   mfaSecret?: Prisma.StringNullableFilter<"User"> | string | null
   mfaBackupCodes?: Prisma.StringNullableListFilter<"User">
+  lastLoginIp?: Prisma.StringNullableFilter<"User"> | string | null
+  lastLoginUserAgent?: Prisma.StringNullableFilter<"User"> | string | null
+  lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  trustedDevices?: Prisma.JsonNullableFilter<"User">
+  beneficiaryCode?: Prisma.StringNullableFilter<"User"> | string | null
   dateOfBirth?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   addressStreet?: Prisma.StringNullableFilter<"User"> | string | null
   addressCity?: Prisma.StringNullableFilter<"User"> | string | null
@@ -1139,6 +1304,11 @@ export type UserCreateWithoutInviteTokensInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1156,6 +1326,8 @@ export type UserCreateWithoutInviteTokensInput = {
   approvals?: Prisma.ApprovalCreateNestedManyWithoutApproverInput
   grants?: Prisma.GrantCreateNestedManyWithoutBeneficiaryInput
   vendors?: Prisma.VendorCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutInviteTokensInput = {
@@ -1175,6 +1347,11 @@ export type UserUncheckedCreateWithoutInviteTokensInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1191,6 +1368,8 @@ export type UserUncheckedCreateWithoutInviteTokensInput = {
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutApproverInput
   grants?: Prisma.GrantUncheckedCreateNestedManyWithoutBeneficiaryInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutInviteTokensInput = {
@@ -1225,6 +1404,11 @@ export type UserUpdateWithoutInviteTokensInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1242,6 +1426,8 @@ export type UserUpdateWithoutInviteTokensInput = {
   approvals?: Prisma.ApprovalUpdateManyWithoutApproverNestedInput
   grants?: Prisma.GrantUpdateManyWithoutBeneficiaryNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInviteTokensInput = {
@@ -1261,6 +1447,11 @@ export type UserUncheckedUpdateWithoutInviteTokensInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1277,6 +1468,8 @@ export type UserUncheckedUpdateWithoutInviteTokensInput = {
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutApproverNestedInput
   grants?: Prisma.GrantUncheckedUpdateManyWithoutBeneficiaryNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutGrantsInput = {
@@ -1295,6 +1488,11 @@ export type UserCreateWithoutGrantsInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1312,6 +1510,8 @@ export type UserCreateWithoutGrantsInput = {
   approvals?: Prisma.ApprovalCreateNestedManyWithoutApproverInput
   vendors?: Prisma.VendorCreateNestedManyWithoutUserInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutGrantsInput = {
@@ -1331,6 +1531,11 @@ export type UserUncheckedCreateWithoutGrantsInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1347,6 +1552,8 @@ export type UserUncheckedCreateWithoutGrantsInput = {
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutApproverInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutUserInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutGrantsInput = {
@@ -1381,6 +1588,11 @@ export type UserUpdateWithoutGrantsInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1398,6 +1610,8 @@ export type UserUpdateWithoutGrantsInput = {
   approvals?: Prisma.ApprovalUpdateManyWithoutApproverNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutUserNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGrantsInput = {
@@ -1417,6 +1631,11 @@ export type UserUncheckedUpdateWithoutGrantsInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1433,6 +1652,8 @@ export type UserUncheckedUpdateWithoutGrantsInput = {
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutApproverNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutUserNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutExpenseRequestsInput = {
@@ -1451,6 +1672,11 @@ export type UserCreateWithoutExpenseRequestsInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1468,6 +1694,8 @@ export type UserCreateWithoutExpenseRequestsInput = {
   grants?: Prisma.GrantCreateNestedManyWithoutBeneficiaryInput
   vendors?: Prisma.VendorCreateNestedManyWithoutUserInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutExpenseRequestsInput = {
@@ -1487,6 +1715,11 @@ export type UserUncheckedCreateWithoutExpenseRequestsInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1503,6 +1736,8 @@ export type UserUncheckedCreateWithoutExpenseRequestsInput = {
   grants?: Prisma.GrantUncheckedCreateNestedManyWithoutBeneficiaryInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutUserInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutExpenseRequestsInput = {
@@ -1537,6 +1772,11 @@ export type UserUpdateWithoutExpenseRequestsInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1554,6 +1794,8 @@ export type UserUpdateWithoutExpenseRequestsInput = {
   grants?: Prisma.GrantUpdateManyWithoutBeneficiaryNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutUserNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutExpenseRequestsInput = {
@@ -1573,6 +1815,11 @@ export type UserUncheckedUpdateWithoutExpenseRequestsInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1589,6 +1836,8 @@ export type UserUncheckedUpdateWithoutExpenseRequestsInput = {
   grants?: Prisma.GrantUncheckedUpdateManyWithoutBeneficiaryNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutUserNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutVendorsInput = {
@@ -1607,6 +1856,11 @@ export type UserCreateWithoutVendorsInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1624,6 +1878,8 @@ export type UserCreateWithoutVendorsInput = {
   approvals?: Prisma.ApprovalCreateNestedManyWithoutApproverInput
   grants?: Prisma.GrantCreateNestedManyWithoutBeneficiaryInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutVendorsInput = {
@@ -1643,6 +1899,11 @@ export type UserUncheckedCreateWithoutVendorsInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1659,6 +1920,8 @@ export type UserUncheckedCreateWithoutVendorsInput = {
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutApproverInput
   grants?: Prisma.GrantUncheckedCreateNestedManyWithoutBeneficiaryInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutVendorsInput = {
@@ -1693,6 +1956,11 @@ export type UserUpdateWithoutVendorsInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1710,6 +1978,8 @@ export type UserUpdateWithoutVendorsInput = {
   approvals?: Prisma.ApprovalUpdateManyWithoutApproverNestedInput
   grants?: Prisma.GrantUpdateManyWithoutBeneficiaryNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVendorsInput = {
@@ -1729,6 +1999,11 @@ export type UserUncheckedUpdateWithoutVendorsInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1745,6 +2020,192 @@ export type UserUncheckedUpdateWithoutVendorsInput = {
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutApproverNestedInput
   grants?: Prisma.GrantUncheckedUpdateManyWithoutBeneficiaryNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutCardholderEligibilityInput = {
+  id?: string
+  email: string
+  firstName: string
+  lastName: string
+  phone?: string | null
+  passwordHash?: string | null
+  avatarUrl?: string | null
+  role: $Enums.UserRole
+  isActive?: boolean
+  emailVerified?: boolean
+  emailVerifyToken?: string | null
+  emailVerifyExpiry?: Date | string | null
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
+  dateOfBirth?: Date | string | null
+  addressStreet?: string | null
+  addressCity?: string | null
+  addressState?: string | null
+  addressZip?: string | null
+  ssnLast4?: string | null
+  benefitPrograms?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  emergencyContactName?: string | null
+  emergencyContactPhone?: string | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
+  expenseRequests?: Prisma.ExpenseRequestCreateNestedManyWithoutRequestedByInput
+  approvals?: Prisma.ApprovalCreateNestedManyWithoutApproverInput
+  grants?: Prisma.GrantCreateNestedManyWithoutBeneficiaryInput
+  vendors?: Prisma.VendorCreateNestedManyWithoutUserInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutCardholderEligibilityInput = {
+  id?: string
+  email: string
+  firstName: string
+  lastName: string
+  phone?: string | null
+  passwordHash?: string | null
+  avatarUrl?: string | null
+  role: $Enums.UserRole
+  organizationId: string
+  isActive?: boolean
+  emailVerified?: boolean
+  emailVerifyToken?: string | null
+  emailVerifyExpiry?: Date | string | null
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
+  dateOfBirth?: Date | string | null
+  addressStreet?: string | null
+  addressCity?: string | null
+  addressState?: string | null
+  addressZip?: string | null
+  ssnLast4?: string | null
+  benefitPrograms?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  emergencyContactName?: string | null
+  emergencyContactPhone?: string | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  expenseRequests?: Prisma.ExpenseRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutApproverInput
+  grants?: Prisma.GrantUncheckedCreateNestedManyWithoutBeneficiaryInput
+  vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutUserInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutCardholderEligibilityInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCardholderEligibilityInput, Prisma.UserUncheckedCreateWithoutCardholderEligibilityInput>
+}
+
+export type UserUpsertWithoutCardholderEligibilityInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCardholderEligibilityInput, Prisma.UserUncheckedUpdateWithoutCardholderEligibilityInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCardholderEligibilityInput, Prisma.UserUncheckedCreateWithoutCardholderEligibilityInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCardholderEligibilityInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCardholderEligibilityInput, Prisma.UserUncheckedUpdateWithoutCardholderEligibilityInput>
+}
+
+export type UserUpdateWithoutCardholderEligibilityInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressZip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  benefitPrograms?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
+  expenseRequests?: Prisma.ExpenseRequestUpdateManyWithoutRequestedByNestedInput
+  approvals?: Prisma.ApprovalUpdateManyWithoutApproverNestedInput
+  grants?: Prisma.GrantUpdateManyWithoutBeneficiaryNestedInput
+  vendors?: Prisma.VendorUpdateManyWithoutUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCardholderEligibilityInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressZip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  benefitPrograms?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expenseRequests?: Prisma.ExpenseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutApproverNestedInput
+  grants?: Prisma.GrantUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  vendors?: Prisma.VendorUncheckedUpdateManyWithoutUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutApprovalsInput = {
@@ -1763,6 +2224,11 @@ export type UserCreateWithoutApprovalsInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1780,6 +2246,8 @@ export type UserCreateWithoutApprovalsInput = {
   grants?: Prisma.GrantCreateNestedManyWithoutBeneficiaryInput
   vendors?: Prisma.VendorCreateNestedManyWithoutUserInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutApprovalsInput = {
@@ -1799,6 +2267,11 @@ export type UserUncheckedCreateWithoutApprovalsInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1815,6 +2288,8 @@ export type UserUncheckedCreateWithoutApprovalsInput = {
   grants?: Prisma.GrantUncheckedCreateNestedManyWithoutBeneficiaryInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutUserInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutApprovalsInput = {
@@ -1849,6 +2324,11 @@ export type UserUpdateWithoutApprovalsInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1866,6 +2346,8 @@ export type UserUpdateWithoutApprovalsInput = {
   grants?: Prisma.GrantUpdateManyWithoutBeneficiaryNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutUserNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovalsInput = {
@@ -1885,6 +2367,11 @@ export type UserUncheckedUpdateWithoutApprovalsInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1901,6 +2388,192 @@ export type UserUncheckedUpdateWithoutApprovalsInput = {
   grants?: Prisma.GrantUncheckedUpdateManyWithoutBeneficiaryNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutUserNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutMembershipsInput = {
+  id?: string
+  email: string
+  firstName: string
+  lastName: string
+  phone?: string | null
+  passwordHash?: string | null
+  avatarUrl?: string | null
+  role: $Enums.UserRole
+  isActive?: boolean
+  emailVerified?: boolean
+  emailVerifyToken?: string | null
+  emailVerifyExpiry?: Date | string | null
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
+  dateOfBirth?: Date | string | null
+  addressStreet?: string | null
+  addressCity?: string | null
+  addressState?: string | null
+  addressZip?: string | null
+  ssnLast4?: string | null
+  benefitPrograms?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  emergencyContactName?: string | null
+  emergencyContactPhone?: string | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
+  expenseRequests?: Prisma.ExpenseRequestCreateNestedManyWithoutRequestedByInput
+  approvals?: Prisma.ApprovalCreateNestedManyWithoutApproverInput
+  grants?: Prisma.GrantCreateNestedManyWithoutBeneficiaryInput
+  vendors?: Prisma.VendorCreateNestedManyWithoutUserInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
+}
+
+export type UserUncheckedCreateWithoutMembershipsInput = {
+  id?: string
+  email: string
+  firstName: string
+  lastName: string
+  phone?: string | null
+  passwordHash?: string | null
+  avatarUrl?: string | null
+  role: $Enums.UserRole
+  organizationId: string
+  isActive?: boolean
+  emailVerified?: boolean
+  emailVerifyToken?: string | null
+  emailVerifyExpiry?: Date | string | null
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
+  dateOfBirth?: Date | string | null
+  addressStreet?: string | null
+  addressCity?: string | null
+  addressState?: string | null
+  addressZip?: string | null
+  ssnLast4?: string | null
+  benefitPrograms?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  emergencyContactName?: string | null
+  emergencyContactPhone?: string | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  expenseRequests?: Prisma.ExpenseRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutApproverInput
+  grants?: Prisma.GrantUncheckedCreateNestedManyWithoutBeneficiaryInput
+  vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutUserInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
+}
+
+export type UserCreateOrConnectWithoutMembershipsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutMembershipsInput, Prisma.UserUncheckedCreateWithoutMembershipsInput>
+}
+
+export type UserUpsertWithoutMembershipsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutMembershipsInput, Prisma.UserUncheckedUpdateWithoutMembershipsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutMembershipsInput, Prisma.UserUncheckedCreateWithoutMembershipsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutMembershipsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutMembershipsInput, Prisma.UserUncheckedUpdateWithoutMembershipsInput>
+}
+
+export type UserUpdateWithoutMembershipsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressZip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  benefitPrograms?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
+  expenseRequests?: Prisma.ExpenseRequestUpdateManyWithoutRequestedByNestedInput
+  approvals?: Prisma.ApprovalUpdateManyWithoutApproverNestedInput
+  grants?: Prisma.GrantUpdateManyWithoutBeneficiaryNestedInput
+  vendors?: Prisma.VendorUpdateManyWithoutUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
+}
+
+export type UserUncheckedUpdateWithoutMembershipsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressZip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  benefitPrograms?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expenseRequests?: Prisma.ExpenseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutApproverNestedInput
+  grants?: Prisma.GrantUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  vendors?: Prisma.VendorUncheckedUpdateManyWithoutUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
 }
 
 export type UserCreateManyOrganizationInput = {
@@ -1919,6 +2592,11 @@ export type UserCreateManyOrganizationInput = {
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
   addressCity?: string | null
@@ -1949,6 +2627,11 @@ export type UserUpdateWithoutOrganizationInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1966,6 +2649,8 @@ export type UserUpdateWithoutOrganizationInput = {
   grants?: Prisma.GrantUpdateManyWithoutBeneficiaryNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutUserNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrganizationInput = {
@@ -1984,6 +2669,11 @@ export type UserUncheckedUpdateWithoutOrganizationInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2001,6 +2691,8 @@ export type UserUncheckedUpdateWithoutOrganizationInput = {
   grants?: Prisma.GrantUncheckedUpdateManyWithoutBeneficiaryNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutUserNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutOrganizationInput = {
@@ -2019,6 +2711,11 @@ export type UserUncheckedUpdateManyWithoutOrganizationInput = {
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2044,6 +2741,7 @@ export type UserCountOutputType = {
   grants: number
   vendors: number
   inviteTokens: number
+  memberships: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2052,6 +2750,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   grants?: boolean | UserCountOutputTypeCountGrantsArgs
   vendors?: boolean | UserCountOutputTypeCountVendorsArgs
   inviteTokens?: boolean | UserCountOutputTypeCountInviteTokensArgs
+  memberships?: boolean | UserCountOutputTypeCountMembershipsArgs
 }
 
 /**
@@ -2099,6 +2798,13 @@ export type UserCountOutputTypeCountInviteTokensArgs<ExtArgs extends runtime.Typ
   where?: Prisma.InviteTokenWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountMembershipsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrganizationMembershipWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2117,6 +2823,11 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   mfaEnabled?: boolean
   mfaSecret?: boolean
   mfaBackupCodes?: boolean
+  lastLoginIp?: boolean
+  lastLoginUserAgent?: boolean
+  lastLoginAt?: boolean
+  trustedDevices?: boolean
+  beneficiaryCode?: boolean
   dateOfBirth?: boolean
   addressStreet?: boolean
   addressCity?: boolean
@@ -2135,6 +2846,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   grants?: boolean | Prisma.User$grantsArgs<ExtArgs>
   vendors?: boolean | Prisma.User$vendorsArgs<ExtArgs>
   inviteTokens?: boolean | Prisma.User$inviteTokensArgs<ExtArgs>
+  cardholderEligibility?: boolean | Prisma.User$cardholderEligibilityArgs<ExtArgs>
+  memberships?: boolean | Prisma.User$membershipsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2155,6 +2868,11 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   mfaEnabled?: boolean
   mfaSecret?: boolean
   mfaBackupCodes?: boolean
+  lastLoginIp?: boolean
+  lastLoginUserAgent?: boolean
+  lastLoginAt?: boolean
+  trustedDevices?: boolean
+  beneficiaryCode?: boolean
   dateOfBirth?: boolean
   addressStreet?: boolean
   addressCity?: boolean
@@ -2187,6 +2905,11 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   mfaEnabled?: boolean
   mfaSecret?: boolean
   mfaBackupCodes?: boolean
+  lastLoginIp?: boolean
+  lastLoginUserAgent?: boolean
+  lastLoginAt?: boolean
+  trustedDevices?: boolean
+  beneficiaryCode?: boolean
   dateOfBirth?: boolean
   addressStreet?: boolean
   addressCity?: boolean
@@ -2219,6 +2942,11 @@ export type UserSelectScalar = {
   mfaEnabled?: boolean
   mfaSecret?: boolean
   mfaBackupCodes?: boolean
+  lastLoginIp?: boolean
+  lastLoginUserAgent?: boolean
+  lastLoginAt?: boolean
+  trustedDevices?: boolean
+  beneficiaryCode?: boolean
   dateOfBirth?: boolean
   addressStreet?: boolean
   addressCity?: boolean
@@ -2233,7 +2961,7 @@ export type UserSelectScalar = {
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "firstName" | "lastName" | "phone" | "passwordHash" | "avatarUrl" | "role" | "organizationId" | "isActive" | "emailVerified" | "emailVerifyToken" | "emailVerifyExpiry" | "mfaEnabled" | "mfaSecret" | "mfaBackupCodes" | "dateOfBirth" | "addressStreet" | "addressCity" | "addressState" | "addressZip" | "ssnLast4" | "benefitPrograms" | "emergencyContactName" | "emergencyContactPhone" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "firstName" | "lastName" | "phone" | "passwordHash" | "avatarUrl" | "role" | "organizationId" | "isActive" | "emailVerified" | "emailVerifyToken" | "emailVerifyExpiry" | "mfaEnabled" | "mfaSecret" | "mfaBackupCodes" | "lastLoginIp" | "lastLoginUserAgent" | "lastLoginAt" | "trustedDevices" | "beneficiaryCode" | "dateOfBirth" | "addressStreet" | "addressCity" | "addressState" | "addressZip" | "ssnLast4" | "benefitPrograms" | "emergencyContactName" | "emergencyContactPhone" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   expenseRequests?: boolean | Prisma.User$expenseRequestsArgs<ExtArgs>
@@ -2241,6 +2969,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   grants?: boolean | Prisma.User$grantsArgs<ExtArgs>
   vendors?: boolean | Prisma.User$vendorsArgs<ExtArgs>
   inviteTokens?: boolean | Prisma.User$inviteTokensArgs<ExtArgs>
+  cardholderEligibility?: boolean | Prisma.User$cardholderEligibilityArgs<ExtArgs>
+  memberships?: boolean | Prisma.User$membershipsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2259,6 +2989,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     grants: Prisma.$GrantPayload<ExtArgs>[]
     vendors: Prisma.$VendorPayload<ExtArgs>[]
     inviteTokens: Prisma.$InviteTokenPayload<ExtArgs>[]
+    cardholderEligibility: Prisma.$CardholderEligibilityPayload<ExtArgs> | null
+    memberships: Prisma.$OrganizationMembershipPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2277,6 +3009,11 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     mfaEnabled: boolean
     mfaSecret: string | null
     mfaBackupCodes: string[]
+    lastLoginIp: string | null
+    lastLoginUserAgent: string | null
+    lastLoginAt: Date | null
+    trustedDevices: runtime.JsonValue | null
+    beneficiaryCode: string | null
     dateOfBirth: Date | null
     addressStreet: string | null
     addressCity: string | null
@@ -2689,6 +3426,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   grants<T extends Prisma.User$grantsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$grantsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GrantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   vendors<T extends Prisma.User$vendorsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$vendorsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VendorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   inviteTokens<T extends Prisma.User$inviteTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$inviteTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  cardholderEligibility<T extends Prisma.User$cardholderEligibilityArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$cardholderEligibilityArgs<ExtArgs>>): Prisma.Prisma__CardholderEligibilityClient<runtime.Types.Result.GetResult<Prisma.$CardholderEligibilityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  memberships<T extends Prisma.User$membershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$membershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrganizationMembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2734,6 +3473,11 @@ export interface UserFieldRefs {
   readonly mfaEnabled: Prisma.FieldRef<"User", 'Boolean'>
   readonly mfaSecret: Prisma.FieldRef<"User", 'String'>
   readonly mfaBackupCodes: Prisma.FieldRef<"User", 'String[]'>
+  readonly lastLoginIp: Prisma.FieldRef<"User", 'String'>
+  readonly lastLoginUserAgent: Prisma.FieldRef<"User", 'String'>
+  readonly lastLoginAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly trustedDevices: Prisma.FieldRef<"User", 'Json'>
+  readonly beneficiaryCode: Prisma.FieldRef<"User", 'String'>
   readonly dateOfBirth: Prisma.FieldRef<"User", 'DateTime'>
   readonly addressStreet: Prisma.FieldRef<"User", 'String'>
   readonly addressCity: Prisma.FieldRef<"User", 'String'>
@@ -3264,6 +4008,49 @@ export type User$inviteTokensArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.InviteTokenScalarFieldEnum | Prisma.InviteTokenScalarFieldEnum[]
+}
+
+/**
+ * User.cardholderEligibility
+ */
+export type User$cardholderEligibilityArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CardholderEligibility
+   */
+  select?: Prisma.CardholderEligibilitySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CardholderEligibility
+   */
+  omit?: Prisma.CardholderEligibilityOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CardholderEligibilityInclude<ExtArgs> | null
+  where?: Prisma.CardholderEligibilityWhereInput
+}
+
+/**
+ * User.memberships
+ */
+export type User$membershipsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OrganizationMembership
+   */
+  select?: Prisma.OrganizationMembershipSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OrganizationMembership
+   */
+  omit?: Prisma.OrganizationMembershipOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrganizationMembershipInclude<ExtArgs> | null
+  where?: Prisma.OrganizationMembershipWhereInput
+  orderBy?: Prisma.OrganizationMembershipOrderByWithRelationInput | Prisma.OrganizationMembershipOrderByWithRelationInput[]
+  cursor?: Prisma.OrganizationMembershipWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrganizationMembershipScalarFieldEnum | Prisma.OrganizationMembershipScalarFieldEnum[]
 }
 
 /**

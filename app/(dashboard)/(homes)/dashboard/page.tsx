@@ -2,6 +2,7 @@
 
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import PageDateFilter from "@/components/shared/page-date-filter";
 import { useEffect, useState } from "react";
 import BalanceStatistic from "./components/balance-statistic";
 import EarningCategories from "./components/earning-categories";
@@ -53,6 +54,9 @@ const FinancePage = () => {
     const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
     useEffect(() => {
         Promise.all([
@@ -85,7 +89,17 @@ const FinancePage = () => {
 
     return (
         <>
-            <DashboardBreadcrumb title="Dashboard" text="Admin Overview" />
+            <div className="flex items-center justify-between">
+                <DashboardBreadcrumb title="Dashboard" text="Admin Overview" />
+                <PageDateFilter
+                    selectedMonth={selectedMonth}
+                    selectedYear={selectedYear}
+                    onChange={(month, year) => {
+                        setSelectedMonth(month);
+                        setSelectedYear(year);
+                    }}
+                />
+            </div>
 
             {error && (
                 <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
@@ -102,13 +116,13 @@ const FinancePage = () => {
                     <div className="col-span-12 xl:col-span-8">
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                             <div className="col-span-12">
-                                <BalanceStatistic expenses={expenses} />
+                                <BalanceStatistic expenses={expenses} selectedMonth={selectedMonth} selectedYear={selectedYear} />
                             </div>
                             <div className="col-span-12 md:col-span-6">
                                 <EarningCategories grants={grants} />
                             </div>
                             <div className="col-span-12 md:col-span-6">
-                                <ExpenseStatisticsCard expenses={expenses} />
+                                <ExpenseStatisticsCard expenses={expenses} selectedMonth={selectedMonth} selectedYear={selectedYear} />
                             </div>
                             <div className="col-span-12 md:col-span-6">
                                 <PaymentHistory expenses={expenses} />
@@ -122,7 +136,7 @@ const FinancePage = () => {
                     <div className="col-span-12 xl:col-span-4">
                         <div className="flex flex-col gap-6">
                             <QuickTransfer grants={grants} />
-                            <InvestmentCard grants={grants} expenses={expenses} />
+                            <InvestmentCard grants={grants} expenses={expenses} selectedMonth={selectedMonth} selectedYear={selectedYear} />
                         </div>
                     </div>
                 </div>

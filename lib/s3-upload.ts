@@ -10,6 +10,19 @@ const s3Client = new S3Client({
   },
 });
 
+/**
+ * Sanitize a filename to prevent path traversal and injection in S3 keys.
+ * Strips directory separators, null bytes, and non-alphanumeric characters
+ * except dots, hyphens, and underscores.
+ */
+function sanitizeFilename(filename: string): string {
+  return filename
+    .replace(/\0/g, "")                   // strip null bytes
+    .replace(/[/\\]/g, "")                // strip path separators
+    .replace(/\.\./g, "")                 // strip parent directory references
+    .replace(/[^a-zA-Z0-9._-]/g, "_");   // replace unsafe chars
+}
+
 export async function uploadToS3(
   file: Buffer,
   filename: string,
@@ -21,15 +34,18 @@ export async function uploadToS3(
       throw new Error("AWS_S3_BUCKET environment variable not set");
     }
 
-    // Generate unique key
-    const uniqueFilename = `${folder}/${uuidv4()}-${filename}`;
+    // Sanitize filename and generate unique key
+    const safeFilename = sanitizeFilename(filename);
+    const uniqueFilename = `${folder}/${uuidv4()}-${safeFilename}`;
 
     const command = new PutObjectCommand({
       Bucket: bucket,
       Key: uniqueFilename,
       Body: file,
-      ContentType: `image/${filename.split(".").pop()}`,
-      ACL: "public-read", // Make publicly readable
+      ContentType: `image/${safeFilename.split(".").pop()}`,
+      // NOTE: Avatars use public-read. For sensitive documents, use private ACL
+      // and generate pre-signed URLs for access.
+      ACL: "public-read",
     });
 
     await s3Client.send(command);
@@ -67,16 +83,20 @@ export async function uploadDocumentToS3(
       throw new Error("AWS_S3_BUCKET environment variable not set");
     }
 
-    // Generate unique key for document
-    const ext = originalFilename.split(".").pop() || "pdf";
-    const uniqueFilename = `documents/${uuidv4()}-${entityId}-${Date.now()}.${ext}`;
+    // Generate unique key for document with sanitized extension
+    const rawExt = originalFilename.split(".").pop() || "pdf";
+    const ext = sanitizeFilename(rawExt);
+    const uniqueFilename = `documents/${uuidv4()}-${sanitizeFilename(entityId)}-${Date.now()}.${ext}`;
 
     const command = new PutObjectCommand({
       Bucket: bucket,
       Key: uniqueFilename,
       Body: file,
       ContentType: fileType,
-      ACL: "public-read",
+      // Documents contain sensitive financial/PII data — use private ACL
+      // Access should be granted via pre-signed URLs with short TTL
+      ACL: "private",
+      ServerSideEncryption: "AES256",
     });
 
     await s3Client.send(command);

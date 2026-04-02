@@ -52,8 +52,9 @@ export async function PATCH(request: Request) {
     const { notificationId } = body;
 
     if (notificationId) {
-      await prisma.notification.update({
-        where: { id: notificationId },
+      // Verify the notification belongs to the current user (prevent IDOR)
+      await prisma.notification.updateMany({
+        where: { id: notificationId, userId: session.user.id },
         data: { read: true },
       });
     } else {

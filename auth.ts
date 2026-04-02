@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
@@ -18,6 +19,7 @@ declare module "next-auth" {
       avatarUrl: string | null;
       role: UserRole;
       organizationId: string;
+      organizationName: string;
       image?: string | null;
       mfaPending?: boolean;
     };
@@ -38,6 +40,7 @@ declare module "@auth/core/jwt" {
     avatarUrl: string | null;
     role: UserRole;
     organizationId: string;
+    organizationName: string;
     mfaPending?: boolean;
   }
 }
@@ -61,6 +64,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         try {
           const { email, password } = await loginSchema.parseAsync(credentials);
 
+          // Rate limit login attempts per email
+          const rateLimitKey = `login:${email}`;
+          const limitResult = rateLimit(rateLimitKey, RATE_LIMIT_CONFIGS.loginAttempt);
+          if (!limitResult.allowed) {
+            throw new Error("Too many login attempts. Please try again in 15 minutes.");
+          }
+
           const user = await prisma.user.findUnique({
             where: { email },
             select: {
@@ -79,11 +89,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
 
           if (!user || !user.passwordHash || !user.isActive) {
+            // Log failed login - user not found or inactive
+            prisma.auditLog.create({
+              data: {
+                userId: "anonymous",
+                organizationId: user?.organizationId || "unknown",
+                action: "login_failed",
+                entityType: "auth",
+                entityId: email,
+                newValue: { reason: !user ? "User not found" : !user.passwordHash ? "No password set" : "Account inactive" },
+              },
+            }).catch(() => {});
             return null;
           }
 
           const isValid = await bcrypt.compare(password, user.passwordHash);
           if (!isValid) {
+            // Log failed login - wrong password
+            prisma.auditLog.create({
+              data: {
+                userId: user.id,
+                organizationId: user.organizationId,
+                action: "login_failed",
+                entityType: "auth",
+                entityId: email,
+                newValue: { reason: "Invalid password" },
+              },
+            }).catch(() => {});
             return null;
           }
 
@@ -91,6 +123,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (!user.emailVerified) {
             throw new Error("EMAIL_NOT_VERIFIED");
           }
+
+          // Record login device fingerprint (fire-and-forget)
+          prisma.user.update({
+            where: { id: user.id },
+            data: {
+              lastLoginAt: new Date(),
+              // IP and userAgent will be set by middleware on next request
+            },
+          }).catch(() => {});
 
           return {
             id: user.id,
@@ -130,6 +171,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = user.role;
         token.organizationId = user.organizationId;
         token.mfaPending = user.mfaPending ?? false;
+
+        // Fetch organization name for session display
+        const org = await prisma.organization.findUnique({
+          where: { id: user.organizationId },
+          select: { name: true },
+        });
+        token.organizationName = org?.name || "";
       }
       // Allow clearing mfaPending via session update after MFA verification
       if (trigger === "update" && updateSession?.mfaPending === false) {
@@ -144,6 +192,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session.user.avatarUrl = token.avatarUrl;
       session.user.role = token.role;
       session.user.organizationId = token.organizationId;
+      session.user.organizationName = token.organizationName || "";
       session.user.mfaPending = token.mfaPending ?? false;
       return session;
     },

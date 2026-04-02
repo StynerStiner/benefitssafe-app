@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { validateRecipientEmail, buildSecureLink } from "@/lib/email-security";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
@@ -27,6 +28,16 @@ export async function POST(request: Request) {
     }
 
     const { email } = parsed.data;
+
+    // Validate email against disposable domains and injection attacks
+    const emailCheck = validateRecipientEmail(email);
+    if (!emailCheck.valid) {
+      return NextResponse.json(
+        { error: emailCheck.reason || "Invalid email address" },
+        { status: 400 },
+      );
+    }
+
     const normalizedEmail = email.toLowerCase().trim();
 
     // Rate limit: 3 per hour per email
@@ -95,7 +106,7 @@ export async function POST(request: Request) {
 
     // TODO: Send verification email via Postmark/SendGrid
     // For now, log the verification URL to console for development
-    const verificationUrl = `https://benefits-safe-app.vercel.app/api/auth/verify-email?token=${emailVerifyToken}`;
+    const verificationUrl = buildSecureLink(`/api/auth/verify-email?token=${emailVerifyToken}`);
     console.log("-----------------------------------------------------------");
     console.log("RESEND - EMAIL VERIFICATION LINK (dev only):");
     console.log(verificationUrl);

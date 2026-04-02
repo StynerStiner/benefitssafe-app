@@ -55,6 +55,7 @@ export type GrantMinAggregateOutputType = {
   restrictions: string | null
   grantDocumentText: string | null
   grantDocumentName: string | null
+  purpose: string | null
   archivedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -77,6 +78,7 @@ export type GrantMaxAggregateOutputType = {
   restrictions: string | null
   grantDocumentText: string | null
   grantDocumentName: string | null
+  purpose: string | null
   archivedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -100,6 +102,11 @@ export type GrantCountAggregateOutputType = {
   benefitFlags: number
   grantDocumentText: number
   grantDocumentName: number
+  purpose: number
+  funderRequirements: number
+  approvedMCCs: number
+  blockedMCCs: number
+  whitelistedVendorIds: number
   archivedAt: number
   createdAt: number
   updatedAt: number
@@ -136,6 +143,7 @@ export type GrantMinAggregateInputType = {
   restrictions?: true
   grantDocumentText?: true
   grantDocumentName?: true
+  purpose?: true
   archivedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -158,6 +166,7 @@ export type GrantMaxAggregateInputType = {
   restrictions?: true
   grantDocumentText?: true
   grantDocumentName?: true
+  purpose?: true
   archivedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -181,6 +190,11 @@ export type GrantCountAggregateInputType = {
   benefitFlags?: true
   grantDocumentText?: true
   grantDocumentName?: true
+  purpose?: true
+  funderRequirements?: true
+  approvedMCCs?: true
+  blockedMCCs?: true
+  whitelistedVendorIds?: true
   archivedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -291,6 +305,11 @@ export type GrantGroupByOutputType = {
   benefitFlags: runtime.JsonValue | null
   grantDocumentText: string | null
   grantDocumentName: string | null
+  purpose: string | null
+  funderRequirements: runtime.JsonValue | null
+  approvedMCCs: runtime.JsonValue | null
+  blockedMCCs: runtime.JsonValue | null
+  whitelistedVendorIds: runtime.JsonValue | null
   archivedAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -301,7 +320,7 @@ export type GrantGroupByOutputType = {
   _max: GrantMaxAggregateOutputType | null
 }
 
-type GetGrantGroupByPayload<T extends GrantGroupByArgs> = Prisma.PrismaPromise<
+export type GetGrantGroupByPayload<T extends GrantGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<GrantGroupByOutputType, T['by']> &
       {
@@ -337,6 +356,11 @@ export type GrantWhereInput = {
   benefitFlags?: Prisma.JsonNullableFilter<"Grant">
   grantDocumentText?: Prisma.StringNullableFilter<"Grant"> | string | null
   grantDocumentName?: Prisma.StringNullableFilter<"Grant"> | string | null
+  purpose?: Prisma.StringNullableFilter<"Grant"> | string | null
+  funderRequirements?: Prisma.JsonNullableFilter<"Grant">
+  approvedMCCs?: Prisma.JsonNullableFilter<"Grant">
+  blockedMCCs?: Prisma.JsonNullableFilter<"Grant">
+  whitelistedVendorIds?: Prisma.JsonNullableFilter<"Grant">
   archivedAt?: Prisma.DateTimeNullableFilter<"Grant"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Grant"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Grant"> | Date | string
@@ -364,6 +388,11 @@ export type GrantOrderByWithRelationInput = {
   benefitFlags?: Prisma.SortOrderInput | Prisma.SortOrder
   grantDocumentText?: Prisma.SortOrderInput | Prisma.SortOrder
   grantDocumentName?: Prisma.SortOrderInput | Prisma.SortOrder
+  purpose?: Prisma.SortOrderInput | Prisma.SortOrder
+  funderRequirements?: Prisma.SortOrderInput | Prisma.SortOrder
+  approvedMCCs?: Prisma.SortOrderInput | Prisma.SortOrder
+  blockedMCCs?: Prisma.SortOrderInput | Prisma.SortOrder
+  whitelistedVendorIds?: Prisma.SortOrderInput | Prisma.SortOrder
   archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -394,6 +423,11 @@ export type GrantWhereUniqueInput = Prisma.AtLeast<{
   benefitFlags?: Prisma.JsonNullableFilter<"Grant">
   grantDocumentText?: Prisma.StringNullableFilter<"Grant"> | string | null
   grantDocumentName?: Prisma.StringNullableFilter<"Grant"> | string | null
+  purpose?: Prisma.StringNullableFilter<"Grant"> | string | null
+  funderRequirements?: Prisma.JsonNullableFilter<"Grant">
+  approvedMCCs?: Prisma.JsonNullableFilter<"Grant">
+  blockedMCCs?: Prisma.JsonNullableFilter<"Grant">
+  whitelistedVendorIds?: Prisma.JsonNullableFilter<"Grant">
   archivedAt?: Prisma.DateTimeNullableFilter<"Grant"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Grant"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Grant"> | Date | string
@@ -421,6 +455,11 @@ export type GrantOrderByWithAggregationInput = {
   benefitFlags?: Prisma.SortOrderInput | Prisma.SortOrder
   grantDocumentText?: Prisma.SortOrderInput | Prisma.SortOrder
   grantDocumentName?: Prisma.SortOrderInput | Prisma.SortOrder
+  purpose?: Prisma.SortOrderInput | Prisma.SortOrder
+  funderRequirements?: Prisma.SortOrderInput | Prisma.SortOrder
+  approvedMCCs?: Prisma.SortOrderInput | Prisma.SortOrder
+  blockedMCCs?: Prisma.SortOrderInput | Prisma.SortOrder
+  whitelistedVendorIds?: Prisma.SortOrderInput | Prisma.SortOrder
   archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -452,6 +491,11 @@ export type GrantScalarWhereWithAggregatesInput = {
   benefitFlags?: Prisma.JsonNullableWithAggregatesFilter<"Grant">
   grantDocumentText?: Prisma.StringNullableWithAggregatesFilter<"Grant"> | string | null
   grantDocumentName?: Prisma.StringNullableWithAggregatesFilter<"Grant"> | string | null
+  purpose?: Prisma.StringNullableWithAggregatesFilter<"Grant"> | string | null
+  funderRequirements?: Prisma.JsonNullableWithAggregatesFilter<"Grant">
+  approvedMCCs?: Prisma.JsonNullableWithAggregatesFilter<"Grant">
+  blockedMCCs?: Prisma.JsonNullableWithAggregatesFilter<"Grant">
+  whitelistedVendorIds?: Prisma.JsonNullableWithAggregatesFilter<"Grant">
   archivedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Grant"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Grant"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Grant"> | Date | string
@@ -473,6 +517,11 @@ export type GrantCreateInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: string | null
   grantDocumentName?: string | null
+  purpose?: string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -500,6 +549,11 @@ export type GrantUncheckedCreateInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: string | null
   grantDocumentName?: string | null
+  purpose?: string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -523,6 +577,11 @@ export type GrantUpdateInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantDocumentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -550,6 +609,11 @@ export type GrantUncheckedUpdateInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantDocumentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -575,6 +639,11 @@ export type GrantCreateManyInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: string | null
   grantDocumentName?: string | null
+  purpose?: string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -596,6 +665,11 @@ export type GrantUpdateManyMutationInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantDocumentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -619,6 +693,11 @@ export type GrantUncheckedUpdateManyInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantDocumentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -652,6 +731,11 @@ export type GrantCountOrderByAggregateInput = {
   benefitFlags?: Prisma.SortOrder
   grantDocumentText?: Prisma.SortOrder
   grantDocumentName?: Prisma.SortOrder
+  purpose?: Prisma.SortOrder
+  funderRequirements?: Prisma.SortOrder
+  approvedMCCs?: Prisma.SortOrder
+  blockedMCCs?: Prisma.SortOrder
+  whitelistedVendorIds?: Prisma.SortOrder
   archivedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -680,6 +764,7 @@ export type GrantMaxOrderByAggregateInput = {
   restrictions?: Prisma.SortOrder
   grantDocumentText?: Prisma.SortOrder
   grantDocumentName?: Prisma.SortOrder
+  purpose?: Prisma.SortOrder
   archivedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -702,6 +787,7 @@ export type GrantMinOrderByAggregateInput = {
   restrictions?: Prisma.SortOrder
   grantDocumentText?: Prisma.SortOrder
   grantDocumentName?: Prisma.SortOrder
+  purpose?: Prisma.SortOrder
   archivedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -858,6 +944,11 @@ export type GrantCreateWithoutOrganizationInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: string | null
   grantDocumentName?: string | null
+  purpose?: string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -883,6 +974,11 @@ export type GrantUncheckedCreateWithoutOrganizationInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: string | null
   grantDocumentName?: string | null
+  purpose?: string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -937,6 +1033,11 @@ export type GrantScalarWhereInput = {
   benefitFlags?: Prisma.JsonNullableFilter<"Grant">
   grantDocumentText?: Prisma.StringNullableFilter<"Grant"> | string | null
   grantDocumentName?: Prisma.StringNullableFilter<"Grant"> | string | null
+  purpose?: Prisma.StringNullableFilter<"Grant"> | string | null
+  funderRequirements?: Prisma.JsonNullableFilter<"Grant">
+  approvedMCCs?: Prisma.JsonNullableFilter<"Grant">
+  blockedMCCs?: Prisma.JsonNullableFilter<"Grant">
+  whitelistedVendorIds?: Prisma.JsonNullableFilter<"Grant">
   archivedAt?: Prisma.DateTimeNullableFilter<"Grant"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Grant"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Grant"> | Date | string
@@ -958,6 +1059,11 @@ export type GrantCreateWithoutBeneficiaryInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: string | null
   grantDocumentName?: string | null
+  purpose?: string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -983,6 +1089,11 @@ export type GrantUncheckedCreateWithoutBeneficiaryInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: string | null
   grantDocumentName?: string | null
+  purpose?: string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1032,6 +1143,11 @@ export type GrantCreateWithoutCategoriesInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: string | null
   grantDocumentName?: string | null
+  purpose?: string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1058,6 +1174,11 @@ export type GrantUncheckedCreateWithoutCategoriesInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: string | null
   grantDocumentName?: string | null
+  purpose?: string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1096,6 +1217,11 @@ export type GrantUpdateWithoutCategoriesInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantDocumentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1122,6 +1248,11 @@ export type GrantUncheckedUpdateWithoutCategoriesInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantDocumentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1144,6 +1275,11 @@ export type GrantCreateWithoutExpensesInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: string | null
   grantDocumentName?: string | null
+  purpose?: string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1170,6 +1306,11 @@ export type GrantUncheckedCreateWithoutExpensesInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: string | null
   grantDocumentName?: string | null
+  purpose?: string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1208,6 +1349,11 @@ export type GrantUpdateWithoutExpensesInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantDocumentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1234,6 +1380,11 @@ export type GrantUncheckedUpdateWithoutExpensesInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantDocumentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1257,6 +1408,11 @@ export type GrantCreateManyOrganizationInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: string | null
   grantDocumentName?: string | null
+  purpose?: string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1278,6 +1434,11 @@ export type GrantUpdateWithoutOrganizationInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantDocumentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1303,6 +1464,11 @@ export type GrantUncheckedUpdateWithoutOrganizationInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantDocumentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1327,6 +1493,11 @@ export type GrantUncheckedUpdateManyWithoutOrganizationInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantDocumentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1349,6 +1520,11 @@ export type GrantCreateManyBeneficiaryInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: string | null
   grantDocumentName?: string | null
+  purpose?: string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1370,6 +1546,11 @@ export type GrantUpdateWithoutBeneficiaryInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantDocumentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1395,6 +1576,11 @@ export type GrantUncheckedUpdateWithoutBeneficiaryInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantDocumentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1419,6 +1605,11 @@ export type GrantUncheckedUpdateManyWithoutBeneficiaryInput = {
   benefitFlags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   grantDocumentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantDocumentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  funderRequirements?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  approvedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  blockedMCCs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whitelistedVendorIds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1482,6 +1673,11 @@ export type GrantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   benefitFlags?: boolean
   grantDocumentText?: boolean
   grantDocumentName?: boolean
+  purpose?: boolean
+  funderRequirements?: boolean
+  approvedMCCs?: boolean
+  blockedMCCs?: boolean
+  whitelistedVendorIds?: boolean
   archivedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1510,6 +1706,11 @@ export type GrantSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   benefitFlags?: boolean
   grantDocumentText?: boolean
   grantDocumentName?: boolean
+  purpose?: boolean
+  funderRequirements?: boolean
+  approvedMCCs?: boolean
+  blockedMCCs?: boolean
+  whitelistedVendorIds?: boolean
   archivedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1535,6 +1736,11 @@ export type GrantSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   benefitFlags?: boolean
   grantDocumentText?: boolean
   grantDocumentName?: boolean
+  purpose?: boolean
+  funderRequirements?: boolean
+  approvedMCCs?: boolean
+  blockedMCCs?: boolean
+  whitelistedVendorIds?: boolean
   archivedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1560,12 +1766,17 @@ export type GrantSelectScalar = {
   benefitFlags?: boolean
   grantDocumentText?: boolean
   grantDocumentName?: boolean
+  purpose?: boolean
+  funderRequirements?: boolean
+  approvedMCCs?: boolean
+  blockedMCCs?: boolean
+  whitelistedVendorIds?: boolean
   archivedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type GrantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "grantIssuerName" | "grantIssuerContact" | "beneficiaryId" | "name" | "description" | "totalAmount" | "spentAmount" | "remainingAmount" | "status" | "startDate" | "endDate" | "restrictions" | "benefitFlags" | "grantDocumentText" | "grantDocumentName" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["grant"]>
+export type GrantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "grantIssuerName" | "grantIssuerContact" | "beneficiaryId" | "name" | "description" | "totalAmount" | "spentAmount" | "remainingAmount" | "status" | "startDate" | "endDate" | "restrictions" | "benefitFlags" | "grantDocumentText" | "grantDocumentName" | "purpose" | "funderRequirements" | "approvedMCCs" | "blockedMCCs" | "whitelistedVendorIds" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["grant"]>
 export type GrantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   beneficiary?: boolean | Prisma.Grant$beneficiaryArgs<ExtArgs>
@@ -1608,6 +1819,11 @@ export type $GrantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     benefitFlags: runtime.JsonValue | null
     grantDocumentText: string | null
     grantDocumentName: string | null
+    purpose: string | null
+    funderRequirements: runtime.JsonValue | null
+    approvedMCCs: runtime.JsonValue | null
+    blockedMCCs: runtime.JsonValue | null
+    whitelistedVendorIds: runtime.JsonValue | null
     archivedAt: Date | null
     createdAt: Date
     updatedAt: Date
@@ -2055,6 +2271,11 @@ export interface GrantFieldRefs {
   readonly benefitFlags: Prisma.FieldRef<"Grant", 'Json'>
   readonly grantDocumentText: Prisma.FieldRef<"Grant", 'String'>
   readonly grantDocumentName: Prisma.FieldRef<"Grant", 'String'>
+  readonly purpose: Prisma.FieldRef<"Grant", 'String'>
+  readonly funderRequirements: Prisma.FieldRef<"Grant", 'Json'>
+  readonly approvedMCCs: Prisma.FieldRef<"Grant", 'Json'>
+  readonly blockedMCCs: Prisma.FieldRef<"Grant", 'Json'>
+  readonly whitelistedVendorIds: Prisma.FieldRef<"Grant", 'Json'>
   readonly archivedAt: Prisma.FieldRef<"Grant", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Grant", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Grant", 'DateTime'>

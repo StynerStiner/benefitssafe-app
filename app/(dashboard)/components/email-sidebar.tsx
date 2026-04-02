@@ -4,10 +4,30 @@ import { Button } from "@/components/ui/button";
 import { useEmailSidebar } from '@/contexts/email-sidebar-context';
 import { cn } from "@/lib/utils";
 import { CirclePlus, Mail, Pencil, Send, Star, Trash2, TriangleAlert } from 'lucide-react';
-import Link from "next/link";
 
-const EmailSidebar = () => {
+interface Notification {
+    id: string;
+    read: boolean;
+    type: string;
+}
+
+interface EmailSidebarProps {
+    notifications?: Notification[];
+    filter?: string;
+    onFilterChange?: (filter: string) => void;
+    onMarkAllRead?: () => void;
+}
+
+const EmailSidebar = ({ notifications = [], filter = "all", onFilterChange, onMarkAllRead }: EmailSidebarProps) => {
     const { isSidebarOpen } = useEmailSidebar();
+
+    const totalCount = notifications.length;
+    const unreadCount = notifications.filter((n) => !n.read).length;
+    const readCount = notifications.filter((n) => n.read).length;
+
+    const handleFilter = (f: string) => {
+        if (onFilterChange) onFilterChange(f);
+    };
 
     return (
         <div className={cn(
@@ -15,15 +35,15 @@ const EmailSidebar = () => {
             isSidebarOpen ? "block" : "hidden xl:block"
         )}>
             <div className="card-body p-0">
-                <Button className={cn(`w-full rounded-lg flex items-center justify-start gap-2 h-11`)}>
+                <Button className={cn(`w-full rounded-lg flex items-center justify-start gap-2 h-11`)} onClick={onMarkAllRead}>
                     <CirclePlus className="w-4.5" />
                     Mark All Read
                 </Button>
 
                 <div className="mt-4">
                     <ul>
-                        <li className="item-active mb-1.5">
-                            <Link href="/notifications" className="hover:bg-blue-50 dark:hover:bg-slate-700 group hover:text-neutral-900 px-2.5 py-2.5 w-full rounded-lg text-neutral-600 dark:text-white flex items-center">
+                        <li className={filter === "all" ? "item-active mb-1.5" : "mb-1.5"}>
+                            <button onClick={() => handleFilter("all")} className="hover:bg-blue-50 dark:hover:bg-slate-700 group hover:text-neutral-900 px-2.5 py-2.5 w-full rounded-lg text-neutral-600 dark:text-white flex items-center">
                                 <span className="flex items-center gap-2.5 justify-between w-full">
                                     <span className="flex items-center gap-2.5">
                                         <span className="icon text-2xl line-height-1 flex group-hover:text-primary dark:group-hover:text-white">
@@ -31,12 +51,12 @@ const EmailSidebar = () => {
                                         </span>
                                         <span className="font-semibold">All Notifications</span>
                                     </span>
-                                    <span className="font-medium">24</span>
+                                    <span className="font-medium">{totalCount}</span>
                                 </span>
-                            </Link>
+                            </button>
                         </li>
-                        <li className="mb-1.5">
-                            <a href="/notifications" className="hover:bg-blue-50 dark:hover:bg-slate-700 group hover:text-neutral-900 px-2.5 py-2.5 w-full rounded-lg text-neutral-600 dark:text-white flex items-center">
+                        <li className={filter === "important" ? "item-active mb-1.5" : "mb-1.5"}>
+                            <button onClick={() => handleFilter("important")} className="hover:bg-blue-50 dark:hover:bg-slate-700 group hover:text-neutral-900 px-2.5 py-2.5 w-full rounded-lg text-neutral-600 dark:text-white flex items-center">
                                 <span className="flex items-center gap-2.5 justify-between w-full">
                                     <span className="flex items-center gap-2.5">
                                         <span className="icon text-2xl line-height-1 flex group-hover:text-primary dark:group-hover:text-white">
@@ -44,12 +64,12 @@ const EmailSidebar = () => {
                                         </span>
                                         <span className="font-semibold">Important</span>
                                     </span>
-                                    <span className="font-medium">8</span>
+                                    <span className="font-medium">{notifications.filter((n) => n.type === "compliance_alert").length}</span>
                                 </span>
-                            </a>
+                            </button>
                         </li>
-                        <li className="mb-1.5">
-                            <Link href="/notifications" className="hover:bg-blue-50 dark:hover:bg-slate-700 group hover:text-neutral-900 px-2.5 py-2.5 w-full rounded-lg text-neutral-600 dark:text-white flex items-center">
+                        <li className={filter === "read" ? "item-active mb-1.5" : "mb-1.5"}>
+                            <button onClick={() => handleFilter("read")} className="hover:bg-blue-50 dark:hover:bg-slate-700 group hover:text-neutral-900 px-2.5 py-2.5 w-full rounded-lg text-neutral-600 dark:text-white flex items-center">
                                 <span className="flex items-center gap-2.5 justify-between w-full">
                                     <span className="flex items-center gap-2.5">
                                         <span className="icon text-2xl line-height-1 flex group-hover:text-primary dark:group-hover:text-white">
@@ -57,12 +77,12 @@ const EmailSidebar = () => {
                                         </span>
                                         <span className="font-semibold">Read</span>
                                     </span>
-                                    <span className="font-medium">156</span>
+                                    <span className="font-medium">{readCount}</span>
                                 </span>
-                            </Link>
+                            </button>
                         </li>
-                        <li className="mb-1.5">
-                            <Link href="/notifications" className="hover:bg-blue-50 dark:hover:bg-slate-700 group hover:text-neutral-900 px-2.5 py-2.5 w-full rounded-lg text-neutral-600 dark:text-white flex items-center">
+                        <li className={filter === "unread" ? "item-active mb-1.5" : "mb-1.5"}>
+                            <button onClick={() => handleFilter("unread")} className="hover:bg-blue-50 dark:hover:bg-slate-700 group hover:text-neutral-900 px-2.5 py-2.5 w-full rounded-lg text-neutral-600 dark:text-white flex items-center">
                                 <span className="flex items-center gap-2.5 justify-between w-full">
                                     <span className="flex items-center gap-2.5">
                                         <span className="icon text-2xl line-height-1 flex group-hover:text-primary dark:group-hover:text-white">
@@ -70,12 +90,12 @@ const EmailSidebar = () => {
                                         </span>
                                         <span className="font-semibold">Unread</span>
                                     </span>
-                                    <span className="font-medium">12</span>
+                                    <span className="font-medium">{unreadCount}</span>
                                 </span>
-                            </Link>
+                            </button>
                         </li>
-                        <li className="mb-1.5">
-                            <Link href="/notifications" className="hover:bg-blue-50 dark:hover:bg-slate-700 group hover:text-neutral-900 px-2.5 py-2.5 w-full rounded-lg text-neutral-600 dark:text-white flex items-center">
+                        <li className={filter === "archived" ? "item-active mb-1.5" : "mb-1.5"}>
+                            <button onClick={() => handleFilter("archived")} className="hover:bg-blue-50 dark:hover:bg-slate-700 group hover:text-neutral-900 px-2.5 py-2.5 w-full rounded-lg text-neutral-600 dark:text-white flex items-center">
                                 <span className="flex items-center gap-2.5 justify-between w-full">
                                     <span className="flex items-center gap-2.5">
                                         <span className="icon text-2xl line-height-1 flex group-hover:text-primary dark:group-hover:text-white">
@@ -83,12 +103,12 @@ const EmailSidebar = () => {
                                         </span>
                                         <span className="font-semibold">Archived</span>
                                     </span>
-                                    <span className="font-medium">43</span>
+                                    <span className="font-medium">0</span>
                                 </span>
-                            </Link>
+                            </button>
                         </li>
                         <li>
-                            <Link href="/notifications" className="hover:bg-blue-50 dark:hover:bg-slate-700 group hover:text-neutral-900 px-2.5 py-2.5 w-full rounded-lg text-neutral-600 dark:text-white flex items-center">
+                            <button onClick={() => handleFilter("trash")} className="hover:bg-blue-50 dark:hover:bg-slate-700 group hover:text-neutral-900 px-2.5 py-2.5 w-full rounded-lg text-neutral-600 dark:text-white flex items-center">
                                 <span className="flex items-center gap-2.5 justify-between w-full">
                                     <span className="flex items-center gap-2.5">
                                         <span className="icon text-2xl line-height-1 flex group-hover:text-primary dark:group-hover:text-white">
@@ -96,9 +116,9 @@ const EmailSidebar = () => {
                                         </span>
                                         <span className="font-semibold">Trash</span>
                                     </span>
-                                    <span className="font-medium">5</span>
+                                    <span className="font-medium">0</span>
                                 </span>
-                            </Link>
+                            </button>
                         </li>
                     </ul>
                     <div className="mt-6">

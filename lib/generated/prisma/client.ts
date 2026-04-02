@@ -87,6 +87,11 @@ export type Subscription = Prisma.SubscriptionModel
  */
 export type VirtualCard = Prisma.VirtualCardModel
 /**
+ * Model CardholderEligibility
+ * 
+ */
+export type CardholderEligibility = Prisma.CardholderEligibilityModel
+/**
  * Model Transaction
  * 
  */
@@ -146,3 +151,13 @@ export type PromoCode = Prisma.PromoCodeModel
  * 
  */
 export type PromoRedemption = Prisma.PromoRedemptionModel
+/**
+ * Model CalendarEvent
+ * 
+ */
+export type CalendarEvent = Prisma.CalendarEventModel
+/**
+ * Model OrganizationMembership
+ * 
+ */
+export type OrganizationMembership = Prisma.OrganizationMembershipModel

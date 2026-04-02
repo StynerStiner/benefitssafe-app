@@ -1,3 +1,4 @@
+import OrgBadge from '../shared/org-badge';
 import LanguageSelect from '../shared/language-select';
 import MessageDropdown from '../shared/message-dropdown';
 import { ModeToggle } from '../shared/mode-toggle';
@@ -14,6 +15,7 @@ const Header = () => {
                 <SearchBox />
             </div>
             <div className="flex items-center gap-3">
+                <OrgBadge />
                 <ModeToggle />
                 <LanguageSelect />
                 <MessageDropdown />

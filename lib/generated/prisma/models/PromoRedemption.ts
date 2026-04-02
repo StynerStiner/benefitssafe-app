@@ -158,7 +158,7 @@ export type PromoRedemptionGroupByOutputType = {
   _max: PromoRedemptionMaxAggregateOutputType | null
 }
 
-type GetPromoRedemptionGroupByPayload<T extends PromoRedemptionGroupByArgs> = Prisma.PrismaPromise<
+export type GetPromoRedemptionGroupByPayload<T extends PromoRedemptionGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<PromoRedemptionGroupByOutputType, T['by']> &
       {

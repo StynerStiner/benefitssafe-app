@@ -10,8 +10,12 @@ import { stripe } from "@/lib/stripe";
 
 export async function GET(request: Request) {
   try {
+    // Verify cron secret via Authorization header (not query params, to avoid logging)
+    // Supports both: ?secret=X (legacy) and Authorization: Bearer X
+    const authHeader = request.headers.get("authorization");
     const { searchParams } = new URL(request.url);
-    const secret = searchParams.get("secret");
+    const querySecret = searchParams.get("secret");
+    const secret = authHeader?.replace("Bearer ", "") || querySecret;
 
     if (!secret || secret !== process.env.CRON_SECRET) {
       return NextResponse.json(
@@ -129,7 +133,7 @@ export async function GET(request: Request) {
               type: "reconciliation_discrepancy",
               title: "Monthly reconciliation: Discrepancies found",
               message: `Found ${reconciliationResults.discrepancies.length} discrepancies in ${lastMonth.toLocaleDateString()}. Total difference: $${Math.abs(reconciliationResults.summary.difference).toFixed(2)}. Review details in audit logs.`,
-              actionUrl: `/audit-trail?filter=reconciliation&date=${lastMonth.toISOString().split("T")[0]}`,
+              href: `/audit-trail?filter=reconciliation&date=${lastMonth.toISOString().split("T")[0]}`,
             },
           });
         }
@@ -157,10 +161,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Monthly reconciliation cron job failed:", error);
     return NextResponse.json(
-      {
-        error: "Reconciliation job failed",
-        message: error instanceof Error ? error.message : String(error),
-      },
+      { error: "Reconciliation job failed" },
       { status: 500 },
     );
   }

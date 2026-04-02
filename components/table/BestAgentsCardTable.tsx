@@ -6,17 +6,12 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import UserGridImage1 from "@/public/assets/images/user-grid/user-grid-img1.png";
-import UserGridImage2 from "@/public/assets/images/user-grid/user-grid-img2.png";
-import UserGridImage3 from "@/public/assets/images/user-grid/user-grid-img3.png";
-import UserGridImage4 from "@/public/assets/images/user-grid/user-grid-img4.png";
-import UserGridImage5 from "@/public/assets/images/user-grid/user-grid-img5.png";
-import Image, { StaticImageData } from "next/image";
+import UserAvatar from "@/components/shared/user-avatar";
 
-interface BestAgentsCardTableTypeItem {
+export interface BestAgentsCardTableTypeItem {
     customer: {
         name: string;
-        image: string | StaticImageData;
+        avatarUrl?: string | null;
     };
     amounts: string;
     startDate: string;
@@ -24,61 +19,15 @@ interface BestAgentsCardTableTypeItem {
     duration: string;
 }
 
-const BestAgentsCardTableContents: BestAgentsCardTableTypeItem[] = [
-    {
-        customer: {
-            name: "Sarah Mitchell",
-            image: UserGridImage1,
-        },
-        amounts: "380",
-        startDate: "2 hrs ago",
-        endDate: "Admin",
-        duration: "Test Nonprofit",
-    },
-    {
-        customer: {
-            name: "James Carter",
-            image: UserGridImage2,
-        },
-        amounts: "65",
-        startDate: "5 hrs ago",
-        endDate: "Beneficiary",
-        duration: "Test Nonprofit",
-    },
-    {
-        customer: {
-            name: "Jordan Lee",
-            image: UserGridImage3,
-        },
-        amounts: "280",
-        startDate: "1 day ago",
-        endDate: "Staff",
-        duration: "Test Nonprofit",
-    },
-    {
-        customer: {
-            name: "Maria Rodriguez",
-            image: UserGridImage4,
-        },
-        amounts: "380",
-        startDate: "3 days ago",
-        endDate: "CPA",
-        duration: "Test Nonprofit",
-    },
-    {
-        customer: {
-            name: "Pat Williams",
-            image: UserGridImage5,
-        },
-        amounts: "150",
-        startDate: "1 week ago",
-        endDate: "Platform Admin",
-        duration: "BenefitsSafe",
-    }
-];
+interface BestAgentsCardTableProps {
+    data?: BestAgentsCardTableTypeItem[];
+}
+
+const BestAgentsCardTableContents: BestAgentsCardTableTypeItem[] = [];
 
 
-const BestAgentsCardTable = () => {
+const BestAgentsCardTable = ({ data }: BestAgentsCardTableProps) => {
+    const tableData = data || [];
     return (
         <Table className="table-auto border-spacing-0 border-separate">
             <TableHeader>
@@ -101,20 +50,27 @@ const BestAgentsCardTable = () => {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {BestAgentsCardTableContents.map((item, index) => {
-                    const isLast = index === BestAgentsCardTableContents.length - 1;
+                {tableData.length === 0 && (
+                    <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-neutral-500 dark:text-neutral-400">
+                            No user activity recorded yet
+                        </TableCell>
+                    </TableRow>
+                )}
+                {tableData.map((item, index) => {
+                    const isLast = index === tableData.length - 1;
 
                     return (
                         <TableRow key={index}>
                             {/* Customer */}
                             <TableCell className={` ${isLast ? "border-0" : "border-b border-neutral-200"} dark:border-neutral-600 py-3.5 px-6 text-start`}>
                                 <div className="flex items-center">
-                                    <Image
-                                        src={item.customer.image}
-                                        alt={item.customer.name}
-                                        width={40}
-                                        height={40}
-                                        className="w-10 h-10 rounded-md me-3"
+                                    <UserAvatar
+                                        firstName={item.customer.name.split(" ")[0]}
+                                        lastName={item.customer.name.split(" ").slice(1).join(" ")}
+                                        avatarUrl={item.customer.avatarUrl}
+                                        size={40}
+                                        className="me-3"
                                     />
                                     <div>
                                         <h6 className="text-base mb-0 font-medium">{item.customer.name}</h6>

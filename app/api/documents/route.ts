@@ -18,7 +18,15 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(params.get("limit") || "25", 10) || 25, 100);
     const offset = Math.max(parseInt(params.get("offset") || "0", 10) || 0, 0);
 
-    const where = { organizationId: session.user.organizationId };
+    const where: Record<string, unknown> = { organizationId: session.user.organizationId };
+
+    // Beneficiaries can only see their own documents
+    if (session.user.role === "beneficiary") {
+      where.OR = [
+        { entityType: "beneficiary", entityId: session.user.id },
+        { uploadedById: session.user.id },
+      ];
+    }
 
     const [documents, total] = await Promise.all([
       prisma.document.findMany({
@@ -109,7 +117,7 @@ export async function POST(request: Request) {
     return NextResponse.json(document, { status: 201 });
   } catch (error) {
     console.error("POST /api/documents error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Internal server error";
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    // Never expose internal error messages to the client (A05)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

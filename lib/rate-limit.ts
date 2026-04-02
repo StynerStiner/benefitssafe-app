@@ -162,4 +162,9 @@ export const RATE_LIMIT_CONFIGS = {
     maxRequests: 10,
     windowMs: 60000,
   },
+  // Login attempts: 5 per 15 minutes per email (account lockout)
+  loginAttempt: {
+    maxRequests: 5,
+    windowMs: 15 * 60 * 1000,
+  },
 };

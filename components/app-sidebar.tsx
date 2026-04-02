@@ -10,6 +10,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import LogoSidebar from "./shared/logo-sidebar";
+import OrgPicker from "@/components/org-picker";
 import { getNavForRole, data } from "./sidebar-data";
 import { useSession } from "next-auth/react";
 
@@ -22,6 +23,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar collapsible="icon" {...props} className="hidden xl:block">
       <SidebarHeader>
         <LogoSidebar />
+        <OrgPicker />
       </SidebarHeader>
 
       <SidebarContent className="scrollbar-thin scrollbar-invisible hover:scrollbar-visible">

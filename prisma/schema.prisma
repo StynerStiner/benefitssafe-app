@@ -22,8 +22,9 @@ model Organization {
   address         String?
   phone           String?
   website         String?
-  stripeAccountId String?  // Stripe Connect account
-  plaidItemId     String?  // Plaid connection
+  stripeAccountId            String?  // Stripe Connect account
+  stripeFinancialAccountId   String?  // Stripe Treasury Financial Account
+  plaidItemId                String?  // Plaid connection
   logoUrl         String?  // Organization logo image URL
 
   // Trial & Subscription
@@ -40,6 +41,9 @@ model Organization {
   cards            VirtualCard[]
   policies         DisbursementPolicy[]
   promoRedemptions PromoRedemption[]
+  cardholderEligibilities CardholderEligibility[]
+  calendarEvents   CalendarEvent[]
+  memberships      OrganizationMembership[]
 }
 
 model User {
@@ -65,6 +69,15 @@ model User {
   mfaSecret      String?  // Encrypted TOTP secret
   mfaBackupCodes String[] // Recovery codes (hashed)
 
+  // Session security
+  lastLoginIp       String?
+  lastLoginUserAgent String?
+  lastLoginAt       DateTime?
+  trustedDevices    Json?     // Array of { ip, userAgent, firstSeen, lastSeen }
+
+  // Beneficiary ID — human-readable, collision-safe across orgs (e.g., BS-0001-00042)
+  beneficiaryCode       String?   @unique
+
   // Beneficiary profile fields
   dateOfBirth           DateTime?
   addressStreet         String?
@@ -85,6 +98,8 @@ model User {
   grants          Grant[]    @relation("GrantBeneficiary")
   vendors         Vendor[]
   inviteTokens    InviteToken[]
+  cardholderEligibility CardholderEligibility?
+  memberships     OrganizationMembership[]
 
   @@index([organizationId])
   @@index([email])
@@ -148,6 +163,13 @@ model Grant {
   // Grant document (optional — for AI compliance assistant context)
   grantDocumentText  String?  // Extracted text from uploaded PDF or pasted content
   grantDocumentName  String?  // Original filename of uploaded document
+
+  // MCC-level spending controls
+  purpose               String?    // What the grant funds are for
+  funderRequirements    Json?      // Legal/compliance rules from the funder
+  approvedMCCs          Json?      // JSON array of allowed MCC codes for this grant
+  blockedMCCs           Json?      // JSON array of blocked MCC codes for this grant
+  whitelistedVendorIds  Json?      // JSON array of vendor IDs allowed for this grant
 
   archivedAt         DateTime? // Soft delete
 
@@ -390,6 +412,7 @@ model VirtualCard {
   spendingCap     Decimal? @db.Decimal(10, 2)
   merchantLock    String?  // Locked to specific merchant if applicable
   cardType        String   @default("one_time") // one_time, monthly, custom
+  cardLabel       String?    // "Writing Supplies Card", "Medical Copay Card"
 
   status    CardStatus @default(ACTIVE)
   expiresAt DateTime?  // Custom expiration
@@ -411,6 +434,43 @@ enum CardStatus {
   FROZEN
   CANCELLED
   EXPIRED
+}
+
+enum EligibilityStatus {
+  ELIGIBLE
+  RESTRICTED_CALFRESH_ONLY
+  INELIGIBLE_WARRANT
+  INELIGIBLE_INCARCERATED
+  PENDING_VERIFICATION
+}
+
+model CardholderEligibility {
+  id                          String   @id @default(cuid())
+  beneficiaryId               String   @unique
+  beneficiary                 User     @relation(fields: [beneficiaryId], references: [id])
+  organizationId              String
+  organization                Organization @relation(fields: [organizationId], references: [id])
+
+  hasActiveWarrant            Boolean  @default(false)
+  isCurrentlyIncarcerated     Boolean  @default(false)
+  hasDrugTraffickingConviction Boolean @default(false)
+  probationParoleRestrictions String?
+
+  eligibilityStatus           EligibilityStatus @default(PENDING_VERIFICATION)
+
+  // OFAC sanctions screening
+  ofacScreened        Boolean  @default(false)
+  ofacMatchFound      Boolean  @default(false)
+  ofacScreenedAt      DateTime?
+  ofacMatches         Json?    // Array of match results
+
+  verifiedBy                  String?
+  verifiedAt                  DateTime?
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([beneficiaryId])
 }
 
 model Transaction {
@@ -494,6 +554,7 @@ model AuditLog {
   oldValue       Json?
   newValue       Json?
   ipAddress      String?
+  userAgent      String?
   createdAt      DateTime @default(now())
   // IMMUTABLE — no updatedAt. Audit logs are NEVER modified or deleted.
 
@@ -645,4 +706,53 @@ model PromoRedemption {
 
   @@unique([promoCodeId, organizationId]) // One code per org
   @@index([organizationId])
+}
+
+// ============================================
+// CALENDAR EVENTS
+// ============================================
+
+model CalendarEvent {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  title          String
+  description    String?
+  startDate      DateTime
+  endDate        DateTime?
+  category       String   @default("general") // grants, payments, compliance, subscriptions, general
+  color          String?  // hex color for calendar display
+  createdById    String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([startDate])
+}
+
+// ============================================
+// MULTI-TENANT MEMBERSHIPS
+// ============================================
+
+model OrganizationMembership {
+  id               String   @id @default(cuid())
+  userId           String
+  organizationId   String
+  role             String   @default("member") // matches UserRole values: nonprofit_admin, beneficiary, vendor, cpa, auditor, attorney, platform_admin, member, etc.
+  status           String   @default("active") // active, suspended, pending, revoked
+  invitedBy        String?
+  joinedAt         DateTime @default(now())
+  isDefaultOrg     Boolean  @default(false)
+  lastAccessedAt   DateTime?
+  orgSpecificTitle String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([userId])
+  @@index([organizationId])
+  @@index([userId, status])
 }

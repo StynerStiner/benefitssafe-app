@@ -19,6 +19,8 @@ export const createGrantSchema = z.object({
   endDate: z.coerce.date().optional(),
   restrictions: z.string().max(5000).optional(),
   benefitFlags: benefitFlagsSchema.optional(),
+  purpose: z.string().max(500).optional(),
+  blockedMCCs: z.array(z.string()).optional(),
 });
 
 export const updateGrantSchema = createGrantSchema.partial().extend({

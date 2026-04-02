@@ -30,8 +30,11 @@ const DocumentsPage = () => {
 
     useEffect(() => {
         fetch("/api/documents")
-            .then((r) => r.ok ? r.json() : [])
-            .then((data) => { if (Array.isArray(data)) setDocuments(data); })
+            .then((r) => r.ok ? r.json() : { documents: [] })
+            .then((data) => {
+                if (Array.isArray(data)) setDocuments(data);
+                else if (data?.documents && Array.isArray(data.documents)) setDocuments(data.documents);
+            })
             .catch(() => {})
             .finally(() => setLoading(false));
     }, []);

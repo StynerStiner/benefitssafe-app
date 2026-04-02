@@ -4,7 +4,15 @@ import CommonLink from "@/components/shared/common-link";
 import BookingTransactionHistoryTable from "@/components/table/booking-transaction-history-table";
 import { Card, CardContent } from "@/components/ui/card";
 
-const TransactionHistory = ({ grants }: { grants: unknown[] }) => {
+interface Grant {
+    id: string;
+    name: string;
+    totalAmount: string;
+    spentAmount: string;
+    status: string;
+}
+
+const TransactionHistory = ({ grants }: { grants: Grant[] }) => {
     return (
         <Card className="card h-full rounded-lg border-0 !p-0 block">
             <CardContent className="card-body p-0 h-full">
@@ -15,7 +23,7 @@ const TransactionHistory = ({ grants }: { grants: unknown[] }) => {
 
                 {/* Transactions List */}
                 <div className="">
-                    <BookingTransactionHistoryTable />
+                    <BookingTransactionHistoryTable grants={grants} />
                 </div>
             </CardContent>
         </Card>

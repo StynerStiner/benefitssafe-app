@@ -23,6 +23,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { ArrowDownLeft, ArrowUpRight, Pencil, Archive } from "lucide-react";
+import Link from "next/link";
 import EditGrantForm from "./edit-grant-form";
 
 interface Grant {
@@ -37,6 +38,8 @@ interface Grant {
     endDate: string | null;
     grantIssuerName: string;
     grantIssuerContact: string | null;
+    purpose: string | null;
+    blockedMCCs: string[] | null;
     beneficiaryId: string | null;
     beneficiary: {
         id: string;
@@ -184,7 +187,9 @@ const ProjectsStatusCard = ({ grants, onRefresh }: ProjectsStatusCardProps) => {
                                         return (
                                             <TableRow key={grant.id}>
                                                 <TableCell className={`py-4.5 px-4 border-b first:border-s last:border-e border-neutral-200 dark:border-slate-600 ${isLast ? "rounded-bl-lg" : ""}`}>
-                                                    {grant.name}
+                                                    <Link href={`/grants/${grant.id}`} className="text-primary hover:underline font-medium">
+                                                        {grant.name}
+                                                    </Link>
                                                 </TableCell>
                                                 <TableCell className={`py-4.5 px-4 border-b first:border-s last:border-e border-neutral-200 dark:border-slate-600 ${isLast ? "rounded-bl-lg" : ""}`}>
                                                     {grant.beneficiary ? `${grant.beneficiary.firstName} ${grant.beneficiary.lastName}` : "Unassigned"}

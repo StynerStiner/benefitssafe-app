@@ -20,60 +20,54 @@ interface MarketItem {
   chartBg: string;
 }
 
-const marketData: MarketItem[] = [
-  {
-    id: "writing",
-    name: "Creative Writing Fellowship",
-    initials: "CW",
-    iconBg: "bg-blue-500",
-    price: "$20,179",
-    change: "+80%",
-    changeType: "positive",
-    chartBg: "#45B369",
-  },
-  {
-    id: "digital",
-    name: "Digital Skills Training",
-    initials: "DS",
-    iconBg: "bg-green-500",
-    price: "$13,710",
-    change: "+91%",
-    changeType: "positive",
-    chartBg: "#45B369",
-  },
-  {
-    id: "housing",
-    name: "Housing Stability Support",
-    initials: "HS",
-    iconBg: "bg-teal-500",
-    price: "$41,500",
-    change: "+83%",
-    changeType: "positive",
-    chartBg: "#45B369",
-  },
-  {
-    id: "artist",
-    name: "Artist Residency Grant",
-    initials: "AR",
-    iconBg: "bg-neutral-500",
-    price: "$0",
-    change: "100%",
-    changeType: "positive",
-    chartBg: "#45B369",
-  },
-  {
-    id: "emergency",
-    name: "Emergency Relief Fund",
-    initials: "ER",
-    iconBg: "bg-yellow-500",
-    price: "$10,000",
-    change: "0%",
-    changeType: "negative",
-    chartBg: "#EF4A00",
-  },
+interface GrantData {
+  id: string;
+  name: string;
+  totalAmount: string;
+  spentAmount: string;
+  remainingAmount: string;
+}
+
+const iconBgColors = [
+  "bg-blue-500",
+  "bg-green-500",
+  "bg-teal-500",
+  "bg-neutral-500",
+  "bg-yellow-500",
+  "bg-purple-500",
+  "bg-red-500",
+  "bg-indigo-500",
 ];
 
-const MarketInfoCard = ({ ledgerEntries }: { ledgerEntries: unknown[] }) => {
+function buildMarketData(grants: GrantData[]): MarketItem[] {
+  const sorted = [...grants].sort(
+    (a, b) => parseFloat(b.totalAmount) - parseFloat(a.totalAmount)
+  );
+  return sorted.map((g, i) => {
+    const total = parseFloat(g.totalAmount);
+    const remaining = parseFloat(g.remainingAmount);
+    const pctRemaining = total > 0 ? Math.round((remaining / total) * 100) : 0;
+    const initials = g.name
+      .split(/\s+/)
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+    return {
+      id: g.id,
+      name: g.name,
+      initials,
+      iconBg: iconBgColors[i % iconBgColors.length],
+      price: remaining.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }),
+      change: `${pctRemaining}%`,
+      changeType: pctRemaining > 0 ? ("positive" as const) : ("negative" as const),
+      chartBg: pctRemaining > 0 ? "#45B369" : "#EF4A00",
+    };
+  });
+}
+
+const MarketInfoCard = ({ grants }: { grants: GrantData[] }) => {
+  const marketData = buildMarketData(grants);
   return (
     <Card className="card h-full rounded-lg border-0">
       <CardContent className="card-body p-0">

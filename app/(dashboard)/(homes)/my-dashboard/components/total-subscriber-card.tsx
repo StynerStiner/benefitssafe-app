@@ -21,7 +21,8 @@ const TotalSubscriberCard = () => {
     const fetchData = async () => {
       try {
         const res = await fetch("/api/subscriptions");
-        const subscriptions = (await res.json()) as Subscription[];
+        const json = await res.json();
+        const subscriptions: Subscription[] = Array.isArray(json) ? json : (json?.data || []);
 
         // Count active subscriptions
         const active = subscriptions.filter((s) => s.status === "ACTIVE").length;

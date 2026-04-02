@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import FormDatePicker from "@/components/shared/form-date-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -397,12 +398,11 @@ const AddSubscriptionForm = () => {
                         >
                             Renewal Date
                         </Label>
-                        <Input
-                            type="date"
+                        <FormDatePicker
                             id="renewalDate"
-                            className={inputClassName}
                             value={renewalDate}
-                            onChange={(e) => setRenewalDate(e.target.value)}
+                            onChange={setRenewalDate}
+                            placeholder="Select renewal date"
                         />
                     </div>
 

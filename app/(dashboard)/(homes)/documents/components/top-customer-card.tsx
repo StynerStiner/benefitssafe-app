@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import CommonLink from "@/components/shared/common-link";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -11,48 +12,45 @@ import {
     TableRow,
 } from "@/components/ui/table";
 
+interface Document {
+    id: string;
+    entityType: string;
+    entityId: string;
+    fileName: string;
+    fileUrl: string;
+    fileType: string;
+    uploadedById: string;
+    organizationId: string;
+    createdAt: string;
+}
 
-interface TopCustomersStatus {
-    sl: string;
-    name: string;
-    amount: string;
+const fileTypeLabels: Record<string, string> = {
+    receipt: "Receipt",
+    invoice: "Invoice",
+    contract: "Contract",
+    grant_letter: "Grant Agreement",
+    report: "Compliance Report",
+    tax_form: "Tax Form",
+    policy: "Policy Document",
 };
 
-const topCustomers: TopCustomersStatus[] = [
-    {
-        sl: "1",
-        name: "Grant Agreement",
-        amount: "5 files",
-    },
-    {
-        sl: "2",
-        name: "Invoice",
-        amount: "8 files",
-    },
-    {
-        sl: "3",
-        name: "Receipt",
-        amount: "12 files",
-    },
-    {
-        sl: "4",
-        name: "Compliance Report",
-        amount: "3 files",
-    },
-    {
-        sl: "5",
-        name: "Tax Form",
-        amount: "2 files",
-    },
-    {
-        sl: "6",
-        name: "Policy Document",
-        amount: "1 file",
-    },
-];
+const TopCustomerCard = ({ documents }: { documents: Document[] }) => {
+    const typeBreakdown = useMemo(() => {
+        const counts: Record<string, number> = {};
+        documents.forEach((d) => {
+            const type = d.fileType || "other";
+            counts[type] = (counts[type] || 0) + 1;
+        });
 
+        return Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .map(([type, count], index) => ({
+                sl: String(index + 1),
+                name: fileTypeLabels[type] || type.charAt(0).toUpperCase() + type.slice(1),
+                amount: `${count} ${count === 1 ? "file" : "files"}`,
+            }));
+    }, [documents]);
 
-const TopCustomerCard = ({ documents }: { documents: unknown[] }) => {
     return (
         <Card className="card h-full rounded-lg border-0 !p-0 block">
             <CardContent className="card-body p-0 h-full">
@@ -82,31 +80,39 @@ const TopCustomerCard = ({ documents }: { documents: unknown[] }) => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {topCustomers.map((order, index) => {
-                                    const isLast = index === topCustomers.length - 1;
-                                    return (
-                                        <TableRow key={index}>
-                                            <TableCell
-                                                className={`py-4.5 px-4 text-neutral-500 dark:text-neutral-200 font-medium first:border-s last:border-e border-b border-neutral-200 dark:border-slate-600 text-start ${isLast ? "rounded-bl-lg" : ""
-                                                    }`}
-                                            >
-                                                {order.sl}
-                                            </TableCell>
-                                            <TableCell
-                                                className={`py-4.5 px-4 text-neutral-500 dark:text-neutral-200 font-medium first:border-s last:border-e border-b border-neutral-200 dark:border-slate-600 text-center ${isLast ? "" : ""
-                                                    }`}
-                                            >
-                                                {order.name}
-                                            </TableCell>
-                                            <TableCell
-                                                className={`py-4.5 px-4 text-neutral-500 dark:text-neutral-200 font-medium first:border-s last:border-e border-b border-neutral-200 dark:border-slate-600 text-center ${isLast ? "rounded-br-lg" : ""
-                                                    }`}
-                                            >
-                                                {order.amount}
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
+                                {typeBreakdown.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={3} className="py-4.5 px-4 text-center text-neutral-500 dark:text-neutral-200 border-b border-neutral-200 dark:border-slate-600">
+                                            No documents yet
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    typeBreakdown.map((order, index) => {
+                                        const isLast = index === typeBreakdown.length - 1;
+                                        return (
+                                            <TableRow key={index}>
+                                                <TableCell
+                                                    className={`py-4.5 px-4 text-neutral-500 dark:text-neutral-200 font-medium first:border-s last:border-e border-b border-neutral-200 dark:border-slate-600 text-start ${isLast ? "rounded-bl-lg" : ""
+                                                        }`}
+                                                >
+                                                    {order.sl}
+                                                </TableCell>
+                                                <TableCell
+                                                    className={`py-4.5 px-4 text-neutral-500 dark:text-neutral-200 font-medium first:border-s last:border-e border-b border-neutral-200 dark:border-slate-600 text-center ${isLast ? "" : ""
+                                                        }`}
+                                                >
+                                                    {order.name}
+                                                </TableCell>
+                                                <TableCell
+                                                    className={`py-4.5 px-4 text-neutral-500 dark:text-neutral-200 font-medium first:border-s last:border-e border-b border-neutral-200 dark:border-slate-600 text-center ${isLast ? "rounded-br-lg" : ""
+                                                        }`}
+                                                >
+                                                    {order.amount}
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })
+                                )}
                             </TableBody>
                         </Table>
                     </div>

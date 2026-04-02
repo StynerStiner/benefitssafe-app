@@ -1,7 +1,6 @@
 "use client";
 
 import EarningStatisticsChart from '@/components/charts/earning-statistics-chart';
-import MonthYearPicker from '@/components/shared/month-year-picker';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowBigUp, ShoppingCart, SquareKanban } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -20,11 +19,8 @@ interface Beneficiary {
     _count?: { grantsAsBeneficiary?: number; expenseRequests?: number };
 }
 
-const EarningStatisticsCard = ({ beneficiaries }: { beneficiaries: Beneficiary[] }) => {
+const EarningStatisticsCard = ({ beneficiaries, selectedMonth, selectedYear }: { beneficiaries: Beneficiary[]; selectedMonth: number; selectedYear: number }) => {
     const [grants, setGrants] = useState<{ totalAmount: string; spentAmount: string; remainingAmount: string; createdAt?: string }[]>([]);
-    const now = new Date();
-    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
     useEffect(() => {
         fetch("/api/grants?limit=100")
@@ -58,16 +54,6 @@ const EarningStatisticsCard = ({ beneficiaries }: { beneficiaries: Beneficiary[]
                     <div>
                         <h6 className="mb-0 font-bold text-lg">Beneficiary Trends</h6>
                         <span className="text-sm font-medium text-neutral-600 dark:text-neutral-100">Enrollment overview</span>
-                    </div>
-                    <div className="">
-                        <MonthYearPicker
-                            selectedMonth={selectedMonth}
-                            selectedYear={selectedYear}
-                            onChange={(month, year) => {
-                                setSelectedMonth(month);
-                                setSelectedYear(year);
-                            }}
-                        />
                     </div>
                 </div>
 

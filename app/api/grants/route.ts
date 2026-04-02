@@ -117,6 +117,8 @@ export async function POST(request: Request) {
         endDate: data.endDate,
         restrictions: data.restrictions,
         benefitFlags: data.benefitFlags ?? undefined,
+        purpose: data.purpose,
+        blockedMCCs: data.blockedMCCs ?? undefined,
         status: "ACTIVE",
       },
       include: {

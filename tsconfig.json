@@ -42,6 +42,7 @@
   "exclude": [
     "node_modules",
     ".next",
-    "dist"
+    "dist",
+    "prisma.config.ts"
   ]
 }

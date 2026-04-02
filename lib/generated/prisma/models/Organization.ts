@@ -33,6 +33,7 @@ export type OrganizationMinAggregateOutputType = {
   phone: string | null
   website: string | null
   stripeAccountId: string | null
+  stripeFinancialAccountId: string | null
   plaidItemId: string | null
   logoUrl: string | null
   trialStartDate: Date | null
@@ -51,6 +52,7 @@ export type OrganizationMaxAggregateOutputType = {
   phone: string | null
   website: string | null
   stripeAccountId: string | null
+  stripeFinancialAccountId: string | null
   plaidItemId: string | null
   logoUrl: string | null
   trialStartDate: Date | null
@@ -69,6 +71,7 @@ export type OrganizationCountAggregateOutputType = {
   phone: number
   website: number
   stripeAccountId: number
+  stripeFinancialAccountId: number
   plaidItemId: number
   logoUrl: number
   trialStartDate: number
@@ -89,6 +92,7 @@ export type OrganizationMinAggregateInputType = {
   phone?: true
   website?: true
   stripeAccountId?: true
+  stripeFinancialAccountId?: true
   plaidItemId?: true
   logoUrl?: true
   trialStartDate?: true
@@ -107,6 +111,7 @@ export type OrganizationMaxAggregateInputType = {
   phone?: true
   website?: true
   stripeAccountId?: true
+  stripeFinancialAccountId?: true
   plaidItemId?: true
   logoUrl?: true
   trialStartDate?: true
@@ -125,6 +130,7 @@ export type OrganizationCountAggregateInputType = {
   phone?: true
   website?: true
   stripeAccountId?: true
+  stripeFinancialAccountId?: true
   plaidItemId?: true
   logoUrl?: true
   trialStartDate?: true
@@ -216,6 +222,7 @@ export type OrganizationGroupByOutputType = {
   phone: string | null
   website: string | null
   stripeAccountId: string | null
+  stripeFinancialAccountId: string | null
   plaidItemId: string | null
   logoUrl: string | null
   trialStartDate: Date | null
@@ -228,7 +235,7 @@ export type OrganizationGroupByOutputType = {
   _max: OrganizationMaxAggregateOutputType | null
 }
 
-type GetOrganizationGroupByPayload<T extends OrganizationGroupByArgs> = Prisma.PrismaPromise<
+export type GetOrganizationGroupByPayload<T extends OrganizationGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<OrganizationGroupByOutputType, T['by']> &
       {
@@ -255,6 +262,7 @@ export type OrganizationWhereInput = {
   phone?: Prisma.StringNullableFilter<"Organization"> | string | null
   website?: Prisma.StringNullableFilter<"Organization"> | string | null
   stripeAccountId?: Prisma.StringNullableFilter<"Organization"> | string | null
+  stripeFinancialAccountId?: Prisma.StringNullableFilter<"Organization"> | string | null
   plaidItemId?: Prisma.StringNullableFilter<"Organization"> | string | null
   logoUrl?: Prisma.StringNullableFilter<"Organization"> | string | null
   trialStartDate?: Prisma.DateTimeNullableFilter<"Organization"> | Date | string | null
@@ -268,6 +276,9 @@ export type OrganizationWhereInput = {
   cards?: Prisma.VirtualCardListRelationFilter
   policies?: Prisma.DisbursementPolicyListRelationFilter
   promoRedemptions?: Prisma.PromoRedemptionListRelationFilter
+  cardholderEligibilities?: Prisma.CardholderEligibilityListRelationFilter
+  calendarEvents?: Prisma.CalendarEventListRelationFilter
+  memberships?: Prisma.OrganizationMembershipListRelationFilter
 }
 
 export type OrganizationOrderByWithRelationInput = {
@@ -279,6 +290,7 @@ export type OrganizationOrderByWithRelationInput = {
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   website?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripeFinancialAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
   plaidItemId?: Prisma.SortOrderInput | Prisma.SortOrder
   logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   trialStartDate?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -292,6 +304,9 @@ export type OrganizationOrderByWithRelationInput = {
   cards?: Prisma.VirtualCardOrderByRelationAggregateInput
   policies?: Prisma.DisbursementPolicyOrderByRelationAggregateInput
   promoRedemptions?: Prisma.PromoRedemptionOrderByRelationAggregateInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityOrderByRelationAggregateInput
+  calendarEvents?: Prisma.CalendarEventOrderByRelationAggregateInput
+  memberships?: Prisma.OrganizationMembershipOrderByRelationAggregateInput
 }
 
 export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
@@ -306,6 +321,7 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   phone?: Prisma.StringNullableFilter<"Organization"> | string | null
   website?: Prisma.StringNullableFilter<"Organization"> | string | null
   stripeAccountId?: Prisma.StringNullableFilter<"Organization"> | string | null
+  stripeFinancialAccountId?: Prisma.StringNullableFilter<"Organization"> | string | null
   plaidItemId?: Prisma.StringNullableFilter<"Organization"> | string | null
   logoUrl?: Prisma.StringNullableFilter<"Organization"> | string | null
   trialStartDate?: Prisma.DateTimeNullableFilter<"Organization"> | Date | string | null
@@ -319,6 +335,9 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   cards?: Prisma.VirtualCardListRelationFilter
   policies?: Prisma.DisbursementPolicyListRelationFilter
   promoRedemptions?: Prisma.PromoRedemptionListRelationFilter
+  cardholderEligibilities?: Prisma.CardholderEligibilityListRelationFilter
+  calendarEvents?: Prisma.CalendarEventListRelationFilter
+  memberships?: Prisma.OrganizationMembershipListRelationFilter
 }, "id">
 
 export type OrganizationOrderByWithAggregationInput = {
@@ -330,6 +349,7 @@ export type OrganizationOrderByWithAggregationInput = {
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   website?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripeFinancialAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
   plaidItemId?: Prisma.SortOrderInput | Prisma.SortOrder
   logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   trialStartDate?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -354,6 +374,7 @@ export type OrganizationScalarWhereWithAggregatesInput = {
   phone?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   website?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   stripeAccountId?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
+  stripeFinancialAccountId?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   plaidItemId?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   logoUrl?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   trialStartDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Organization"> | Date | string | null
@@ -372,6 +393,7 @@ export type OrganizationCreateInput = {
   phone?: string | null
   website?: string | null
   stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
   plaidItemId?: string | null
   logoUrl?: string | null
   trialStartDate?: Date | string | null
@@ -385,6 +407,9 @@ export type OrganizationCreateInput = {
   cards?: Prisma.VirtualCardCreateNestedManyWithoutOrganizationInput
   policies?: Prisma.DisbursementPolicyCreateNestedManyWithoutOrganizationInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateInput = {
@@ -396,6 +421,7 @@ export type OrganizationUncheckedCreateInput = {
   phone?: string | null
   website?: string | null
   stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
   plaidItemId?: string | null
   logoUrl?: string | null
   trialStartDate?: Date | string | null
@@ -409,6 +435,9 @@ export type OrganizationUncheckedCreateInput = {
   cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutOrganizationInput
   policies?: Prisma.DisbursementPolicyUncheckedCreateNestedManyWithoutOrganizationInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUpdateInput = {
@@ -420,6 +449,7 @@ export type OrganizationUpdateInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -433,6 +463,9 @@ export type OrganizationUpdateInput = {
   cards?: Prisma.VirtualCardUpdateManyWithoutOrganizationNestedInput
   policies?: Prisma.DisbursementPolicyUpdateManyWithoutOrganizationNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateInput = {
@@ -444,6 +477,7 @@ export type OrganizationUncheckedUpdateInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -457,6 +491,9 @@ export type OrganizationUncheckedUpdateInput = {
   cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutOrganizationNestedInput
   policies?: Prisma.DisbursementPolicyUncheckedUpdateManyWithoutOrganizationNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateManyInput = {
@@ -468,6 +505,7 @@ export type OrganizationCreateManyInput = {
   phone?: string | null
   website?: string | null
   stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
   plaidItemId?: string | null
   logoUrl?: string | null
   trialStartDate?: Date | string | null
@@ -486,6 +524,7 @@ export type OrganizationUpdateManyMutationInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -504,6 +543,7 @@ export type OrganizationUncheckedUpdateManyInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -522,6 +562,7 @@ export type OrganizationCountOrderByAggregateInput = {
   phone?: Prisma.SortOrder
   website?: Prisma.SortOrder
   stripeAccountId?: Prisma.SortOrder
+  stripeFinancialAccountId?: Prisma.SortOrder
   plaidItemId?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
   trialStartDate?: Prisma.SortOrder
@@ -540,6 +581,7 @@ export type OrganizationMaxOrderByAggregateInput = {
   phone?: Prisma.SortOrder
   website?: Prisma.SortOrder
   stripeAccountId?: Prisma.SortOrder
+  stripeFinancialAccountId?: Prisma.SortOrder
   plaidItemId?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
   trialStartDate?: Prisma.SortOrder
@@ -558,6 +600,7 @@ export type OrganizationMinOrderByAggregateInput = {
   phone?: Prisma.SortOrder
   website?: Prisma.SortOrder
   stripeAccountId?: Prisma.SortOrder
+  stripeFinancialAccountId?: Prisma.SortOrder
   plaidItemId?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
   trialStartDate?: Prisma.SortOrder
@@ -648,6 +691,20 @@ export type OrganizationUpdateOneRequiredWithoutCardsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutCardsInput, Prisma.OrganizationUpdateWithoutCardsInput>, Prisma.OrganizationUncheckedUpdateWithoutCardsInput>
 }
 
+export type OrganizationCreateNestedOneWithoutCardholderEligibilitiesInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutCardholderEligibilitiesInput, Prisma.OrganizationUncheckedCreateWithoutCardholderEligibilitiesInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutCardholderEligibilitiesInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutCardholderEligibilitiesNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutCardholderEligibilitiesInput, Prisma.OrganizationUncheckedCreateWithoutCardholderEligibilitiesInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutCardholderEligibilitiesInput
+  upsert?: Prisma.OrganizationUpsertWithoutCardholderEligibilitiesInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutCardholderEligibilitiesInput, Prisma.OrganizationUpdateWithoutCardholderEligibilitiesInput>, Prisma.OrganizationUncheckedUpdateWithoutCardholderEligibilitiesInput>
+}
+
 export type OrganizationCreateNestedOneWithoutPoliciesInput = {
   create?: Prisma.XOR<Prisma.OrganizationCreateWithoutPoliciesInput, Prisma.OrganizationUncheckedCreateWithoutPoliciesInput>
   connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutPoliciesInput
@@ -676,6 +733,34 @@ export type OrganizationUpdateOneRequiredWithoutPromoRedemptionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutPromoRedemptionsInput, Prisma.OrganizationUpdateWithoutPromoRedemptionsInput>, Prisma.OrganizationUncheckedUpdateWithoutPromoRedemptionsInput>
 }
 
+export type OrganizationCreateNestedOneWithoutCalendarEventsInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutCalendarEventsInput, Prisma.OrganizationUncheckedCreateWithoutCalendarEventsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutCalendarEventsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutCalendarEventsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutCalendarEventsInput, Prisma.OrganizationUncheckedCreateWithoutCalendarEventsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutCalendarEventsInput
+  upsert?: Prisma.OrganizationUpsertWithoutCalendarEventsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutCalendarEventsInput, Prisma.OrganizationUpdateWithoutCalendarEventsInput>, Prisma.OrganizationUncheckedUpdateWithoutCalendarEventsInput>
+}
+
+export type OrganizationCreateNestedOneWithoutMembershipsInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutMembershipsInput, Prisma.OrganizationUncheckedCreateWithoutMembershipsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutMembershipsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutMembershipsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutMembershipsInput, Prisma.OrganizationUncheckedCreateWithoutMembershipsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutMembershipsInput
+  upsert?: Prisma.OrganizationUpsertWithoutMembershipsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutMembershipsInput, Prisma.OrganizationUpdateWithoutMembershipsInput>, Prisma.OrganizationUncheckedUpdateWithoutMembershipsInput>
+}
+
 export type OrganizationCreateWithoutUsersInput = {
   id?: string
   name: string
@@ -685,6 +770,7 @@ export type OrganizationCreateWithoutUsersInput = {
   phone?: string | null
   website?: string | null
   stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
   plaidItemId?: string | null
   logoUrl?: string | null
   trialStartDate?: Date | string | null
@@ -697,6 +783,9 @@ export type OrganizationCreateWithoutUsersInput = {
   cards?: Prisma.VirtualCardCreateNestedManyWithoutOrganizationInput
   policies?: Prisma.DisbursementPolicyCreateNestedManyWithoutOrganizationInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutUsersInput = {
@@ -708,6 +797,7 @@ export type OrganizationUncheckedCreateWithoutUsersInput = {
   phone?: string | null
   website?: string | null
   stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
   plaidItemId?: string | null
   logoUrl?: string | null
   trialStartDate?: Date | string | null
@@ -720,6 +810,9 @@ export type OrganizationUncheckedCreateWithoutUsersInput = {
   cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutOrganizationInput
   policies?: Prisma.DisbursementPolicyUncheckedCreateNestedManyWithoutOrganizationInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutUsersInput = {
@@ -747,6 +840,7 @@ export type OrganizationUpdateWithoutUsersInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -759,6 +853,9 @@ export type OrganizationUpdateWithoutUsersInput = {
   cards?: Prisma.VirtualCardUpdateManyWithoutOrganizationNestedInput
   policies?: Prisma.DisbursementPolicyUpdateManyWithoutOrganizationNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutUsersInput = {
@@ -770,6 +867,7 @@ export type OrganizationUncheckedUpdateWithoutUsersInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -782,6 +880,9 @@ export type OrganizationUncheckedUpdateWithoutUsersInput = {
   cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutOrganizationNestedInput
   policies?: Prisma.DisbursementPolicyUncheckedUpdateManyWithoutOrganizationNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutGrantsInput = {
@@ -793,6 +894,7 @@ export type OrganizationCreateWithoutGrantsInput = {
   phone?: string | null
   website?: string | null
   stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
   plaidItemId?: string | null
   logoUrl?: string | null
   trialStartDate?: Date | string | null
@@ -805,6 +907,9 @@ export type OrganizationCreateWithoutGrantsInput = {
   cards?: Prisma.VirtualCardCreateNestedManyWithoutOrganizationInput
   policies?: Prisma.DisbursementPolicyCreateNestedManyWithoutOrganizationInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutGrantsInput = {
@@ -816,6 +921,7 @@ export type OrganizationUncheckedCreateWithoutGrantsInput = {
   phone?: string | null
   website?: string | null
   stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
   plaidItemId?: string | null
   logoUrl?: string | null
   trialStartDate?: Date | string | null
@@ -828,6 +934,9 @@ export type OrganizationUncheckedCreateWithoutGrantsInput = {
   cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutOrganizationInput
   policies?: Prisma.DisbursementPolicyUncheckedCreateNestedManyWithoutOrganizationInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutGrantsInput = {
@@ -855,6 +964,7 @@ export type OrganizationUpdateWithoutGrantsInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -867,6 +977,9 @@ export type OrganizationUpdateWithoutGrantsInput = {
   cards?: Prisma.VirtualCardUpdateManyWithoutOrganizationNestedInput
   policies?: Prisma.DisbursementPolicyUpdateManyWithoutOrganizationNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutGrantsInput = {
@@ -878,6 +991,7 @@ export type OrganizationUncheckedUpdateWithoutGrantsInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -890,6 +1004,9 @@ export type OrganizationUncheckedUpdateWithoutGrantsInput = {
   cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutOrganizationNestedInput
   policies?: Prisma.DisbursementPolicyUncheckedUpdateManyWithoutOrganizationNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutVendorsInput = {
@@ -901,6 +1018,7 @@ export type OrganizationCreateWithoutVendorsInput = {
   phone?: string | null
   website?: string | null
   stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
   plaidItemId?: string | null
   logoUrl?: string | null
   trialStartDate?: Date | string | null
@@ -913,6 +1031,9 @@ export type OrganizationCreateWithoutVendorsInput = {
   cards?: Prisma.VirtualCardCreateNestedManyWithoutOrganizationInput
   policies?: Prisma.DisbursementPolicyCreateNestedManyWithoutOrganizationInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutVendorsInput = {
@@ -924,6 +1045,7 @@ export type OrganizationUncheckedCreateWithoutVendorsInput = {
   phone?: string | null
   website?: string | null
   stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
   plaidItemId?: string | null
   logoUrl?: string | null
   trialStartDate?: Date | string | null
@@ -936,6 +1058,9 @@ export type OrganizationUncheckedCreateWithoutVendorsInput = {
   cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutOrganizationInput
   policies?: Prisma.DisbursementPolicyUncheckedCreateNestedManyWithoutOrganizationInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutVendorsInput = {
@@ -963,6 +1088,7 @@ export type OrganizationUpdateWithoutVendorsInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -975,6 +1101,9 @@ export type OrganizationUpdateWithoutVendorsInput = {
   cards?: Prisma.VirtualCardUpdateManyWithoutOrganizationNestedInput
   policies?: Prisma.DisbursementPolicyUpdateManyWithoutOrganizationNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutVendorsInput = {
@@ -986,6 +1115,7 @@ export type OrganizationUncheckedUpdateWithoutVendorsInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -998,6 +1128,9 @@ export type OrganizationUncheckedUpdateWithoutVendorsInput = {
   cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutOrganizationNestedInput
   policies?: Prisma.DisbursementPolicyUncheckedUpdateManyWithoutOrganizationNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutCardsInput = {
@@ -1009,6 +1142,7 @@ export type OrganizationCreateWithoutCardsInput = {
   phone?: string | null
   website?: string | null
   stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
   plaidItemId?: string | null
   logoUrl?: string | null
   trialStartDate?: Date | string | null
@@ -1021,6 +1155,9 @@ export type OrganizationCreateWithoutCardsInput = {
   vendors?: Prisma.VendorCreateNestedManyWithoutOrganizationInput
   policies?: Prisma.DisbursementPolicyCreateNestedManyWithoutOrganizationInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutCardsInput = {
@@ -1032,6 +1169,7 @@ export type OrganizationUncheckedCreateWithoutCardsInput = {
   phone?: string | null
   website?: string | null
   stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
   plaidItemId?: string | null
   logoUrl?: string | null
   trialStartDate?: Date | string | null
@@ -1044,6 +1182,9 @@ export type OrganizationUncheckedCreateWithoutCardsInput = {
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutOrganizationInput
   policies?: Prisma.DisbursementPolicyUncheckedCreateNestedManyWithoutOrganizationInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutCardsInput = {
@@ -1071,6 +1212,7 @@ export type OrganizationUpdateWithoutCardsInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1083,6 +1225,9 @@ export type OrganizationUpdateWithoutCardsInput = {
   vendors?: Prisma.VendorUpdateManyWithoutOrganizationNestedInput
   policies?: Prisma.DisbursementPolicyUpdateManyWithoutOrganizationNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutCardsInput = {
@@ -1094,6 +1239,7 @@ export type OrganizationUncheckedUpdateWithoutCardsInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1106,6 +1252,133 @@ export type OrganizationUncheckedUpdateWithoutCardsInput = {
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutOrganizationNestedInput
   policies?: Prisma.DisbursementPolicyUncheckedUpdateManyWithoutOrganizationNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutCardholderEligibilitiesInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutCardholderEligibilitiesInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantUncheckedCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyUncheckedCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutCardholderEligibilitiesInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutCardholderEligibilitiesInput, Prisma.OrganizationUncheckedCreateWithoutCardholderEligibilitiesInput>
+}
+
+export type OrganizationUpsertWithoutCardholderEligibilitiesInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutCardholderEligibilitiesInput, Prisma.OrganizationUncheckedUpdateWithoutCardholderEligibilitiesInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutCardholderEligibilitiesInput, Prisma.OrganizationUncheckedCreateWithoutCardholderEligibilitiesInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutCardholderEligibilitiesInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutCardholderEligibilitiesInput, Prisma.OrganizationUncheckedUpdateWithoutCardholderEligibilitiesInput>
+}
+
+export type OrganizationUpdateWithoutCardholderEligibilitiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutCardholderEligibilitiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUncheckedUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUncheckedUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUncheckedUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutPoliciesInput = {
@@ -1117,6 +1390,7 @@ export type OrganizationCreateWithoutPoliciesInput = {
   phone?: string | null
   website?: string | null
   stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
   plaidItemId?: string | null
   logoUrl?: string | null
   trialStartDate?: Date | string | null
@@ -1129,6 +1403,9 @@ export type OrganizationCreateWithoutPoliciesInput = {
   vendors?: Prisma.VendorCreateNestedManyWithoutOrganizationInput
   cards?: Prisma.VirtualCardCreateNestedManyWithoutOrganizationInput
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutPoliciesInput = {
@@ -1140,6 +1417,7 @@ export type OrganizationUncheckedCreateWithoutPoliciesInput = {
   phone?: string | null
   website?: string | null
   stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
   plaidItemId?: string | null
   logoUrl?: string | null
   trialStartDate?: Date | string | null
@@ -1152,6 +1430,9 @@ export type OrganizationUncheckedCreateWithoutPoliciesInput = {
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutOrganizationInput
   cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutOrganizationInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutPoliciesInput = {
@@ -1179,6 +1460,7 @@ export type OrganizationUpdateWithoutPoliciesInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1191,6 +1473,9 @@ export type OrganizationUpdateWithoutPoliciesInput = {
   vendors?: Prisma.VendorUpdateManyWithoutOrganizationNestedInput
   cards?: Prisma.VirtualCardUpdateManyWithoutOrganizationNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutPoliciesInput = {
@@ -1202,6 +1487,7 @@ export type OrganizationUncheckedUpdateWithoutPoliciesInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1214,6 +1500,9 @@ export type OrganizationUncheckedUpdateWithoutPoliciesInput = {
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutOrganizationNestedInput
   cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutOrganizationNestedInput
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutPromoRedemptionsInput = {
@@ -1225,6 +1514,7 @@ export type OrganizationCreateWithoutPromoRedemptionsInput = {
   phone?: string | null
   website?: string | null
   stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
   plaidItemId?: string | null
   logoUrl?: string | null
   trialStartDate?: Date | string | null
@@ -1237,6 +1527,9 @@ export type OrganizationCreateWithoutPromoRedemptionsInput = {
   vendors?: Prisma.VendorCreateNestedManyWithoutOrganizationInput
   cards?: Prisma.VirtualCardCreateNestedManyWithoutOrganizationInput
   policies?: Prisma.DisbursementPolicyCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutPromoRedemptionsInput = {
@@ -1248,6 +1541,7 @@ export type OrganizationUncheckedCreateWithoutPromoRedemptionsInput = {
   phone?: string | null
   website?: string | null
   stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
   plaidItemId?: string | null
   logoUrl?: string | null
   trialStartDate?: Date | string | null
@@ -1260,6 +1554,9 @@ export type OrganizationUncheckedCreateWithoutPromoRedemptionsInput = {
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutOrganizationInput
   cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutOrganizationInput
   policies?: Prisma.DisbursementPolicyUncheckedCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutPromoRedemptionsInput = {
@@ -1287,6 +1584,7 @@ export type OrganizationUpdateWithoutPromoRedemptionsInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1299,6 +1597,9 @@ export type OrganizationUpdateWithoutPromoRedemptionsInput = {
   vendors?: Prisma.VendorUpdateManyWithoutOrganizationNestedInput
   cards?: Prisma.VirtualCardUpdateManyWithoutOrganizationNestedInput
   policies?: Prisma.DisbursementPolicyUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutPromoRedemptionsInput = {
@@ -1310,6 +1611,7 @@ export type OrganizationUncheckedUpdateWithoutPromoRedemptionsInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1322,6 +1624,257 @@ export type OrganizationUncheckedUpdateWithoutPromoRedemptionsInput = {
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutOrganizationNestedInput
   cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutOrganizationNestedInput
   policies?: Prisma.DisbursementPolicyUncheckedUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutCalendarEventsInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutCalendarEventsInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantUncheckedCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyUncheckedCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutCalendarEventsInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutCalendarEventsInput, Prisma.OrganizationUncheckedCreateWithoutCalendarEventsInput>
+}
+
+export type OrganizationUpsertWithoutCalendarEventsInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutCalendarEventsInput, Prisma.OrganizationUncheckedUpdateWithoutCalendarEventsInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutCalendarEventsInput, Prisma.OrganizationUncheckedCreateWithoutCalendarEventsInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutCalendarEventsInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutCalendarEventsInput, Prisma.OrganizationUncheckedUpdateWithoutCalendarEventsInput>
+}
+
+export type OrganizationUpdateWithoutCalendarEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutCalendarEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUncheckedUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUncheckedUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUncheckedUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutMembershipsInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutMembershipsInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantUncheckedCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyUncheckedCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutMembershipsInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutMembershipsInput, Prisma.OrganizationUncheckedCreateWithoutMembershipsInput>
+}
+
+export type OrganizationUpsertWithoutMembershipsInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutMembershipsInput, Prisma.OrganizationUncheckedUpdateWithoutMembershipsInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutMembershipsInput, Prisma.OrganizationUncheckedCreateWithoutMembershipsInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutMembershipsInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutMembershipsInput, Prisma.OrganizationUncheckedUpdateWithoutMembershipsInput>
+}
+
+export type OrganizationUpdateWithoutMembershipsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutMembershipsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUncheckedUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUncheckedUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUncheckedUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 
@@ -1336,6 +1889,9 @@ export type OrganizationCountOutputType = {
   cards: number
   policies: number
   promoRedemptions: number
+  cardholderEligibilities: number
+  calendarEvents: number
+  memberships: number
 }
 
 export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1345,6 +1901,9 @@ export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Exte
   cards?: boolean | OrganizationCountOutputTypeCountCardsArgs
   policies?: boolean | OrganizationCountOutputTypeCountPoliciesArgs
   promoRedemptions?: boolean | OrganizationCountOutputTypeCountPromoRedemptionsArgs
+  cardholderEligibilities?: boolean | OrganizationCountOutputTypeCountCardholderEligibilitiesArgs
+  calendarEvents?: boolean | OrganizationCountOutputTypeCountCalendarEventsArgs
+  memberships?: boolean | OrganizationCountOutputTypeCountMembershipsArgs
 }
 
 /**
@@ -1399,6 +1958,27 @@ export type OrganizationCountOutputTypeCountPromoRedemptionsArgs<ExtArgs extends
   where?: Prisma.PromoRedemptionWhereInput
 }
 
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountCardholderEligibilitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CardholderEligibilityWhereInput
+}
+
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountCalendarEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CalendarEventWhereInput
+}
+
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountMembershipsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrganizationMembershipWhereInput
+}
+
 
 export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1409,6 +1989,7 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   phone?: boolean
   website?: boolean
   stripeAccountId?: boolean
+  stripeFinancialAccountId?: boolean
   plaidItemId?: boolean
   logoUrl?: boolean
   trialStartDate?: boolean
@@ -1422,6 +2003,9 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   cards?: boolean | Prisma.Organization$cardsArgs<ExtArgs>
   policies?: boolean | Prisma.Organization$policiesArgs<ExtArgs>
   promoRedemptions?: boolean | Prisma.Organization$promoRedemptionsArgs<ExtArgs>
+  cardholderEligibilities?: boolean | Prisma.Organization$cardholderEligibilitiesArgs<ExtArgs>
+  calendarEvents?: boolean | Prisma.Organization$calendarEventsArgs<ExtArgs>
+  memberships?: boolean | Prisma.Organization$membershipsArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["organization"]>
 
@@ -1434,6 +2018,7 @@ export type OrganizationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   phone?: boolean
   website?: boolean
   stripeAccountId?: boolean
+  stripeFinancialAccountId?: boolean
   plaidItemId?: boolean
   logoUrl?: boolean
   trialStartDate?: boolean
@@ -1452,6 +2037,7 @@ export type OrganizationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   phone?: boolean
   website?: boolean
   stripeAccountId?: boolean
+  stripeFinancialAccountId?: boolean
   plaidItemId?: boolean
   logoUrl?: boolean
   trialStartDate?: boolean
@@ -1470,6 +2056,7 @@ export type OrganizationSelectScalar = {
   phone?: boolean
   website?: boolean
   stripeAccountId?: boolean
+  stripeFinancialAccountId?: boolean
   plaidItemId?: boolean
   logoUrl?: boolean
   trialStartDate?: boolean
@@ -1479,7 +2066,7 @@ export type OrganizationSelectScalar = {
   updatedAt?: boolean
 }
 
-export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "ein" | "einVerified" | "address" | "phone" | "website" | "stripeAccountId" | "plaidItemId" | "logoUrl" | "trialStartDate" | "trialEndDate" | "subscriptionStatus" | "createdAt" | "updatedAt", ExtArgs["result"]["organization"]>
+export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "ein" | "einVerified" | "address" | "phone" | "website" | "stripeAccountId" | "stripeFinancialAccountId" | "plaidItemId" | "logoUrl" | "trialStartDate" | "trialEndDate" | "subscriptionStatus" | "createdAt" | "updatedAt", ExtArgs["result"]["organization"]>
 export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   users?: boolean | Prisma.Organization$usersArgs<ExtArgs>
   grants?: boolean | Prisma.Organization$grantsArgs<ExtArgs>
@@ -1487,6 +2074,9 @@ export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.Interna
   cards?: boolean | Prisma.Organization$cardsArgs<ExtArgs>
   policies?: boolean | Prisma.Organization$policiesArgs<ExtArgs>
   promoRedemptions?: boolean | Prisma.Organization$promoRedemptionsArgs<ExtArgs>
+  cardholderEligibilities?: boolean | Prisma.Organization$cardholderEligibilitiesArgs<ExtArgs>
+  calendarEvents?: boolean | Prisma.Organization$calendarEventsArgs<ExtArgs>
+  memberships?: boolean | Prisma.Organization$membershipsArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1501,6 +2091,9 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     cards: Prisma.$VirtualCardPayload<ExtArgs>[]
     policies: Prisma.$DisbursementPolicyPayload<ExtArgs>[]
     promoRedemptions: Prisma.$PromoRedemptionPayload<ExtArgs>[]
+    cardholderEligibilities: Prisma.$CardholderEligibilityPayload<ExtArgs>[]
+    calendarEvents: Prisma.$CalendarEventPayload<ExtArgs>[]
+    memberships: Prisma.$OrganizationMembershipPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1511,6 +2104,7 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     phone: string | null
     website: string | null
     stripeAccountId: string | null
+    stripeFinancialAccountId: string | null
     plaidItemId: string | null
     logoUrl: string | null
     trialStartDate: Date | null
@@ -1918,6 +2512,9 @@ export interface Prisma__OrganizationClient<T, Null = never, ExtArgs extends run
   cards<T extends Prisma.Organization$cardsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$cardsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VirtualCardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   policies<T extends Prisma.Organization$policiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$policiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DisbursementPolicyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   promoRedemptions<T extends Prisma.Organization$promoRedemptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$promoRedemptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PromoRedemptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  cardholderEligibilities<T extends Prisma.Organization$cardholderEligibilitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$cardholderEligibilitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CardholderEligibilityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  calendarEvents<T extends Prisma.Organization$calendarEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$calendarEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CalendarEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  memberships<T extends Prisma.Organization$membershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$membershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrganizationMembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1955,6 +2552,7 @@ export interface OrganizationFieldRefs {
   readonly phone: Prisma.FieldRef<"Organization", 'String'>
   readonly website: Prisma.FieldRef<"Organization", 'String'>
   readonly stripeAccountId: Prisma.FieldRef<"Organization", 'String'>
+  readonly stripeFinancialAccountId: Prisma.FieldRef<"Organization", 'String'>
   readonly plaidItemId: Prisma.FieldRef<"Organization", 'String'>
   readonly logoUrl: Prisma.FieldRef<"Organization", 'String'>
   readonly trialStartDate: Prisma.FieldRef<"Organization", 'DateTime'>
@@ -2496,6 +3094,78 @@ export type Organization$promoRedemptionsArgs<ExtArgs extends runtime.Types.Exte
   take?: number
   skip?: number
   distinct?: Prisma.PromoRedemptionScalarFieldEnum | Prisma.PromoRedemptionScalarFieldEnum[]
+}
+
+/**
+ * Organization.cardholderEligibilities
+ */
+export type Organization$cardholderEligibilitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CardholderEligibility
+   */
+  select?: Prisma.CardholderEligibilitySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CardholderEligibility
+   */
+  omit?: Prisma.CardholderEligibilityOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CardholderEligibilityInclude<ExtArgs> | null
+  where?: Prisma.CardholderEligibilityWhereInput
+  orderBy?: Prisma.CardholderEligibilityOrderByWithRelationInput | Prisma.CardholderEligibilityOrderByWithRelationInput[]
+  cursor?: Prisma.CardholderEligibilityWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CardholderEligibilityScalarFieldEnum | Prisma.CardholderEligibilityScalarFieldEnum[]
+}
+
+/**
+ * Organization.calendarEvents
+ */
+export type Organization$calendarEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CalendarEvent
+   */
+  select?: Prisma.CalendarEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CalendarEvent
+   */
+  omit?: Prisma.CalendarEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CalendarEventInclude<ExtArgs> | null
+  where?: Prisma.CalendarEventWhereInput
+  orderBy?: Prisma.CalendarEventOrderByWithRelationInput | Prisma.CalendarEventOrderByWithRelationInput[]
+  cursor?: Prisma.CalendarEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CalendarEventScalarFieldEnum | Prisma.CalendarEventScalarFieldEnum[]
+}
+
+/**
+ * Organization.memberships
+ */
+export type Organization$membershipsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OrganizationMembership
+   */
+  select?: Prisma.OrganizationMembershipSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OrganizationMembership
+   */
+  omit?: Prisma.OrganizationMembershipOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrganizationMembershipInclude<ExtArgs> | null
+  where?: Prisma.OrganizationMembershipWhereInput
+  orderBy?: Prisma.OrganizationMembershipOrderByWithRelationInput | Prisma.OrganizationMembershipOrderByWithRelationInput[]
+  cursor?: Prisma.OrganizationMembershipWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrganizationMembershipScalarFieldEnum | Prisma.OrganizationMembershipScalarFieldEnum[]
 }
 
 /**

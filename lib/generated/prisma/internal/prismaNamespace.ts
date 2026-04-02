@@ -80,12 +80,12 @@ export type PrismaVersion = {
 }
 
 /**
- * Prisma Client JS version: 7.5.0
- * Query Engine version: 280c870be64f457428992c43c1f6d557fab6e29e
+ * Prisma Client JS version: 7.6.0
+ * Query Engine version: 75cbdc1eb7150937890ad5465d861175c6624711
  */
 export const prismaVersion: PrismaVersion = {
-  client: "7.5.0",
-  engine: "280c870be64f457428992c43c1f6d557fab6e29e"
+  client: "7.6.0",
+  engine: "75cbdc1eb7150937890ad5465d861175c6624711"
 }
 
 /**
@@ -393,6 +393,7 @@ export const ModelName = {
   Vendor: 'Vendor',
   Subscription: 'Subscription',
   VirtualCard: 'VirtualCard',
+  CardholderEligibility: 'CardholderEligibility',
   Transaction: 'Transaction',
   LedgerEntry: 'LedgerEntry',
   Approval: 'Approval',
@@ -404,7 +405,9 @@ export const ModelName = {
   Document: 'Document',
   DisbursementPolicy: 'DisbursementPolicy',
   PromoCode: 'PromoCode',
-  PromoRedemption: 'PromoRedemption'
+  PromoRedemption: 'PromoRedemption',
+  CalendarEvent: 'CalendarEvent',
+  OrganizationMembership: 'OrganizationMembership'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -420,7 +423,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organization" | "user" | "inviteToken" | "grant" | "budgetCategory" | "expenseRequest" | "vendor" | "subscription" | "virtualCard" | "transaction" | "ledgerEntry" | "approval" | "auditLog" | "conversation" | "conversationParticipant" | "message" | "notification" | "document" | "disbursementPolicy" | "promoCode" | "promoRedemption"
+    modelProps: "organization" | "user" | "inviteToken" | "grant" | "budgetCategory" | "expenseRequest" | "vendor" | "subscription" | "virtualCard" | "cardholderEligibility" | "transaction" | "ledgerEntry" | "approval" | "auditLog" | "conversation" | "conversationParticipant" | "message" | "notification" | "document" | "disbursementPolicy" | "promoCode" | "promoRedemption" | "calendarEvent" | "organizationMembership"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1087,6 +1090,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.VirtualCardCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.VirtualCardCountAggregateOutputType> | number
+        }
+      }
+    }
+    CardholderEligibility: {
+      payload: Prisma.$CardholderEligibilityPayload<ExtArgs>
+      fields: Prisma.CardholderEligibilityFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CardholderEligibilityFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CardholderEligibilityPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CardholderEligibilityFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CardholderEligibilityPayload>
+        }
+        findFirst: {
+          args: Prisma.CardholderEligibilityFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CardholderEligibilityPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CardholderEligibilityFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CardholderEligibilityPayload>
+        }
+        findMany: {
+          args: Prisma.CardholderEligibilityFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CardholderEligibilityPayload>[]
+        }
+        create: {
+          args: Prisma.CardholderEligibilityCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CardholderEligibilityPayload>
+        }
+        createMany: {
+          args: Prisma.CardholderEligibilityCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CardholderEligibilityCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CardholderEligibilityPayload>[]
+        }
+        delete: {
+          args: Prisma.CardholderEligibilityDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CardholderEligibilityPayload>
+        }
+        update: {
+          args: Prisma.CardholderEligibilityUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CardholderEligibilityPayload>
+        }
+        deleteMany: {
+          args: Prisma.CardholderEligibilityDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CardholderEligibilityUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CardholderEligibilityUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CardholderEligibilityPayload>[]
+        }
+        upsert: {
+          args: Prisma.CardholderEligibilityUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CardholderEligibilityPayload>
+        }
+        aggregate: {
+          args: Prisma.CardholderEligibilityAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCardholderEligibility>
+        }
+        groupBy: {
+          args: Prisma.CardholderEligibilityGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CardholderEligibilityGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CardholderEligibilityCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CardholderEligibilityCountAggregateOutputType> | number
         }
       }
     }
@@ -1978,6 +2055,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CalendarEvent: {
+      payload: Prisma.$CalendarEventPayload<ExtArgs>
+      fields: Prisma.CalendarEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CalendarEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CalendarEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        findFirst: {
+          args: Prisma.CalendarEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CalendarEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        findMany: {
+          args: Prisma.CalendarEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>[]
+        }
+        create: {
+          args: Prisma.CalendarEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        createMany: {
+          args: Prisma.CalendarEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CalendarEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>[]
+        }
+        delete: {
+          args: Prisma.CalendarEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        update: {
+          args: Prisma.CalendarEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.CalendarEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CalendarEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CalendarEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.CalendarEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        aggregate: {
+          args: Prisma.CalendarEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCalendarEvent>
+        }
+        groupBy: {
+          args: Prisma.CalendarEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CalendarEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CalendarEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CalendarEventCountAggregateOutputType> | number
+        }
+      }
+    }
+    OrganizationMembership: {
+      payload: Prisma.$OrganizationMembershipPayload<ExtArgs>
+      fields: Prisma.OrganizationMembershipFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OrganizationMembershipFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationMembershipPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OrganizationMembershipFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationMembershipPayload>
+        }
+        findFirst: {
+          args: Prisma.OrganizationMembershipFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationMembershipPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OrganizationMembershipFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationMembershipPayload>
+        }
+        findMany: {
+          args: Prisma.OrganizationMembershipFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationMembershipPayload>[]
+        }
+        create: {
+          args: Prisma.OrganizationMembershipCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationMembershipPayload>
+        }
+        createMany: {
+          args: Prisma.OrganizationMembershipCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OrganizationMembershipCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationMembershipPayload>[]
+        }
+        delete: {
+          args: Prisma.OrganizationMembershipDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationMembershipPayload>
+        }
+        update: {
+          args: Prisma.OrganizationMembershipUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationMembershipPayload>
+        }
+        deleteMany: {
+          args: Prisma.OrganizationMembershipDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OrganizationMembershipUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OrganizationMembershipUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationMembershipPayload>[]
+        }
+        upsert: {
+          args: Prisma.OrganizationMembershipUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationMembershipPayload>
+        }
+        aggregate: {
+          args: Prisma.OrganizationMembershipAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOrganizationMembership>
+        }
+        groupBy: {
+          args: Prisma.OrganizationMembershipGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrganizationMembershipGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OrganizationMembershipCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrganizationMembershipCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2026,6 +2251,7 @@ export const OrganizationScalarFieldEnum = {
   phone: 'phone',
   website: 'website',
   stripeAccountId: 'stripeAccountId',
+  stripeFinancialAccountId: 'stripeFinancialAccountId',
   plaidItemId: 'plaidItemId',
   logoUrl: 'logoUrl',
   trialStartDate: 'trialStartDate',
@@ -2055,6 +2281,11 @@ export const UserScalarFieldEnum = {
   mfaEnabled: 'mfaEnabled',
   mfaSecret: 'mfaSecret',
   mfaBackupCodes: 'mfaBackupCodes',
+  lastLoginIp: 'lastLoginIp',
+  lastLoginUserAgent: 'lastLoginUserAgent',
+  lastLoginAt: 'lastLoginAt',
+  trustedDevices: 'trustedDevices',
+  beneficiaryCode: 'beneficiaryCode',
   dateOfBirth: 'dateOfBirth',
   addressStreet: 'addressStreet',
   addressCity: 'addressCity',
@@ -2105,6 +2336,11 @@ export const GrantScalarFieldEnum = {
   benefitFlags: 'benefitFlags',
   grantDocumentText: 'grantDocumentText',
   grantDocumentName: 'grantDocumentName',
+  purpose: 'purpose',
+  funderRequirements: 'funderRequirements',
+  approvedMCCs: 'approvedMCCs',
+  blockedMCCs: 'blockedMCCs',
+  whitelistedVendorIds: 'whitelistedVendorIds',
   archivedAt: 'archivedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -2218,6 +2454,7 @@ export const VirtualCardScalarFieldEnum = {
   spendingCap: 'spendingCap',
   merchantLock: 'merchantLock',
   cardType: 'cardType',
+  cardLabel: 'cardLabel',
   status: 'status',
   expiresAt: 'expiresAt',
   createdAt: 'createdAt',
@@ -2225,6 +2462,28 @@ export const VirtualCardScalarFieldEnum = {
 } as const
 
 export type VirtualCardScalarFieldEnum = (typeof VirtualCardScalarFieldEnum)[keyof typeof VirtualCardScalarFieldEnum]
+
+
+export const CardholderEligibilityScalarFieldEnum = {
+  id: 'id',
+  beneficiaryId: 'beneficiaryId',
+  organizationId: 'organizationId',
+  hasActiveWarrant: 'hasActiveWarrant',
+  isCurrentlyIncarcerated: 'isCurrentlyIncarcerated',
+  hasDrugTraffickingConviction: 'hasDrugTraffickingConviction',
+  probationParoleRestrictions: 'probationParoleRestrictions',
+  eligibilityStatus: 'eligibilityStatus',
+  ofacScreened: 'ofacScreened',
+  ofacMatchFound: 'ofacMatchFound',
+  ofacScreenedAt: 'ofacScreenedAt',
+  ofacMatches: 'ofacMatches',
+  verifiedBy: 'verifiedBy',
+  verifiedAt: 'verifiedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CardholderEligibilityScalarFieldEnum = (typeof CardholderEligibilityScalarFieldEnum)[keyof typeof CardholderEligibilityScalarFieldEnum]
 
 
 export const TransactionScalarFieldEnum = {
@@ -2283,6 +2542,7 @@ export const AuditLogScalarFieldEnum = {
   oldValue: 'oldValue',
   newValue: 'newValue',
   ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
   createdAt: 'createdAt'
 } as const
 
@@ -2403,6 +2663,41 @@ export const PromoRedemptionScalarFieldEnum = {
 } as const
 
 export type PromoRedemptionScalarFieldEnum = (typeof PromoRedemptionScalarFieldEnum)[keyof typeof PromoRedemptionScalarFieldEnum]
+
+
+export const CalendarEventScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  title: 'title',
+  description: 'description',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  category: 'category',
+  color: 'color',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CalendarEventScalarFieldEnum = (typeof CalendarEventScalarFieldEnum)[keyof typeof CalendarEventScalarFieldEnum]
+
+
+export const OrganizationMembershipScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  organizationId: 'organizationId',
+  role: 'role',
+  status: 'status',
+  invitedBy: 'invitedBy',
+  joinedAt: 'joinedAt',
+  isDefaultOrg: 'isDefaultOrg',
+  lastAccessedAt: 'lastAccessedAt',
+  orgSpecificTitle: 'orgSpecificTitle',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OrganizationMembershipScalarFieldEnum = (typeof OrganizationMembershipScalarFieldEnum)[keyof typeof OrganizationMembershipScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2684,6 +2979,20 @@ export type ListEnumCardStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$P
 
 
 /**
+ * Reference to a field of type 'EligibilityStatus'
+ */
+export type EnumEligibilityStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EligibilityStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'EligibilityStatus[]'
+ */
+export type ListEnumEligibilityStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EligibilityStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'LedgerType'
  */
 export type EnumLedgerTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LedgerType'>
@@ -2842,6 +3151,7 @@ export type GlobalOmitConfig = {
   vendor?: Prisma.VendorOmit
   subscription?: Prisma.SubscriptionOmit
   virtualCard?: Prisma.VirtualCardOmit
+  cardholderEligibility?: Prisma.CardholderEligibilityOmit
   transaction?: Prisma.TransactionOmit
   ledgerEntry?: Prisma.LedgerEntryOmit
   approval?: Prisma.ApprovalOmit
@@ -2854,6 +3164,8 @@ export type GlobalOmitConfig = {
   disbursementPolicy?: Prisma.DisbursementPolicyOmit
   promoCode?: Prisma.PromoCodeOmit
   promoRedemption?: Prisma.PromoRedemptionOmit
+  calendarEvent?: Prisma.CalendarEventOmit
+  organizationMembership?: Prisma.OrganizationMembershipOmit
 }
 
 /* Types for Logging */

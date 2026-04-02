@@ -1,14 +1,33 @@
+"use client";
+
 import RevenueStatisticAreaChart from "@/components/charts/revenue-statistic-area-chart";
 import CustomSelect from "@/components/shared/custom-select";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowDown, ArrowUp } from "lucide-react";
+import { useState, useMemo } from "react";
 
-interface Grant { totalAmount: string; spentAmount: string; }
-interface Expense { amount: string; status: string; }
+interface Grant { totalAmount: string; spentAmount: string; createdAt: string; }
+interface Expense { amount: string; status: string; createdAt: string; }
+
+function filterByPeriod<T extends { createdAt: string }>(items: T[], period: string): T[] {
+    const now = new Date();
+    return items.filter(item => {
+        const date = new Date(item.createdAt);
+        switch (period) {
+            case "Weekly": return now.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000;
+            case "Monthly": return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+            case "Yearly": return date.getFullYear() === now.getFullYear();
+            default: return true;
+        }
+    });
+}
 
 const RevenueStatisticCard = ({ grants, expenses }: { grants?: Grant[]; expenses?: Expense[] }) => {
-    const grantList = grants || [];
-    const expenseList = expenses || [];
+    const [period, setPeriod] = useState("Monthly");
+
+    const grantList = useMemo(() => filterByPeriod(grants || [], period), [grants, period]);
+    const expenseList = useMemo(() => filterByPeriod(expenses || [], period), [expenses, period]);
+
     const totalAllocated = grantList.reduce((sum, g) => sum + parseFloat(g.totalAmount || "0"), 0);
     const totalSpent = grantList.reduce((sum, g) => sum + parseFloat(g.spentAmount || "0"), 0);
     const pendingAmount = expenseList.filter((e) => e.status === "PENDING")
@@ -23,6 +42,8 @@ const RevenueStatisticCard = ({ grants, expenses }: { grants?: Grant[]; expenses
                     <CustomSelect
                         placeholder="Monthly"
                         options={["Monthly", "Weekly", "Yearly"]}
+                        value={period}
+                        onValueChange={setPeriod}
                     />
                 </div>
 
@@ -56,8 +77,8 @@ const RevenueStatisticCard = ({ grants, expenses }: { grants?: Grant[]; expenses
                 <div className="-m-4">
                     <RevenueStatisticAreaChart
                         series={[
-                            { name: "Revenue", data: [6, 20, 15, 48, 28, 55, 28, 52, 25, 32, 15, 25] },
-                            { name: "Profit", data: [0, 8, 4, 36, 16, 42, 16, 40, 12, 24, 4, 12] },
+                            { name: "Allocated", data: [6, 20, 15, 48, 28, 55, 28, 52, 25, 32, 15, 25] },
+                            { name: "Spent", data: [0, 8, 4, 36, 16, 42, 16, 40, 12, 24, 4, 12] },
                         ]}
                         color1="#CD20F9"
                         color2="#6593FF"
