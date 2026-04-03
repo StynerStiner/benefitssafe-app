@@ -69,7 +69,7 @@ const EmailPage = () => {
             case "read":
                 return n.read;
             case "important":
-                return n.type === "compliance_alert";
+                return n.type === "compliance_alert" || n.type === "threshold_warning" || n.type === "threshold_critical";
             default:
                 return true;
         }

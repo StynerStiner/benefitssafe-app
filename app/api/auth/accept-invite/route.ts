@@ -177,11 +177,20 @@ export async function POST(request: Request) {
     await prisma.$transaction([
       prisma.user.update({
         where: { id: invite.userId },
-        data: { passwordHash },
+        data: { passwordHash, isActive: true },
       }),
       prisma.inviteToken.update({
         where: { id: invite.id },
         data: { usedAt: new Date() },
+      }),
+      // Update OrganizationMembership from "pending" to "active"
+      prisma.organizationMembership.updateMany({
+        where: {
+          userId: invite.userId,
+          organizationId: invite.user.organizationId,
+          status: "pending",
+        },
+        data: { status: "active" },
       }),
       prisma.auditLog.create({
         data: {
@@ -193,6 +202,7 @@ export async function POST(request: Request) {
           newValue: JSON.parse(JSON.stringify({
             email: invite.user.email,
             acceptedAt: new Date().toISOString(),
+            membershipStatus: "active",
           })),
         },
       }),
@@ -201,6 +211,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       message: "Account set up successfully",
       email: invite.user.email,
+      redirect: "/auth/login?onboarded=true",
     });
   } catch (error) {
     console.error("POST /api/auth/accept-invite error:", error);

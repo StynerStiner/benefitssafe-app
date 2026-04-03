@@ -32,6 +32,7 @@ interface Beneficiary {
   emergencyContactPhone: string | null;
   notes: string | null;
   isActive: boolean;
+  onboardingStatus?: "active" | "pending_password" | "pending_invite";
   _count?: { grantsAsBeneficiary?: number; expenseRequests?: number };
 }
 
@@ -121,9 +122,21 @@ const TopPerformerCard = ({ beneficiaries, onRefresh }: TopPerformerCardProps) =
                       <div className="grow">
                         <h6 className="text-base mb-0 font-medium">
                           {b.firstName} {b.lastName}
-                          {!b.isActive && (
+                          {!b.isActive ? (
                             <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-600/25 text-red-600 dark:text-red-400 font-medium">
                               Inactive
+                            </span>
+                          ) : b.onboardingStatus === "active" ? (
+                            <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-600/25 text-green-600 dark:text-green-400 font-medium">
+                              Active
+                            </span>
+                          ) : b.onboardingStatus === "pending_password" ? (
+                            <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-600/25 text-orange-600 dark:text-orange-400 font-medium">
+                              Pending Password
+                            </span>
+                          ) : (
+                            <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-yellow-100 dark:bg-yellow-600/25 text-yellow-600 dark:text-yellow-400 font-medium">
+                              Pending Invite
                             </span>
                           )}
                         </h6>

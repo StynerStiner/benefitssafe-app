@@ -4,6 +4,7 @@ import NftPromoBanner from "@/app/(dashboard)/(homes)/virtual-cards/components/n
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import PageDateFilter from "@/components/shared/page-date-filter";
+import { CreditCard } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import CardDetailDialog from "./components/card-detail-dialog";
 import EthPriceCard from "./components/eth-price-card";
@@ -94,6 +95,16 @@ const VirtualCardsPage = () => {
             {error && (
                 <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
                     <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                </div>
+            )}
+
+            {cards.length === 0 && (
+                <div className="mb-6 p-8 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-center">
+                    <CreditCard className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
+                    <h6 className="text-lg font-semibold text-neutral-600 dark:text-neutral-300 mb-1">No virtual cards yet</h6>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                        Cards will appear here once your expense requests are approved and a card is issued by your organization.
+                    </p>
                 </div>
             )}
 

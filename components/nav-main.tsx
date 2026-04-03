@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { ChevronRight, Settings, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface SidebarItem {
   title?: string;
@@ -42,6 +42,28 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [manualClose, setManualClose] = useState<string | null>(null);
   const { setCustomizationOpen } = useThemeCustomizer();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchUnreadCount = useCallback(() => {
+    fetch("/api/notifications?unread=true&limit=1")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.unreadCount !== undefined) setUnreadCount(data.unreadCount);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Fetch unread count on mount and every 60 seconds
+  useEffect(() => {
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 60000);
+    const handleFocus = () => fetchUnreadCount();
+    window.addEventListener("focus", handleFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [fetchUnreadCount]);
 
   // Auto-open the active group on route change, and clear manual close
   useEffect(() => {
@@ -176,6 +198,11 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
                   <Link href={item.url} className="flex items-center gap-2">
                     {item.icon && <item.icon className="!w-4.5 !h-4.5" />}
                     <span>{item.title}</span>
+                    {item.title === "Notifications" && unreadCount > 0 && (
+                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                      </span>
+                    )}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

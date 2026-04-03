@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FileText, DollarSign, CreditCard, Bell, ShieldCheck, Users, Star } from "lucide-react";
+import { AlertOctagon, AlertTriangle, FileText, DollarSign, CreditCard, Bell, ShieldCheck, Users, Star } from "lucide-react";
 import Link from "next/link";
 
 interface Notification {
@@ -34,6 +34,10 @@ function getTypeIcon(type: string) {
             return <CreditCard className="w-4" />;
         case "compliance_alert":
             return <ShieldCheck className="w-4" />;
+        case "threshold_warning":
+            return <AlertTriangle className="w-4 text-amber-500" />;
+        case "threshold_critical":
+            return <AlertOctagon className="w-4 text-red-500" />;
         case "invite_accepted":
         case "vendor_profile_complete":
             return <Users className="w-4" />;
@@ -72,7 +76,15 @@ const EmailList = ({ notifications }: EmailListProps) => {
             {notifications.map((notification) => (
                 <li
                     key={notification.id}
-                    className={`email-item px-6 py-4 flex gap-4 items-center border-b last:border-0 border-neutral-200 dark:border-slate-700 cursor-pointer hover:bg-neutral-200 dark:hover:bg-slate-800 min-w-max ${!notification.read ? "bg-blue-50 dark:bg-slate-800/50" : ""}`}
+                    className={`email-item px-6 py-4 flex gap-4 items-center border-b last:border-0 border-neutral-200 dark:border-slate-700 cursor-pointer hover:bg-neutral-200 dark:hover:bg-slate-800 min-w-max ${
+                        notification.type === "threshold_critical"
+                            ? "bg-red-50 dark:bg-red-900/20 border-l-4 border-l-red-500"
+                            : notification.type === "threshold_warning"
+                                ? "bg-amber-50 dark:bg-amber-900/20 border-l-4 border-l-amber-500"
+                                : !notification.read
+                                    ? "bg-blue-50 dark:bg-slate-800/50"
+                                    : ""
+                    }`}
                 >
                     <div className="form-check style-check flex items-center">
                         <Checkbox

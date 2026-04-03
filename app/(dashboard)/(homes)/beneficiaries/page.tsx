@@ -33,6 +33,7 @@ interface Beneficiary {
   notes: string | null;
   isActive: boolean;
   createdAt: string;
+  onboardingStatus?: "active" | "pending_password" | "pending_invite";
   _count?: { grantsAsBeneficiary?: number; expenseRequests?: number };
 }
 

@@ -51,6 +51,7 @@ export async function GET(request: Request) {
           addressCity: true,
           addressState: true,
           isActive: true,
+          passwordHash: false,
           createdAt: true,
           benefitPrograms: true,
           grants: {
@@ -62,6 +63,17 @@ export async function GET(request: Request) {
               remainingAmount: true,
             },
           },
+          memberships: {
+            where: { organizationId },
+            select: { status: true },
+            take: 1,
+          },
+          inviteTokens: {
+            where: { expiresAt: { gt: new Date() } },
+            select: { usedAt: true },
+            orderBy: { createdAt: "desc" as const },
+            take: 1,
+          },
         },
         orderBy: { lastName: "asc" },
         take: limit,
@@ -70,13 +82,26 @@ export async function GET(request: Request) {
       prisma.user.count({ where: userWhere }),
     ]);
 
-    // Transform to include summary stats — NEVER include ssnLast4 in list
+    // Transform to include summary stats and onboarding status
     const result = beneficiaries.map((b) => {
       const activeGrants = b.grants.filter((g) => g.status === "ACTIVE");
       const totalRemaining = b.grants.reduce(
         (sum, g) => sum + Number(g.remainingAmount),
         0,
       );
+
+      // Compute onboarding status
+      const membershipStatus = b.memberships[0]?.status || "pending";
+      const latestToken = b.inviteTokens[0];
+      let onboardingStatus: "active" | "pending_password" | "pending_invite" = "pending_invite";
+
+      if (membershipStatus === "active") {
+        onboardingStatus = "active";
+      } else if (latestToken && !latestToken.usedAt) {
+        // Token exists but hasn't been used -- invite sent, password not set
+        onboardingStatus = "pending_password";
+      }
+
       return {
         id: b.id,
         beneficiaryCode: b.beneficiaryCode,
@@ -93,6 +118,7 @@ export async function GET(request: Request) {
         activeGrantCount: activeGrants.length,
         totalGrantCount: b.grants.length,
         totalRemainingBalance: totalRemaining,
+        onboardingStatus,
       };
     });
 
@@ -221,6 +247,70 @@ export async function POST(request: Request) {
       },
     });
 
+    // Create OrganizationMembership with "pending" status
+    await prisma.organizationMembership.create({
+      data: {
+        userId: beneficiary.id,
+        organizationId,
+        role: "beneficiary",
+        status: "pending",
+        invitedBy: session.user.id,
+        isDefaultOrg: true,
+      },
+    });
+
+    // Auto-generate InviteToken (7-day expiry)
+    const INVITE_EXPIRY_DAYS = 7;
+    const tokenExpiresAt = new Date();
+    tokenExpiresAt.setDate(tokenExpiresAt.getDate() + INVITE_EXPIRY_DAYS);
+
+    const invite = await prisma.inviteToken.create({
+      data: {
+        userId: beneficiary.id,
+        sentTo: beneficiary.email,
+        method: "email",
+        sentById: session.user.id,
+        expiresAt: tokenExpiresAt,
+      },
+      select: { id: true, token: true, expiresAt: true },
+    });
+
+    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3001";
+    const inviteUrl = `${baseUrl}/auth/create-password?token=${invite.token}`;
+
+    // Auto-send invite email (or log to console if Postmark not configured)
+    if (process.env.POSTMARK_API_TOKEN) {
+      try {
+        await fetch("https://api.postmarkapp.com/email", {
+          method: "POST",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "X-Postmark-Server-Token": process.env.POSTMARK_API_TOKEN,
+          },
+          body: JSON.stringify({
+            From: process.env.POSTMARK_FROM_EMAIL || "noreply@benefitssafe.com",
+            To: beneficiary.email,
+            Subject: "You've been invited to BenefitsSafe",
+            TextBody: `Hi ${beneficiary.firstName},\n\nYou've been added to BenefitsSafe.\n\nYour Beneficiary Code: ${beneficiary.beneficiaryCode}\n\nSet up your account: ${inviteUrl}\n\nThis link expires in ${INVITE_EXPIRY_DAYS} days.`,
+            MessageStream: "outbound",
+          }),
+        });
+      } catch (emailError) {
+        console.error("Failed to send invite email:", emailError);
+      }
+    } else {
+      console.log("\n========================================");
+      console.log("INVITE EMAIL (Postmark not configured)");
+      console.log("========================================");
+      console.log(`To: ${beneficiary.email}`);
+      console.log(`Name: ${beneficiary.firstName} ${beneficiary.lastName}`);
+      console.log(`Code: ${beneficiary.beneficiaryCode}`);
+      console.log(`Link: ${inviteUrl}`);
+      console.log(`Expires: ${invite.expiresAt.toISOString()}`);
+      console.log("========================================\n");
+    }
+
     // Audit log
     await prisma.auditLog.create({
       data: {
@@ -234,6 +324,7 @@ export async function POST(request: Request) {
           lastName: beneficiary.lastName,
           email: beneficiary.email,
           role: "beneficiary",
+          inviteTokenId: invite.id,
         },
       },
     });
@@ -250,7 +341,10 @@ export async function POST(request: Request) {
       });
     }).catch(() => {});
 
-    return NextResponse.json(beneficiary, { status: 201 });
+    return NextResponse.json({
+      ...beneficiary,
+      inviteUrl: process.env.POSTMARK_API_TOKEN ? undefined : inviteUrl,
+    }, { status: 201 });
   } catch (error: unknown) {
     const err = error as { code?: string; meta?: unknown; message?: string };
     captureApiError(error, { route: "POST /api/beneficiaries" });

@@ -1,3 +1,4 @@
+import BeneficiaryExpensesCard from "@/app/(dashboard)/(homes)/my-dashboard/components/beneficiary-expenses-card";
 import GenerateContentCard from "@/app/(dashboard)/(homes)/my-dashboard/components/generate-content-card";
 import SalesStaticCard from "@/app/(dashboard)/(homes)/my-dashboard/components/sales-static-card";
 import StatCard from "@/app/(dashboard)/(homes)/my-dashboard/components/stat-card";
@@ -45,6 +46,12 @@ export default async function DashboardPage() {
         <div className="xl:col-span-6 2xl:col-span-3">
           <Suspense fallback={<LoadingSkeleton />}>
             <UserOverviewCard />
+          </Suspense>
+        </div>
+
+        <div className="xl:col-span-12 2xl:col-span-9">
+          <Suspense fallback={<LoadingSkeleton />}>
+            <BeneficiaryExpensesCard />
           </Suspense>
         </div>
 

@@ -226,13 +226,14 @@ const RecentOrdersCard = ({ expenses, onRefresh }: RecentOrdersCardProps) => {
                                     <TableHead className="text-sm">Amount</TableHead>
                                     <TableHead className="text-sm">Date</TableHead>
                                     <TableHead className="text-sm text-center">Status</TableHead>
+                                    <TableHead className="text-sm text-center">Risk</TableHead>
                                     <TableHead className="text-sm text-center">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {recent.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={7} className="text-center text-neutral-500 py-4">No expenses found</TableCell>
+                                        <TableCell colSpan={8} className="text-center text-neutral-500 py-4">No expenses found</TableCell>
                                     </TableRow>
                                 ) : (
                                     recent.map((exp) => (
@@ -248,6 +249,21 @@ const RecentOrdersCard = ({ expenses, onRefresh }: RecentOrdersCardProps) => {
                                             <TableCell className="text-sm text-neutral-600 dark:text-neutral-300">{formatDate(exp.createdAt)}</TableCell>
                                             <TableCell className="text-center">
                                                 <Badge variant={statusVariant[exp.status] || "default"}>{exp.status}</Badge>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                {exp.riskClassification && (
+                                                    <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                                                        exp.riskClassification === "LIKELY_SAFE"
+                                                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                                            : exp.riskClassification === "NEEDS_REVIEW"
+                                                                ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                                                                : exp.riskClassification === "LIKELY_RISKY"
+                                                                    ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                                                                    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                                    }`}>
+                                                        {exp.riskClassification.replace(/_/g, " ")}
+                                                    </span>
+                                                )}
                                             </TableCell>
                                             <TableCell className="text-center">
                                                 {exp.status === "PENDING" ? (

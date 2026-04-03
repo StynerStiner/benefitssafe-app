@@ -14,12 +14,21 @@ export async function GET(request: NextRequest) {
 
     const limit = parseInt(request.nextUrl.searchParams.get("limit") || "20");
     const unreadOnly = request.nextUrl.searchParams.get("unread") === "true";
+    const typeFilter = request.nextUrl.searchParams.get("type");
 
     const where: Record<string, unknown> = {
       userId: session.user.id,
     };
     if (unreadOnly) {
       where.read = false;
+    }
+    if (typeFilter) {
+      const types = typeFilter.split(",").map((t) => t.trim()).filter(Boolean);
+      if (types.length === 1) {
+        where.type = types[0];
+      } else if (types.length > 1) {
+        where.type = { in: types };
+      }
     }
 
     const [notifications, unreadCount] = await Promise.all([

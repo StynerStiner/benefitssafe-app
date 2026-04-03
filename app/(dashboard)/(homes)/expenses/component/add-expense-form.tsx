@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Loader2, Paperclip, X } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -79,6 +80,56 @@ const AddExpenseForm = () => {
     const [frequency, setFrequency] = useState("ONE_TIME");
     const [expenseType, setExpenseType] = useState("");
 
+    // File upload state
+    const [uploadedFile, setUploadedFile] = useState<{ name: string; key: string } | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const ACCEPTED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!ACCEPTED_TYPES.includes(file.type)) {
+            toast.error("Only PDF, JPG, and PNG files are accepted");
+            return;
+        }
+
+        if (file.size > MAX_FILE_SIZE) {
+            toast.error("File must be under 10MB");
+            return;
+        }
+
+        setUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("type", "expense_receipt");
+
+            const res = await fetch("/api/documents", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => null);
+                toast.error(data?.error || "Upload failed");
+                return;
+            }
+
+            const data = await res.json();
+            setUploadedFile({ name: file.name, key: data.key || data.id || "" });
+            toast.success("File uploaded");
+        } catch {
+            toast.error("Upload failed");
+        } finally {
+            setUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+        }
+    };
+
     // Fetch grants and vendors when sheet opens
     useEffect(() => {
         if (open) {
@@ -147,6 +198,7 @@ const AddExpenseForm = () => {
         setFrequency("ONE_TIME");
         setExpenseType("");
         setCategories([]);
+        setUploadedFile(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -430,6 +482,49 @@ const AddExpenseForm = () => {
                                 ))}
                             </SelectContent>
                         </Select>
+                    </div>
+
+                    {/* Supporting Document Upload */}
+                    <div className="mb-5">
+                        <Label className={labelClassName}>Supporting Document (Optional)</Label>
+                        <p className="text-xs text-neutral-500 mb-2">PDF, JPG, or PNG up to 10MB</p>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                        />
+                        {uploadedFile ? (
+                            <div className="flex items-center gap-2 p-3 rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20">
+                                <Paperclip className="w-4 h-4 text-green-600 shrink-0" />
+                                <span className="text-sm text-green-700 dark:text-green-400 truncate flex-1">{uploadedFile.name}</span>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0"
+                                    onClick={() => setUploadedFile(null)}
+                                >
+                                    <X className="w-3 h-3" />
+                                </Button>
+                            </div>
+                        ) : (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full h-12 gap-2"
+                                disabled={uploading}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                {uploading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <Paperclip className="w-4 h-4" />
+                                )}
+                                {uploading ? "Uploading..." : "Attach Receipt or Invoice"}
+                            </Button>
+                        )}
                     </div>
 
                     {/* Submit */}
