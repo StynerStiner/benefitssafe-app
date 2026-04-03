@@ -14,6 +14,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Pencil, UserX, UserCheck } from "lucide-react";
+import Link from "next/link";
 import EditBeneficiaryForm from "./edit-beneficiary-form";
 
 interface Beneficiary {
@@ -121,7 +122,9 @@ const TopPerformerCard = ({ beneficiaries, onRefresh }: TopPerformerCardProps) =
                       </span>
                       <div className="grow">
                         <h6 className="text-base mb-0 font-medium">
-                          {b.firstName} {b.lastName}
+                          <Link href={`/beneficiaries/${b.id}`} className="hover:text-primary hover:underline">
+                            {b.firstName} {b.lastName}
+                          </Link>
                           {!b.isActive ? (
                             <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-600/25 text-red-600 dark:text-red-400 font-medium">
                               Inactive

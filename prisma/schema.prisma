@@ -18,6 +18,7 @@ model Organization {
   id              String   @id @default(cuid())
   name            String
   ein             String?  // Tax ID
+  orgCode         String?  @unique  // e.g., "ORG-00001"
   einVerified     Boolean  @default(false) // Whether EIN was verified via IRS/ProPublica lookup
   address         String?
   phone           String?
@@ -303,7 +304,8 @@ model Vendor {
   userId         String?  // If vendor has a user account
   user           User?    @relation(fields: [userId], references: [id])
 
-  name    String
+  name       String
+  vendorCode String?  @unique  // e.g., "VN-0001-00001" (orgSeq-vendorSeq)
   type    VendorType
   email   String?
   phone   String?
@@ -742,6 +744,7 @@ model OrganizationMembership {
   userId           String
   organizationId   String
   role             String   @default("member") // matches UserRole values: nonprofit_admin, beneficiary, vendor, cpa, auditor, attorney, platform_admin, member, etc.
+  memberCode       String?  @unique  // e.g., "TM-0001-00001" (orgSeq-memberSeq)
   status           String   @default("active") // active, suspended, pending, revoked
   invitedBy        String?
   joinedAt         DateTime @default(now())

@@ -14,7 +14,9 @@ import AddBeneficiaryForm from '@/app/(dashboard)/(homes)/beneficiaries/componen
 import DashboardBreadcrumb from '@/components/layout/dashboard-breadcrumb';
 import LoadingSkeleton from '@/components/loading-skeleton';
 import PageDateFilter from '@/components/shared/page-date-filter';
-import { useCallback, useEffect, useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface Beneficiary {
   id: string;
@@ -44,6 +46,8 @@ const CrmPage = () => {
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "pending" | "inactive">("all");
 
   const fetchBeneficiaries = useCallback(() => {
     fetch("/api/beneficiaries?limit=100&includeInactive=true")
@@ -65,6 +69,31 @@ const CrmPage = () => {
   const handleRefresh = useCallback(() => {
     fetchBeneficiaries();
   }, [fetchBeneficiaries]);
+
+  const filteredBeneficiaries = useMemo(() => {
+    let result = beneficiaries;
+
+    // Status filter
+    if (statusFilter === "active") {
+      result = result.filter(b => b.isActive && b.onboardingStatus === "active");
+    } else if (statusFilter === "pending") {
+      result = result.filter(b => b.onboardingStatus === "pending_password" || b.onboardingStatus === "pending_invite");
+    } else if (statusFilter === "inactive") {
+      result = result.filter(b => !b.isActive);
+    }
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(b =>
+        `${b.firstName} ${b.lastName}`.toLowerCase().includes(q) ||
+        b.email.toLowerCase().includes(q) ||
+        (b.phone && b.phone.includes(q))
+      );
+    }
+
+    return result;
+  }, [beneficiaries, searchQuery, statusFilter]);
 
   if (loading) {
     return (
@@ -95,7 +124,37 @@ const CrmPage = () => {
         </div>
       )}
 
-      <div className="flex justify-end mt-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+            <Input
+              placeholder="Search by name, email, or phone..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-[280px] sm:w-[320px] h-10"
+            />
+          </div>
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-slate-700 rounded-lg p-1">
+            {(["all", "active", "pending", "inactive"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors cursor-pointer ${
+                  statusFilter === s
+                    ? "bg-primary text-white shadow-sm"
+                    : "text-neutral-600 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-slate-600"
+                }`}
+              >
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+                {s === "all" && ` (${beneficiaries.length})`}
+                {s === "active" && ` (${beneficiaries.filter(b => b.isActive && b.onboardingStatus === "active").length})`}
+                {s === "pending" && ` (${beneficiaries.filter(b => b.onboardingStatus === "pending_password" || b.onboardingStatus === "pending_invite").length})`}
+                {s === "inactive" && ` (${beneficiaries.filter(b => !b.isActive).length})`}
+              </button>
+            ))}
+          </div>
+        </div>
         <AddBeneficiaryForm onSuccess={handleRefresh} />
       </div>
 
@@ -103,47 +162,47 @@ const CrmPage = () => {
 
         <div className="lg:col-span-12 2xl:col-span-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            <StatsCard beneficiaries={beneficiaries} />
+            <StatsCard beneficiaries={filteredBeneficiaries} />
           </div>
         </div>
 
         <div className="lg:col-span-12 2xl:col-span-4">
-          <RevenueGrowthCard beneficiaries={beneficiaries} />
+          <RevenueGrowthCard beneficiaries={filteredBeneficiaries} />
         </div>
 
         <div className="lg:col-span-12 2xl:col-span-8">
-          <EarningStatisticsCard beneficiaries={beneficiaries} selectedMonth={selectedMonth} selectedYear={selectedYear} />
+          <EarningStatisticsCard beneficiaries={filteredBeneficiaries} selectedMonth={selectedMonth} selectedYear={selectedYear} />
         </div>
 
         <div className="lg:col-span-12 2xl:col-span-4">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-6 2xl:col-span-12 col-xxl-12 col-sm-6">
-              <CampaignCard beneficiaries={beneficiaries} selectedMonth={selectedMonth} selectedYear={selectedYear} />
+              <CampaignCard beneficiaries={filteredBeneficiaries} selectedMonth={selectedMonth} selectedYear={selectedYear} />
             </div>
             <div className="lg:col-span-6 2xl:col-span-12 col-xxl-12 col-sm-6">
-              <CustomerOverviewCard beneficiaries={beneficiaries} selectedMonth={selectedMonth} selectedYear={selectedYear} />
+              <CustomerOverviewCard beneficiaries={filteredBeneficiaries} selectedMonth={selectedMonth} selectedYear={selectedYear} />
             </div>
           </div>
         </div>
 
         <div className="lg:col-span-6 2xl:col-span-4">
-          <ClientPaymentStatusCard beneficiaries={beneficiaries} />
+          <ClientPaymentStatusCard beneficiaries={filteredBeneficiaries} />
         </div>
 
         <div className="lg:col-span-6 2xl:col-span-4">
-          <CountriesStatusCard beneficiaries={beneficiaries} selectedMonth={selectedMonth} selectedYear={selectedYear} />
+          <CountriesStatusCard beneficiaries={filteredBeneficiaries} selectedMonth={selectedMonth} selectedYear={selectedYear} />
         </div>
 
         <div className="lg:col-span-12 2xl:col-span-4">
-          <TopPerformerCard beneficiaries={beneficiaries} onRefresh={handleRefresh} />
+          <TopPerformerCard beneficiaries={filteredBeneficiaries} onRefresh={handleRefresh} />
         </div>
 
         <div className="lg:col-span-12 2xl:col-span-6">
-          <TodoListRecentCard beneficiaries={beneficiaries} onRefresh={handleRefresh} />
+          <TodoListRecentCard beneficiaries={filteredBeneficiaries} onRefresh={handleRefresh} />
         </div>
 
         <div className="lg:col-span-12 2xl:col-span-6">
-          <LastTransactionCard beneficiaries={beneficiaries} />
+          <LastTransactionCard beneficiaries={filteredBeneficiaries} />
         </div>
 
       </div>

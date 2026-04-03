@@ -29,6 +29,7 @@ export type VendorMinAggregateOutputType = {
   organizationId: string | null
   userId: string | null
   name: string | null
+  vendorCode: string | null
   type: $Enums.VendorType | null
   email: string | null
   phone: string | null
@@ -50,6 +51,7 @@ export type VendorMaxAggregateOutputType = {
   organizationId: string | null
   userId: string | null
   name: string | null
+  vendorCode: string | null
   type: $Enums.VendorType | null
   email: string | null
   phone: string | null
@@ -71,6 +73,7 @@ export type VendorCountAggregateOutputType = {
   organizationId: number
   userId: number
   name: number
+  vendorCode: number
   type: number
   email: number
   phone: number
@@ -94,6 +97,7 @@ export type VendorMinAggregateInputType = {
   organizationId?: true
   userId?: true
   name?: true
+  vendorCode?: true
   type?: true
   email?: true
   phone?: true
@@ -115,6 +119,7 @@ export type VendorMaxAggregateInputType = {
   organizationId?: true
   userId?: true
   name?: true
+  vendorCode?: true
   type?: true
   email?: true
   phone?: true
@@ -136,6 +141,7 @@ export type VendorCountAggregateInputType = {
   organizationId?: true
   userId?: true
   name?: true
+  vendorCode?: true
   type?: true
   email?: true
   phone?: true
@@ -230,6 +236,7 @@ export type VendorGroupByOutputType = {
   organizationId: string
   userId: string | null
   name: string
+  vendorCode: string | null
   type: $Enums.VendorType
   email: string | null
   phone: string | null
@@ -272,6 +279,7 @@ export type VendorWhereInput = {
   organizationId?: Prisma.StringFilter<"Vendor"> | string
   userId?: Prisma.StringNullableFilter<"Vendor"> | string | null
   name?: Prisma.StringFilter<"Vendor"> | string
+  vendorCode?: Prisma.StringNullableFilter<"Vendor"> | string | null
   type?: Prisma.EnumVendorTypeFilter<"Vendor"> | $Enums.VendorType
   email?: Prisma.StringNullableFilter<"Vendor"> | string | null
   phone?: Prisma.StringNullableFilter<"Vendor"> | string | null
@@ -298,6 +306,7 @@ export type VendorOrderByWithRelationInput = {
   organizationId?: Prisma.SortOrder
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
+  vendorCode?: Prisma.SortOrderInput | Prisma.SortOrder
   type?: Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -321,6 +330,7 @@ export type VendorOrderByWithRelationInput = {
 
 export type VendorWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  vendorCode?: string
   AND?: Prisma.VendorWhereInput | Prisma.VendorWhereInput[]
   OR?: Prisma.VendorWhereInput[]
   NOT?: Prisma.VendorWhereInput | Prisma.VendorWhereInput[]
@@ -346,13 +356,14 @@ export type VendorWhereUniqueInput = Prisma.AtLeast<{
   expenses?: Prisma.ExpenseRequestListRelationFilter
   subscriptions?: Prisma.SubscriptionListRelationFilter
   virtualCards?: Prisma.VirtualCardListRelationFilter
-}, "id">
+}, "id" | "vendorCode">
 
 export type VendorOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
+  vendorCode?: Prisma.SortOrderInput | Prisma.SortOrder
   type?: Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -380,6 +391,7 @@ export type VendorScalarWhereWithAggregatesInput = {
   organizationId?: Prisma.StringWithAggregatesFilter<"Vendor"> | string
   userId?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
   name?: Prisma.StringWithAggregatesFilter<"Vendor"> | string
+  vendorCode?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
   type?: Prisma.EnumVendorTypeWithAggregatesFilter<"Vendor"> | $Enums.VendorType
   email?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
   phone?: Prisma.StringNullableWithAggregatesFilter<"Vendor"> | string | null
@@ -399,6 +411,7 @@ export type VendorScalarWhereWithAggregatesInput = {
 export type VendorCreateInput = {
   id?: string
   name: string
+  vendorCode?: string | null
   type: $Enums.VendorType
   email?: string | null
   phone?: string | null
@@ -425,6 +438,7 @@ export type VendorUncheckedCreateInput = {
   organizationId: string
   userId?: string | null
   name: string
+  vendorCode?: string | null
   type: $Enums.VendorType
   email?: string | null
   phone?: string | null
@@ -447,6 +461,7 @@ export type VendorUncheckedCreateInput = {
 export type VendorUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -473,6 +488,7 @@ export type VendorUncheckedUpdateInput = {
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -497,6 +513,7 @@ export type VendorCreateManyInput = {
   organizationId: string
   userId?: string | null
   name: string
+  vendorCode?: string | null
   type: $Enums.VendorType
   email?: string | null
   phone?: string | null
@@ -516,6 +533,7 @@ export type VendorCreateManyInput = {
 export type VendorUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -537,6 +555,7 @@ export type VendorUncheckedUpdateManyInput = {
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -573,6 +592,7 @@ export type VendorCountOrderByAggregateInput = {
   organizationId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  vendorCode?: Prisma.SortOrder
   type?: Prisma.SortOrder
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
@@ -594,6 +614,7 @@ export type VendorMaxOrderByAggregateInput = {
   organizationId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  vendorCode?: Prisma.SortOrder
   type?: Prisma.SortOrder
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
@@ -615,6 +636,7 @@ export type VendorMinOrderByAggregateInput = {
   organizationId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  vendorCode?: Prisma.SortOrder
   type?: Prisma.SortOrder
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
@@ -777,6 +799,7 @@ export type VendorUpdateOneWithoutVirtualCardsNestedInput = {
 export type VendorCreateWithoutOrganizationInput = {
   id?: string
   name: string
+  vendorCode?: string | null
   type: $Enums.VendorType
   email?: string | null
   phone?: string | null
@@ -801,6 +824,7 @@ export type VendorUncheckedCreateWithoutOrganizationInput = {
   id?: string
   userId?: string | null
   name: string
+  vendorCode?: string | null
   type: $Enums.VendorType
   email?: string | null
   phone?: string | null
@@ -854,6 +878,7 @@ export type VendorScalarWhereInput = {
   organizationId?: Prisma.StringFilter<"Vendor"> | string
   userId?: Prisma.StringNullableFilter<"Vendor"> | string | null
   name?: Prisma.StringFilter<"Vendor"> | string
+  vendorCode?: Prisma.StringNullableFilter<"Vendor"> | string | null
   type?: Prisma.EnumVendorTypeFilter<"Vendor"> | $Enums.VendorType
   email?: Prisma.StringNullableFilter<"Vendor"> | string | null
   phone?: Prisma.StringNullableFilter<"Vendor"> | string | null
@@ -873,6 +898,7 @@ export type VendorScalarWhereInput = {
 export type VendorCreateWithoutUserInput = {
   id?: string
   name: string
+  vendorCode?: string | null
   type: $Enums.VendorType
   email?: string | null
   phone?: string | null
@@ -897,6 +923,7 @@ export type VendorUncheckedCreateWithoutUserInput = {
   id?: string
   organizationId: string
   name: string
+  vendorCode?: string | null
   type: $Enums.VendorType
   email?: string | null
   phone?: string | null
@@ -945,6 +972,7 @@ export type VendorUpdateManyWithWhereWithoutUserInput = {
 export type VendorCreateWithoutExpensesInput = {
   id?: string
   name: string
+  vendorCode?: string | null
   type: $Enums.VendorType
   email?: string | null
   phone?: string | null
@@ -970,6 +998,7 @@ export type VendorUncheckedCreateWithoutExpensesInput = {
   organizationId: string
   userId?: string | null
   name: string
+  vendorCode?: string | null
   type: $Enums.VendorType
   email?: string | null
   phone?: string | null
@@ -1007,6 +1036,7 @@ export type VendorUpdateToOneWithWhereWithoutExpensesInput = {
 export type VendorUpdateWithoutExpensesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1032,6 +1062,7 @@ export type VendorUncheckedUpdateWithoutExpensesInput = {
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1053,6 +1084,7 @@ export type VendorUncheckedUpdateWithoutExpensesInput = {
 export type VendorCreateWithoutSubscriptionsInput = {
   id?: string
   name: string
+  vendorCode?: string | null
   type: $Enums.VendorType
   email?: string | null
   phone?: string | null
@@ -1078,6 +1110,7 @@ export type VendorUncheckedCreateWithoutSubscriptionsInput = {
   organizationId: string
   userId?: string | null
   name: string
+  vendorCode?: string | null
   type: $Enums.VendorType
   email?: string | null
   phone?: string | null
@@ -1115,6 +1148,7 @@ export type VendorUpdateToOneWithWhereWithoutSubscriptionsInput = {
 export type VendorUpdateWithoutSubscriptionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1140,6 +1174,7 @@ export type VendorUncheckedUpdateWithoutSubscriptionsInput = {
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1161,6 +1196,7 @@ export type VendorUncheckedUpdateWithoutSubscriptionsInput = {
 export type VendorCreateWithoutVirtualCardsInput = {
   id?: string
   name: string
+  vendorCode?: string | null
   type: $Enums.VendorType
   email?: string | null
   phone?: string | null
@@ -1186,6 +1222,7 @@ export type VendorUncheckedCreateWithoutVirtualCardsInput = {
   organizationId: string
   userId?: string | null
   name: string
+  vendorCode?: string | null
   type: $Enums.VendorType
   email?: string | null
   phone?: string | null
@@ -1223,6 +1260,7 @@ export type VendorUpdateToOneWithWhereWithoutVirtualCardsInput = {
 export type VendorUpdateWithoutVirtualCardsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1248,6 +1286,7 @@ export type VendorUncheckedUpdateWithoutVirtualCardsInput = {
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1270,6 +1309,7 @@ export type VendorCreateManyOrganizationInput = {
   id?: string
   userId?: string | null
   name: string
+  vendorCode?: string | null
   type: $Enums.VendorType
   email?: string | null
   phone?: string | null
@@ -1289,6 +1329,7 @@ export type VendorCreateManyOrganizationInput = {
 export type VendorUpdateWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1313,6 +1354,7 @@ export type VendorUncheckedUpdateWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1336,6 +1378,7 @@ export type VendorUncheckedUpdateManyWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1356,6 +1399,7 @@ export type VendorCreateManyUserInput = {
   id?: string
   organizationId: string
   name: string
+  vendorCode?: string | null
   type: $Enums.VendorType
   email?: string | null
   phone?: string | null
@@ -1375,6 +1419,7 @@ export type VendorCreateManyUserInput = {
 export type VendorUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1399,6 +1444,7 @@ export type VendorUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1422,6 +1468,7 @@ export type VendorUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  vendorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumVendorTypeFieldUpdateOperationsInput | $Enums.VendorType
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1492,6 +1539,7 @@ export type VendorSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   organizationId?: boolean
   userId?: boolean
   name?: boolean
+  vendorCode?: boolean
   type?: boolean
   email?: boolean
   phone?: boolean
@@ -1519,6 +1567,7 @@ export type VendorSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   organizationId?: boolean
   userId?: boolean
   name?: boolean
+  vendorCode?: boolean
   type?: boolean
   email?: boolean
   phone?: boolean
@@ -1542,6 +1591,7 @@ export type VendorSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   organizationId?: boolean
   userId?: boolean
   name?: boolean
+  vendorCode?: boolean
   type?: boolean
   email?: boolean
   phone?: boolean
@@ -1565,6 +1615,7 @@ export type VendorSelectScalar = {
   organizationId?: boolean
   userId?: boolean
   name?: boolean
+  vendorCode?: boolean
   type?: boolean
   email?: boolean
   phone?: boolean
@@ -1581,7 +1632,7 @@ export type VendorSelectScalar = {
   updatedAt?: boolean
 }
 
-export type VendorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "userId" | "name" | "type" | "email" | "phone" | "website" | "address" | "paymentMethod" | "stripePaymentMethodId" | "status" | "approvedAt" | "taxIdCollected" | "form1099Required" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["vendor"]>
+export type VendorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "userId" | "name" | "vendorCode" | "type" | "email" | "phone" | "website" | "address" | "paymentMethod" | "stripePaymentMethodId" | "status" | "approvedAt" | "taxIdCollected" | "form1099Required" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["vendor"]>
 export type VendorInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   user?: boolean | Prisma.Vendor$userArgs<ExtArgs>
@@ -1613,6 +1664,7 @@ export type $VendorPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     organizationId: string
     userId: string | null
     name: string
+    vendorCode: string | null
     type: $Enums.VendorType
     email: string | null
     phone: string | null
@@ -2059,6 +2111,7 @@ export interface VendorFieldRefs {
   readonly organizationId: Prisma.FieldRef<"Vendor", 'String'>
   readonly userId: Prisma.FieldRef<"Vendor", 'String'>
   readonly name: Prisma.FieldRef<"Vendor", 'String'>
+  readonly vendorCode: Prisma.FieldRef<"Vendor", 'String'>
   readonly type: Prisma.FieldRef<"Vendor", 'VendorType'>
   readonly email: Prisma.FieldRef<"Vendor", 'String'>
   readonly phone: Prisma.FieldRef<"Vendor", 'String'>

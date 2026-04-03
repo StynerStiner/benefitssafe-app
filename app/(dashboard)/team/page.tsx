@@ -50,13 +50,14 @@ const ROLE_FILTER_OPTIONS = [
     { value: "all", label: "All Roles" },
     { value: "nonprofit_admin", label: "Admin" },
     { value: "nonprofit_staff", label: "Staff" },
-    { value: "beneficiary", label: "Beneficiary" },
     { value: "cpa", label: "CPA" },
     { value: "auditor", label: "Auditor" },
     { value: "attorney", label: "Attorney" },
     { value: "grant_officer", label: "Grant Officer" },
-    { value: "vendor", label: "Vendor" },
 ];
+
+// Roles that belong on the Team page (exclude beneficiaries and vendors)
+const TEAM_ROLES = ["nonprofit_admin", "nonprofit_staff", "cpa", "auditor", "attorney", "grant_officer", "compliance_officer", "support_agent", "billing_admin", "platform_admin"];
 
 const UsersGrid = () => {
     const [users, setUsers] = useState<TeamUser[]>([]);
@@ -83,7 +84,11 @@ const UsersGrid = () => {
             .then((r) => r.ok ? r.json() : { users: [] })
             .then((data) => {
                 const list = Array.isArray(data) ? data : (data?.users && Array.isArray(data.users) ? data.users : []);
-                setUsers(list);
+                // Filter to only show internal team roles (not beneficiaries or vendors)
+                const teamOnly = role && role !== "all"
+                  ? list
+                  : list.filter((u: TeamUser) => TEAM_ROLES.includes(u.role));
+                setUsers(teamOnly);
             })
             .catch(() => {})
             .finally(() => setLoading(false));
@@ -185,7 +190,7 @@ const UsersGrid = () => {
                 </CardHeader>
 
                 <CardContent className="card-body p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4">
                         {loading ? (
                             <p className="text-sm text-neutral-500 col-span-full text-center py-8">Loading team...</p>
                         ) : users.length === 0 ? (

@@ -289,10 +289,15 @@ export async function POST(request: Request) {
 
     // Create Organization + Admin User + Promo Redemption in a transaction
     const result = await prisma.$transaction(async (tx) => {
+      // Generate orgCode: ORG-{seq} where seq = total existing orgs + 1
+      const existingOrgCount = await tx.organization.count();
+      const orgCode = `ORG-${String(existingOrgCount + 1).padStart(5, "0")}`;
+
       const organization = await tx.organization.create({
         data: {
           name: organizationName.trim(),
           ein: normalizedEIN,
+          orgCode,
           einVerified: einVerified === true,
           stripeAccountId,
           stripeCardholderIdId,
@@ -303,6 +308,7 @@ export async function POST(request: Request) {
         select: {
           id: true,
           name: true,
+          orgCode: true,
           stripeAccountId: true,
           ein: true,
           einVerified: true,

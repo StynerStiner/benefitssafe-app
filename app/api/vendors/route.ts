@@ -5,6 +5,7 @@
 import { auth } from "@/auth";
 import { cached, invalidateCacheByPrefix, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { prisma } from "@/lib/db";
+import { validateRecipientEmail, sanitizeEmailForLog, buildSecureLink } from "@/lib/email-security";
 import { createVendorSchema } from "@/lib/validations/vendor";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -106,17 +107,65 @@ export async function POST(request: Request) {
 
     const data = parsed.data;
 
-    // For freelancers with email: auto-create a User record with vendor role
+    // For any vendor with an email: create a User account so they can log in
     let userId: string | null = null;
-    if (data.type === "SERVICE_PROVIDER" && data.email) {
-      // Check if user with this email already exists
+
+    if (data.email) {
+      // Validate email against disposable domains and injection attacks
+      const emailCheck = validateRecipientEmail(data.email);
+      if (!emailCheck.valid) {
+        return NextResponse.json(
+          { error: emailCheck.reason || "Invalid email address" },
+          { status: 400 },
+        );
+      }
+
+      // Check if a User with this email already exists
       const existingUser = await prisma.user.findUnique({
         where: { email: data.email },
-        select: { id: true },
+        select: { id: true, email: true, firstName: true, lastName: true, organizationId: true },
       });
 
       if (existingUser) {
         userId = existingUser.id;
+
+        // Create OrganizationMembership if one doesn't exist for this org
+        const existingMembership = await prisma.organizationMembership.findFirst({
+          where: { userId: existingUser.id, organizationId },
+        });
+
+        if (!existingMembership) {
+          // Generate memberCode: TM-{orgSeq}-{memberSeq}
+          const orgForMember = await prisma.organization.findUnique({
+            where: { id: organizationId },
+            select: { orgCode: true },
+          });
+
+          let orgSeqMember = "0000";
+          if (orgForMember?.orgCode) {
+            const match = orgForMember.orgCode.match(/ORG-(\d+)/);
+            if (match) {
+              orgSeqMember = match[1];
+            }
+          }
+
+          const membershipCount = await prisma.organizationMembership.count({
+            where: { organizationId },
+          });
+          const memberCode = `TM-${orgSeqMember}-${String(membershipCount + 1).padStart(5, "0")}`;
+
+          await prisma.organizationMembership.create({
+            data: {
+              userId: existingUser.id,
+              organizationId,
+              role: "vendor",
+              memberCode,
+              status: "active",
+              invitedBy: session.user.id,
+              isDefaultOrg: false,
+            },
+          });
+        }
       } else {
         // Parse name into firstName/lastName
         const nameParts = data.name.trim().split(/\s+/);
@@ -131,18 +180,152 @@ export async function POST(request: Request) {
             phone: data.phone || null,
             role: "vendor",
             organizationId,
-            isActive: true,
+            isActive: false,
           },
-          select: { id: true },
+          select: { id: true, email: true, firstName: true, lastName: true },
         });
         userId = newUser.id;
+
+        // Generate memberCode: TM-{orgSeq}-{memberSeq}
+        const orgForMember = await prisma.organization.findUnique({
+          where: { id: organizationId },
+          select: { orgCode: true },
+        });
+
+        let orgSeqMember = "0000";
+        if (orgForMember?.orgCode) {
+          const match = orgForMember.orgCode.match(/ORG-(\d+)/);
+          if (match) {
+            orgSeqMember = match[1];
+          }
+        }
+
+        const membershipCount = await prisma.organizationMembership.count({
+          where: { organizationId },
+        });
+        const memberCode = `TM-${orgSeqMember}-${String(membershipCount + 1).padStart(5, "0")}`;
+
+        // Create OrganizationMembership with "pending" status
+        await prisma.organizationMembership.create({
+          data: {
+            userId: newUser.id,
+            organizationId,
+            role: "vendor",
+            memberCode,
+            status: "pending",
+            invitedBy: session.user.id,
+            isDefaultOrg: true,
+          },
+        });
+
+        // Create InviteToken with 7-day expiry
+        const INVITE_EXPIRY_DAYS = 7;
+        const tokenExpiresAt = new Date();
+        tokenExpiresAt.setDate(tokenExpiresAt.getDate() + INVITE_EXPIRY_DAYS);
+
+        const invite = await prisma.inviteToken.create({
+          data: {
+            userId: newUser.id,
+            sentTo: data.email,
+            method: "email",
+            sentById: session.user.id,
+            expiresAt: tokenExpiresAt,
+          },
+          select: { token: true, expiresAt: true },
+        });
+
+        const inviteUrl = buildSecureLink(`/auth/accept-invite?token=${invite.token}`);
+
+        // Send invite email via Postmark (or console fallback)
+        let emailSent = false;
+
+        if (process.env.POSTMARK_API_TOKEN) {
+          try {
+            const emailRes = await fetch("https://api.postmarkapp.com/email", {
+              method: "POST",
+              headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "X-Postmark-Server-Token": process.env.POSTMARK_API_TOKEN,
+              },
+              body: JSON.stringify({
+                From: process.env.POSTMARK_FROM_EMAIL || "noreply@benefitssafe.com",
+                To: data.email,
+                Subject: "You've been invited to BenefitsSafe as a Vendor",
+                TextBody: `Hi ${firstName},\n\nYou've been invited to join BenefitsSafe as a vendor.\n\nSet up your account: ${inviteUrl}\n\nThis link expires in ${INVITE_EXPIRY_DAYS} days.`,
+                MessageStream: "outbound",
+                Headers: [
+                  { Name: "X-BenefitsSafe-Invite", Value: "true" },
+                ],
+              }),
+            });
+
+            emailSent = emailRes.ok;
+            if (!emailRes.ok) {
+              console.error("Postmark vendor invite email failed:", await emailRes.text());
+            }
+          } catch (emailError) {
+            console.error("Failed to send vendor invite email:", emailError);
+          }
+        } else {
+          // Log to console when Postmark not configured (dev mode)
+          console.log("\n========================================");
+          console.log("VENDOR INVITE (Postmark not configured)");
+          console.log("========================================");
+          console.log(`To: ${data.email}`);
+          console.log(`Name: ${firstName} ${lastName}`);
+          console.log(`Role: vendor`);
+          console.log(`Link: ${inviteUrl}`);
+          console.log(`Expires: ${invite.expiresAt.toISOString()}`);
+          console.log("========================================\n");
+          emailSent = true; // In dev, console log counts as "sent"
+        }
+
+        // Audit log for the invite
+        await prisma.auditLog.create({
+          data: {
+            userId: session.user.id,
+            organizationId,
+            action: "invite",
+            entityType: "vendor",
+            entityId: newUser.id,
+            newValue: JSON.parse(JSON.stringify({
+              email: sanitizeEmailForLog(data.email),
+              role: "vendor",
+              vendorName: data.name,
+              emailSent,
+            })),
+          },
+        });
       }
     }
+
+    // Generate vendorCode: VN-{orgSeq}-{vendorSeq}
+    // Extract orgSeq from the organization's orgCode, or fall back to counting
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { orgCode: true },
+    });
+
+    let orgSeq = "0000";
+    if (org?.orgCode) {
+      // orgCode format is "ORG-00001", extract the numeric part
+      const match = org.orgCode.match(/ORG-(\d+)/);
+      if (match) {
+        orgSeq = match[1];
+      }
+    }
+
+    const vendorCount = await prisma.vendor.count({
+      where: { organizationId },
+    });
+    const vendorCode = `VN-${orgSeq}-${String(vendorCount + 1).padStart(5, "0")}`;
 
     const vendor = await prisma.vendor.create({
       data: {
         organizationId,
         name: data.name,
+        vendorCode,
         email: data.email || null,
         type: data.type,
         phone: data.phone || null,
@@ -153,7 +336,7 @@ export async function POST(request: Request) {
         form1099Required: data.form1099Required || false,
         userId,
       },
-      select: { id: true, name: true, status: true, userId: true },
+      select: { id: true, name: true, vendorCode: true, status: true, userId: true },
     });
 
     await prisma.auditLog.create({

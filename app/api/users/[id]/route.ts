@@ -22,6 +22,53 @@ const updateSchema = z.object({
   phone: z.string().optional(),
 });
 
+// GET /api/users/[id] — View user profile (org-scoped)
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { role, organizationId } = session.user;
+    if (role !== "nonprofit_admin" && role !== "nonprofit_staff" && role !== "platform_admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const { id } = await params;
+
+    const user = await prisma.user.findFirst({
+      where: { id, organizationId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        role: true,
+        isActive: true,
+        avatarUrl: true,
+        beneficiaryCode: true,
+        addressCity: true,
+        addressState: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error("GET /api/users/[id] error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
 // PATCH /api/users/[id] — Update user fields
 export async function PATCH(
   request: NextRequest,

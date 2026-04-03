@@ -1,14 +1,14 @@
 import {
   BarChart3,
-  CalendarDays,
   FileText,
   HeadphonesIcon,
   House,
   LayoutDashboard,
-  Mail,
   MessageCircleMore,
   Settings,
   Shield,
+  ShieldCheck,
+  UserCircle,
   Users,
   UsersRound,
 } from "lucide-react";
@@ -34,6 +34,7 @@ interface NavItem {
 // ============================================
 
 const nonprofitAdminNav: NavItem[] = [
+  // ── Core Operations ──────────────────────────
   {
     title: "Main",
     url: "#",
@@ -43,12 +44,23 @@ const nonprofitAdminNav: NavItem[] = [
       { title: "Dashboard", url: "/dashboard", circleColor: "bg-green-500" },
       { title: "Grants", url: "/grants", circleColor: "bg-blue-500" },
       { title: "Expenses", url: "/expenses", circleColor: "bg-cyan-500" },
-      { title: "Beneficiaries", url: "/beneficiaries", circleColor: "bg-yellow-500" },
-      { title: "Vendors", url: "/vendors", circleColor: "bg-primary" },
       { title: "Virtual Cards", url: "/virtual-cards", circleColor: "bg-purple-600" },
       { title: "Subscriptions", url: "/subscriptions", circleColor: "bg-cyan-500" },
     ],
   },
+  // ── Beneficiaries (the people you serve) ─────
+  {
+    title: "Beneficiaries",
+    url: "#",
+    icon: Users,
+    items: [
+      { title: "All Beneficiaries", url: "/beneficiaries", circleColor: "bg-yellow-500" },
+      { title: "Notifications", url: "/notifications", circleColor: "bg-red-500" },
+      { title: "Messages", url: "/messages", circleColor: "bg-blue-500" },
+      { title: "Calendar", url: "/calendar", circleColor: "bg-green-500" },
+    ],
+  },
+  // ── Finance & Compliance ─────────────────────
   {
     title: "Finance",
     url: "#",
@@ -62,47 +74,46 @@ const nonprofitAdminNav: NavItem[] = [
       { title: "Documents", url: "/documents", circleColor: "bg-yellow-500" },
     ],
   },
+  // ── Beneficiary Preview (admin sees what beneficiary sees) ──
   {
     title: "Beneficiary View",
     url: "#",
-    icon: Users,
+    icon: UserCircle,
     items: [
       { title: "My Dashboard", url: "/my-dashboard", circleColor: "bg-primary" },
       { title: "My Documents", url: "/my-documents", circleColor: "bg-yellow-500" },
     ],
   },
-  { label: "People" },
+  // ── Organization (internal staff & vendors) ──
+  { label: "Organization" },
   {
-    title: "Team",
-    url: "/team",
+    title: "Team & Vendors",
+    url: "#",
     icon: UsersRound,
+    items: [
+      { title: "Team", url: "/team", circleColor: "bg-blue-600" },
+      { title: "Vendors", url: "/vendors", circleColor: "bg-primary" },
+    ],
   },
+  // ── Admin ────────────────────────────────────
+  { label: "Admin" },
   {
-    title: "Messages",
-    url: "/messages",
-    icon: MessageCircleMore,
+    title: "Admin",
+    url: "#",
+    icon: ShieldCheck,
+    items: [
+      { title: "Organization", url: "/org-settings", circleColor: "bg-primary" },
+      { title: "Alert Preferences", url: "/alert-preferences", circleColor: "bg-yellow-500" },
+      { title: "Profile", url: "/profile", circleColor: "bg-red-600" },
+    ],
   },
-  {
-    title: "Notifications",
-    url: "/notifications",
-    icon: Mail,
-  },
-  {
-    title: "Calendar",
-    url: "/calendar",
-    icon: CalendarDays,
-  },
-  { label: "Settings" },
+  // ── Settings & Support ──────────────────────
   {
     title: "Settings",
     url: "#",
     icon: Settings,
-    isActive: true,
     items: [
-      { title: "Theme", url: "#", circleColor: "bg-primary" },
-      { title: "Organization", url: "/org-settings", circleColor: "bg-primary" },
-      { title: "Alert Preferences", url: "/alert-preferences", circleColor: "bg-yellow-500" },
-      { title: "Profile", url: "/profile", circleColor: "bg-red-600" },
+      { title: "Theme", url: "#", circleColor: "bg-purple-500" },
     ],
   },
   {

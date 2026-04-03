@@ -27,6 +27,7 @@ import {
 import { cn } from '@/lib/utils';
 import { ChevronRight, EllipsisVertical } from "lucide-react";
 import Image, { StaticImageData } from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import UserAvatar from "@/components/shared/user-avatar";
@@ -53,6 +54,7 @@ interface TeamUser {
     phone?: string;
     avatarUrl: string | null;
     isActive: boolean;
+    memberships?: { id: string; memberCode: string | null; status: string }[];
 }
 
 interface UsersGridCardProps {
@@ -142,6 +144,27 @@ const UsersGridCard = ({ users, onRefresh }: UsersGridCardProps) => {
         }
     };
 
+    const handleRevokeMembership = async (user: TeamUser) => {
+        const membershipId = user.memberships?.[0]?.id;
+        if (!membershipId) {
+            toast.error("No membership found for this user");
+            return;
+        }
+        if (!confirm(`Remove ${user.firstName} ${user.lastName} from this organization? Their cards will be frozen.`)) return;
+        try {
+            const res = await fetch(`/api/memberships/${membershipId}`, { method: "DELETE" });
+            const data = await res.json();
+            if (res.ok) {
+                toast.success(`${user.firstName} removed from organization. ${data.cardsFrozen} card(s) frozen.`);
+                onRefresh?.();
+            } else {
+                toast.error(data.error || "Failed to revoke membership");
+            }
+        } catch {
+            toast.error("Failed to revoke membership");
+        }
+    };
+
     const openDelete = (user: TeamUser) => {
         setDeleteUser(user);
         setDeleteOpen(true);
@@ -174,45 +197,41 @@ const UsersGridCard = ({ users, onRefresh }: UsersGridCardProps) => {
             {users.map((userItem, index) => {
                 return (
                     <div className="user-grid-card" key={userItem.id}>
-                        <div className="relative border border-neutral-200 dark:border-neutral-600 rounded-2xl overflow-hidden">
-                            <div className="relative h-[127px]">
+                        <div className="relative border border-neutral-200 dark:border-neutral-600 rounded-xl overflow-hidden">
+                            <div className="relative h-[80px]">
                                 <Image src={bgImages[index % bgImages.length]} alt="Image" fill className="w-full object-fit-cover" />
-
                             </div>
 
-                            <div className="dropdown absolute top-0 end-0 me-4 mt-4">
+                            <div className="dropdown absolute top-0 end-0 me-2 mt-2">
                                 <DropdownMenu>
-                                    <DropdownMenuTrigger className='bg-gradient-to-r from-white/50 w-8 h-8 rounded-lg border border-light-white flex justify-center items-center text-white'>
-                                        <EllipsisVertical className="h-5" />
+                                    <DropdownMenuTrigger className='bg-gradient-to-r from-white/50 w-7 h-7 rounded-lg border border-light-white flex justify-center items-center text-white'>
+                                        <EllipsisVertical className="h-4" />
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
                                         <DropdownMenuItem onClick={() => openEdit(userItem)}>Edit</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => openDelete(userItem)}>Delete</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleRevokeMembership(userItem)}>Remove from Org</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => openDelete(userItem)}>Deactivate User</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
 
-                            <div className="pe-6 pb-4 ps-6 text-center mt--50 relative z-[1]">
-                                <UserAvatar firstName={userItem.firstName} lastName={userItem.lastName} avatarUrl={userItem.avatarUrl} size={100} className="border br-white border-width-2-px ms-auto me-auto -mt-[50px]" />
-                                <h6 className="text-lg mb-0 mt-1.5">{userItem.firstName} {userItem.lastName}</h6>
-                                <span className="text-neutral-500 dark:text-neutral-300 mb-4">{userItem.email}</span>
+                            <div className="px-3 pb-3 text-center relative z-[1]">
+                                <UserAvatar firstName={userItem.firstName} lastName={userItem.lastName} avatarUrl={userItem.avatarUrl} size={64} className="border br-white border-width-2-px ms-auto me-auto -mt-[32px]" />
+                                <h6 className="text-sm font-semibold mb-0 mt-1">{userItem.firstName} {userItem.lastName}</h6>
+                                <span className="text-neutral-500 dark:text-neutral-300 text-xs block truncate">{userItem.email}</span>
 
-                                <div className="center-border relative bg-gradient-to-r from-red-500/10 to-red-50/25 rounded-lg p-3 flex items-center gap-4 before:absolute before:w-px before:h-full before:z-[1] before:bg-neutral-200 dark:before:bg-neutral-500 before:start-1/2">
-                                    <div className="text-center w-1/2">
-                                        <h6 className="text-base mb-0">{roleLabels[userItem.role] || userItem.role}</h6>
-                                        <span className="text-neutral-500 dark:text-neutral-300 text-sm mb-0">Role</span>
-                                    </div>
-                                    <div className="text-center w-1/2">
-                                        <Badge variant={userItem.isActive ? "success" : "default"}>
-                                            {userItem.isActive ? "Active" : "Inactive"}
-                                        </Badge>
-                                        <span className="text-neutral-500 dark:text-neutral-300 text-sm mb-0">Status</span>
-                                    </div>
+                                <div className="flex items-center justify-center gap-2 mt-2">
+                                    <Badge variant="info" className="text-xs">{roleLabels[userItem.role] || userItem.role}</Badge>
+                                    <Badge variant={userItem.isActive ? "success" : "default"} className="text-xs">
+                                        {userItem.isActive ? "Active" : "Inactive"}
+                                    </Badge>
                                 </div>
-                                <Button className={cn(`bg-blue-50 hover:bg-primary dark:hover:bg-primary hover:text-white dark:hover:text-white dark:bg-primary/25 text-primary dark:text-blue-400 text-sm px-3 py-3 rounded-lg flex items-center justify-center mt-4 font-medium gap-2 w-full h-12`)}>
-                                    View Profile
-                                    <ChevronRight className="w-5 h-5" />
-                                </Button>
+                                <Link href={`/team/${userItem.id}`}>
+                                  <Button size="sm" className={cn(`bg-blue-50 hover:bg-primary dark:hover:bg-primary hover:text-white dark:hover:text-white dark:bg-primary/25 text-primary dark:text-blue-400 text-xs px-2 py-1.5 rounded-lg flex items-center justify-center mt-2 font-medium gap-1 w-full h-8 cursor-pointer`)}>
+                                      View Profile
+                                      <ChevronRight className="w-3.5 h-3.5" />
+                                  </Button>
+                                </Link>
                             </div>
                         </div>
                     </div>

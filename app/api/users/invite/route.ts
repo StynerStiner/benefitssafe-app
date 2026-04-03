@@ -89,6 +89,38 @@ export async function POST(request: Request) {
       select: { id: true, email: true, firstName: true, lastName: true, role: true },
     });
 
+    // Generate memberCode: TM-{orgSeq}-{memberSeq}
+    const orgForCode = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { orgCode: true },
+    });
+
+    let orgSeqForMember = "0000";
+    if (orgForCode?.orgCode) {
+      const match = orgForCode.orgCode.match(/ORG-(\d+)/);
+      if (match) {
+        orgSeqForMember = match[1];
+      }
+    }
+
+    const membershipCount = await prisma.organizationMembership.count({
+      where: { organizationId },
+    });
+    const memberCode = `TM-${orgSeqForMember}-${String(membershipCount + 1).padStart(5, "0")}`;
+
+    // Create OrganizationMembership with "pending" status
+    await prisma.organizationMembership.create({
+      data: {
+        userId: newUser.id,
+        organizationId,
+        role: inviteRole,
+        memberCode,
+        status: "pending",
+        invitedBy: session.user.id,
+        isDefaultOrg: true,
+      },
+    });
+
     // Create invite token (7-day expiry)
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);

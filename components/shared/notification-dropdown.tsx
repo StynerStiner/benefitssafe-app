@@ -92,6 +92,23 @@ const NotificationDropdown = () => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  const handleMarkRead = (id: string) => {
+    if (notifications.find((n) => n.id === id)?.read) return;
+    fetch("/api/notifications", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notificationId: id }),
+    })
+      .then(() => {
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+        );
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+        fetchNotifications();
+      })
+      .catch(() => {});
+  };
+
   const fetchNotifications = useCallback(() => {
     fetch("/api/notifications?limit=5")
       .then((r) => r.ok ? r.json() : null)
@@ -106,7 +123,7 @@ const NotificationDropdown = () => {
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 60000);
+    const interval = setInterval(fetchNotifications, 120000);
     const handleFocus = () => fetchNotifications();
     window.addEventListener("focus", handleFocus);
     return () => {
@@ -156,6 +173,7 @@ const NotificationDropdown = () => {
                   <Link
                     key={n.id}
                     href={n.href || "/notifications"}
+                    onClick={() => handleMarkRead(n.id)}
                     className={`flex px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-600 justify-between gap-1 ${
                       !n.read ? "bg-blue-50/50 dark:bg-slate-700/50" : ""
                     }`}

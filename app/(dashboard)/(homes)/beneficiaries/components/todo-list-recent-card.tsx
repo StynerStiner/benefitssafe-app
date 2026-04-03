@@ -15,6 +15,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Pencil, UserX, UserCheck } from "lucide-react";
+import Link from "next/link";
 import EditBeneficiaryForm from "./edit-beneficiary-form";
 
 interface Beneficiary {
@@ -120,7 +121,9 @@ const TodoListRecentCard = ({ beneficiaries, onRefresh }: TodoListRecentCardProp
                     <div key={b.id} className="flex items-center justify-between gap-2">
                         <div>
                             <h6 className="text-sm font-medium mb-0">
-                                {b.firstName} {b.lastName}
+                                <Link href={`/beneficiaries/${b.id}`} className="hover:text-primary hover:underline">
+                                  {b.firstName} {b.lastName}
+                                </Link>
                                 {!b.isActive && (
                                     <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-600/25 text-red-600 dark:text-red-400 font-medium">
                                         Inactive

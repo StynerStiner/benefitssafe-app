@@ -247,12 +247,32 @@ export async function POST(request: Request) {
       },
     });
 
+    // Generate memberCode: TM-{orgSeq}-{memberSeq}
+    const orgForCode = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { orgCode: true },
+    });
+
+    let orgSeqForMember = "0000";
+    if (orgForCode?.orgCode) {
+      const match = orgForCode.orgCode.match(/ORG-(\d+)/);
+      if (match) {
+        orgSeqForMember = match[1];
+      }
+    }
+
+    const membershipCount = await prisma.organizationMembership.count({
+      where: { organizationId },
+    });
+    const memberCode = `TM-${orgSeqForMember}-${String(membershipCount + 1).padStart(5, "0")}`;
+
     // Create OrganizationMembership with "pending" status
     await prisma.organizationMembership.create({
       data: {
         userId: beneficiary.id,
         organizationId,
         role: "beneficiary",
+        memberCode,
         status: "pending",
         invitedBy: session.user.id,
         isDefaultOrg: true,

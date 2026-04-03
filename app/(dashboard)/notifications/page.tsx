@@ -26,6 +26,7 @@ const EmailPage = () => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("all");
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     const fetchNotifications = useCallback(async () => {
         try {
@@ -45,6 +46,66 @@ const EmailPage = () => {
     useEffect(() => {
         fetchNotifications();
     }, [fetchNotifications]);
+
+    const handleMarkRead = async (id: string) => {
+        const notification = notifications.find((n) => n.id === id);
+        if (!notification || notification.read) return;
+        try {
+            const res = await fetch("/api/notifications", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ notificationId: id }),
+            });
+            if (!res.ok) throw new Error("Failed to mark as read");
+            setNotifications((prev) =>
+                prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+            );
+        } catch (error) {
+            console.error("Error marking notification as read:", error);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        try {
+            const res = await fetch("/api/notifications", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ notificationIds: [id] }),
+            });
+            if (!res.ok) throw new Error("Failed to delete");
+            setNotifications((prev) => prev.filter((n) => n.id !== id));
+            setSelectedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
+            toast.success("Notification deleted");
+        } catch {
+            toast.error("Failed to delete notification");
+        }
+    };
+
+    const handleDeleteSelected = async () => {
+        if (selectedIds.size === 0) return;
+        try {
+            const res = await fetch("/api/notifications", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ notificationIds: Array.from(selectedIds) }),
+            });
+            if (!res.ok) throw new Error("Failed to delete");
+            setNotifications((prev) => prev.filter((n) => !selectedIds.has(n.id)));
+            toast.success(`${selectedIds.size} notification${selectedIds.size > 1 ? "s" : ""} deleted`);
+            setSelectedIds(new Set());
+        } catch {
+            toast.error("Failed to delete notifications");
+        }
+    };
+
+    const handleToggleSelect = (id: string) => {
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    };
 
     const handleMarkAllRead = async () => {
         try {
@@ -101,13 +162,21 @@ const EmailPage = () => {
                                 totalCount={filteredNotifications.length}
                                 onMarkAllRead={handleMarkAllRead}
                                 onRefresh={fetchNotifications}
+                                onDeleteSelected={handleDeleteSelected}
+                                selectedCount={selectedIds.size}
                             />
                         </div>
                         <div className="card-body p-0">
                             {loading ? (
                                 <LoadingSkeleton />
                             ) : (
-                                <EmailList notifications={filteredNotifications} />
+                                <EmailList
+                                    notifications={filteredNotifications}
+                                    onMarkRead={handleMarkRead}
+                                    onDelete={handleDelete}
+                                    selectedIds={selectedIds}
+                                    onToggleSelect={handleToggleSelect}
+                                />
                             )}
                         </div>
                     </div>

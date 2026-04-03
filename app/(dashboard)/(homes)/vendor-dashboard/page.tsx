@@ -7,6 +7,7 @@ import RevenueStatisticsCard from "@/app/(dashboard)/(homes)/vendor-dashboard/co
 import StaticCard from "@/app/(dashboard)/(homes)/vendor-dashboard/components/static-card";
 import StatsCard from "@/app/(dashboard)/(homes)/vendor-dashboard/components/stats-card";
 import TotalTransactionsCard from "@/app/(dashboard)/(homes)/vendor-dashboard/components/total-transactions-card";
+import VendorPaymentHistoryCard from "@/app/(dashboard)/(homes)/vendor-dashboard/components/vendor-payment-history-card";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import type { Metadata } from "next";
@@ -51,6 +52,9 @@ const InvestmentPage = () => {
         </div>
         <div className="col-span-12 2xl:col-span-4">
           <Suspense fallback={<LoadingSkeleton />}><ProjectStatusCard /></Suspense>
+        </div>
+        <div className="col-span-12 2xl:col-span-8">
+          <Suspense fallback={<LoadingSkeleton />}><VendorPaymentHistoryCard /></Suspense>
         </div>
       </div>
     </>

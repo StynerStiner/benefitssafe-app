@@ -53,16 +53,9 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
       .catch(() => {});
   }, []);
 
-  // Fetch unread count on mount and every 60 seconds
+  // Fetch unread count on mount only -- the header dropdown handles polling
   useEffect(() => {
     fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 60000);
-    const handleFocus = () => fetchUnreadCount();
-    window.addEventListener("focus", handleFocus);
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("focus", handleFocus);
-    };
   }, [fetchUnreadCount]);
 
   // Auto-open the active group on route change, and clear manual close

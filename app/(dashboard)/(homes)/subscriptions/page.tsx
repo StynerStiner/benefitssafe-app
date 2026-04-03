@@ -42,13 +42,25 @@ const SubscriptionsPage = () => {
 
     useEffect(() => {
         fetch("/api/subscriptions")
-            .then((r) => r.ok ? r.json() : [])
-            .then((data) => { if (Array.isArray(data)) setSubscriptions(data); })
+            .then((r) => {
+                if (!r.ok) return { subscriptions: [] };
+                return r.json();
+            })
+            .then((data) => {
+                const list = Array.isArray(data) ? data : data?.subscriptions;
+                if (Array.isArray(list)) setSubscriptions(list);
+            })
             .catch(() => {
                 setError("Failed to load subscriptions. Please try refreshing the page.");
             })
             .finally(() => setLoading(false));
     }, []);
+
+    const handleStatusChange = (id: string, newStatus: string) => {
+        setSubscriptions((prev) =>
+            prev.map((s) => (s.id === id ? { ...s, status: newStatus, updatedAt: new Date().toISOString() } : s))
+        );
+    };
 
     if (loading) {
         return (
@@ -100,7 +112,7 @@ const SubscriptionsPage = () => {
                 </div>
 
                 <div className="col-span-12 2xl:col-span-4">
-                    <TransactionHistoryCard subscriptions={subscriptions} />
+                    <TransactionHistoryCard subscriptions={subscriptions} onStatusChange={handleStatusChange} />
                 </div>
 
                 <div className="col-span-12 2xl:col-span-8">

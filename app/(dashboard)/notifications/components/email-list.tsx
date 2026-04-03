@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AlertOctagon, AlertTriangle, FileText, DollarSign, CreditCard, Bell, ShieldCheck, Users, Star } from "lucide-react";
+import { AlertOctagon, AlertTriangle, FileText, DollarSign, CreditCard, Bell, ShieldCheck, Users, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 interface Notification {
@@ -19,6 +19,10 @@ interface Notification {
 
 interface EmailListProps {
     notifications: Notification[];
+    onMarkRead?: (id: string) => void;
+    onDelete?: (id: string) => void;
+    selectedIds?: Set<string>;
+    onToggleSelect?: (id: string) => void;
 }
 
 function getTypeIcon(type: string) {
@@ -62,7 +66,7 @@ function relativeTime(dateStr: string): string {
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-const EmailList = ({ notifications }: EmailListProps) => {
+const EmailList = ({ notifications, onMarkRead, onDelete, selectedIds, onToggleSelect }: EmailListProps) => {
     if (notifications.length === 0) {
         return (
             <div className="flex items-center justify-center py-16">
@@ -89,14 +93,25 @@ const EmailList = ({ notifications }: EmailListProps) => {
                     <div className="form-check style-check flex items-center">
                         <Checkbox
                             className="border border-neutral-500 w-4 h-4"
+                            checked={selectedIds?.has(notification.id) ?? false}
+                            onCheckedChange={() => onToggleSelect?.(notification.id)}
                         />
                     </div>
-                    <Button variant="link" className="!p-0 bg-transparent starred-button icon text-xl text-neutral-500 dark:text-neutral-300 line-height-1 flex">
+                    <div className="flex items-center text-xl text-neutral-500 dark:text-neutral-300">
                         {getTypeIcon(notification.type)}
-                    </Button>
-                    <Link href={notification.href || "#"} className="text-neutral-600 dark:text-neutral-200 font-medium text-base text-line-1 w-[190px]">{notification.title}</Link>
-                    <Link href={notification.href || "#"} className="text-neutral-600 dark:text-neutral-200 font-medium mb-0 line-clamp-1 max-w-[740px]">{notification.message}</Link>
+                    </div>
+                    <Link href={notification.href || "#"} onClick={() => onMarkRead?.(notification.id)} className="text-neutral-600 dark:text-neutral-200 font-medium text-base text-line-1 w-[190px]">{notification.title}</Link>
+                    <Link href={notification.href || "#"} onClick={() => onMarkRead?.(notification.id)} className="text-neutral-600 dark:text-neutral-200 font-medium mb-0 line-clamp-1 max-w-[740px]">{notification.message}</Link>
                     <span className="text-neutral-600 dark:text-neutral-200 font-medium min-w-max-content ms-auto">{relativeTime(notification.createdAt)}</span>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0 text-neutral-400 hover:text-red-500 cursor-pointer"
+                        onClick={(e) => { e.stopPropagation(); onDelete?.(notification.id); }}
+                        title="Delete notification"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </Button>
                 </li>
             ))}
         </ul>

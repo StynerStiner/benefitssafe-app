@@ -13,9 +13,11 @@ interface EmailHeaderProps {
     totalCount?: number;
     onMarkAllRead?: () => void;
     onRefresh?: () => void;
+    onDeleteSelected?: () => void;
+    selectedCount?: number;
 }
 
-const EmailHeader = ({ totalCount = 0, onMarkAllRead, onRefresh }: EmailHeaderProps) => {
+const EmailHeader = ({ totalCount = 0, onMarkAllRead, onRefresh, onDeleteSelected, selectedCount = 0 }: EmailHeaderProps) => {
     return (
         <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -39,8 +41,15 @@ const EmailHeader = ({ totalCount = 0, onMarkAllRead, onRefresh }: EmailHeaderPr
                         </DropdownMenu>
                     </div>
                 </div>
-                <Button variant="link" className="!p-0 bg-transparent text-neutral-800 dark:text-white flex">
+                <Button
+                    variant="link"
+                    className={`!p-0 bg-transparent flex ${selectedCount > 0 ? "text-red-500" : "text-neutral-800 dark:text-white"}`}
+                    onClick={onDeleteSelected}
+                    disabled={selectedCount === 0}
+                    title={selectedCount > 0 ? `Delete ${selectedCount} selected` : "Select notifications to delete"}
+                >
                     <Trash2 className="w-5 h-5" />
+                    {selectedCount > 0 && <span className="text-xs ml-1">{selectedCount}</span>}
                 </Button>
                 <Button variant="link" className="!p-0 bg-transparent text-neutral-800 dark:text-white flex" onClick={onRefresh}>
                     <RotateCw className="w-5 h-5" />
