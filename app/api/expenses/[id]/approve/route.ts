@@ -161,6 +161,19 @@ export async function PATCH(
       },
     });
 
+    // Fire workflow automation (non-blocking)
+    import("@/lib/workflow-engine").then(({ getWorkflowEngine }) => {
+      getWorkflowEngine().fire(organizationId, "expense_approved", {
+        expenseId: id,
+        beneficiaryName: `${result.requestedBy?.firstName || ""} ${result.requestedBy?.lastName || ""}`.trim(),
+        beneficiaryEmail: result.requestedBy?.email || "",
+        amount,
+        category: result.category?.name || result.description || "",
+        grantName: result.grant?.name || "",
+        approvedBy: session.user?.name || "Admin",
+      });
+    }).catch(() => {});
+
     // Notify the beneficiary who submitted the expense
     if (result.requestedBy) {
       await prisma.notification.create({

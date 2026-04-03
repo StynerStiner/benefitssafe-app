@@ -33,6 +33,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Remove X-Powered-By header (ZAP: "Server Leaks Information via X-Powered-By")
+  poweredByHeader: false,
   reactStrictMode: false,
   eslint: {
     ignoreDuringBuilds: true,

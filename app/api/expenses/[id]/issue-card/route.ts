@@ -375,6 +375,18 @@ export async function POST(
       },
     });
 
+    // Fire workflow automation (non-blocking)
+    import("@/lib/workflow-engine").then(({ getWorkflowEngine }) => {
+      getWorkflowEngine().fire(organizationId, "card_issued", {
+        cardId: virtualCard.id,
+        beneficiaryName: `${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`,
+        beneficiaryEmail: expense.requestedBy.email,
+        last4: virtualCard.last4 || "****",
+        spendingLimit: parseFloat(virtualCard.spendingCap.toString()),
+        grantName: expense.grant?.name || "",
+      });
+    }).catch(() => {});
+
     // Notify beneficiary about new card
     if (expense.requestedById) {
       await prisma.notification.create({

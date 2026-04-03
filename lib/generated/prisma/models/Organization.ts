@@ -279,6 +279,9 @@ export type OrganizationWhereInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityListRelationFilter
   calendarEvents?: Prisma.CalendarEventListRelationFilter
   memberships?: Prisma.OrganizationMembershipListRelationFilter
+  integrations?: Prisma.IntegrationListRelationFilter
+  workflowTriggers?: Prisma.WorkflowTriggerListRelationFilter
+  workflowLogs?: Prisma.WorkflowLogListRelationFilter
 }
 
 export type OrganizationOrderByWithRelationInput = {
@@ -307,6 +310,9 @@ export type OrganizationOrderByWithRelationInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityOrderByRelationAggregateInput
   calendarEvents?: Prisma.CalendarEventOrderByRelationAggregateInput
   memberships?: Prisma.OrganizationMembershipOrderByRelationAggregateInput
+  integrations?: Prisma.IntegrationOrderByRelationAggregateInput
+  workflowTriggers?: Prisma.WorkflowTriggerOrderByRelationAggregateInput
+  workflowLogs?: Prisma.WorkflowLogOrderByRelationAggregateInput
 }
 
 export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
@@ -338,6 +344,9 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   cardholderEligibilities?: Prisma.CardholderEligibilityListRelationFilter
   calendarEvents?: Prisma.CalendarEventListRelationFilter
   memberships?: Prisma.OrganizationMembershipListRelationFilter
+  integrations?: Prisma.IntegrationListRelationFilter
+  workflowTriggers?: Prisma.WorkflowTriggerListRelationFilter
+  workflowLogs?: Prisma.WorkflowLogListRelationFilter
 }, "id">
 
 export type OrganizationOrderByWithAggregationInput = {
@@ -410,6 +419,9 @@ export type OrganizationCreateInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateInput = {
@@ -438,6 +450,9 @@ export type OrganizationUncheckedCreateInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUpdateInput = {
@@ -466,6 +481,9 @@ export type OrganizationUpdateInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateInput = {
@@ -494,6 +512,9 @@ export type OrganizationUncheckedUpdateInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateManyInput = {
@@ -761,6 +782,48 @@ export type OrganizationUpdateOneRequiredWithoutMembershipsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutMembershipsInput, Prisma.OrganizationUpdateWithoutMembershipsInput>, Prisma.OrganizationUncheckedUpdateWithoutMembershipsInput>
 }
 
+export type OrganizationCreateNestedOneWithoutIntegrationsInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutIntegrationsInput, Prisma.OrganizationUncheckedCreateWithoutIntegrationsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutIntegrationsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutIntegrationsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutIntegrationsInput, Prisma.OrganizationUncheckedCreateWithoutIntegrationsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutIntegrationsInput
+  upsert?: Prisma.OrganizationUpsertWithoutIntegrationsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutIntegrationsInput, Prisma.OrganizationUpdateWithoutIntegrationsInput>, Prisma.OrganizationUncheckedUpdateWithoutIntegrationsInput>
+}
+
+export type OrganizationCreateNestedOneWithoutWorkflowTriggersInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutWorkflowTriggersInput, Prisma.OrganizationUncheckedCreateWithoutWorkflowTriggersInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutWorkflowTriggersInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutWorkflowTriggersNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutWorkflowTriggersInput, Prisma.OrganizationUncheckedCreateWithoutWorkflowTriggersInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutWorkflowTriggersInput
+  upsert?: Prisma.OrganizationUpsertWithoutWorkflowTriggersInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutWorkflowTriggersInput, Prisma.OrganizationUpdateWithoutWorkflowTriggersInput>, Prisma.OrganizationUncheckedUpdateWithoutWorkflowTriggersInput>
+}
+
+export type OrganizationCreateNestedOneWithoutWorkflowLogsInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutWorkflowLogsInput, Prisma.OrganizationUncheckedCreateWithoutWorkflowLogsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutWorkflowLogsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutWorkflowLogsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutWorkflowLogsInput, Prisma.OrganizationUncheckedCreateWithoutWorkflowLogsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutWorkflowLogsInput
+  upsert?: Prisma.OrganizationUpsertWithoutWorkflowLogsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutWorkflowLogsInput, Prisma.OrganizationUpdateWithoutWorkflowLogsInput>, Prisma.OrganizationUncheckedUpdateWithoutWorkflowLogsInput>
+}
+
 export type OrganizationCreateWithoutUsersInput = {
   id?: string
   name: string
@@ -786,6 +849,9 @@ export type OrganizationCreateWithoutUsersInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutUsersInput = {
@@ -813,6 +879,9 @@ export type OrganizationUncheckedCreateWithoutUsersInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutUsersInput = {
@@ -856,6 +925,9 @@ export type OrganizationUpdateWithoutUsersInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutUsersInput = {
@@ -883,6 +955,9 @@ export type OrganizationUncheckedUpdateWithoutUsersInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutGrantsInput = {
@@ -910,6 +985,9 @@ export type OrganizationCreateWithoutGrantsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutGrantsInput = {
@@ -937,6 +1015,9 @@ export type OrganizationUncheckedCreateWithoutGrantsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutGrantsInput = {
@@ -980,6 +1061,9 @@ export type OrganizationUpdateWithoutGrantsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutGrantsInput = {
@@ -1007,6 +1091,9 @@ export type OrganizationUncheckedUpdateWithoutGrantsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutVendorsInput = {
@@ -1034,6 +1121,9 @@ export type OrganizationCreateWithoutVendorsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutVendorsInput = {
@@ -1061,6 +1151,9 @@ export type OrganizationUncheckedCreateWithoutVendorsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutVendorsInput = {
@@ -1104,6 +1197,9 @@ export type OrganizationUpdateWithoutVendorsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutVendorsInput = {
@@ -1131,6 +1227,9 @@ export type OrganizationUncheckedUpdateWithoutVendorsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutCardsInput = {
@@ -1158,6 +1257,9 @@ export type OrganizationCreateWithoutCardsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutCardsInput = {
@@ -1185,6 +1287,9 @@ export type OrganizationUncheckedCreateWithoutCardsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutCardsInput = {
@@ -1228,6 +1333,9 @@ export type OrganizationUpdateWithoutCardsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutCardsInput = {
@@ -1255,6 +1363,9 @@ export type OrganizationUncheckedUpdateWithoutCardsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutCardholderEligibilitiesInput = {
@@ -1282,6 +1393,9 @@ export type OrganizationCreateWithoutCardholderEligibilitiesInput = {
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutCardholderEligibilitiesInput = {
@@ -1309,6 +1423,9 @@ export type OrganizationUncheckedCreateWithoutCardholderEligibilitiesInput = {
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutCardholderEligibilitiesInput = {
@@ -1352,6 +1469,9 @@ export type OrganizationUpdateWithoutCardholderEligibilitiesInput = {
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutCardholderEligibilitiesInput = {
@@ -1379,6 +1499,9 @@ export type OrganizationUncheckedUpdateWithoutCardholderEligibilitiesInput = {
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutPoliciesInput = {
@@ -1406,6 +1529,9 @@ export type OrganizationCreateWithoutPoliciesInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutPoliciesInput = {
@@ -1433,6 +1559,9 @@ export type OrganizationUncheckedCreateWithoutPoliciesInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutPoliciesInput = {
@@ -1476,6 +1605,9 @@ export type OrganizationUpdateWithoutPoliciesInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutPoliciesInput = {
@@ -1503,6 +1635,9 @@ export type OrganizationUncheckedUpdateWithoutPoliciesInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutPromoRedemptionsInput = {
@@ -1530,6 +1665,9 @@ export type OrganizationCreateWithoutPromoRedemptionsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutPromoRedemptionsInput = {
@@ -1557,6 +1695,9 @@ export type OrganizationUncheckedCreateWithoutPromoRedemptionsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutPromoRedemptionsInput = {
@@ -1600,6 +1741,9 @@ export type OrganizationUpdateWithoutPromoRedemptionsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutPromoRedemptionsInput = {
@@ -1627,6 +1771,9 @@ export type OrganizationUncheckedUpdateWithoutPromoRedemptionsInput = {
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutCalendarEventsInput = {
@@ -1654,6 +1801,9 @@ export type OrganizationCreateWithoutCalendarEventsInput = {
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
   cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutCalendarEventsInput = {
@@ -1681,6 +1831,9 @@ export type OrganizationUncheckedCreateWithoutCalendarEventsInput = {
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutCalendarEventsInput = {
@@ -1724,6 +1877,9 @@ export type OrganizationUpdateWithoutCalendarEventsInput = {
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
   cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutCalendarEventsInput = {
@@ -1751,6 +1907,9 @@ export type OrganizationUncheckedUpdateWithoutCalendarEventsInput = {
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutMembershipsInput = {
@@ -1778,6 +1937,9 @@ export type OrganizationCreateWithoutMembershipsInput = {
   promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
   cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutMembershipsInput = {
@@ -1805,6 +1967,9 @@ export type OrganizationUncheckedCreateWithoutMembershipsInput = {
   promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
   calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutMembershipsInput = {
@@ -1848,6 +2013,9 @@ export type OrganizationUpdateWithoutMembershipsInput = {
   promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
   cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutMembershipsInput = {
@@ -1875,6 +2043,417 @@ export type OrganizationUncheckedUpdateWithoutMembershipsInput = {
   promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
   cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
   calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutIntegrationsInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutIntegrationsInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantUncheckedCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyUncheckedCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutIntegrationsInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutIntegrationsInput, Prisma.OrganizationUncheckedCreateWithoutIntegrationsInput>
+}
+
+export type OrganizationUpsertWithoutIntegrationsInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutIntegrationsInput, Prisma.OrganizationUncheckedUpdateWithoutIntegrationsInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutIntegrationsInput, Prisma.OrganizationUncheckedCreateWithoutIntegrationsInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutIntegrationsInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutIntegrationsInput, Prisma.OrganizationUncheckedUpdateWithoutIntegrationsInput>
+}
+
+export type OrganizationUpdateWithoutIntegrationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutIntegrationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUncheckedUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUncheckedUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUncheckedUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutWorkflowTriggersInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutWorkflowTriggersInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantUncheckedCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyUncheckedCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutWorkflowTriggersInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutWorkflowTriggersInput, Prisma.OrganizationUncheckedCreateWithoutWorkflowTriggersInput>
+}
+
+export type OrganizationUpsertWithoutWorkflowTriggersInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutWorkflowTriggersInput, Prisma.OrganizationUncheckedUpdateWithoutWorkflowTriggersInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutWorkflowTriggersInput, Prisma.OrganizationUncheckedCreateWithoutWorkflowTriggersInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutWorkflowTriggersInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutWorkflowTriggersInput, Prisma.OrganizationUncheckedUpdateWithoutWorkflowTriggersInput>
+}
+
+export type OrganizationUpdateWithoutWorkflowTriggersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutWorkflowTriggersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUncheckedUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUncheckedUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUncheckedUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutWorkflowLogsInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutWorkflowLogsInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantUncheckedCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyUncheckedCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutWorkflowLogsInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutWorkflowLogsInput, Prisma.OrganizationUncheckedCreateWithoutWorkflowLogsInput>
+}
+
+export type OrganizationUpsertWithoutWorkflowLogsInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutWorkflowLogsInput, Prisma.OrganizationUncheckedUpdateWithoutWorkflowLogsInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutWorkflowLogsInput, Prisma.OrganizationUncheckedCreateWithoutWorkflowLogsInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutWorkflowLogsInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutWorkflowLogsInput, Prisma.OrganizationUncheckedUpdateWithoutWorkflowLogsInput>
+}
+
+export type OrganizationUpdateWithoutWorkflowLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutWorkflowLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUncheckedUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUncheckedUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUncheckedUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 
@@ -1892,6 +2471,9 @@ export type OrganizationCountOutputType = {
   cardholderEligibilities: number
   calendarEvents: number
   memberships: number
+  integrations: number
+  workflowTriggers: number
+  workflowLogs: number
 }
 
 export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1904,6 +2486,9 @@ export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Exte
   cardholderEligibilities?: boolean | OrganizationCountOutputTypeCountCardholderEligibilitiesArgs
   calendarEvents?: boolean | OrganizationCountOutputTypeCountCalendarEventsArgs
   memberships?: boolean | OrganizationCountOutputTypeCountMembershipsArgs
+  integrations?: boolean | OrganizationCountOutputTypeCountIntegrationsArgs
+  workflowTriggers?: boolean | OrganizationCountOutputTypeCountWorkflowTriggersArgs
+  workflowLogs?: boolean | OrganizationCountOutputTypeCountWorkflowLogsArgs
 }
 
 /**
@@ -1979,6 +2564,27 @@ export type OrganizationCountOutputTypeCountMembershipsArgs<ExtArgs extends runt
   where?: Prisma.OrganizationMembershipWhereInput
 }
 
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountIntegrationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.IntegrationWhereInput
+}
+
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountWorkflowTriggersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WorkflowTriggerWhereInput
+}
+
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountWorkflowLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WorkflowLogWhereInput
+}
+
 
 export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2006,6 +2612,9 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   cardholderEligibilities?: boolean | Prisma.Organization$cardholderEligibilitiesArgs<ExtArgs>
   calendarEvents?: boolean | Prisma.Organization$calendarEventsArgs<ExtArgs>
   memberships?: boolean | Prisma.Organization$membershipsArgs<ExtArgs>
+  integrations?: boolean | Prisma.Organization$integrationsArgs<ExtArgs>
+  workflowTriggers?: boolean | Prisma.Organization$workflowTriggersArgs<ExtArgs>
+  workflowLogs?: boolean | Prisma.Organization$workflowLogsArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["organization"]>
 
@@ -2077,6 +2686,9 @@ export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.Interna
   cardholderEligibilities?: boolean | Prisma.Organization$cardholderEligibilitiesArgs<ExtArgs>
   calendarEvents?: boolean | Prisma.Organization$calendarEventsArgs<ExtArgs>
   memberships?: boolean | Prisma.Organization$membershipsArgs<ExtArgs>
+  integrations?: boolean | Prisma.Organization$integrationsArgs<ExtArgs>
+  workflowTriggers?: boolean | Prisma.Organization$workflowTriggersArgs<ExtArgs>
+  workflowLogs?: boolean | Prisma.Organization$workflowLogsArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -2094,6 +2706,9 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     cardholderEligibilities: Prisma.$CardholderEligibilityPayload<ExtArgs>[]
     calendarEvents: Prisma.$CalendarEventPayload<ExtArgs>[]
     memberships: Prisma.$OrganizationMembershipPayload<ExtArgs>[]
+    integrations: Prisma.$IntegrationPayload<ExtArgs>[]
+    workflowTriggers: Prisma.$WorkflowTriggerPayload<ExtArgs>[]
+    workflowLogs: Prisma.$WorkflowLogPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2515,6 +3130,9 @@ export interface Prisma__OrganizationClient<T, Null = never, ExtArgs extends run
   cardholderEligibilities<T extends Prisma.Organization$cardholderEligibilitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$cardholderEligibilitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CardholderEligibilityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   calendarEvents<T extends Prisma.Organization$calendarEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$calendarEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CalendarEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   memberships<T extends Prisma.Organization$membershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$membershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrganizationMembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  integrations<T extends Prisma.Organization$integrationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$integrationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$IntegrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  workflowTriggers<T extends Prisma.Organization$workflowTriggersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$workflowTriggersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowTriggerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  workflowLogs<T extends Prisma.Organization$workflowLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$workflowLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3166,6 +3784,78 @@ export type Organization$membershipsArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   distinct?: Prisma.OrganizationMembershipScalarFieldEnum | Prisma.OrganizationMembershipScalarFieldEnum[]
+}
+
+/**
+ * Organization.integrations
+ */
+export type Organization$integrationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Integration
+   */
+  select?: Prisma.IntegrationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Integration
+   */
+  omit?: Prisma.IntegrationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.IntegrationInclude<ExtArgs> | null
+  where?: Prisma.IntegrationWhereInput
+  orderBy?: Prisma.IntegrationOrderByWithRelationInput | Prisma.IntegrationOrderByWithRelationInput[]
+  cursor?: Prisma.IntegrationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.IntegrationScalarFieldEnum | Prisma.IntegrationScalarFieldEnum[]
+}
+
+/**
+ * Organization.workflowTriggers
+ */
+export type Organization$workflowTriggersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WorkflowTrigger
+   */
+  select?: Prisma.WorkflowTriggerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WorkflowTrigger
+   */
+  omit?: Prisma.WorkflowTriggerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkflowTriggerInclude<ExtArgs> | null
+  where?: Prisma.WorkflowTriggerWhereInput
+  orderBy?: Prisma.WorkflowTriggerOrderByWithRelationInput | Prisma.WorkflowTriggerOrderByWithRelationInput[]
+  cursor?: Prisma.WorkflowTriggerWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WorkflowTriggerScalarFieldEnum | Prisma.WorkflowTriggerScalarFieldEnum[]
+}
+
+/**
+ * Organization.workflowLogs
+ */
+export type Organization$workflowLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WorkflowLog
+   */
+  select?: Prisma.WorkflowLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WorkflowLog
+   */
+  omit?: Prisma.WorkflowLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkflowLogInclude<ExtArgs> | null
+  where?: Prisma.WorkflowLogWhereInput
+  orderBy?: Prisma.WorkflowLogOrderByWithRelationInput | Prisma.WorkflowLogOrderByWithRelationInput[]
+  cursor?: Prisma.WorkflowLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WorkflowLogScalarFieldEnum | Prisma.WorkflowLogScalarFieldEnum[]
 }
 
 /**

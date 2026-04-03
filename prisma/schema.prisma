@@ -44,6 +44,9 @@ model Organization {
   cardholderEligibilities CardholderEligibility[]
   calendarEvents   CalendarEvent[]
   memberships      OrganizationMembership[]
+  integrations     Integration[]
+  workflowTriggers WorkflowTrigger[]
+  workflowLogs     WorkflowLog[]
 }
 
 model User {
@@ -755,4 +758,57 @@ model OrganizationMembership {
   @@index([userId])
   @@index([organizationId])
   @@index([userId, status])
+}
+
+// ── Composio Workflow Automation ────────────────────
+
+model Integration {
+  id                   String    @id @default(cuid())
+  organizationId       String
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  provider             String    // "gmail", "slack", "google_calendar", "google_sheets", "asana", "trello"
+  composioConnectionId String?   // Composio's connection ID for this org+provider
+  status               String    @default("disconnected") // "connected", "disconnected", "error"
+  connectedBy          String?   // userId of who connected it
+  connectedAt          DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@unique([organizationId, provider])
+  @@index([organizationId])
+}
+
+model WorkflowTrigger {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  eventType      String   // "expense_approved", "card_issued", "transaction_needs_review", "grant_low_balance", "beneficiary_onboarded"
+  provider       String   // which integration this trigger uses
+  actionSlug     String   // Composio tool slug, e.g. "GMAIL_SEND_EMAIL"
+  actionConfig   Json     // template data: subject, body template, channel, etc.
+  enabled        Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId, eventType])
+  @@index([organizationId, enabled])
+}
+
+model WorkflowLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  triggerId       String
+  eventType       String
+  provider        String
+  actionSlug      String
+  status          String   // "success", "failed", "skipped"
+  requestPayload  Json?
+  responsePayload Json?
+  errorMessage    String?
+  executionTimeMs Int?
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([triggerId])
 }

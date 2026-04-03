@@ -244,6 +244,21 @@ export async function POST(request: Request) {
       },
     });
 
+    // Fire workflow for flagged expenses (non-blocking)
+    if (classification.level === "NEEDS_REVIEW" || classification.level === "LIKELY_RISKY") {
+      import("@/lib/workflow-engine").then(({ getWorkflowEngine }) => {
+        getWorkflowEngine().fire(organizationId, "transaction_needs_review", {
+          transactionId: expense.id,
+          beneficiaryName: `${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`,
+          amount: parseFloat(expense.amount.toString()),
+          merchantName: expense.vendorName || "Unknown",
+          mccCode: "",
+          riskClassification: classification.level,
+          grantName: expense.grant.name,
+        });
+      }).catch(() => {});
+    }
+
     // Notify org admins about new expense submission
     const admins = await prisma.user.findMany({
       where: { organizationId, role: { in: ["nonprofit_admin", "platform_admin"] }, isActive: true },

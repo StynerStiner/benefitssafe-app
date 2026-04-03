@@ -161,3 +161,18 @@ export type CalendarEvent = Prisma.CalendarEventModel
  * 
  */
 export type OrganizationMembership = Prisma.OrganizationMembershipModel
+/**
+ * Model Integration
+ * 
+ */
+export type Integration = Prisma.IntegrationModel
+/**
+ * Model WorkflowTrigger
+ * 
+ */
+export type WorkflowTrigger = Prisma.WorkflowTriggerModel
+/**
+ * Model WorkflowLog
+ * 
+ */
+export type WorkflowLog = Prisma.WorkflowLogModel

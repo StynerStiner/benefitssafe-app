@@ -415,6 +415,49 @@ async function handleTransactionCreated(transaction: Record<string, unknown>) {
           reference: transaction.id as string,
         },
       });
+
+      // Fire workflow: card_transaction_completed (non-blocking)
+      const grantInfo = await prisma.grant.findUnique({
+        where: { id: virtualCard.expense.grantId },
+        select: { name: true, totalAmount: true, remainingAmount: true },
+      });
+      const txBeneficiary = virtualCard.expense.requestedById
+        ? await prisma.user.findUnique({
+            where: { id: virtualCard.expense.requestedById },
+            select: { firstName: true, lastName: true },
+          })
+        : null;
+
+      if (grantInfo && txBeneficiary) {
+        import("@/lib/workflow-engine").then(({ getWorkflowEngine }) => {
+          const engine = getWorkflowEngine();
+
+          // Card transaction completed
+          engine.fire(virtualCard.organizationId, "card_transaction_completed", {
+            transactionId: transaction.id as string,
+            beneficiaryName: `${txBeneficiary.firstName} ${txBeneficiary.lastName}`,
+            amount: chargeAmount,
+            merchantName: (merchantData?.name as string) || "Unknown merchant",
+            grantName: grantInfo.name,
+            remainingBalance: parseFloat(grantInfo.remainingAmount.toString()),
+          });
+
+          // Grant low balance check (20% threshold)
+          const totalAmount = parseFloat(grantInfo.totalAmount.toString());
+          const remaining = parseFloat(grantInfo.remainingAmount.toString());
+          const percentRemaining = totalAmount > 0 ? (remaining / totalAmount) * 100 : 100;
+
+          if (percentRemaining < 20) {
+            engine.fire(virtualCard.organizationId, "grant_low_balance", {
+              grantId: virtualCard.expense.grantId,
+              grantName: grantInfo.name,
+              currentBalance: remaining,
+              threshold: totalAmount * 0.2,
+              percentRemaining: Math.round(percentRemaining),
+            });
+          }
+        }).catch(() => {});
+      }
     }
   }
 

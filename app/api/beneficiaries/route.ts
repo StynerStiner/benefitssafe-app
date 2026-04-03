@@ -238,6 +238,18 @@ export async function POST(request: Request) {
       },
     });
 
+    // Fire workflow automation (non-blocking)
+    import("@/lib/workflow-engine").then(({ getWorkflowEngine }) => {
+      getWorkflowEngine().fire(organizationId, "beneficiary_onboarded", {
+        beneficiaryId: beneficiary.id,
+        beneficiaryName: `${beneficiary.firstName} ${beneficiary.lastName}`,
+        beneficiaryEmail: beneficiary.email,
+        beneficiaryCode: beneficiary.beneficiaryCode || "",
+        caseManagerName: session.user?.name || "Admin",
+        caseManagerEmail: session.user?.email || "",
+      });
+    }).catch(() => {});
+
     return NextResponse.json(beneficiary, { status: 201 });
   } catch (error: unknown) {
     const err = error as { code?: string; meta?: unknown; message?: string };

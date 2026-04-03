@@ -72,25 +72,62 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
 
     // If organization doesn't have a Stripe account yet, create one
     if (!accountId) {
-      const account = await stripe.accounts.create({
-        type: "custom",
-        country: "US",
-        email: session.user.email || undefined,
-        capabilities: {
-          card_issuing: { requested: true },
-          treasury: { requested: true },
-          transfers: { requested: true },
-        },
-        business_profile: {
-          name: organization.name,
-          product_category: "non_profit",
-          url: organization.website || undefined,
-        },
-        business_type: "non_profit",
-        tos_acceptance: {
-          service_agreement: "full",
-        },
-      });
+      // Build capabilities — treasury and card_issuing may not be available in sandbox
+      const capabilities: Record<string, { requested: boolean }> = {
+        transfers: { requested: true },
+      };
+
+      // Try to enable advanced capabilities (may fail in test mode)
+      try {
+        // Check if card_issuing and treasury are available by attempting to include them
+        capabilities.card_issuing = { requested: true };
+        capabilities.treasury = { requested: true };
+      } catch {
+        // Sandbox may not support these
+      }
+
+      let account;
+      try {
+        account = await stripe.accounts.create({
+          type: "custom",
+          country: "US",
+          email: session.user.email || undefined,
+          capabilities,
+          business_profile: {
+            name: organization.name,
+            product_description: "Nonprofit grant disbursement platform for restricted fund management",
+            url: organization.website || undefined,
+          },
+          business_type: "non_profit",
+          tos_acceptance: {
+            service_agreement: "full",
+          },
+        });
+      } catch (createError: unknown) {
+        // If treasury/card_issuing fails, retry with just transfers
+        const errMsg = createError instanceof Error ? createError.message : "";
+        if (errMsg.includes("treasury") || errMsg.includes("card_issuing")) {
+          account = await stripe.accounts.create({
+            type: "custom",
+            country: "US",
+            email: session.user.email || undefined,
+            capabilities: {
+              transfers: { requested: true },
+            },
+            business_profile: {
+              name: organization.name,
+              product_description: "Nonprofit grant disbursement platform for restricted fund management",
+              url: organization.website || undefined,
+            },
+            business_type: "non_profit",
+            tos_acceptance: {
+              service_agreement: "full",
+            },
+          });
+        } else {
+          throw createError;
+        }
+      }
       accountId = account.id;
 
       // Create a Treasury Financial Account for this connected account

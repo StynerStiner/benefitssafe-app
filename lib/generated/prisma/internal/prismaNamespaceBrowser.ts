@@ -74,7 +74,10 @@ export const ModelName = {
   PromoCode: 'PromoCode',
   PromoRedemption: 'PromoRedemption',
   CalendarEvent: 'CalendarEvent',
-  OrganizationMembership: 'OrganizationMembership'
+  OrganizationMembership: 'OrganizationMembership',
+  Integration: 'Integration',
+  WorkflowTrigger: 'WorkflowTrigger',
+  WorkflowLog: 'WorkflowLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -551,6 +554,54 @@ export const OrganizationMembershipScalarFieldEnum = {
 export type OrganizationMembershipScalarFieldEnum = (typeof OrganizationMembershipScalarFieldEnum)[keyof typeof OrganizationMembershipScalarFieldEnum]
 
 
+export const IntegrationScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  provider: 'provider',
+  composioConnectionId: 'composioConnectionId',
+  status: 'status',
+  connectedBy: 'connectedBy',
+  connectedAt: 'connectedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type IntegrationScalarFieldEnum = (typeof IntegrationScalarFieldEnum)[keyof typeof IntegrationScalarFieldEnum]
+
+
+export const WorkflowTriggerScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  eventType: 'eventType',
+  provider: 'provider',
+  actionSlug: 'actionSlug',
+  actionConfig: 'actionConfig',
+  enabled: 'enabled',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WorkflowTriggerScalarFieldEnum = (typeof WorkflowTriggerScalarFieldEnum)[keyof typeof WorkflowTriggerScalarFieldEnum]
+
+
+export const WorkflowLogScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  triggerId: 'triggerId',
+  eventType: 'eventType',
+  provider: 'provider',
+  actionSlug: 'actionSlug',
+  status: 'status',
+  requestPayload: 'requestPayload',
+  responsePayload: 'responsePayload',
+  errorMessage: 'errorMessage',
+  executionTimeMs: 'executionTimeMs',
+  createdAt: 'createdAt'
+} as const
+
+export type WorkflowLogScalarFieldEnum = (typeof WorkflowLogScalarFieldEnum)[keyof typeof WorkflowLogScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -565,6 +616,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

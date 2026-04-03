@@ -42,6 +42,11 @@ export function validateEnvironment(): { valid: boolean; missing: string[]; warn
     if (!process.env[v]) warnings.push(v);
   }
 
+  // Optional feature flags — warn but don't block
+  if (!process.env.COMPOSIO_API_KEY) {
+    console.warn("COMPOSIO_API_KEY not set — workflow automations disabled");
+  }
+
   if (missing.length > 0) {
     console.error(`CRITICAL: Missing required environment variables: ${missing.join(", ")}`);
   }

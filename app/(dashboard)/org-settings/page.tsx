@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import {
     Dialog,
     DialogContent,
@@ -16,16 +18,25 @@ import {
 import {
     ArrowDownToLine,
     Building2,
+    Calendar,
     CheckCircle,
+    CheckSquare,
     CreditCard,
     DollarSign,
     ExternalLink,
     Landmark,
     Loader2,
+    Mail,
+    MessageSquare,
     RefreshCw,
+    Settings2,
+    Sheet,
     Shield,
+    Trello,
     XCircle,
+    Zap,
 } from "lucide-react";
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -71,6 +82,58 @@ interface FundData {
     dev?: boolean;
 }
 
+interface IntegrationItem {
+    provider: string;
+    name: string;
+    icon: string;
+    status: string;
+    connectedBy: string | null;
+    connectedAt: string | null;
+}
+
+interface WorkflowItem {
+    id: string;
+    name: string;
+    description: string;
+    eventType: string;
+    provider: string;
+    actionSlug: string;
+    actionConfig: Record<string, unknown>;
+    category: string;
+    triggerId: string | null;
+    enabled: boolean;
+    providerConnected: boolean;
+}
+
+interface WorkflowLogItem {
+    id: string;
+    eventType: string;
+    provider: string;
+    actionSlug: string;
+    status: string;
+    errorMessage: string | null;
+    executionTimeMs: number | null;
+    createdAt: string;
+}
+
+const PROVIDER_IMAGE_MAP: Record<string, string> = {
+    gmail: "/assets/images/Connected-Services-icons/gmail.webp",
+    slack: "/assets/images/Connected-Services-icons/slack.png",
+    google_calendar: "/assets/images/Connected-Services-icons/google-calender.png",
+    google_sheets: "/assets/images/Connected-Services-icons/google-sheets.png",
+    asana: "/assets/images/Connected-Services-icons/asana.png",
+    trello: "/assets/images/Connected-Services-icons/trello.png",
+};
+
+const ICON_MAP: Record<string, React.ElementType> = {
+    Mail,
+    MessageSquare,
+    Calendar,
+    Sheet,
+    CheckSquare,
+    Trello,
+};
+
 const inputClassName =
     "border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0";
 
@@ -97,6 +160,106 @@ const OrgSettingsPage = () => {
     const [addressCity, setAddressCity] = useState("");
     const [addressState, setAddressState] = useState("");
     const [addressZip, setAddressZip] = useState("");
+
+    // Integrations & Workflows state
+    const [integrations, setIntegrations] = useState<IntegrationItem[]>([]);
+    const [workflows, setWorkflows] = useState<WorkflowItem[]>([]);
+    const [workflowLogs, setWorkflowLogs] = useState<WorkflowLogItem[]>([]);
+    const [integrationsLoading, setIntegrationsLoading] = useState(false);
+    const [connectingProvider, setConnectingProvider] = useState<string | null>(null);
+
+    const fetchIntegrations = useCallback(() => {
+        setIntegrationsLoading(true);
+        Promise.all([
+            fetch("/api/org/integrations").then((r) => r.ok ? r.json() : []),
+            fetch("/api/org/workflows").then((r) => r.ok ? r.json() : []),
+            fetch("/api/org/workflows/logs?limit=10").then((r) => r.ok ? r.json() : { data: [] }),
+        ])
+            .then(([intData, wfData, logData]) => {
+                setIntegrations(intData);
+                setWorkflows(wfData);
+                setWorkflowLogs(logData.data || []);
+            })
+            .catch(() => {})
+            .finally(() => setIntegrationsLoading(false));
+    }, []);
+
+    const handleConnectProvider = async (provider: string) => {
+        setConnectingProvider(provider);
+        try {
+            const res = await fetch("/api/org/integrations", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ provider }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                toast.error(data?.error || "Failed to connect");
+                return;
+            }
+            if (data.url) {
+                window.open(data.url, "_blank");
+                toast.success("Connection window opened");
+            }
+        } catch {
+            toast.error("Something went wrong");
+        } finally {
+            setConnectingProvider(null);
+        }
+    };
+
+    const handleDisconnectProvider = async (provider: string) => {
+        try {
+            const res = await fetch(`/api/org/integrations/${provider}`, { method: "DELETE" });
+            if (!res.ok) {
+                const data = await res.json().catch(() => null);
+                toast.error(data?.error || "Failed to disconnect");
+                return;
+            }
+            toast.success("Disconnected");
+            fetchIntegrations();
+        } catch {
+            toast.error("Something went wrong");
+        }
+    };
+
+    const handleToggleWorkflow = async (workflow: WorkflowItem) => {
+        if (workflow.triggerId) {
+            // Toggle existing trigger
+            try {
+                const res = await fetch(`/api/org/workflows/${workflow.triggerId}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ enabled: !workflow.enabled }),
+                });
+                if (!res.ok) {
+                    toast.error("Failed to update workflow");
+                    return;
+                }
+                fetchIntegrations();
+            } catch {
+                toast.error("Something went wrong");
+            }
+        } else {
+            // Create new trigger from template
+            try {
+                const res = await fetch("/api/org/workflows", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ templateId: workflow.id }),
+                });
+                if (!res.ok) {
+                    const data = await res.json().catch(() => null);
+                    toast.error(data?.error || "Failed to enable workflow");
+                    return;
+                }
+                toast.success("Workflow enabled");
+                fetchIntegrations();
+            } catch {
+                toast.error("Something went wrong");
+            }
+        }
+    };
 
     const fetchFundBalance = useCallback(() => {
         setFundLoading(true);
@@ -268,6 +431,19 @@ const OrgSettingsPage = () => {
         <>
             <DashboardBreadcrumb title="Organization" text="Organization Settings" />
 
+            <Tabs defaultValue="general" className="w-full" onValueChange={(v) => { if (v === "integrations") fetchIntegrations(); }}>
+                <TabsList className="bg-transparent dark:bg-transparent rounded-lg h-auto mb-6 w-full justify-start gap-3 p-0">
+                    <TabsTrigger value="general" className="py-3 px-6 font-semibold text-sm inline-flex items-center gap-2 rounded-lg cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none data-[state=active]:border-primary bg-white dark:bg-neutral-800 text-primary border border-primary/30 hover:border-primary hover:bg-primary/5">
+                        <Building2 className="w-4 h-4" />
+                        General
+                    </TabsTrigger>
+                    <TabsTrigger value="integrations" className="py-3 px-6 font-semibold text-sm inline-flex items-center gap-2 rounded-lg cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none data-[state=active]:border-primary bg-white dark:bg-neutral-800 text-primary border border-primary/30 hover:border-primary hover:bg-primary/5">
+                        <Zap className="w-4 h-4" />
+                        Integrations & Automations
+                    </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="general">
             <div className="grid grid-cols-1 2xl:grid-cols-12 gap-6">
                 {/* Bank & Payment Connection */}
                 <div className="col-span-12 2xl:col-span-4">
@@ -612,6 +788,225 @@ const OrgSettingsPage = () => {
                     </Card>
                 </div>
             </div>
+
+                </TabsContent>
+
+                {/* Integrations & Automations Tab */}
+                <TabsContent value="integrations">
+                    <div className="space-y-6">
+                        {/* Section 1: Connected Services */}
+                        <Card className="card rounded-lg border-0">
+                            <CardHeader>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                                        <Settings2 className="w-5 h-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <CardTitle className="text-lg">Connected Services</CardTitle>
+                                        <CardDescription>
+                                            Connect your tools to enable automated workflows
+                                        </CardDescription>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                {integrationsLoading ? (
+                                    <div className="flex items-center justify-center py-8">
+                                        <Loader2 className="w-5 h-5 animate-spin text-neutral-400" />
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {integrations.map((int) => {
+                                            const providerImage = PROVIDER_IMAGE_MAP[int.provider];
+                                            const isConnected = int.status === "connected";
+                                            const isConnecting = connectingProvider === int.provider;
+                                            return (
+                                                <div
+                                                    key={int.provider}
+                                                    className="p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                                                >
+                                                    <div className="flex items-center gap-3 mb-3">
+                                                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white dark:bg-neutral-700 border border-neutral-100 dark:border-neutral-600 overflow-hidden p-1.5">
+                                                            {providerImage ? (
+                                                                <img src={providerImage} alt={int.name} width={28} height={28} style={{ objectFit: "contain" }} />
+                                                            ) : (
+                                                                <Zap className="w-5 h-5 text-neutral-500" />
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-sm font-semibold">{int.name}</p>
+                                                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                                                                isConnected
+                                                                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                                                    : "bg-neutral-200 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400"
+                                                            }`}>
+                                                                {isConnected ? "Connected" : "Not Connected"}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    {isConnected && int.connectedAt && (
+                                                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
+                                                            Connected {new Date(int.connectedAt).toLocaleDateString()}
+                                                        </p>
+                                                    )}
+                                                    <Button
+                                                        variant={isConnected ? "outline" : "default"}
+                                                        size="sm"
+                                                        className="w-full"
+                                                        disabled={isConnecting}
+                                                        onClick={() => isConnected ? handleDisconnectProvider(int.provider) : handleConnectProvider(int.provider)}
+                                                    >
+                                                        {isConnecting && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
+                                                        {isConnected ? "Disconnect" : "Connect"}
+                                                    </Button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Section 2: Workflow Automations */}
+                        <Card className="card rounded-lg border-0">
+                            <CardHeader>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                                        <Zap className="w-5 h-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <CardTitle className="text-lg">Workflow Automations</CardTitle>
+                                        <CardDescription>
+                                            Enable one-click automations that fire when key events occur
+                                        </CardDescription>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                {(["notifications", "compliance", "reporting", "scheduling"] as const).map((category) => {
+                                    const categoryWorkflows = workflows.filter((w) => w.category === category);
+                                    if (categoryWorkflows.length === 0) return null;
+                                    return (
+                                        <div key={category} className="mb-6 last:mb-0">
+                                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3 capitalize">{category}</h3>
+                                            <div className="space-y-3">
+                                                {categoryWorkflows.map((wf) => {
+                                                    const wfImage = PROVIDER_IMAGE_MAP[wf.provider];
+                                                    return (
+                                                        <div
+                                                            key={wf.id}
+                                                            className="flex items-center gap-4 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                                                        >
+                                                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white dark:bg-neutral-700 border border-neutral-100 dark:border-neutral-600 shrink-0 overflow-hidden p-1.5">
+                                                                {wfImage ? (
+                                                                    <img src={wfImage} alt={wf.provider} width={22} height={22} style={{ objectFit: "contain" }} />
+                                                                ) : (
+                                                                    <Zap className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium truncate">{wf.name}</p>
+                                                                <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{wf.description}</p>
+                                                            </div>
+                                                            {!wf.providerConnected && (
+                                                                <span className="text-xs text-yellow-600 dark:text-yellow-400 whitespace-nowrap">
+                                                                    Connect {wf.provider.replace(/_/g, " ")} first
+                                                                </span>
+                                                            )}
+                                                            <Switch
+                                                                checked={wf.enabled}
+                                                                disabled={!wf.providerConnected}
+                                                                onCheckedChange={() => handleToggleWorkflow(wf)}
+                                                            />
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                {workflows.length === 0 && !integrationsLoading && (
+                                    <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center py-8">
+                                        Connect a service above to see available automations
+                                    </p>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Section 3: Workflow History */}
+                        <Card className="card rounded-lg border-0">
+                            <CardHeader>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                                            <RefreshCw className="w-5 h-5 text-primary" />
+                                        </div>
+                                        <div>
+                                            <CardTitle className="text-lg">Workflow History</CardTitle>
+                                            <CardDescription>
+                                                Recent automation executions
+                                            </CardDescription>
+                                        </div>
+                                    </div>
+                                    <Button variant="ghost" size="sm" onClick={fetchIntegrations}>
+                                        <RefreshCw className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                {workflowLogs.length > 0 ? (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm">
+                                            <thead>
+                                                <tr className="border-b border-neutral-200 dark:border-neutral-700">
+                                                    <th className="text-left py-2 pr-4 font-semibold text-neutral-600 dark:text-neutral-300">Time</th>
+                                                    <th className="text-left py-2 pr-4 font-semibold text-neutral-600 dark:text-neutral-300">Event</th>
+                                                    <th className="text-left py-2 pr-4 font-semibold text-neutral-600 dark:text-neutral-300">Provider</th>
+                                                    <th className="text-left py-2 pr-4 font-semibold text-neutral-600 dark:text-neutral-300">Status</th>
+                                                    <th className="text-left py-2 font-semibold text-neutral-600 dark:text-neutral-300">Details</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                                                {workflowLogs.map((log) => (
+                                                    <tr key={log.id}>
+                                                        <td className="py-2 pr-4 text-xs text-neutral-500 whitespace-nowrap">
+                                                            {new Date(log.createdAt).toLocaleString()}
+                                                        </td>
+                                                        <td className="py-2 pr-4 text-xs whitespace-nowrap">
+                                                            {log.eventType.replace(/_/g, " ")}
+                                                        </td>
+                                                        <td className="py-2 pr-4 text-xs capitalize whitespace-nowrap">
+                                                            {log.provider.replace(/_/g, " ")}
+                                                        </td>
+                                                        <td className="py-2 pr-4">
+                                                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                                                                log.status === "success"
+                                                                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                                                    : log.status === "failed"
+                                                                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                                                        : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                                                            }`}>
+                                                                {log.status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-2 text-xs text-neutral-500 max-w-48 truncate">
+                                                            {log.errorMessage || (log.executionTimeMs ? `${log.executionTimeMs}ms` : "--")}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center py-8">
+                                        No workflow executions yet
+                                    </p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+            </Tabs>
 
             {/* Add Funds Dialog */}
             <Dialog open={addFundsOpen} onOpenChange={setAddFundsOpen}>
