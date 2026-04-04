@@ -294,13 +294,124 @@ Auto-generation wired into: register, vendor create, beneficiary create, team in
 
 ---
 
-## All 3 Paperclip Agents
+## Paperclip: How It Works
 
-| Agent | Interval | What It Does | Status |
-|-------|----------|-------------|--------|
-| Watchdog | Every 24h | Monitors SSI/SSDI/Medi-Cal/CalFresh benefit thresholds | Production ready |
-| Compliance Monitor | Every 6h | MCC violations, spending velocity, duplicate charges, large txns, grant overspend | Production ready |
-| Grant Reporter | Every 7d | 5-section disbursement reports with burn rate and health status | Production ready |
+### What Is Paperclip?
+
+Paperclip is a **separate autonomous AI operations layer** that runs independently from the BenefitsSafe web application. It is a Node.js process with its own codebase (`~/Downloads/Projects/paperclip/`), its own Dockerfile, and its own scheduling system. It connects to the **same Aurora PostgreSQL database** as BenefitsSafe but runs as a completely separate process.
+
+The humans never see Paperclip. They never interact with it. They just see smarter dashboards.
+
+### Architecture
+
+```
+BenefitsSafe (Next.js)          Paperclip (Node.js)
+  |                                |
+  |   Shared Aurora PostgreSQL     |
+  |   ┌──────────────────────┐     |
+  |   | Notification table   |<----| Paperclip WRITES alerts here
+  |   | AuditLog table       |<----| Paperclip WRITES audit entries here
+  |   | GrantReport table    |<----| Paperclip WRITES reports here
+  |   | Transaction table    |---->| Paperclip READS financial data
+  |   | Grant table          |---->| Paperclip READS grant data
+  |   | User table           |---->| Paperclip READS beneficiary data
+  |   └──────────────────────┘     |
+  |                                |
+  | BenefitsSafe READS from        | Paperclip runs on a schedule:
+  | Notification, GrantReport      |   - Watchdog: every 24 hours
+  | and displays them in the       |   - Compliance: every 6 hours
+  | admin dashboard UI             |   - Reporter: every 7 days
+```
+
+**Key principle:** Paperclip is READ-ONLY on all financial data (transactions, grants, ledger entries, users). It ONLY WRITES to three tables: `Notification`, `AuditLog`, and `GrantReport`. It never modifies money, cards, or user records.
+
+### The Database Bridge
+
+This is how Paperclip alerts appear in the BenefitsSafe dashboard:
+
+1. **Paperclip agent runs** on its schedule (e.g., Watchdog every 24h)
+2. **Paperclip scans** the database -- reads transactions, grants, beneficiary benefit programs
+3. **Paperclip detects** an issue (e.g., Maria Santos is at 88% of her SSI $2,000 asset limit)
+4. **Paperclip writes** a `Notification` record directly into the shared database:
+   - `userId`: the case manager or org admin who needs to see it
+   - `type`: "threshold_warning" or "threshold_critical" or "compliance_alert" or "grant_report"
+   - `title`: "Maria Santos approaching SSI limit (88%)"
+   - `message`: detailed explanation with recommended action
+   - `href`: "/beneficiaries/{maria's-id}" (links directly to her profile)
+5. **BenefitsSafe's notification system** picks it up automatically:
+   - The bell icon badge increments (fetches unread count from Notification table)
+   - The notification dropdown shows the alert with amber/red styling
+   - The sidebar "Notifications" link shows the count
+   - The full `/notifications` page lists it with type-specific icons
+6. **The admin clicks the alert** and is taken directly to Maria's beneficiary profile
+
+No webhooks. No API calls between systems. No message queue. Just a shared database table. Simple, reliable, zero latency.
+
+### Deduplication
+
+Every Paperclip agent uses the `AlertWriter` service which checks for existing unread alerts before creating new ones:
+
+```
+Before writing: "Is there already an unread notification of this
+type for this entity for this user?"
+  - YES: Skip (don't spam the admin with duplicate alerts)
+  - NO: Create the notification + create an AuditLog entry
+```
+
+This means if Paperclip runs 100 times and Maria is still at 88%, the admin only sees ONE alert. The alert disappears from the dedup check only after the admin reads it (marks as read). If the condition persists, the next run after they read it will create a fresh alert.
+
+### Agent Details
+
+| Agent | Interval | What It Does | Reads From | Writes To |
+|-------|----------|-------------|------------|-----------|
+| **Watchdog** | Every 24h | Calculates proximity to SSI $2,000 asset limit, SSDI SGA $1,550/month, Medi-Cal 138% FPL, CalFresh 200% FPL for every active beneficiary. Warning at 80%, critical at 90%+. All 2025 limits with SSA/HHS/DHCS/CDSS citations. | User, Transaction, VirtualCard, Grant, OrganizationMembership | Notification (threshold_warning, threshold_critical), AuditLog |
+| **Compliance Monitor** | Every 6h | 5 checks on all recent transactions: (a) MCC violations against grant blocked/approved lists, (b) spending velocity -- 3+ txns/hour warning, 5+ critical, (c) duplicate charges -- same merchant + amount in 24h, (d) large single transactions -- 50%+ of grant budget warning, 80%+ critical, (e) grant overspend -- disbursed exceeds totalAmount. | Transaction, Grant, VirtualCard | Notification (compliance_alert), AuditLog |
+| **Grant Reporter** | Every 7d | Generates structured 5-section disbursement reports for every active grant: disbursement summary, spending by category, beneficiary impact (privacy-safe names), compliance summary, timeline with burn rate and projected exhaustion date. Classifies grant health as On Track / Ahead of Schedule / At Risk. | Grant, BudgetCategory, ExpenseRequest, LedgerEntry, User, VirtualCard, Notification | GrantReport, Notification (grant_report), AuditLog |
+
+### How to Run
+
+```bash
+# Run a single agent once (for testing)
+cd ~/Downloads/Projects/paperclip
+npm run agent:watchdog      # Watchdog only
+npm run agent:compliance    # Compliance Monitor only
+npm run agent:reporter      # Grant Reporter only
+
+# Run all agents on their schedules (production)
+npm run dev                 # All agents with cron scheduling
+
+# Docker (for AWS ECS/Fargate deployment)
+docker build -t paperclip .
+docker run --env-file .env paperclip
+```
+
+### Codebase Structure
+
+```
+paperclip/
+  src/
+    agents/
+      watchdog.ts          -- Benefits Threshold Watchdog
+      compliance.ts        -- Transaction Compliance Monitor
+      reporter.ts          -- Grant Reporter
+      onboarding.ts        -- Onboarding Coordinator (Phase 4 stub)
+    services/
+      alert-writer.ts      -- Dedup + write Notification + AuditLog
+      threshold-calculator.ts -- 2025 CA benefit program limits
+      risk-scorer.ts       -- Risk score computation
+      report-builder.ts    -- 5-section report assembly
+    utils/
+      scheduler.ts         -- node-cron wrapper
+      logger.ts            -- Structured logging
+    types/
+      index.ts             -- Agent interfaces
+    config.ts              -- Environment variable parsing
+    db.ts                  -- PrismaPg database connection
+    index.ts               -- Orchestrator with CLI args + graceful shutdown
+  prisma/
+    schema.prisma          -- Shared schema (same as BenefitsSafe)
+  Dockerfile               -- AWS ECS/Fargate deployment
+```
 
 ---
 
