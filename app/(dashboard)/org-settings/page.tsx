@@ -1,6 +1,7 @@
 "use client";
 
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
+import FundingTab from "./funding-tab";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -432,10 +433,14 @@ const OrgSettingsPage = () => {
             <DashboardBreadcrumb title="Organization" text="Organization Settings" />
 
             <Tabs defaultValue="general" className="w-full" onValueChange={(v) => { if (v === "integrations") fetchIntegrations(); }}>
-                <TabsList className="bg-transparent dark:bg-transparent rounded-lg h-auto mb-6 w-full justify-start gap-3 p-0">
+                <TabsList className="bg-transparent dark:bg-transparent rounded-lg h-auto mb-6 w-full justify-start gap-3 p-0 flex-wrap">
                     <TabsTrigger value="general" className="py-3 px-6 font-semibold text-sm inline-flex items-center gap-2 rounded-lg cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none data-[state=active]:border-primary bg-white dark:bg-neutral-800 text-primary border border-primary/30 hover:border-primary hover:bg-primary/5">
                         <Building2 className="w-4 h-4" />
                         General
+                    </TabsTrigger>
+                    <TabsTrigger value="funding" className="py-3 px-6 font-semibold text-sm inline-flex items-center gap-2 rounded-lg cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none data-[state=active]:border-primary bg-white dark:bg-neutral-800 text-primary border border-primary/30 hover:border-primary hover:bg-primary/5">
+                        <CreditCard className="w-4 h-4" />
+                        Funding & Payments
                     </TabsTrigger>
                     <TabsTrigger value="integrations" className="py-3 px-6 font-semibold text-sm inline-flex items-center gap-2 rounded-lg cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none data-[state=active]:border-primary bg-white dark:bg-neutral-800 text-primary border border-primary/30 hover:border-primary hover:bg-primary/5">
                         <Zap className="w-4 h-4" />
@@ -789,6 +794,11 @@ const OrgSettingsPage = () => {
                 </div>
             </div>
 
+                </TabsContent>
+
+                {/* Funding & Payments Tab */}
+                <TabsContent value="funding">
+                    <FundingTab />
                 </TabsContent>
 
                 {/* Integrations & Automations Tab */}
