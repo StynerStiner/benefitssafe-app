@@ -42,6 +42,8 @@ function getTypeIcon(type: string) {
             return <AlertTriangle className="w-4 text-amber-500" />;
         case "threshold_critical":
             return <AlertOctagon className="w-4 text-red-500" />;
+        case "grant_report":
+            return <FileText className="w-4 text-blue-500" />;
         case "invite_accepted":
         case "vendor_profile_complete":
             return <Users className="w-4" />;

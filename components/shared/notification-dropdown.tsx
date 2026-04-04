@@ -47,6 +47,8 @@ function getNotificationIcon(type: string) {
       return <AlertTriangle className="w-4 h-4 text-amber-500" />;
     case "threshold_critical":
       return <AlertOctagon className="w-4 h-4 text-red-500" />;
+    case "grant_report":
+      return <FileText className="w-4 h-4" />;
     case "invite_accepted":
     case "vendor_profile_complete":
       return <Users className="w-4 h-4" />;
@@ -65,6 +67,7 @@ function getIconBg(type: string): string {
     case "grant_approved":
       return "bg-green-100 dark:bg-green-900/30 text-green-600";
     case "card_issued":
+    case "grant_report":
       return "bg-blue-100 dark:bg-blue-900/30 text-blue-600";
     case "compliance_alert":
       return "bg-purple-100 dark:bg-purple-900/30 text-purple-600";

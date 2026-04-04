@@ -3,6 +3,7 @@
 import DashboardBreadcrumb from '@/components/layout/dashboard-breadcrumb';
 import LoadingSkeleton from '@/components/loading-skeleton';
 import { useEffect, useState } from "react";
+import GrantReportsCard from './components/grant-reports-card';
 import AverageDailySalesCard from './components/average-daily-sales-card';
 import MonthlyCampaignStateCard from './components/monthly-campaign-state-card';
 import RecentActivityCard from './components/recent-activity-card';
@@ -80,6 +81,10 @@ const Analytics = () => {
             <DashboardBreadcrumb title="Reports" text="Financial Reports" />
 
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+                <div className="col-span-12">
+                    <GrantReportsCard />
+                </div>
 
                 <div className="col-span-12 2xl:col-span-6">
                     <UpgradePlanCard grants={grants} expenses={expenses} />
