@@ -3,7 +3,7 @@
 ## Session Summary
 
 Started: 9 of 13 flows DONE, 4 PARTIAL
-Ended: **13 of 13 flows DONE**, Stripe live setup complete, both codebases committed and pushed
+Ended: **13 of 13 flows DONE**, 3 Paperclip agents live, Stripe live setup complete, Funding UI built, Reports page with auto-generated grant reports
 
 ---
 
@@ -52,6 +52,71 @@ Ended: **13 of 13 flows DONE**, Stripe live setup complete, both codebases commi
 
 ---
 
+## Priority 3: Paperclip Grant Reporter (NEW)
+
+**Built:** Full grant reporting agent at `paperclip/src/agents/reporter.ts` + `paperclip/src/services/report-builder.ts`
+
+**5-section structured reports generated automatically every 7 days:**
+
+| Section | Contents |
+|---------|----------|
+| Disbursement Summary | Total budget, disbursed, remaining, % utilized, beneficiaries served, expense counts, average expense |
+| Spending by Category | Budgeted vs spent per category, overspend flags, 90%+ warnings |
+| Beneficiary Impact | Privacy-safe names (first + last initial), expense count, total disbursed, card status |
+| Compliance Summary | Risk classification breakdown, MCC violations, threshold warnings |
+| Timeline & Projections | Start/end dates, burn rate per week, projected exhaustion date, health status |
+
+**Health Status Classification:**
+- **On Track:** Burn rate within 10% of expected pace
+- **Ahead of Schedule:** Spending below 90% of expected pace
+- **At Risk:** Spending above 110% of expected pace, category overspent, or projected exhaustion before grant end
+
+**Schema:** Added `GrantReport` model to both Paperclip and BenefitsSafe
+
+**Test Results:**
+- Organizations scanned: 2
+- Grants processed: 4
+- Reports generated: 4
+- Deduplication verified: second run created 0, skipped 4
+- Errors: 0
+
+---
+
+## Reports Page UI (NEW)
+
+**Added:** Grant Reports card to the Reports page at `/reports`
+
+- Fetches from `GET /api/reports/grants`
+- Shows each report with grant name, date, utilization progress bar, health badge
+- **"View Report" modal** displays all 5 sections:
+  - Stat boxes for disbursement totals
+  - Category spending table with status badges (OK/90%+/Over)
+  - Beneficiary impact table with card status
+  - Compliance risk breakdown with violation counts
+  - Timeline with burn rate, projected exhaustion, health reason
+- "Download PDF" button (stub -- logs "coming soon")
+- `grant_report` notification type with blue FileText icon
+
+---
+
+## Funding & Payments Tab (NEW)
+
+**Added:** New "Funding & Payments" tab to Org Settings (`/org-settings`)
+
+**3 sections:**
+
+| Section | Description |
+|---------|-------------|
+| Connected Bank Account | Shows Stripe Connect status (connected/pending/not connected), bank name + last 4, payouts/charges badges, connect/update/refresh buttons |
+| Funding Method | Radio selection: Direct Bank Funding (active, ready) vs Treasury Account (coming soon, disabled, Q2 2026) |
+| How It Works | 4-step visual flow: Approve Expense -> Card Issues -> Beneficiary Pays -> Bank Debited |
+
+**API:** `GET /api/org/stripe-account` returns connection status, bank details, capabilities
+
+**Flow:** Nonprofit clicks "Connect Bank Account" -> redirects to Stripe Connect OAuth -> returns to BenefitsSafe with bank linked. Automated for 1.9M+ nonprofits.
+
+---
+
 ## Notification System Fixes
 
 | Fix | Description |
@@ -60,6 +125,7 @@ Ended: **13 of 13 flows DONE**, Stripe live setup complete, both codebases commi
 | Delete notifications | Single delete (trash icon per row) + bulk delete (checkboxes + header trash) |
 | Real message dropdown | Replaced hardcoded "Kathryn Murphy" mock data with live conversation API |
 | Notification links | Now route to `/beneficiaries/{id}` (specific profile) instead of `/beneficiaries` |
+| Grant report icon | Blue FileText icon for `grant_report` notification type |
 
 ---
 
@@ -178,31 +244,33 @@ Auto-generation wired into: register, vendor create, beneficiary create, team in
 
 ---
 
-## Stripe Setup Completed
+## Stripe Live Setup Completed
 
 | Product | Status |
 |---------|--------|
 | Connect | Active (Platform model, SaaS + application fees) |
 | Issuing (Cards) | Active (can issue virtual cards) |
-| Identity | Active (KYC verification for cardholders) |
+| Identity | Active (KYC verification -- platform owner verified) |
 | Payments | Active |
 | Billing | Active (BenefitsSafe Pro $149/month product created) |
-| Treasury | Not yet applied (optional, contact support later) |
+| Treasury | Not yet enabled (contact Stripe support, optional) |
 
-Platform owner identity verified. Live API keys generated.
+**Setup guide completed:** Business model selected (Platform), recurring payments configured (flat rate $149/month), Connect tested via sandbox blueprint, Identity application approved, platform owner identity verified, live API keys generated.
 
 ---
 
-## Files Changed
+## Git Commits This Session
 
-**BenefitsSafe App (39 files, +2,743 lines):**
-- Commit: `9a33f02`
-- Pushed to: github.com/stynerdev225/benefitssafe-app (main branch)
-- Auto-deploying on Vercel
+| Commit | Message | Files | Lines |
+|--------|---------|-------|-------|
+| `9a33f02` | feat: 13/13 ecosystem validation -- all flows DONE | 39 | +2,743 |
+| `d659bc9` | docs: add session report | 1 | +235 |
+| `920f97c` | feat: Paperclip Phase 3 -- Grant Reporter + Reports page UI | 13 | +1,909 |
+| `0fb6c19` | feat: Funding & Payments tab in Org Settings | 3 | +397 |
 
-**Paperclip (90 files, initial commit):**
-- Commit: `f6cf854`
-- Local repository initialized
+**BenefitsSafe App:** Pushed to github.com/stynerdev225/benefitssafe-app (main), auto-deploying on Vercel
+
+**Paperclip:** 2 commits (`f6cf854` initial, `70b16bc` Phase 3). Local repo, ready for GitHub.
 
 ---
 
@@ -226,10 +294,21 @@ Platform owner identity verified. Live API keys generated.
 
 ---
 
+## All 3 Paperclip Agents
+
+| Agent | Interval | What It Does | Status |
+|-------|----------|-------------|--------|
+| Watchdog | Every 24h | Monitors SSI/SSDI/Medi-Cal/CalFresh benefit thresholds | Production ready |
+| Compliance Monitor | Every 6h | MCC violations, spending velocity, duplicate charges, large txns, grant overspend | Production ready |
+| Grant Reporter | Every 7d | 5-section disbursement reports with burn rate and health status | Production ready |
+
+---
+
 ## Next Session Priorities
 
-1. Paperclip Phase 3: Grant Reporter (auto-drafts funder disbursement reports weekly)
-2. Composio Configure modal for template variables
+1. Composio Configure modal for template variables (complianceOfficerEmail, slackChannel)
+2. Paperclip Phase 4: Onboarding Coordinator (stale invites, incomplete profiles, pending vendor approvals)
 3. Record 3-minute demo video
 4. Treasury application (contact Stripe support)
 5. Production deployment with live Stripe keys
+6. PDF export for grant reports
