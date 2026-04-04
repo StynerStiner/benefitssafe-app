@@ -7,6 +7,8 @@ import { validateRecipientEmail } from "@/lib/email-security";
 import { captureApiError } from "@/lib/error-handler";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { createBeneficiarySchema } from "@/lib/validations/beneficiary";
+import { checkLimitAccess, buildLimitReachedResponse } from "@/lib/feature-gates";
+import { incrementUsage } from "@/lib/usage-tracker";
 import { NextResponse } from "next/server";
 
 // GET /api/beneficiaries — list beneficiaries scoped to organization (paginated)
@@ -185,6 +187,22 @@ export async function POST(request: Request) {
       );
     }
 
+    // Plan limit gate: check org's current beneficiary count against tier limit
+    const currentBeneficiaryCount = await prisma.user.count({
+      where: { organizationId, role: "beneficiary", isActive: true },
+    });
+    const limitCheck = await checkLimitAccess(
+      organizationId,
+      "maxBeneficiaries",
+      currentBeneficiaryCount,
+    );
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        buildLimitReachedResponse("maxBeneficiaries", limitCheck),
+        { status: 403 },
+      );
+    }
+
     // Check for existing email globally (email has unique constraint)
     const existing = await prisma.user.findUnique({
       where: { email: data.email },
@@ -348,6 +366,9 @@ export async function POST(request: Request) {
         },
       },
     });
+
+    // Increment usage counter for this month
+    await incrementUsage(organizationId, "beneficiariesAdded");
 
     // Fire workflow automation (non-blocking)
     import("@/lib/workflow-engine").then(({ getWorkflowEngine }) => {

@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import Footer from "@/components/layout/footer";
 import Header from "@/components/layout/header";
 import ThemeCustomizer from "@/components/theme-customizer/theme-customizer";
+import TrialBanner from "@/components/shared/trial-banner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ThemeCustomizerProvider } from "@/hooks/useThemeCustomizer";
@@ -45,6 +46,7 @@ export function ClientRoot({
             <SidebarInset>
               <Header />
             </SidebarInset>
+            <TrialBanner />
             <div className="dashboard-body bg-neutral-100 dark:bg-[#1e2734] md:p-6 p-4 flex-1">
               {children}
             </div>

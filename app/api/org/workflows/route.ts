@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { WORKFLOW_TEMPLATES, getTemplateById } from "@/lib/workflow-templates";
+import type { Prisma } from "@/lib/generated/prisma/client";
 
 // GET /api/org/workflows -- List org's workflow triggers with template info
 export async function GET() {
@@ -125,7 +126,7 @@ export async function POST(request: Request) {
         eventType: template.eventType,
         provider: template.provider,
         actionSlug: template.actionSlug,
-        actionConfig: actionConfig || template.actionConfig,
+        actionConfig: (actionConfig || template.actionConfig) as Prisma.InputJsonValue,
         enabled: true,
       },
     });

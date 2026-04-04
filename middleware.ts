@@ -9,9 +9,15 @@ const PUBLIC_PATHS = [
   "/api/health",
   "/api/verify-ein",
   "/api/promo-codes/verify",
+  "/api/webhooks",
   "/_next",
   "/public",
   "/favicon.ico",
+  "/icon",
+  "/apple-icon",
+  "/manifest",
+  "/robots.txt",
+  "/sitemap.xml",
   "/privacy",
   "/terms",
 ];
@@ -67,6 +73,49 @@ export async function middleware(request: NextRequest) {
       const loginUrl = new URL("/auth/login", request.url);
       loginUrl.searchParams.set("callbackUrl", encodeURI(request.url));
       return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // --- Trial / subscription enforcement (JWT-based, Edge-compatible) ---
+  // Billing routes and account/session routes are always allowed through
+  // so the user can upgrade even if their trial has expired.
+  const BILLING_EXEMPT_PREFIXES = [
+    "/settings/billing",
+    "/api/billing",
+    "/api/memberships/switch",
+    "/api/org",
+    "/api/user",
+    "/api/notifications",
+  ];
+  const isBillingExempt = BILLING_EXEMPT_PREFIXES.some((p) => pathname.startsWith(p));
+
+  if (!isBillingExempt) {
+    const subscriptionStatus = authToken.subscriptionStatus as string | undefined;
+    const trialEndDateStr = authToken.trialEndDate as string | null | undefined;
+    const billingStatus = authToken.billingStatus as string | null | undefined;
+
+    const now = Date.now();
+    const trialEndMs = trialEndDateStr ? new Date(trialEndDateStr).getTime() : null;
+    const trialActive =
+      subscriptionStatus === "trial" && trialEndMs !== null && trialEndMs > now;
+    const billingActive =
+      billingStatus === "active" || billingStatus === "trialing";
+
+    if (!trialActive && !billingActive) {
+      // Trial expired and no active paid plan → block
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json(
+          {
+            error: "Trial expired. Upgrade to continue.",
+            upgradeUrl: "/settings/billing",
+          },
+          { status: 402 },
+        );
+      }
+      // Page navigation → redirect to billing settings
+      if (!pathname.startsWith("/settings/billing")) {
+        return NextResponse.redirect(new URL("/settings/billing", request.url));
+      }
     }
   }
 
@@ -163,5 +212,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|public/).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|icon|apple-icon|manifest|public/).*)"],
 };

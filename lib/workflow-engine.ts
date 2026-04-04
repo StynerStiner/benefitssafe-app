@@ -1,4 +1,5 @@
 import { Composio } from "@composio/core";
+import { Prisma } from "@/lib/generated/prisma/client";
 
 // Event types that can trigger workflows
 export type WorkflowEventType =
@@ -180,7 +181,7 @@ export class WorkflowEngine {
             provider: trigger.provider,
             actionSlug: trigger.actionSlug,
             status: "failed",
-            requestPayload: null,
+            requestPayload: Prisma.JsonNull,
             errorMessage:
               error instanceof Error ? error.message : "Unknown error",
             executionTimeMs: Date.now() - startTime,

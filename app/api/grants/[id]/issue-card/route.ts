@@ -6,6 +6,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
+import { checkLimitAccess, buildLimitReachedResponse, getCurrentPeriod } from "@/lib/feature-gates";
+import { incrementUsage } from "@/lib/usage-tracker";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -49,6 +51,25 @@ export async function POST(
       return NextResponse.json(
         { error: "Stripe is not configured. Add STRIPE_SECRET_KEY to environment variables." },
         { status: 503 },
+      );
+    }
+
+    // Plan limit gate: check this month's card issuance against tier limit
+    const period = getCurrentPeriod();
+    const usage = await prisma.usageCounter.findUnique({
+      where: { organizationId_period: { organizationId, period } },
+      select: { cardsIssued: true },
+    });
+    const currentCardsIssued = usage?.cardsIssued ?? 0;
+    const limitCheck = await checkLimitAccess(
+      organizationId,
+      "maxCardsPerMonth",
+      currentCardsIssued,
+    );
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        buildLimitReachedResponse("maxCardsPerMonth", limitCheck),
+        { status: 403 },
       );
     }
 
@@ -351,6 +372,9 @@ export async function POST(
         })),
       },
     });
+
+    // Increment usage counter for this month
+    await incrementUsage(organizationId, "cardsIssued");
 
     // Fire workflow automation (non-blocking)
     import("@/lib/workflow-engine").then(({ getWorkflowEngine }) => {

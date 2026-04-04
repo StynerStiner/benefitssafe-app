@@ -24,10 +24,7 @@ export const metadata: Metadata = {
     title: "BenefitsSafe - Grant Disbursement Platform",
     description: "Secure grant disbursement for nonprofits. Keep beneficiaries safe. Keep grants compliant.",
   },
-  icons: {
-    icon: "/favicon.png",
-    apple: "/favicon.png",
-  },
+  // Icons auto-served from app/icon.png and app/apple-icon.png
 };
 
 

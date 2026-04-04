@@ -4,6 +4,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { validateRecipientEmail, sanitizeEmailForLog, buildSecureLink } from "@/lib/email-security";
+import { checkLimitAccess, buildLimitReachedResponse } from "@/lib/feature-gates";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -47,6 +48,26 @@ export async function POST(request: Request) {
     }
 
     const { email, firstName, lastName, role: inviteRole } = parsed.data;
+
+    // Plan limit gate: count active team members (non-beneficiary, non-vendor roles)
+    const currentTeamCount = await prisma.user.count({
+      where: {
+        organizationId,
+        isActive: true,
+        role: { notIn: ["beneficiary", "vendor"] },
+      },
+    });
+    const teamLimitCheck = await checkLimitAccess(
+      organizationId,
+      "maxTeamMembers",
+      currentTeamCount,
+    );
+    if (!teamLimitCheck.allowed) {
+      return NextResponse.json(
+        buildLimitReachedResponse("maxTeamMembers", teamLimitCheck),
+        { status: 403 },
+      );
+    }
 
     // Validate recipient email against disposable domains and injection attacks
     const emailCheck = validateRecipientEmail(email);

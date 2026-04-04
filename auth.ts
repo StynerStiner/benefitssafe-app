@@ -20,6 +20,10 @@ declare module "next-auth" {
       role: UserRole;
       organizationId: string;
       organizationName: string;
+      subscriptionStatus: string;
+      trialEndDate: string | null;
+      billingTier: string;
+      billingStatus: string | null;
       image?: string | null;
       mfaPending?: boolean;
     };
@@ -41,6 +45,10 @@ declare module "@auth/core/jwt" {
     role: UserRole;
     organizationId: string;
     organizationName: string;
+    subscriptionStatus: string;
+    trialEndDate: string | null;
+    billingTier: string;
+    billingStatus: string | null;
     mfaPending?: boolean;
   }
 }
@@ -172,16 +180,40 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.organizationId = user.organizationId;
         token.mfaPending = user.mfaPending ?? false;
 
-        // Fetch organization name for session display
+        // Fetch organization name + billing fields for session display and middleware gates
         const org = await prisma.organization.findUnique({
           where: { id: user.organizationId },
-          select: { name: true },
+          select: {
+            name: true,
+            subscriptionStatus: true,
+            trialEndDate: true,
+            billingSubscription: { select: { tier: true, status: true } },
+          },
         });
         token.organizationName = org?.name || "";
+        token.subscriptionStatus = org?.subscriptionStatus || "trial";
+        token.trialEndDate = org?.trialEndDate ? org.trialEndDate.toISOString() : null;
+        token.billingTier = org?.billingSubscription?.tier || "free";
+        token.billingStatus = org?.billingSubscription?.status ?? null;
       }
       // Allow clearing mfaPending via session update after MFA verification
       if (trigger === "update" && updateSession?.mfaPending === false) {
         token.mfaPending = false;
+      }
+      // Refresh billing fields on session update (e.g. after upgrade/downgrade)
+      if (trigger === "update" && updateSession?.refreshBilling === true) {
+        const org = await prisma.organization.findUnique({
+          where: { id: token.organizationId },
+          select: {
+            subscriptionStatus: true,
+            trialEndDate: true,
+            billingSubscription: { select: { tier: true, status: true } },
+          },
+        });
+        token.subscriptionStatus = org?.subscriptionStatus || "trial";
+        token.trialEndDate = org?.trialEndDate ? org.trialEndDate.toISOString() : null;
+        token.billingTier = org?.billingSubscription?.tier || "free";
+        token.billingStatus = org?.billingSubscription?.status ?? null;
       }
       return token;
     },
@@ -193,6 +225,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session.user.role = token.role;
       session.user.organizationId = token.organizationId;
       session.user.organizationName = token.organizationName || "";
+      session.user.subscriptionStatus = token.subscriptionStatus || "trial";
+      session.user.trialEndDate = token.trialEndDate ?? null;
+      session.user.billingTier = token.billingTier || "free";
+      session.user.billingStatus = token.billingStatus ?? null;
       session.user.mfaPending = token.mfaPending ?? false;
       return session;
     },

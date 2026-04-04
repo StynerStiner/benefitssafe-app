@@ -7,6 +7,8 @@ import { prisma } from "@/lib/db";
 import { captureApiError } from "@/lib/error-handler";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { createGrantSchema } from "@/lib/validations/grant";
+import { checkLimitAccess, buildLimitReachedResponse } from "@/lib/feature-gates";
+import { incrementUsage } from "@/lib/usage-tracker";
 import { NextResponse } from "next/server";
 
 // GET /api/grants — list grants scoped to organization (paginated)
@@ -103,6 +105,22 @@ export async function POST(request: Request) {
 
     const data = parsed.data;
 
+    // Plan limit gate: check active grant count against tier limit
+    const currentGrantCount = await prisma.grant.count({
+      where: { organizationId, archivedAt: null },
+    });
+    const limitCheck = await checkLimitAccess(
+      organizationId,
+      "maxGrants",
+      currentGrantCount,
+    );
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        buildLimitReachedResponse("maxGrants", limitCheck),
+        { status: 403 },
+      );
+    }
+
     const grant = await prisma.grant.create({
       data: {
         organizationId,
@@ -142,6 +160,9 @@ export async function POST(request: Request) {
         },
       },
     });
+
+    // Increment usage counter for this month
+    await incrementUsage(organizationId, "grantsCreated");
 
     // Invalidate all cached grant listings for this org (covers all pagination variants)
     await invalidateCacheByPrefix(CACHE_KEYS.orgGrants(organizationId));

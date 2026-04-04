@@ -290,6 +290,8 @@ export type OrganizationWhereInput = {
   integrations?: Prisma.IntegrationListRelationFilter
   workflowTriggers?: Prisma.WorkflowTriggerListRelationFilter
   workflowLogs?: Prisma.WorkflowLogListRelationFilter
+  billingSubscription?: Prisma.XOR<Prisma.BillingSubscriptionNullableScalarRelationFilter, Prisma.BillingSubscriptionWhereInput> | null
+  usageCounters?: Prisma.UsageCounterListRelationFilter
 }
 
 export type OrganizationOrderByWithRelationInput = {
@@ -322,6 +324,8 @@ export type OrganizationOrderByWithRelationInput = {
   integrations?: Prisma.IntegrationOrderByRelationAggregateInput
   workflowTriggers?: Prisma.WorkflowTriggerOrderByRelationAggregateInput
   workflowLogs?: Prisma.WorkflowLogOrderByRelationAggregateInput
+  billingSubscription?: Prisma.BillingSubscriptionOrderByWithRelationInput
+  usageCounters?: Prisma.UsageCounterOrderByRelationAggregateInput
 }
 
 export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
@@ -357,6 +361,8 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   integrations?: Prisma.IntegrationListRelationFilter
   workflowTriggers?: Prisma.WorkflowTriggerListRelationFilter
   workflowLogs?: Prisma.WorkflowLogListRelationFilter
+  billingSubscription?: Prisma.XOR<Prisma.BillingSubscriptionNullableScalarRelationFilter, Prisma.BillingSubscriptionWhereInput> | null
+  usageCounters?: Prisma.UsageCounterListRelationFilter
 }, "id" | "orgCode">
 
 export type OrganizationOrderByWithAggregationInput = {
@@ -435,6 +441,8 @@ export type OrganizationCreateInput = {
   integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateInput = {
@@ -467,6 +475,8 @@ export type OrganizationUncheckedCreateInput = {
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUpdateInput = {
@@ -499,6 +509,8 @@ export type OrganizationUpdateInput = {
   integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateInput = {
@@ -531,6 +543,8 @@ export type OrganizationUncheckedUpdateInput = {
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateManyInput = {
@@ -846,6 +860,34 @@ export type OrganizationUpdateOneRequiredWithoutWorkflowLogsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutWorkflowLogsInput, Prisma.OrganizationUpdateWithoutWorkflowLogsInput>, Prisma.OrganizationUncheckedUpdateWithoutWorkflowLogsInput>
 }
 
+export type OrganizationCreateNestedOneWithoutBillingSubscriptionInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutBillingSubscriptionInput, Prisma.OrganizationUncheckedCreateWithoutBillingSubscriptionInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutBillingSubscriptionInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutBillingSubscriptionNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutBillingSubscriptionInput, Prisma.OrganizationUncheckedCreateWithoutBillingSubscriptionInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutBillingSubscriptionInput
+  upsert?: Prisma.OrganizationUpsertWithoutBillingSubscriptionInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutBillingSubscriptionInput, Prisma.OrganizationUpdateWithoutBillingSubscriptionInput>, Prisma.OrganizationUncheckedUpdateWithoutBillingSubscriptionInput>
+}
+
+export type OrganizationCreateNestedOneWithoutUsageCountersInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutUsageCountersInput, Prisma.OrganizationUncheckedCreateWithoutUsageCountersInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutUsageCountersInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutUsageCountersNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutUsageCountersInput, Prisma.OrganizationUncheckedCreateWithoutUsageCountersInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutUsageCountersInput
+  upsert?: Prisma.OrganizationUpsertWithoutUsageCountersInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutUsageCountersInput, Prisma.OrganizationUpdateWithoutUsageCountersInput>, Prisma.OrganizationUncheckedUpdateWithoutUsageCountersInput>
+}
+
 export type OrganizationCreateWithoutUsersInput = {
   id?: string
   name: string
@@ -875,6 +917,8 @@ export type OrganizationCreateWithoutUsersInput = {
   integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutUsersInput = {
@@ -906,6 +950,8 @@ export type OrganizationUncheckedCreateWithoutUsersInput = {
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutUsersInput = {
@@ -953,6 +999,8 @@ export type OrganizationUpdateWithoutUsersInput = {
   integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutUsersInput = {
@@ -984,6 +1032,8 @@ export type OrganizationUncheckedUpdateWithoutUsersInput = {
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutGrantsInput = {
@@ -1015,6 +1065,8 @@ export type OrganizationCreateWithoutGrantsInput = {
   integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutGrantsInput = {
@@ -1046,6 +1098,8 @@ export type OrganizationUncheckedCreateWithoutGrantsInput = {
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutGrantsInput = {
@@ -1093,6 +1147,8 @@ export type OrganizationUpdateWithoutGrantsInput = {
   integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutGrantsInput = {
@@ -1124,6 +1180,8 @@ export type OrganizationUncheckedUpdateWithoutGrantsInput = {
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutVendorsInput = {
@@ -1155,6 +1213,8 @@ export type OrganizationCreateWithoutVendorsInput = {
   integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutVendorsInput = {
@@ -1186,6 +1246,8 @@ export type OrganizationUncheckedCreateWithoutVendorsInput = {
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutVendorsInput = {
@@ -1233,6 +1295,8 @@ export type OrganizationUpdateWithoutVendorsInput = {
   integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutVendorsInput = {
@@ -1264,6 +1328,8 @@ export type OrganizationUncheckedUpdateWithoutVendorsInput = {
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutCardsInput = {
@@ -1295,6 +1361,8 @@ export type OrganizationCreateWithoutCardsInput = {
   integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutCardsInput = {
@@ -1326,6 +1394,8 @@ export type OrganizationUncheckedCreateWithoutCardsInput = {
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutCardsInput = {
@@ -1373,6 +1443,8 @@ export type OrganizationUpdateWithoutCardsInput = {
   integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutCardsInput = {
@@ -1404,6 +1476,8 @@ export type OrganizationUncheckedUpdateWithoutCardsInput = {
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutCardholderEligibilitiesInput = {
@@ -1435,6 +1509,8 @@ export type OrganizationCreateWithoutCardholderEligibilitiesInput = {
   integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutCardholderEligibilitiesInput = {
@@ -1466,6 +1542,8 @@ export type OrganizationUncheckedCreateWithoutCardholderEligibilitiesInput = {
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutCardholderEligibilitiesInput = {
@@ -1513,6 +1591,8 @@ export type OrganizationUpdateWithoutCardholderEligibilitiesInput = {
   integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutCardholderEligibilitiesInput = {
@@ -1544,6 +1624,8 @@ export type OrganizationUncheckedUpdateWithoutCardholderEligibilitiesInput = {
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutPoliciesInput = {
@@ -1575,6 +1657,8 @@ export type OrganizationCreateWithoutPoliciesInput = {
   integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutPoliciesInput = {
@@ -1606,6 +1690,8 @@ export type OrganizationUncheckedCreateWithoutPoliciesInput = {
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutPoliciesInput = {
@@ -1653,6 +1739,8 @@ export type OrganizationUpdateWithoutPoliciesInput = {
   integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutPoliciesInput = {
@@ -1684,6 +1772,8 @@ export type OrganizationUncheckedUpdateWithoutPoliciesInput = {
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutPromoRedemptionsInput = {
@@ -1715,6 +1805,8 @@ export type OrganizationCreateWithoutPromoRedemptionsInput = {
   integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutPromoRedemptionsInput = {
@@ -1746,6 +1838,8 @@ export type OrganizationUncheckedCreateWithoutPromoRedemptionsInput = {
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutPromoRedemptionsInput = {
@@ -1793,6 +1887,8 @@ export type OrganizationUpdateWithoutPromoRedemptionsInput = {
   integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutPromoRedemptionsInput = {
@@ -1824,6 +1920,8 @@ export type OrganizationUncheckedUpdateWithoutPromoRedemptionsInput = {
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutCalendarEventsInput = {
@@ -1855,6 +1953,8 @@ export type OrganizationCreateWithoutCalendarEventsInput = {
   integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutCalendarEventsInput = {
@@ -1886,6 +1986,8 @@ export type OrganizationUncheckedCreateWithoutCalendarEventsInput = {
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutCalendarEventsInput = {
@@ -1933,6 +2035,8 @@ export type OrganizationUpdateWithoutCalendarEventsInput = {
   integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutCalendarEventsInput = {
@@ -1964,6 +2068,8 @@ export type OrganizationUncheckedUpdateWithoutCalendarEventsInput = {
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutMembershipsInput = {
@@ -1995,6 +2101,8 @@ export type OrganizationCreateWithoutMembershipsInput = {
   integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutMembershipsInput = {
@@ -2026,6 +2134,8 @@ export type OrganizationUncheckedCreateWithoutMembershipsInput = {
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutMembershipsInput = {
@@ -2073,6 +2183,8 @@ export type OrganizationUpdateWithoutMembershipsInput = {
   integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutMembershipsInput = {
@@ -2104,6 +2216,8 @@ export type OrganizationUncheckedUpdateWithoutMembershipsInput = {
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutIntegrationsInput = {
@@ -2135,6 +2249,8 @@ export type OrganizationCreateWithoutIntegrationsInput = {
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutIntegrationsInput = {
@@ -2166,6 +2282,8 @@ export type OrganizationUncheckedCreateWithoutIntegrationsInput = {
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutIntegrationsInput = {
@@ -2213,6 +2331,8 @@ export type OrganizationUpdateWithoutIntegrationsInput = {
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutIntegrationsInput = {
@@ -2244,6 +2364,8 @@ export type OrganizationUncheckedUpdateWithoutIntegrationsInput = {
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutWorkflowTriggersInput = {
@@ -2275,6 +2397,8 @@ export type OrganizationCreateWithoutWorkflowTriggersInput = {
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutWorkflowTriggersInput = {
@@ -2306,6 +2430,8 @@ export type OrganizationUncheckedCreateWithoutWorkflowTriggersInput = {
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
   workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutWorkflowTriggersInput = {
@@ -2353,6 +2479,8 @@ export type OrganizationUpdateWithoutWorkflowTriggersInput = {
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutWorkflowTriggersInput = {
@@ -2384,6 +2512,8 @@ export type OrganizationUncheckedUpdateWithoutWorkflowTriggersInput = {
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutWorkflowLogsInput = {
@@ -2415,6 +2545,8 @@ export type OrganizationCreateWithoutWorkflowLogsInput = {
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
   integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutWorkflowLogsInput = {
@@ -2446,6 +2578,8 @@ export type OrganizationUncheckedCreateWithoutWorkflowLogsInput = {
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
   integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutWorkflowLogsInput = {
@@ -2493,6 +2627,8 @@ export type OrganizationUpdateWithoutWorkflowLogsInput = {
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
   integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutWorkflowLogsInput = {
@@ -2524,6 +2660,304 @@ export type OrganizationUncheckedUpdateWithoutWorkflowLogsInput = {
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
   integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
   workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutBillingSubscriptionInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  orgCode?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutBillingSubscriptionInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  orgCode?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantUncheckedCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyUncheckedCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutBillingSubscriptionInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutBillingSubscriptionInput, Prisma.OrganizationUncheckedCreateWithoutBillingSubscriptionInput>
+}
+
+export type OrganizationUpsertWithoutBillingSubscriptionInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutBillingSubscriptionInput, Prisma.OrganizationUncheckedUpdateWithoutBillingSubscriptionInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutBillingSubscriptionInput, Prisma.OrganizationUncheckedCreateWithoutBillingSubscriptionInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutBillingSubscriptionInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutBillingSubscriptionInput, Prisma.OrganizationUncheckedUpdateWithoutBillingSubscriptionInput>
+}
+
+export type OrganizationUpdateWithoutBillingSubscriptionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutBillingSubscriptionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUncheckedUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUncheckedUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUncheckedUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutUsageCountersInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  orgCode?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionCreateNestedOneWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutUsageCountersInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  orgCode?: string | null
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantUncheckedCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyUncheckedCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedCreateNestedOneWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutUsageCountersInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutUsageCountersInput, Prisma.OrganizationUncheckedCreateWithoutUsageCountersInput>
+}
+
+export type OrganizationUpsertWithoutUsageCountersInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutUsageCountersInput, Prisma.OrganizationUncheckedUpdateWithoutUsageCountersInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutUsageCountersInput, Prisma.OrganizationUncheckedCreateWithoutUsageCountersInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutUsageCountersInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutUsageCountersInput, Prisma.OrganizationUncheckedUpdateWithoutUsageCountersInput>
+}
+
+export type OrganizationUpdateWithoutUsageCountersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUpdateOneWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutUsageCountersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUncheckedUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUncheckedUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUncheckedUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedUpdateOneWithoutOrganizationNestedInput
 }
 
 
@@ -2544,6 +2978,7 @@ export type OrganizationCountOutputType = {
   integrations: number
   workflowTriggers: number
   workflowLogs: number
+  usageCounters: number
 }
 
 export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2559,6 +2994,7 @@ export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Exte
   integrations?: boolean | OrganizationCountOutputTypeCountIntegrationsArgs
   workflowTriggers?: boolean | OrganizationCountOutputTypeCountWorkflowTriggersArgs
   workflowLogs?: boolean | OrganizationCountOutputTypeCountWorkflowLogsArgs
+  usageCounters?: boolean | OrganizationCountOutputTypeCountUsageCountersArgs
 }
 
 /**
@@ -2655,6 +3091,13 @@ export type OrganizationCountOutputTypeCountWorkflowLogsArgs<ExtArgs extends run
   where?: Prisma.WorkflowLogWhereInput
 }
 
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountUsageCountersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UsageCounterWhereInput
+}
+
 
 export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2686,6 +3129,8 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   integrations?: boolean | Prisma.Organization$integrationsArgs<ExtArgs>
   workflowTriggers?: boolean | Prisma.Organization$workflowTriggersArgs<ExtArgs>
   workflowLogs?: boolean | Prisma.Organization$workflowLogsArgs<ExtArgs>
+  billingSubscription?: boolean | Prisma.Organization$billingSubscriptionArgs<ExtArgs>
+  usageCounters?: boolean | Prisma.Organization$usageCountersArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["organization"]>
 
@@ -2763,6 +3208,8 @@ export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.Interna
   integrations?: boolean | Prisma.Organization$integrationsArgs<ExtArgs>
   workflowTriggers?: boolean | Prisma.Organization$workflowTriggersArgs<ExtArgs>
   workflowLogs?: boolean | Prisma.Organization$workflowLogsArgs<ExtArgs>
+  billingSubscription?: boolean | Prisma.Organization$billingSubscriptionArgs<ExtArgs>
+  usageCounters?: boolean | Prisma.Organization$usageCountersArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -2783,6 +3230,8 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     integrations: Prisma.$IntegrationPayload<ExtArgs>[]
     workflowTriggers: Prisma.$WorkflowTriggerPayload<ExtArgs>[]
     workflowLogs: Prisma.$WorkflowLogPayload<ExtArgs>[]
+    billingSubscription: Prisma.$BillingSubscriptionPayload<ExtArgs> | null
+    usageCounters: Prisma.$UsageCounterPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3208,6 +3657,8 @@ export interface Prisma__OrganizationClient<T, Null = never, ExtArgs extends run
   integrations<T extends Prisma.Organization$integrationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$integrationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$IntegrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   workflowTriggers<T extends Prisma.Organization$workflowTriggersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$workflowTriggersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowTriggerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   workflowLogs<T extends Prisma.Organization$workflowLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$workflowLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  billingSubscription<T extends Prisma.Organization$billingSubscriptionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$billingSubscriptionArgs<ExtArgs>>): Prisma.Prisma__BillingSubscriptionClient<runtime.Types.Result.GetResult<Prisma.$BillingSubscriptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  usageCounters<T extends Prisma.Organization$usageCountersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$usageCountersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UsageCounterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3932,6 +4383,49 @@ export type Organization$workflowLogsArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.WorkflowLogScalarFieldEnum | Prisma.WorkflowLogScalarFieldEnum[]
+}
+
+/**
+ * Organization.billingSubscription
+ */
+export type Organization$billingSubscriptionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BillingSubscription
+   */
+  select?: Prisma.BillingSubscriptionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BillingSubscription
+   */
+  omit?: Prisma.BillingSubscriptionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BillingSubscriptionInclude<ExtArgs> | null
+  where?: Prisma.BillingSubscriptionWhereInput
+}
+
+/**
+ * Organization.usageCounters
+ */
+export type Organization$usageCountersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UsageCounter
+   */
+  select?: Prisma.UsageCounterSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UsageCounter
+   */
+  omit?: Prisma.UsageCounterOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UsageCounterInclude<ExtArgs> | null
+  where?: Prisma.UsageCounterWhereInput
+  orderBy?: Prisma.UsageCounterOrderByWithRelationInput | Prisma.UsageCounterOrderByWithRelationInput[]
+  cursor?: Prisma.UsageCounterWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UsageCounterScalarFieldEnum | Prisma.UsageCounterScalarFieldEnum[]
 }
 
 /**

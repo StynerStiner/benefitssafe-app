@@ -6,6 +6,8 @@ import { prisma } from "@/lib/db";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { createExpenseSchema } from "@/lib/validations/expense";
 import { classifyExpense } from "@/utils/compliance-rules";
+import { checkLimitAccess, buildLimitReachedResponse, getCurrentPeriod } from "@/lib/feature-gates";
+import { incrementUsage } from "@/lib/usage-tracker";
 import { NextResponse } from "next/server";
 
 // GET /api/expenses — list expenses scoped by role
@@ -174,6 +176,25 @@ export async function POST(request: Request) {
       category = found;
     }
 
+    // Plan limit gate: count this month's expenses from UsageCounter
+    const period = getCurrentPeriod();
+    const usage = await prisma.usageCounter.findUnique({
+      where: { organizationId_period: { organizationId, period } },
+      select: { expensesProcessed: true },
+    });
+    const currentMonthlyExpenses = usage?.expensesProcessed ?? 0;
+    const limitCheck = await checkLimitAccess(
+      organizationId,
+      "maxExpensesPerMonth",
+      currentMonthlyExpenses,
+    );
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        buildLimitReachedResponse("maxExpensesPerMonth", limitCheck),
+        { status: 403 },
+      );
+    }
+
     // Run compliance classification
     const benefitFlags = grant.benefitFlags as {
       ssi: boolean;
@@ -243,6 +264,9 @@ export async function POST(request: Request) {
         },
       },
     });
+
+    // Increment usage counter for this month
+    await incrementUsage(organizationId, "expensesProcessed");
 
     // Fire workflow for flagged expenses (non-blocking)
     if (classification.level === "NEEDS_REVIEW" || classification.level === "LIKELY_RISKY") {

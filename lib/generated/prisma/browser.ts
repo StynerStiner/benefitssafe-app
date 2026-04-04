@@ -157,3 +157,13 @@ export type WorkflowLog = Prisma.WorkflowLogModel
  * 
  */
 export type GrantReport = Prisma.GrantReportModel
+/**
+ * Model BillingSubscription
+ * 
+ */
+export type BillingSubscription = Prisma.BillingSubscriptionModel
+/**
+ * Model UsageCounter
+ * 
+ */
+export type UsageCounter = Prisma.UsageCounterModel

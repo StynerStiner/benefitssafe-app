@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  CreditCard,
   FileText,
   HeadphonesIcon,
   House,
@@ -103,11 +104,17 @@ const nonprofitAdminNav: NavItem[] = [
     icon: ShieldCheck,
     items: [
       { title: "Organization", url: "/org-settings", circleColor: "bg-primary" },
+      { title: "Billing & Plans", url: "/settings/billing", circleColor: "bg-emerald-500" },
       { title: "Alert Preferences", url: "/alert-preferences", circleColor: "bg-yellow-500" },
       { title: "Profile", url: "/profile", circleColor: "bg-red-600" },
     ],
   },
   // ── Settings & Support ──────────────────────
+  {
+    title: "Billing & Plans",
+    url: "/settings/billing",
+    icon: CreditCard,
+  },
   {
     title: "Settings",
     url: "#",

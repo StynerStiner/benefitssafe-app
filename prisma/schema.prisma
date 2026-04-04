@@ -48,6 +48,8 @@ model Organization {
   integrations     Integration[]
   workflowTriggers WorkflowTrigger[]
   workflowLogs     WorkflowLog[]
+  billingSubscription BillingSubscription?
+  usageCounters    UsageCounter[]
 }
 
 model User {
@@ -832,4 +834,54 @@ model GrantReport {
 
   @@index([organizationId, grantId])
   @@index([organizationId, generatedAt])
+}
+
+// ============================================
+// BILLING & USAGE (BenefitsSafe platform billing)
+// Separate from `model Subscription` which tracks vendor SaaS
+// subscriptions paid on behalf of beneficiaries.
+// ============================================
+
+model BillingSubscription {
+  id                   String   @id @default(cuid())
+  organizationId       String   @unique
+  organization         Organization @relation(fields: [organizationId], references: [id])
+
+  tier                 String   @default("free") // free, starter, growth, professional, enterprise
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  stripePriceId        String?
+
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean  @default(false)
+
+  status               String   @default("trialing") // trialing, active, past_due, canceled, unpaid
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+}
+
+model UsageCounter {
+  id                 String   @id @default(cuid())
+  organizationId     String
+  organization       Organization @relation(fields: [organizationId], references: [id])
+
+  period             String   // "2026-04" (year-month)
+  beneficiariesAdded Int      @default(0)
+  grantsCreated      Int      @default(0)
+  expensesProcessed  Int      @default(0)
+  cardsIssued        Int      @default(0)
+  apiCalls           Int      @default(0)
+  storageMB          Float    @default(0)
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([organizationId, period])
+  @@index([organizationId])
 }

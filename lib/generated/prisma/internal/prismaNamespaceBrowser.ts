@@ -78,7 +78,9 @@ export const ModelName = {
   Integration: 'Integration',
   WorkflowTrigger: 'WorkflowTrigger',
   WorkflowLog: 'WorkflowLog',
-  GrantReport: 'GrantReport'
+  GrantReport: 'GrantReport',
+  BillingSubscription: 'BillingSubscription',
+  UsageCounter: 'UsageCounter'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -620,6 +622,41 @@ export const GrantReportScalarFieldEnum = {
 } as const
 
 export type GrantReportScalarFieldEnum = (typeof GrantReportScalarFieldEnum)[keyof typeof GrantReportScalarFieldEnum]
+
+
+export const BillingSubscriptionScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  tier: 'tier',
+  stripeCustomerId: 'stripeCustomerId',
+  stripeSubscriptionId: 'stripeSubscriptionId',
+  stripePriceId: 'stripePriceId',
+  currentPeriodStart: 'currentPeriodStart',
+  currentPeriodEnd: 'currentPeriodEnd',
+  cancelAtPeriodEnd: 'cancelAtPeriodEnd',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BillingSubscriptionScalarFieldEnum = (typeof BillingSubscriptionScalarFieldEnum)[keyof typeof BillingSubscriptionScalarFieldEnum]
+
+
+export const UsageCounterScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  period: 'period',
+  beneficiariesAdded: 'beneficiariesAdded',
+  grantsCreated: 'grantsCreated',
+  expensesProcessed: 'expensesProcessed',
+  cardsIssued: 'cardsIssued',
+  apiCalls: 'apiCalls',
+  storageMB: 'storageMB',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UsageCounterScalarFieldEnum = (typeof UsageCounterScalarFieldEnum)[keyof typeof UsageCounterScalarFieldEnum]
 
 
 export const SortOrder = {
