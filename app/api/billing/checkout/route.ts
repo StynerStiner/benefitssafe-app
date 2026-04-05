@@ -10,7 +10,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const checkoutSchema = z.object({
-  tier: z.enum(["starter", "growth", "professional", "enterprise"]),
+  tier: z.enum(["seed", "core", "network", "enterprise"]),
 });
 
 export async function POST(request: Request) {

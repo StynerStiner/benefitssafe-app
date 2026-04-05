@@ -40,9 +40,9 @@ type BillingStatus = {
 
 const TIER_ORDER: PricingTier[] = [
   PricingTier.FREE,
-  PricingTier.STARTER,
-  PricingTier.GROWTH,
-  PricingTier.PROFESSIONAL,
+  PricingTier.SEED,
+  PricingTier.CORE,
+  PricingTier.NETWORK,
   PricingTier.ENTERPRISE,
 ];
 

@@ -6,9 +6,9 @@
 
 export enum PricingTier {
   FREE = "free",
-  STARTER = "starter",
-  GROWTH = "growth",
-  PROFESSIONAL = "professional",
+  SEED = "seed",
+  CORE = "core",
+  NETWORK = "network",
   ENTERPRISE = "enterprise",
 }
 
@@ -48,16 +48,16 @@ export const UNLIMITED = -1 as const;
 
 export const TIER_CONFIG: Record<PricingTier, TierConfigItem> = {
   [PricingTier.FREE]: {
-    name: "Free",
+    name: "Community",
     price: 0,
     stripePriceId: null,
     limits: {
-      maxBeneficiaries: 5,
-      maxGrants: 2,
-      maxExpensesPerMonth: 20,
-      maxCardsPerMonth: 5,
+      maxBeneficiaries: 10,
+      maxGrants: 5,
+      maxExpensesPerMonth: 50,
+      maxCardsPerMonth: 10,
       maxTeamMembers: 3,
-      maxStorageMB: 100,
+      maxStorageMB: 200,
     },
     features: {
       composioWorkflows: false,
@@ -70,17 +70,17 @@ export const TIER_CONFIG: Record<PricingTier, TierConfigItem> = {
       whiteLabel: false,
     },
   },
-  [PricingTier.STARTER]: {
-    name: "Starter",
+  [PricingTier.SEED]: {
+    name: "Seed",
     price: 49,
-    stripePriceId: process.env.STRIPE_PRICE_STARTER || null,
+    stripePriceId: process.env.STRIPE_PRICE_SEED || null,
     limits: {
-      maxBeneficiaries: 25,
-      maxGrants: 5,
-      maxExpensesPerMonth: 100,
-      maxCardsPerMonth: 25,
-      maxTeamMembers: 5,
-      maxStorageMB: 500,
+      maxBeneficiaries: 50,
+      maxGrants: 15,
+      maxExpensesPerMonth: 200,
+      maxCardsPerMonth: 50,
+      maxTeamMembers: 10,
+      maxStorageMB: 1000,
     },
     features: {
       composioWorkflows: false,
@@ -93,17 +93,17 @@ export const TIER_CONFIG: Record<PricingTier, TierConfigItem> = {
       whiteLabel: false,
     },
   },
-  [PricingTier.GROWTH]: {
-    name: "Growth",
-    price: 149,
-    stripePriceId: process.env.STRIPE_PRICE_GROWTH || null,
+  [PricingTier.CORE]: {
+    name: "Core",
+    price: 99,
+    stripePriceId: process.env.STRIPE_PRICE_CORE || null,
     limits: {
-      maxBeneficiaries: 100,
-      maxGrants: 20,
-      maxExpensesPerMonth: 500,
-      maxCardsPerMonth: 100,
-      maxTeamMembers: 15,
-      maxStorageMB: 2000,
+      maxBeneficiaries: 200,
+      maxGrants: 50,
+      maxExpensesPerMonth: 1000,
+      maxCardsPerMonth: 200,
+      maxTeamMembers: 25,
+      maxStorageMB: 4000,
     },
     features: {
       composioWorkflows: true,
@@ -116,16 +116,16 @@ export const TIER_CONFIG: Record<PricingTier, TierConfigItem> = {
       whiteLabel: false,
     },
   },
-  [PricingTier.PROFESSIONAL]: {
-    name: "Professional",
-    price: 349,
-    stripePriceId: process.env.STRIPE_PRICE_PROFESSIONAL || null,
+  [PricingTier.NETWORK]: {
+    name: "Network",
+    price: 199,
+    stripePriceId: process.env.STRIPE_PRICE_NETWORK || null,
     limits: {
       maxBeneficiaries: 500,
-      maxGrants: 50,
-      maxExpensesPerMonth: 2000,
+      maxGrants: 100,
+      maxExpensesPerMonth: 2500,
       maxCardsPerMonth: 500,
-      maxTeamMembers: 50,
+      maxTeamMembers: 75,
       maxStorageMB: 10000,
     },
     features: {
@@ -141,7 +141,7 @@ export const TIER_CONFIG: Record<PricingTier, TierConfigItem> = {
   },
   [PricingTier.ENTERPRISE]: {
     name: "Enterprise",
-    price: 599,
+    price: 399,
     stripePriceId: process.env.STRIPE_PRICE_ENTERPRISE || null,
     limits: {
       maxBeneficiaries: UNLIMITED,
@@ -168,14 +168,26 @@ export const TIER_CONFIG: Record<PricingTier, TierConfigItem> = {
 // Helper functions
 // ----------------------------------------------------------------------------
 
+// Legacy tier names that may exist in the database from the prior pricing scheme.
+// Keep these fallbacks so existing BillingSubscription rows continue to resolve.
+const LEGACY_TIER_ALIASES: Record<string, PricingTier> = {
+  starter: PricingTier.SEED,
+  growth: PricingTier.CORE,
+  professional: PricingTier.NETWORK,
+};
+
 /**
  * Coerce a string (e.g. org.billingSubscription.tier) into a valid PricingTier.
+ * Accepts both current names and legacy names from the pre-rename scheme.
  * Defaults to FREE if the string does not match any known tier.
  */
 export function coerceTier(tier: string | null | undefined): PricingTier {
   if (!tier) return PricingTier.FREE;
   const match = Object.values(PricingTier).find((t) => t === tier);
-  return (match as PricingTier | undefined) ?? PricingTier.FREE;
+  if (match) return match as PricingTier;
+  const legacy = LEGACY_TIER_ALIASES[tier];
+  if (legacy) return legacy;
+  return PricingTier.FREE;
 }
 
 export function getTierConfig(tier: PricingTier): TierConfigItem {
@@ -235,9 +247,9 @@ export function getUsagePercentage(
  */
 export const TIER_ORDER: readonly PricingTier[] = [
   PricingTier.FREE,
-  PricingTier.STARTER,
-  PricingTier.GROWTH,
-  PricingTier.PROFESSIONAL,
+  PricingTier.SEED,
+  PricingTier.CORE,
+  PricingTier.NETWORK,
   PricingTier.ENTERPRISE,
 ] as const;
 
