@@ -23,9 +23,9 @@ export type TierLimits = {
 
 export type TierFeatures = {
   composioWorkflows: boolean;
-  paperclipWatchdog: boolean;
-  paperclipCompliance: boolean;
-  paperclipReporter: boolean;
+  sentinelWatchdog: boolean;
+  sentinelCompliance: boolean;
+  sentinelReporter: boolean;
   customMCCRules: boolean;
   prioritySupport: boolean;
   apiAccess: boolean;
@@ -61,9 +61,9 @@ export const TIER_CONFIG: Record<PricingTier, TierConfigItem> = {
     },
     features: {
       composioWorkflows: false,
-      paperclipWatchdog: false,
-      paperclipCompliance: false,
-      paperclipReporter: false,
+      sentinelWatchdog: false,
+      sentinelCompliance: false,
+      sentinelReporter: false,
       customMCCRules: false,
       prioritySupport: false,
       apiAccess: false,
@@ -84,9 +84,9 @@ export const TIER_CONFIG: Record<PricingTier, TierConfigItem> = {
     },
     features: {
       composioWorkflows: false,
-      paperclipWatchdog: false,
-      paperclipCompliance: false,
-      paperclipReporter: false,
+      sentinelWatchdog: false,
+      sentinelCompliance: false,
+      sentinelReporter: false,
       customMCCRules: true,
       prioritySupport: false,
       apiAccess: false,
@@ -107,9 +107,9 @@ export const TIER_CONFIG: Record<PricingTier, TierConfigItem> = {
     },
     features: {
       composioWorkflows: true,
-      paperclipWatchdog: true,
-      paperclipCompliance: true,
-      paperclipReporter: false,
+      sentinelWatchdog: true,
+      sentinelCompliance: true,
+      sentinelReporter: false,
       customMCCRules: true,
       prioritySupport: false,
       apiAccess: true,
@@ -130,9 +130,9 @@ export const TIER_CONFIG: Record<PricingTier, TierConfigItem> = {
     },
     features: {
       composioWorkflows: true,
-      paperclipWatchdog: true,
-      paperclipCompliance: true,
-      paperclipReporter: true,
+      sentinelWatchdog: true,
+      sentinelCompliance: true,
+      sentinelReporter: true,
       customMCCRules: true,
       prioritySupport: true,
       apiAccess: true,
@@ -153,9 +153,9 @@ export const TIER_CONFIG: Record<PricingTier, TierConfigItem> = {
     },
     features: {
       composioWorkflows: true,
-      paperclipWatchdog: true,
-      paperclipCompliance: true,
-      paperclipReporter: true,
+      sentinelWatchdog: true,
+      sentinelCompliance: true,
+      sentinelReporter: true,
       customMCCRules: true,
       prioritySupport: true,
       apiAccess: true,

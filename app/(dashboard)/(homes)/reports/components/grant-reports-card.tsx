@@ -152,7 +152,7 @@ const GrantReportsCard = () => {
           ) : reports.length === 0 ? (
             <div className="text-center py-8">
               <FileText className="w-10 h-10 text-neutral-300 mx-auto mb-3" />
-              <p className="text-sm text-neutral-500">No grant reports yet. Reports are auto-generated weekly by Paperclip.</p>
+              <p className="text-sm text-neutral-500">No grant reports yet. Reports are auto-generated weekly by SentinelLayer.</p>
             </div>
           ) : (
             <div className="space-y-3">

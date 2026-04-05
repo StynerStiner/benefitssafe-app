@@ -48,9 +48,9 @@ const TIER_ORDER: PricingTier[] = [
 
 const FEATURE_LABELS: Record<keyof TierFeatures, string> = {
   composioWorkflows: "Composio Workflows",
-  paperclipWatchdog: "Paperclip Watchdog",
-  paperclipCompliance: "Paperclip Compliance Engine",
-  paperclipReporter: "Paperclip Reporter",
+  sentinelWatchdog: "Sentinel Watchdog",
+  sentinelCompliance: "Sentinel Compliance Engine",
+  sentinelReporter: "Sentinel Reporter",
   customMCCRules: "Custom MCC Rules",
   prioritySupport: "Priority Support",
   apiAccess: "API Access",

@@ -3,11 +3,11 @@
 ## Session Summary
 
 Started: 9 of 13 flows DONE, 4 PARTIAL
-Ended: **13 of 13 flows DONE**, 3 Paperclip agents live, Stripe live setup complete, Funding UI built, Reports page with auto-generated grant reports
+Ended: **13 of 13 flows DONE**, 3 SentinelLayer agents live, Stripe live setup complete, Funding UI built, Reports page with auto-generated grant reports
 
 ---
 
-## Priority 1: Paperclip Smoke Test (Watchdog)
+## Priority 1: SentinelLayer Smoke Test (Watchdog)
 
 **Objective:** Verify the Benefits Threshold Watchdog agent connects to Aurora PostgreSQL, scans beneficiaries, and creates alerts.
 
@@ -29,9 +29,9 @@ Ended: **13 of 13 flows DONE**, 3 Paperclip agents live, Stripe live setup compl
 
 ---
 
-## Priority 2: Paperclip Compliance Monitor (NEW)
+## Priority 2: SentinelLayer Compliance Monitor (NEW)
 
-**Built:** Full compliance monitoring agent at `paperclip/src/agents/compliance.ts`
+**Built:** Full compliance monitoring agent at `sentinellayer/src/agents/compliance.ts`
 
 **5 compliance checks implemented:**
 
@@ -52,9 +52,9 @@ Ended: **13 of 13 flows DONE**, 3 Paperclip agents live, Stripe live setup compl
 
 ---
 
-## Priority 3: Paperclip Grant Reporter (NEW)
+## Priority 3: SentinelLayer Grant Reporter (NEW)
 
-**Built:** Full grant reporting agent at `paperclip/src/agents/reporter.ts` + `paperclip/src/services/report-builder.ts`
+**Built:** Full grant reporting agent at `sentinellayer/src/agents/reporter.ts` + `sentinellayer/src/services/report-builder.ts`
 
 **5-section structured reports generated automatically every 7 days:**
 
@@ -71,7 +71,7 @@ Ended: **13 of 13 flows DONE**, 3 Paperclip agents live, Stripe live setup compl
 - **Ahead of Schedule:** Spending below 90% of expected pace
 - **At Risk:** Spending above 110% of expected pace, category overspent, or projected exhaustion before grant end
 
-**Schema:** Added `GrantReport` model to both Paperclip and BenefitsSafe
+**Schema:** Added `GrantReport` model to both SentinelLayer and BenefitsSafe
 
 **Test Results:**
 - Organizations scanned: 2
@@ -265,12 +265,12 @@ Auto-generation wired into: register, vendor create, beneficiary create, team in
 |--------|---------|-------|-------|
 | `9a33f02` | feat: 13/13 ecosystem validation -- all flows DONE | 39 | +2,743 |
 | `d659bc9` | docs: add session report | 1 | +235 |
-| `920f97c` | feat: Paperclip Phase 3 -- Grant Reporter + Reports page UI | 13 | +1,909 |
+| `920f97c` | feat: SentinelLayer Phase 3 -- Grant Reporter + Reports page UI | 13 | +1,909 |
 | `0fb6c19` | feat: Funding & Payments tab in Org Settings | 3 | +397 |
 
 **BenefitsSafe App:** Pushed to github.com/stynerdev225/benefitssafe-app (main), auto-deploying on Vercel
 
-**Paperclip:** 2 commits (`f6cf854` initial, `70b16bc` Phase 3). Local repo, ready for GitHub.
+**SentinelLayer:** 2 commits (`f6cf854` initial, `70b16bc` Phase 3). Local repo, ready for GitHub.
 
 ---
 
@@ -287,52 +287,52 @@ Auto-generation wired into: register, vendor create, beneficiary create, team in
 | 7 | Virtual Card + MCC Restrict | DONE |
 | 8 | Access Revocation | DONE |
 | 9 | Multi-org Switching | DONE |
-| 10 | Paperclip Watchdog | DONE |
-| 11 | Paperclip Compliance Monitor | DONE |
+| 10 | SentinelLayer Watchdog | DONE |
+| 11 | SentinelLayer Compliance Monitor | DONE |
 | 12 | Composio Workflow Automation | DONE |
 | 13 | Notification System | DONE |
 
 ---
 
-## Paperclip: How It Works
+## SentinelLayer: How It Works
 
-### What Is Paperclip?
+### What Is SentinelLayer?
 
-Paperclip is a **separate autonomous AI operations layer** that runs independently from the BenefitsSafe web application. It is a Node.js process with its own codebase (`~/Downloads/Projects/paperclip/`), its own Dockerfile, and its own scheduling system. It connects to the **same Aurora PostgreSQL database** as BenefitsSafe but runs as a completely separate process.
+SentinelLayer is a **separate autonomous AI operations layer** that runs independently from the BenefitsSafe web application. It is a Node.js process with its own codebase (`~/Downloads/Projects/sentinellayer/`), its own Dockerfile, and its own scheduling system. It connects to the **same Aurora PostgreSQL database** as BenefitsSafe but runs as a completely separate process.
 
-The humans never see Paperclip. They never interact with it. They just see smarter dashboards.
+The humans never see SentinelLayer. They never interact with it. They just see smarter dashboards.
 
 ### Architecture
 
 ```
-BenefitsSafe (Next.js)          Paperclip (Node.js)
+BenefitsSafe (Next.js)          SentinelLayer (Node.js)
   |                                |
   |   Shared Aurora PostgreSQL     |
   |   ┌──────────────────────┐     |
-  |   | Notification table   |<----| Paperclip WRITES alerts here
-  |   | AuditLog table       |<----| Paperclip WRITES audit entries here
-  |   | GrantReport table    |<----| Paperclip WRITES reports here
-  |   | Transaction table    |---->| Paperclip READS financial data
-  |   | Grant table          |---->| Paperclip READS grant data
-  |   | User table           |---->| Paperclip READS beneficiary data
+  |   | Notification table   |<----| SentinelLayer WRITES alerts here
+  |   | AuditLog table       |<----| SentinelLayer WRITES audit entries here
+  |   | GrantReport table    |<----| SentinelLayer WRITES reports here
+  |   | Transaction table    |---->| SentinelLayer READS financial data
+  |   | Grant table          |---->| SentinelLayer READS grant data
+  |   | User table           |---->| SentinelLayer READS beneficiary data
   |   └──────────────────────┘     |
   |                                |
-  | BenefitsSafe READS from        | Paperclip runs on a schedule:
+  | BenefitsSafe READS from        | SentinelLayer runs on a schedule:
   | Notification, GrantReport      |   - Watchdog: every 24 hours
   | and displays them in the       |   - Compliance: every 6 hours
   | admin dashboard UI             |   - Reporter: every 7 days
 ```
 
-**Key principle:** Paperclip is READ-ONLY on all financial data (transactions, grants, ledger entries, users). It ONLY WRITES to three tables: `Notification`, `AuditLog`, and `GrantReport`. It never modifies money, cards, or user records.
+**Key principle:** SentinelLayer is READ-ONLY on all financial data (transactions, grants, ledger entries, users). It ONLY WRITES to three tables: `Notification`, `AuditLog`, and `GrantReport`. It never modifies money, cards, or user records.
 
 ### The Database Bridge
 
-This is how Paperclip alerts appear in the BenefitsSafe dashboard:
+This is how SentinelLayer alerts appear in the BenefitsSafe dashboard:
 
-1. **Paperclip agent runs** on its schedule (e.g., Watchdog every 24h)
-2. **Paperclip scans** the database -- reads transactions, grants, beneficiary benefit programs
-3. **Paperclip detects** an issue (e.g., Maria Santos is at 88% of her SSI $2,000 asset limit)
-4. **Paperclip writes** a `Notification` record directly into the shared database:
+1. **SentinelLayer agent runs** on its schedule (e.g., Watchdog every 24h)
+2. **SentinelLayer scans** the database -- reads transactions, grants, beneficiary benefit programs
+3. **SentinelLayer detects** an issue (e.g., Maria Santos is at 88% of her SSI $2,000 asset limit)
+4. **SentinelLayer writes** a `Notification` record directly into the shared database:
    - `userId`: the case manager or org admin who needs to see it
    - `type`: "threshold_warning" or "threshold_critical" or "compliance_alert" or "grant_report"
    - `title`: "Maria Santos approaching SSI limit (88%)"
@@ -349,7 +349,7 @@ No webhooks. No API calls between systems. No message queue. Just a shared datab
 
 ### Deduplication
 
-Every Paperclip agent uses the `AlertWriter` service which checks for existing unread alerts before creating new ones:
+Every SentinelLayer agent uses the `AlertWriter` service which checks for existing unread alerts before creating new ones:
 
 ```
 Before writing: "Is there already an unread notification of this
@@ -358,7 +358,7 @@ type for this entity for this user?"
   - NO: Create the notification + create an AuditLog entry
 ```
 
-This means if Paperclip runs 100 times and Maria is still at 88%, the admin only sees ONE alert. The alert disappears from the dedup check only after the admin reads it (marks as read). If the condition persists, the next run after they read it will create a fresh alert.
+This means if SentinelLayer runs 100 times and Maria is still at 88%, the admin only sees ONE alert. The alert disappears from the dedup check only after the admin reads it (marks as read). If the condition persists, the next run after they read it will create a fresh alert.
 
 ### Agent Details
 
@@ -372,7 +372,7 @@ This means if Paperclip runs 100 times and Maria is still at 88%, the admin only
 
 ```bash
 # Run a single agent once (for testing)
-cd ~/Downloads/Projects/paperclip
+cd ~/Downloads/Projects/sentinellayer
 npm run agent:watchdog      # Watchdog only
 npm run agent:compliance    # Compliance Monitor only
 npm run agent:reporter      # Grant Reporter only
@@ -381,14 +381,14 @@ npm run agent:reporter      # Grant Reporter only
 npm run dev                 # All agents with cron scheduling
 
 # Docker (for AWS ECS/Fargate deployment)
-docker build -t paperclip .
-docker run --env-file .env paperclip
+docker build -t sentinellayer .
+docker run --env-file .env sentinellayer
 ```
 
 ### Codebase Structure
 
 ```
-paperclip/
+sentinellayer/
   src/
     agents/
       watchdog.ts          -- Benefits Threshold Watchdog
@@ -418,7 +418,7 @@ paperclip/
 ## Next Session Priorities
 
 1. Composio Configure modal for template variables (complianceOfficerEmail, slackChannel)
-2. Paperclip Phase 4: Onboarding Coordinator (stale invites, incomplete profiles, pending vendor approvals)
+2. SentinelLayer Phase 4: Onboarding Coordinator (stale invites, incomplete profiles, pending vendor approvals)
 3. Record 3-minute demo video
 4. Treasury application (contact Stripe support)
 5. Production deployment with live Stripe keys

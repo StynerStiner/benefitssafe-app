@@ -42,8 +42,8 @@ Last updated: 2026-04-03
 | Layer | Technology |
 |-------|-----------|
 | Compliance Assistant | Anthropic Claude Sonnet (chat widget with web search) |
-| Paperclip (Watchdog) | Node.js autonomous agent -- benefit threshold monitoring |
-| Paperclip (Compliance) | Node.js autonomous agent -- transaction compliance scanning |
+| SentinelLayer (Watchdog) | Node.js autonomous agent -- benefit threshold monitoring |
+| SentinelLayer (Compliance) | Node.js autonomous agent -- transaction compliance scanning |
 | Workflow Automation | Composio SDK v0.6.8 (Gmail, Slack, Google Calendar, Sheets, Asana, Trello) |
 | Scheduling | node-cron for agent intervals |
 
@@ -74,7 +74,7 @@ Last updated: 2026-04-03
 | Icons | Lucide React |
 | Toasts | react-hot-toast |
 | Rate Limiting | In-memory sliding window (per-endpoint) |
-| Containerization | Docker (Paperclip -- ready for AWS ECS/Fargate) |
+| Containerization | Docker (SentinelLayer -- ready for AWS ECS/Fargate) |
 
 ## Unique ID System
 | Entity | Pattern | Example |
@@ -94,5 +94,5 @@ All IDs are per-organization. Multi-org users get separate IDs per org via Organ
 | Immutable ledger | LedgerEntry + AuditLog never updated or deleted |
 | Org-scoped queries | Every API query filtered by organizationId (prevents cross-org leakage) |
 | Fire-and-forget workflows | Composio calls are non-blocking, failures don't break core flow |
-| Paperclip separation | Autonomous agents run as separate process, write only to Notification + AuditLog |
+| SentinelLayer separation | Autonomous agents run as separate process, write only to Notification + AuditLog |
 | Per-org ID codes | Every entity (org, user, vendor) gets a human-readable code scoped to its organization |
