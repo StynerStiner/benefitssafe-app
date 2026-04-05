@@ -89,15 +89,21 @@ export async function middleware(request: NextRequest) {
   ];
   const isBillingExempt = BILLING_EXEMPT_PREFIXES.some((p) => pathname.startsWith(p));
 
-  if (!isBillingExempt) {
+  // Platform admins (BenefitsSafe internal staff) bypass trial enforcement
+  const tokenRole = authToken.role as string | undefined;
+  const isPlatformAdmin = tokenRole === "platform_admin";
+
+  if (!isBillingExempt && !isPlatformAdmin) {
     const subscriptionStatus = authToken.subscriptionStatus as string | undefined;
     const trialEndDateStr = authToken.trialEndDate as string | null | undefined;
     const billingStatus = authToken.billingStatus as string | null | undefined;
 
     const now = Date.now();
     const trialEndMs = trialEndDateStr ? new Date(trialEndDateStr).getTime() : null;
+    // Trial is active if status === "trial" and either no end date set yet (brand-new org)
+    // or the end date is still in the future.
     const trialActive =
-      subscriptionStatus === "trial" && trialEndMs !== null && trialEndMs > now;
+      subscriptionStatus === "trial" && (trialEndMs === null || trialEndMs > now);
     const billingActive =
       billingStatus === "active" || billingStatus === "trialing";
 
@@ -120,7 +126,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // --- Role-based route enforcement ---
-  const role = authToken.role as string | undefined;
+  const role = tokenRole;
   if (role && !pathname.startsWith("/api/")) {
     const routePermissions: Record<string, string[]> = {
       "/dashboard": ["nonprofit_admin", "nonprofit_staff", "platform_admin"],
