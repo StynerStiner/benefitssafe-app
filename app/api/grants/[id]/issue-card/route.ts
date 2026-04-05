@@ -8,6 +8,8 @@ import { stripe } from "@/lib/stripe";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { checkLimitAccess, buildLimitReachedResponse, getCurrentPeriod } from "@/lib/feature-gates";
 import { incrementUsage } from "@/lib/usage-tracker";
+import { screenAgainstOFAC } from "@/lib/ofac-screening";
+import { BLOCKED_MCC_CODES } from "@/lib/mcc-controls";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -163,7 +165,6 @@ export async function POST(
     }
 
     // OFAC sanctions screening
-    const { screenAgainstOFAC } = require("@/lib/ofac-screening");
     const ofacResult = await screenAgainstOFAC(beneficiary.firstName, beneficiary.lastName);
 
     if (ofacResult.matchFound) {
@@ -223,7 +224,6 @@ export async function POST(
     }
 
     // Add global blocked MCCs from mcc-controls
-    const { BLOCKED_MCC_CODES } = require("@/lib/mcc-controls");
     blockedCategories.push(...Object.keys(BLOCKED_MCC_CODES));
 
     // Create Stripe Issuing cardholder + card
