@@ -2,6 +2,7 @@
 
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import FundingTab from "./funding-tab";
+import DisbursementPolicyTab from "@/components/org-settings/disbursement-policy-tab";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -445,6 +446,10 @@ const OrgSettingsPage = () => {
                     <TabsTrigger value="integrations" className="py-3 px-6 font-semibold text-sm inline-flex items-center gap-2 rounded-lg cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none data-[state=active]:border-primary bg-white dark:bg-neutral-800 text-primary border border-primary/30 hover:border-primary hover:bg-primary/5">
                         <Zap className="w-4 h-4" />
                         Integrations & Automations
+                    </TabsTrigger>
+                    <TabsTrigger value="disbursement" className="py-3 px-6 font-semibold text-sm inline-flex items-center gap-2 rounded-lg cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-none data-[state=active]:border-primary bg-white dark:bg-neutral-800 text-primary border border-primary/30 hover:border-primary hover:bg-primary/5">
+                        <Shield className="w-4 h-4" />
+                        Disbursement Policy
                     </TabsTrigger>
                 </TabsList>
 
@@ -1015,6 +1020,15 @@ const OrgSettingsPage = () => {
                             </CardContent>
                         </Card>
                     </div>
+                </TabsContent>
+
+                {/* Disbursement Policy Tab */}
+                <TabsContent value="disbursement">
+                    <Card className="card rounded-lg border-0">
+                        <CardContent className="p-0">
+                            <DisbursementPolicyTab />
+                        </CardContent>
+                    </Card>
                 </TabsContent>
             </Tabs>
 

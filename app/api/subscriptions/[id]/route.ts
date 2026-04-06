@@ -85,9 +85,11 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { status, renewalDate } = body as {
+    const { status, renewalDate, cardId, billingUpdateStatus: newBillingStatus } = body as {
       status?: string;
       renewalDate?: string;
+      cardId?: string | null;
+      billingUpdateStatus?: string;
     };
 
     // Build update payload
@@ -95,6 +97,8 @@ export async function PATCH(
       status?: SubscriptionStatus;
       renewalDate?: Date | null;
       billingUpdateStatus?: BillingUpdateStatus;
+      cardId?: string | null;
+      billingUpdatedAt?: Date;
     } = {};
 
     const oldValues: Record<string, string | null> = {};
@@ -154,6 +158,49 @@ export async function PATCH(
         oldValues.renewalDate = existing.renewalDate?.toISOString() ?? null;
         newValues.renewalDate = parsed.toISOString();
       }
+    }
+
+    // Validate and apply cardId (link/unlink virtual card)
+    if (cardId !== undefined) {
+      if (cardId !== null) {
+        // Verify card belongs to same org
+        const card = await prisma.virtualCard.findFirst({
+          where: { id: cardId, organizationId, status: "ACTIVE" },
+        });
+        if (!card) {
+          return NextResponse.json(
+            { error: "Virtual card not found or not active in this organization" },
+            { status: 400 }
+          );
+        }
+      }
+      oldValues.cardId = existing.cardId ?? null;
+      newValues.cardId = cardId;
+      updateData.cardId = cardId;
+      // Auto-advance billing status when card is linked
+      if (cardId !== null && existing.billingUpdateStatus === "PENDING") {
+        oldValues.billingUpdateStatus = existing.billingUpdateStatus;
+        updateData.billingUpdateStatus = "CARD_ISSUED";
+        newValues.billingUpdateStatus = "CARD_ISSUED";
+        updateData.billingUpdatedAt = new Date();
+      }
+    }
+
+    // Validate and apply billingUpdateStatus transition
+    if (newBillingStatus !== undefined && !updateData.billingUpdateStatus) {
+      const validStatuses: BillingUpdateStatus[] = [
+        "PENDING", "CARD_ISSUED", "CARD_SHARED", "UPDATED", "VERIFIED",
+      ];
+      if (!validStatuses.includes(newBillingStatus as BillingUpdateStatus)) {
+        return NextResponse.json(
+          { error: `Invalid billing status. Must be one of: ${validStatuses.join(", ")}` },
+          { status: 400 }
+        );
+      }
+      oldValues.billingUpdateStatus = existing.billingUpdateStatus;
+      updateData.billingUpdateStatus = newBillingStatus as BillingUpdateStatus;
+      newValues.billingUpdateStatus = newBillingStatus;
+      updateData.billingUpdatedAt = new Date();
     }
 
     // Nothing to update

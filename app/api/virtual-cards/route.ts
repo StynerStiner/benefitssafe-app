@@ -23,9 +23,14 @@ export async function GET(request: Request) {
     const limit = Math.min(Math.max(Number.isNaN(rawLimit) ? 25 : rawLimit, 1), 100);
     const offset = Math.max(Number.isNaN(rawOffset) ? 0 : rawOffset, 0);
 
+    const grantId = searchParams.get("grantId");
+    const statusFilter = searchParams.get("status");
+
     const cardWhere = {
       organizationId,
       ...(isBeneficiary ? { beneficiaryId: userId } : {}),
+      ...(grantId ? { expense: { grantId } } : {}),
+      ...(statusFilter ? { status: statusFilter } : {}),
     };
 
     const [cards, total] = await Promise.all([

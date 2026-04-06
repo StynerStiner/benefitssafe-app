@@ -28,10 +28,14 @@ export type AggregateDisbursementPolicy = {
 
 export type DisbursementPolicyAvgAggregateOutputType = {
   maxSingleTransaction: runtime.Decimal | null
+  autoApproveMaxAmount: runtime.Decimal | null
+  requireReviewAbove: runtime.Decimal | null
 }
 
 export type DisbursementPolicySumAggregateOutputType = {
   maxSingleTransaction: runtime.Decimal | null
+  autoApproveMaxAmount: runtime.Decimal | null
+  requireReviewAbove: runtime.Decimal | null
 }
 
 export type DisbursementPolicyMinAggregateOutputType = {
@@ -43,6 +47,9 @@ export type DisbursementPolicyMinAggregateOutputType = {
   rentUtilityPayments: $Enums.PolicySetting | null
   recurringSubscriptions: $Enums.PolicySetting | null
   maxSingleTransaction: runtime.Decimal | null
+  autoApproveEnabled: boolean | null
+  autoApproveMaxAmount: runtime.Decimal | null
+  requireReviewAbove: runtime.Decimal | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +63,9 @@ export type DisbursementPolicyMaxAggregateOutputType = {
   rentUtilityPayments: $Enums.PolicySetting | null
   recurringSubscriptions: $Enums.PolicySetting | null
   maxSingleTransaction: runtime.Decimal | null
+  autoApproveEnabled: boolean | null
+  autoApproveMaxAmount: runtime.Decimal | null
+  requireReviewAbove: runtime.Decimal | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -69,6 +79,11 @@ export type DisbursementPolicyCountAggregateOutputType = {
   rentUtilityPayments: number
   recurringSubscriptions: number
   maxSingleTransaction: number
+  autoApproveEnabled: number
+  autoApproveMaxAmount: number
+  autoApproveCategories: number
+  autoApproveRiskLevels: number
+  requireReviewAbove: number
   allowedCategories: number
   blockedCategories: number
   createdAt: number
@@ -79,10 +94,14 @@ export type DisbursementPolicyCountAggregateOutputType = {
 
 export type DisbursementPolicyAvgAggregateInputType = {
   maxSingleTransaction?: true
+  autoApproveMaxAmount?: true
+  requireReviewAbove?: true
 }
 
 export type DisbursementPolicySumAggregateInputType = {
   maxSingleTransaction?: true
+  autoApproveMaxAmount?: true
+  requireReviewAbove?: true
 }
 
 export type DisbursementPolicyMinAggregateInputType = {
@@ -94,6 +113,9 @@ export type DisbursementPolicyMinAggregateInputType = {
   rentUtilityPayments?: true
   recurringSubscriptions?: true
   maxSingleTransaction?: true
+  autoApproveEnabled?: true
+  autoApproveMaxAmount?: true
+  requireReviewAbove?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -107,6 +129,9 @@ export type DisbursementPolicyMaxAggregateInputType = {
   rentUtilityPayments?: true
   recurringSubscriptions?: true
   maxSingleTransaction?: true
+  autoApproveEnabled?: true
+  autoApproveMaxAmount?: true
+  requireReviewAbove?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -120,6 +145,11 @@ export type DisbursementPolicyCountAggregateInputType = {
   rentUtilityPayments?: true
   recurringSubscriptions?: true
   maxSingleTransaction?: true
+  autoApproveEnabled?: true
+  autoApproveMaxAmount?: true
+  autoApproveCategories?: true
+  autoApproveRiskLevels?: true
+  requireReviewAbove?: true
   allowedCategories?: true
   blockedCategories?: true
   createdAt?: true
@@ -222,6 +252,11 @@ export type DisbursementPolicyGroupByOutputType = {
   rentUtilityPayments: $Enums.PolicySetting
   recurringSubscriptions: $Enums.PolicySetting
   maxSingleTransaction: runtime.Decimal | null
+  autoApproveEnabled: boolean
+  autoApproveMaxAmount: runtime.Decimal | null
+  autoApproveCategories: runtime.JsonValue | null
+  autoApproveRiskLevels: runtime.JsonValue | null
+  requireReviewAbove: runtime.Decimal | null
   allowedCategories: runtime.JsonValue | null
   blockedCategories: runtime.JsonValue | null
   createdAt: Date
@@ -260,6 +295,11 @@ export type DisbursementPolicyWhereInput = {
   rentUtilityPayments?: Prisma.EnumPolicySettingFilter<"DisbursementPolicy"> | $Enums.PolicySetting
   recurringSubscriptions?: Prisma.EnumPolicySettingFilter<"DisbursementPolicy"> | $Enums.PolicySetting
   maxSingleTransaction?: Prisma.DecimalNullableFilter<"DisbursementPolicy"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: Prisma.BoolFilter<"DisbursementPolicy"> | boolean
+  autoApproveMaxAmount?: Prisma.DecimalNullableFilter<"DisbursementPolicy"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.JsonNullableFilter<"DisbursementPolicy">
+  autoApproveRiskLevels?: Prisma.JsonNullableFilter<"DisbursementPolicy">
+  requireReviewAbove?: Prisma.DecimalNullableFilter<"DisbursementPolicy"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.JsonNullableFilter<"DisbursementPolicy">
   blockedCategories?: Prisma.JsonNullableFilter<"DisbursementPolicy">
   createdAt?: Prisma.DateTimeFilter<"DisbursementPolicy"> | Date | string
@@ -276,6 +316,11 @@ export type DisbursementPolicyOrderByWithRelationInput = {
   rentUtilityPayments?: Prisma.SortOrder
   recurringSubscriptions?: Prisma.SortOrder
   maxSingleTransaction?: Prisma.SortOrderInput | Prisma.SortOrder
+  autoApproveEnabled?: Prisma.SortOrder
+  autoApproveMaxAmount?: Prisma.SortOrderInput | Prisma.SortOrder
+  autoApproveCategories?: Prisma.SortOrderInput | Prisma.SortOrder
+  autoApproveRiskLevels?: Prisma.SortOrderInput | Prisma.SortOrder
+  requireReviewAbove?: Prisma.SortOrderInput | Prisma.SortOrder
   allowedCategories?: Prisma.SortOrderInput | Prisma.SortOrder
   blockedCategories?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -295,6 +340,11 @@ export type DisbursementPolicyWhereUniqueInput = Prisma.AtLeast<{
   rentUtilityPayments?: Prisma.EnumPolicySettingFilter<"DisbursementPolicy"> | $Enums.PolicySetting
   recurringSubscriptions?: Prisma.EnumPolicySettingFilter<"DisbursementPolicy"> | $Enums.PolicySetting
   maxSingleTransaction?: Prisma.DecimalNullableFilter<"DisbursementPolicy"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: Prisma.BoolFilter<"DisbursementPolicy"> | boolean
+  autoApproveMaxAmount?: Prisma.DecimalNullableFilter<"DisbursementPolicy"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.JsonNullableFilter<"DisbursementPolicy">
+  autoApproveRiskLevels?: Prisma.JsonNullableFilter<"DisbursementPolicy">
+  requireReviewAbove?: Prisma.DecimalNullableFilter<"DisbursementPolicy"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.JsonNullableFilter<"DisbursementPolicy">
   blockedCategories?: Prisma.JsonNullableFilter<"DisbursementPolicy">
   createdAt?: Prisma.DateTimeFilter<"DisbursementPolicy"> | Date | string
@@ -311,6 +361,11 @@ export type DisbursementPolicyOrderByWithAggregationInput = {
   rentUtilityPayments?: Prisma.SortOrder
   recurringSubscriptions?: Prisma.SortOrder
   maxSingleTransaction?: Prisma.SortOrderInput | Prisma.SortOrder
+  autoApproveEnabled?: Prisma.SortOrder
+  autoApproveMaxAmount?: Prisma.SortOrderInput | Prisma.SortOrder
+  autoApproveCategories?: Prisma.SortOrderInput | Prisma.SortOrder
+  autoApproveRiskLevels?: Prisma.SortOrderInput | Prisma.SortOrder
+  requireReviewAbove?: Prisma.SortOrderInput | Prisma.SortOrder
   allowedCategories?: Prisma.SortOrderInput | Prisma.SortOrder
   blockedCategories?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -334,6 +389,11 @@ export type DisbursementPolicyScalarWhereWithAggregatesInput = {
   rentUtilityPayments?: Prisma.EnumPolicySettingWithAggregatesFilter<"DisbursementPolicy"> | $Enums.PolicySetting
   recurringSubscriptions?: Prisma.EnumPolicySettingWithAggregatesFilter<"DisbursementPolicy"> | $Enums.PolicySetting
   maxSingleTransaction?: Prisma.DecimalNullableWithAggregatesFilter<"DisbursementPolicy"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: Prisma.BoolWithAggregatesFilter<"DisbursementPolicy"> | boolean
+  autoApproveMaxAmount?: Prisma.DecimalNullableWithAggregatesFilter<"DisbursementPolicy"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.JsonNullableWithAggregatesFilter<"DisbursementPolicy">
+  autoApproveRiskLevels?: Prisma.JsonNullableWithAggregatesFilter<"DisbursementPolicy">
+  requireReviewAbove?: Prisma.DecimalNullableWithAggregatesFilter<"DisbursementPolicy"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.JsonNullableWithAggregatesFilter<"DisbursementPolicy">
   blockedCategories?: Prisma.JsonNullableWithAggregatesFilter<"DisbursementPolicy">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DisbursementPolicy"> | Date | string
@@ -348,6 +408,11 @@ export type DisbursementPolicyCreateInput = {
   rentUtilityPayments?: $Enums.PolicySetting
   recurringSubscriptions?: $Enums.PolicySetting
   maxSingleTransaction?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: boolean
+  autoApproveMaxAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  autoApproveRiskLevels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  requireReviewAbove?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   blockedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -364,6 +429,11 @@ export type DisbursementPolicyUncheckedCreateInput = {
   rentUtilityPayments?: $Enums.PolicySetting
   recurringSubscriptions?: $Enums.PolicySetting
   maxSingleTransaction?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: boolean
+  autoApproveMaxAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  autoApproveRiskLevels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  requireReviewAbove?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   blockedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -378,6 +448,11 @@ export type DisbursementPolicyUpdateInput = {
   rentUtilityPayments?: Prisma.EnumPolicySettingFieldUpdateOperationsInput | $Enums.PolicySetting
   recurringSubscriptions?: Prisma.EnumPolicySettingFieldUpdateOperationsInput | $Enums.PolicySetting
   maxSingleTransaction?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoApproveMaxAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  autoApproveRiskLevels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  requireReviewAbove?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   blockedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -394,6 +469,11 @@ export type DisbursementPolicyUncheckedUpdateInput = {
   rentUtilityPayments?: Prisma.EnumPolicySettingFieldUpdateOperationsInput | $Enums.PolicySetting
   recurringSubscriptions?: Prisma.EnumPolicySettingFieldUpdateOperationsInput | $Enums.PolicySetting
   maxSingleTransaction?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoApproveMaxAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  autoApproveRiskLevels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  requireReviewAbove?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   blockedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -409,6 +489,11 @@ export type DisbursementPolicyCreateManyInput = {
   rentUtilityPayments?: $Enums.PolicySetting
   recurringSubscriptions?: $Enums.PolicySetting
   maxSingleTransaction?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: boolean
+  autoApproveMaxAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  autoApproveRiskLevels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  requireReviewAbove?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   blockedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -423,6 +508,11 @@ export type DisbursementPolicyUpdateManyMutationInput = {
   rentUtilityPayments?: Prisma.EnumPolicySettingFieldUpdateOperationsInput | $Enums.PolicySetting
   recurringSubscriptions?: Prisma.EnumPolicySettingFieldUpdateOperationsInput | $Enums.PolicySetting
   maxSingleTransaction?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoApproveMaxAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  autoApproveRiskLevels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  requireReviewAbove?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   blockedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -438,6 +528,11 @@ export type DisbursementPolicyUncheckedUpdateManyInput = {
   rentUtilityPayments?: Prisma.EnumPolicySettingFieldUpdateOperationsInput | $Enums.PolicySetting
   recurringSubscriptions?: Prisma.EnumPolicySettingFieldUpdateOperationsInput | $Enums.PolicySetting
   maxSingleTransaction?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoApproveMaxAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  autoApproveRiskLevels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  requireReviewAbove?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   blockedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -463,6 +558,11 @@ export type DisbursementPolicyCountOrderByAggregateInput = {
   rentUtilityPayments?: Prisma.SortOrder
   recurringSubscriptions?: Prisma.SortOrder
   maxSingleTransaction?: Prisma.SortOrder
+  autoApproveEnabled?: Prisma.SortOrder
+  autoApproveMaxAmount?: Prisma.SortOrder
+  autoApproveCategories?: Prisma.SortOrder
+  autoApproveRiskLevels?: Prisma.SortOrder
+  requireReviewAbove?: Prisma.SortOrder
   allowedCategories?: Prisma.SortOrder
   blockedCategories?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -471,6 +571,8 @@ export type DisbursementPolicyCountOrderByAggregateInput = {
 
 export type DisbursementPolicyAvgOrderByAggregateInput = {
   maxSingleTransaction?: Prisma.SortOrder
+  autoApproveMaxAmount?: Prisma.SortOrder
+  requireReviewAbove?: Prisma.SortOrder
 }
 
 export type DisbursementPolicyMaxOrderByAggregateInput = {
@@ -482,6 +584,9 @@ export type DisbursementPolicyMaxOrderByAggregateInput = {
   rentUtilityPayments?: Prisma.SortOrder
   recurringSubscriptions?: Prisma.SortOrder
   maxSingleTransaction?: Prisma.SortOrder
+  autoApproveEnabled?: Prisma.SortOrder
+  autoApproveMaxAmount?: Prisma.SortOrder
+  requireReviewAbove?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -495,12 +600,17 @@ export type DisbursementPolicyMinOrderByAggregateInput = {
   rentUtilityPayments?: Prisma.SortOrder
   recurringSubscriptions?: Prisma.SortOrder
   maxSingleTransaction?: Prisma.SortOrder
+  autoApproveEnabled?: Prisma.SortOrder
+  autoApproveMaxAmount?: Prisma.SortOrder
+  requireReviewAbove?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type DisbursementPolicySumOrderByAggregateInput = {
   maxSingleTransaction?: Prisma.SortOrder
+  autoApproveMaxAmount?: Prisma.SortOrder
+  requireReviewAbove?: Prisma.SortOrder
 }
 
 export type DisbursementPolicyCreateNestedManyWithoutOrganizationInput = {
@@ -557,6 +667,11 @@ export type DisbursementPolicyCreateWithoutOrganizationInput = {
   rentUtilityPayments?: $Enums.PolicySetting
   recurringSubscriptions?: $Enums.PolicySetting
   maxSingleTransaction?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: boolean
+  autoApproveMaxAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  autoApproveRiskLevels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  requireReviewAbove?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   blockedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -571,6 +686,11 @@ export type DisbursementPolicyUncheckedCreateWithoutOrganizationInput = {
   rentUtilityPayments?: $Enums.PolicySetting
   recurringSubscriptions?: $Enums.PolicySetting
   maxSingleTransaction?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: boolean
+  autoApproveMaxAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  autoApproveRiskLevels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  requireReviewAbove?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   blockedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -615,6 +735,11 @@ export type DisbursementPolicyScalarWhereInput = {
   rentUtilityPayments?: Prisma.EnumPolicySettingFilter<"DisbursementPolicy"> | $Enums.PolicySetting
   recurringSubscriptions?: Prisma.EnumPolicySettingFilter<"DisbursementPolicy"> | $Enums.PolicySetting
   maxSingleTransaction?: Prisma.DecimalNullableFilter<"DisbursementPolicy"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: Prisma.BoolFilter<"DisbursementPolicy"> | boolean
+  autoApproveMaxAmount?: Prisma.DecimalNullableFilter<"DisbursementPolicy"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.JsonNullableFilter<"DisbursementPolicy">
+  autoApproveRiskLevels?: Prisma.JsonNullableFilter<"DisbursementPolicy">
+  requireReviewAbove?: Prisma.DecimalNullableFilter<"DisbursementPolicy"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.JsonNullableFilter<"DisbursementPolicy">
   blockedCategories?: Prisma.JsonNullableFilter<"DisbursementPolicy">
   createdAt?: Prisma.DateTimeFilter<"DisbursementPolicy"> | Date | string
@@ -629,6 +754,11 @@ export type DisbursementPolicyCreateManyOrganizationInput = {
   rentUtilityPayments?: $Enums.PolicySetting
   recurringSubscriptions?: $Enums.PolicySetting
   maxSingleTransaction?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: boolean
+  autoApproveMaxAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  autoApproveRiskLevels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  requireReviewAbove?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   blockedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -643,6 +773,11 @@ export type DisbursementPolicyUpdateWithoutOrganizationInput = {
   rentUtilityPayments?: Prisma.EnumPolicySettingFieldUpdateOperationsInput | $Enums.PolicySetting
   recurringSubscriptions?: Prisma.EnumPolicySettingFieldUpdateOperationsInput | $Enums.PolicySetting
   maxSingleTransaction?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoApproveMaxAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  autoApproveRiskLevels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  requireReviewAbove?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   blockedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -657,6 +792,11 @@ export type DisbursementPolicyUncheckedUpdateWithoutOrganizationInput = {
   rentUtilityPayments?: Prisma.EnumPolicySettingFieldUpdateOperationsInput | $Enums.PolicySetting
   recurringSubscriptions?: Prisma.EnumPolicySettingFieldUpdateOperationsInput | $Enums.PolicySetting
   maxSingleTransaction?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoApproveMaxAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  autoApproveRiskLevels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  requireReviewAbove?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   blockedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -671,6 +811,11 @@ export type DisbursementPolicyUncheckedUpdateManyWithoutOrganizationInput = {
   rentUtilityPayments?: Prisma.EnumPolicySettingFieldUpdateOperationsInput | $Enums.PolicySetting
   recurringSubscriptions?: Prisma.EnumPolicySettingFieldUpdateOperationsInput | $Enums.PolicySetting
   maxSingleTransaction?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoApproveMaxAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  autoApproveCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  autoApproveRiskLevels?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  requireReviewAbove?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   allowedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   blockedCategories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -688,6 +833,11 @@ export type DisbursementPolicySelect<ExtArgs extends runtime.Types.Extensions.In
   rentUtilityPayments?: boolean
   recurringSubscriptions?: boolean
   maxSingleTransaction?: boolean
+  autoApproveEnabled?: boolean
+  autoApproveMaxAmount?: boolean
+  autoApproveCategories?: boolean
+  autoApproveRiskLevels?: boolean
+  requireReviewAbove?: boolean
   allowedCategories?: boolean
   blockedCategories?: boolean
   createdAt?: boolean
@@ -704,6 +854,11 @@ export type DisbursementPolicySelectCreateManyAndReturn<ExtArgs extends runtime.
   rentUtilityPayments?: boolean
   recurringSubscriptions?: boolean
   maxSingleTransaction?: boolean
+  autoApproveEnabled?: boolean
+  autoApproveMaxAmount?: boolean
+  autoApproveCategories?: boolean
+  autoApproveRiskLevels?: boolean
+  requireReviewAbove?: boolean
   allowedCategories?: boolean
   blockedCategories?: boolean
   createdAt?: boolean
@@ -720,6 +875,11 @@ export type DisbursementPolicySelectUpdateManyAndReturn<ExtArgs extends runtime.
   rentUtilityPayments?: boolean
   recurringSubscriptions?: boolean
   maxSingleTransaction?: boolean
+  autoApproveEnabled?: boolean
+  autoApproveMaxAmount?: boolean
+  autoApproveCategories?: boolean
+  autoApproveRiskLevels?: boolean
+  requireReviewAbove?: boolean
   allowedCategories?: boolean
   blockedCategories?: boolean
   createdAt?: boolean
@@ -736,13 +896,18 @@ export type DisbursementPolicySelectScalar = {
   rentUtilityPayments?: boolean
   recurringSubscriptions?: boolean
   maxSingleTransaction?: boolean
+  autoApproveEnabled?: boolean
+  autoApproveMaxAmount?: boolean
+  autoApproveCategories?: boolean
+  autoApproveRiskLevels?: boolean
+  requireReviewAbove?: boolean
   allowedCategories?: boolean
   blockedCategories?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type DisbursementPolicyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "grantId" | "cashToRecipient" | "reimbursementToRecipient" | "rentUtilityPayments" | "recurringSubscriptions" | "maxSingleTransaction" | "allowedCategories" | "blockedCategories" | "createdAt" | "updatedAt", ExtArgs["result"]["disbursementPolicy"]>
+export type DisbursementPolicyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "grantId" | "cashToRecipient" | "reimbursementToRecipient" | "rentUtilityPayments" | "recurringSubscriptions" | "maxSingleTransaction" | "autoApproveEnabled" | "autoApproveMaxAmount" | "autoApproveCategories" | "autoApproveRiskLevels" | "requireReviewAbove" | "allowedCategories" | "blockedCategories" | "createdAt" | "updatedAt", ExtArgs["result"]["disbursementPolicy"]>
 export type DisbursementPolicyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }
@@ -767,6 +932,11 @@ export type $DisbursementPolicyPayload<ExtArgs extends runtime.Types.Extensions.
     rentUtilityPayments: $Enums.PolicySetting
     recurringSubscriptions: $Enums.PolicySetting
     maxSingleTransaction: runtime.Decimal | null
+    autoApproveEnabled: boolean
+    autoApproveMaxAmount: runtime.Decimal | null
+    autoApproveCategories: runtime.JsonValue | null
+    autoApproveRiskLevels: runtime.JsonValue | null
+    requireReviewAbove: runtime.Decimal | null
     allowedCategories: runtime.JsonValue | null
     blockedCategories: runtime.JsonValue | null
     createdAt: Date
@@ -1203,6 +1373,11 @@ export interface DisbursementPolicyFieldRefs {
   readonly rentUtilityPayments: Prisma.FieldRef<"DisbursementPolicy", 'PolicySetting'>
   readonly recurringSubscriptions: Prisma.FieldRef<"DisbursementPolicy", 'PolicySetting'>
   readonly maxSingleTransaction: Prisma.FieldRef<"DisbursementPolicy", 'Decimal'>
+  readonly autoApproveEnabled: Prisma.FieldRef<"DisbursementPolicy", 'Boolean'>
+  readonly autoApproveMaxAmount: Prisma.FieldRef<"DisbursementPolicy", 'Decimal'>
+  readonly autoApproveCategories: Prisma.FieldRef<"DisbursementPolicy", 'Json'>
+  readonly autoApproveRiskLevels: Prisma.FieldRef<"DisbursementPolicy", 'Json'>
+  readonly requireReviewAbove: Prisma.FieldRef<"DisbursementPolicy", 'Decimal'>
   readonly allowedCategories: Prisma.FieldRef<"DisbursementPolicy", 'Json'>
   readonly blockedCategories: Prisma.FieldRef<"DisbursementPolicy", 'Json'>
   readonly createdAt: Prisma.FieldRef<"DisbursementPolicy", 'DateTime'>

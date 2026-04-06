@@ -1,15 +1,29 @@
 import {
   BarChart3,
+  Bell,
+  BellRing,
+  BookOpen,
+  Building2,
+  CalendarDays,
   CreditCard,
   FileText,
-  HeadphonesIcon,
+  FileUp,
+  FolderOpen,
+  HandCoins,
+  Home,
   House,
   LayoutDashboard,
-  MessageCircleMore,
+  LifeBuoy,
+  MessageSquare,
+  Palette,
+  Receipt,
+  Repeat,
   Settings,
   Shield,
   ShieldCheck,
+  Store,
   UserCircle,
+  UserCog,
   Users,
   UsersRound,
 } from "lucide-react";
@@ -19,6 +33,7 @@ interface NavSubItem {
   title: string;
   url: string;
   circleColor: string;
+  icon?: LucideIcon;
 }
 
 interface NavItem {
@@ -42,11 +57,11 @@ const nonprofitAdminNav: NavItem[] = [
     icon: House,
     isActive: true,
     items: [
-      { title: "Dashboard", url: "/dashboard", circleColor: "bg-green-500" },
-      { title: "Grants", url: "/grants", circleColor: "bg-blue-500" },
-      { title: "Expenses", url: "/expenses", circleColor: "bg-cyan-500" },
-      { title: "Virtual Cards", url: "/virtual-cards", circleColor: "bg-purple-600" },
-      { title: "Subscriptions", url: "/subscriptions", circleColor: "bg-cyan-500" },
+      { title: "Dashboard", url: "/dashboard", circleColor: "bg-green-500", icon: LayoutDashboard },
+      { title: "Grants", url: "/grants", circleColor: "bg-blue-500", icon: HandCoins },
+      { title: "Expenses", url: "/expenses", circleColor: "bg-cyan-500", icon: Receipt },
+      { title: "Virtual Cards", url: "/virtual-cards", circleColor: "bg-purple-600", icon: CreditCard },
+      { title: "Subscriptions", url: "/subscriptions", circleColor: "bg-cyan-500", icon: Repeat },
     ],
   },
   // ── Beneficiaries (the people you serve) ─────
@@ -55,10 +70,10 @@ const nonprofitAdminNav: NavItem[] = [
     url: "#",
     icon: Users,
     items: [
-      { title: "All Beneficiaries", url: "/beneficiaries", circleColor: "bg-yellow-500" },
-      { title: "Notifications", url: "/notifications", circleColor: "bg-red-500" },
-      { title: "Messages", url: "/messages", circleColor: "bg-blue-500" },
-      { title: "Calendar", url: "/calendar", circleColor: "bg-green-500" },
+      { title: "All Beneficiaries", url: "/beneficiaries", circleColor: "bg-yellow-500", icon: Users },
+      { title: "Notifications", url: "/notifications", circleColor: "bg-red-500", icon: Bell },
+      { title: "Messages", url: "/messages", circleColor: "bg-blue-500", icon: MessageSquare },
+      { title: "Calendar", url: "/calendar", circleColor: "bg-green-500", icon: CalendarDays },
     ],
   },
   // ── Finance & Compliance ─────────────────────
@@ -68,11 +83,11 @@ const nonprofitAdminNav: NavItem[] = [
     icon: BarChart3,
     isActive: true,
     items: [
-      { title: "Reports", url: "/reports", circleColor: "bg-violet-600" },
-      { title: "Audit Trail", url: "/audit-trail", circleColor: "bg-red-500" },
-      { title: "Ledger", url: "/ledger", circleColor: "bg-red-500" },
-      { title: "Policies", url: "/policies", circleColor: "bg-red-500" },
-      { title: "Documents", url: "/documents", circleColor: "bg-yellow-500" },
+      { title: "Reports", url: "/reports", circleColor: "bg-violet-600", icon: BarChart3 },
+      { title: "Audit Trail", url: "/audit-trail", circleColor: "bg-red-500", icon: ShieldCheck },
+      { title: "Ledger", url: "/ledger", circleColor: "bg-red-500", icon: BookOpen },
+      { title: "Policies", url: "/policies", circleColor: "bg-red-500", icon: FileText },
+      { title: "Documents", url: "/documents", circleColor: "bg-yellow-500", icon: FolderOpen },
     ],
   },
   // ── Beneficiary Preview (admin sees what beneficiary sees) ──
@@ -81,8 +96,8 @@ const nonprofitAdminNav: NavItem[] = [
     url: "#",
     icon: UserCircle,
     items: [
-      { title: "My Dashboard", url: "/my-dashboard", circleColor: "bg-primary" },
-      { title: "My Documents", url: "/my-documents", circleColor: "bg-yellow-500" },
+      { title: "My Dashboard", url: "/my-dashboard", circleColor: "bg-primary", icon: Home },
+      { title: "My Documents", url: "/my-documents", circleColor: "bg-yellow-500", icon: FileUp },
     ],
   },
   // ── Organization (internal staff & vendors) ──
@@ -92,8 +107,8 @@ const nonprofitAdminNav: NavItem[] = [
     url: "#",
     icon: UsersRound,
     items: [
-      { title: "Team", url: "/team", circleColor: "bg-blue-600" },
-      { title: "Vendors", url: "/vendors", circleColor: "bg-primary" },
+      { title: "Team", url: "/team", circleColor: "bg-blue-600", icon: UserCog },
+      { title: "Vendors", url: "/vendors", circleColor: "bg-primary", icon: Store },
     ],
   },
   // ── Admin ────────────────────────────────────
@@ -103,10 +118,10 @@ const nonprofitAdminNav: NavItem[] = [
     url: "#",
     icon: ShieldCheck,
     items: [
-      { title: "Organization", url: "/org-settings", circleColor: "bg-primary" },
-      { title: "Billing & Plans", url: "/settings/billing", circleColor: "bg-emerald-500" },
-      { title: "Alert Preferences", url: "/alert-preferences", circleColor: "bg-yellow-500" },
-      { title: "Profile", url: "/profile", circleColor: "bg-red-600" },
+      { title: "Organization", url: "/org-settings", circleColor: "bg-primary", icon: Building2 },
+      { title: "Billing & Plans", url: "/settings/billing", circleColor: "bg-emerald-500", icon: CreditCard },
+      { title: "Alert Preferences", url: "/alert-preferences", circleColor: "bg-yellow-500", icon: BellRing },
+      { title: "Profile", url: "/profile", circleColor: "bg-red-600", icon: UserCircle },
     ],
   },
   // ── Settings & Support ──────────────────────
@@ -120,13 +135,13 @@ const nonprofitAdminNav: NavItem[] = [
     url: "#",
     icon: Settings,
     items: [
-      { title: "Theme", url: "#", circleColor: "bg-purple-500" },
+      { title: "Theme", url: "#", circleColor: "bg-purple-500", icon: Palette },
     ],
   },
   {
     title: "Support",
     url: "/support",
-    icon: HeadphonesIcon,
+    icon: LifeBuoy,
   },
 ];
 
@@ -137,25 +152,25 @@ const beneficiaryNav: NavItem[] = [
     icon: House,
     isActive: true,
     items: [
-      { title: "My Dashboard", url: "/my-dashboard", circleColor: "bg-primary" },
-      { title: "My Grants", url: "/grants", circleColor: "bg-blue-500" },
-      { title: "My Expenses", url: "/expenses", circleColor: "bg-cyan-500" },
-      { title: "My Subscriptions", url: "/subscriptions", circleColor: "bg-cyan-500" },
-      { title: "My Cards", url: "/virtual-cards", circleColor: "bg-purple-600" },
-      { title: "My Documents", url: "/my-documents", circleColor: "bg-yellow-500" },
+      { title: "My Dashboard", url: "/my-dashboard", circleColor: "bg-primary", icon: Home },
+      { title: "My Grants", url: "/grants", circleColor: "bg-blue-500", icon: HandCoins },
+      { title: "My Expenses", url: "/expenses", circleColor: "bg-cyan-500", icon: Receipt },
+      { title: "My Subscriptions", url: "/subscriptions", circleColor: "bg-cyan-500", icon: Repeat },
+      { title: "My Cards", url: "/virtual-cards", circleColor: "bg-purple-600", icon: CreditCard },
+      { title: "My Documents", url: "/my-documents", circleColor: "bg-yellow-500", icon: FileUp },
     ],
   },
   { label: "Communication" },
   {
     title: "Messages",
     url: "/messages",
-    icon: MessageCircleMore,
+    icon: MessageSquare,
   },
   { label: "Account" },
   {
     title: "My Profile",
     url: "/profile",
-    icon: Users,
+    icon: UserCircle,
   },
 ];
 
@@ -166,15 +181,15 @@ const vendorNav: NavItem[] = [
     icon: House,
     isActive: true,
     items: [
-      { title: "Dashboard", url: "/vendor-dashboard", circleColor: "bg-green-600" },
-      { title: "Invoices & Payments", url: "/invoices", circleColor: "bg-yellow-500" },
+      { title: "Dashboard", url: "/vendor-dashboard", circleColor: "bg-green-600", icon: LayoutDashboard },
+      { title: "Invoices & Payments", url: "/invoices", circleColor: "bg-yellow-500", icon: Receipt },
     ],
   },
   { label: "Account" },
   {
     title: "Profile",
     url: "/profile",
-    icon: Users,
+    icon: UserCircle,
   },
 ];
 
@@ -185,10 +200,10 @@ const cpaNav: NavItem[] = [
     icon: BarChart3,
     isActive: true,
     items: [
-      { title: "Reports", url: "/reports", circleColor: "bg-violet-600" },
-      { title: "Audit Trail", url: "/audit-trail", circleColor: "bg-red-500" },
-      { title: "Ledger", url: "/ledger", circleColor: "bg-red-500" },
-      { title: "Documents", url: "/documents", circleColor: "bg-yellow-500" },
+      { title: "Reports", url: "/reports", circleColor: "bg-violet-600", icon: BarChart3 },
+      { title: "Audit Trail", url: "/audit-trail", circleColor: "bg-red-500", icon: ShieldCheck },
+      { title: "Ledger", url: "/ledger", circleColor: "bg-red-500", icon: BookOpen },
+      { title: "Documents", url: "/documents", circleColor: "bg-yellow-500", icon: FolderOpen },
     ],
   },
 ];
@@ -200,11 +215,11 @@ const complianceNav: NavItem[] = [
     icon: Shield,
     isActive: true,
     items: [
-      { title: "Reports", url: "/reports", circleColor: "bg-violet-600" },
-      { title: "Audit Trail", url: "/audit-trail", circleColor: "bg-red-500" },
-      { title: "Compliance", url: "/compliance", circleColor: "bg-yellow-500" },
-      { title: "Ledger", url: "/ledger", circleColor: "bg-red-500" },
-      { title: "Documents", url: "/documents", circleColor: "bg-yellow-500" },
+      { title: "Reports", url: "/reports", circleColor: "bg-violet-600", icon: BarChart3 },
+      { title: "Audit Trail", url: "/audit-trail", circleColor: "bg-red-500", icon: ShieldCheck },
+      { title: "Compliance", url: "/compliance", circleColor: "bg-yellow-500", icon: Shield },
+      { title: "Ledger", url: "/ledger", circleColor: "bg-red-500", icon: BookOpen },
+      { title: "Documents", url: "/documents", circleColor: "bg-yellow-500", icon: FolderOpen },
     ],
   },
 ];
@@ -216,9 +231,9 @@ const grantOfficerNav: NavItem[] = [
     icon: FileText,
     isActive: true,
     items: [
-      { title: "Reports", url: "/reports", circleColor: "bg-violet-600" },
-      { title: "Grants", url: "/grants", circleColor: "bg-blue-500" },
-      { title: "Audit Trail", url: "/audit-trail", circleColor: "bg-red-500" },
+      { title: "Reports", url: "/reports", circleColor: "bg-violet-600", icon: BarChart3 },
+      { title: "Grants", url: "/grants", circleColor: "bg-blue-500", icon: HandCoins },
+      { title: "Audit Trail", url: "/audit-trail", circleColor: "bg-red-500", icon: ShieldCheck },
     ],
   },
 ];
@@ -227,12 +242,12 @@ const supportNav: NavItem[] = [
   {
     title: "Support",
     url: "/support",
-    icon: HeadphonesIcon,
+    icon: LifeBuoy,
   },
   {
     title: "All Users",
     url: "/vendors",
-    icon: UsersRound,
+    icon: Users,
   },
 ];
 
@@ -243,7 +258,7 @@ const platformAdminNav: NavItem[] = [
     icon: LayoutDashboard,
     isActive: true,
     items: [
-      { title: "Platform Overview", url: "/platform", circleColor: "bg-red-600" },
+      { title: "Platform Overview", url: "/platform", circleColor: "bg-red-600", icon: LayoutDashboard },
     ],
   },
   { label: "Org Management" },

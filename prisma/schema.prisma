@@ -664,6 +664,13 @@ model DisbursementPolicy {
   recurringSubscriptions     PolicySetting @default(ALLOWED)
   maxSingleTransaction       Decimal?      @db.Decimal(10, 2)
 
+  // Auto-approval settings for card charges
+  autoApproveEnabled    Boolean  @default(false)
+  autoApproveMaxAmount  Decimal? @db.Decimal(12, 2)
+  autoApproveCategories Json?    // Array of category IDs eligible for auto-approval
+  autoApproveRiskLevels Json?    // e.g. ["LIKELY_SAFE"] — default checked in code
+  requireReviewAbove    Decimal? @db.Decimal(12, 2)
+
   allowedCategories Json? // Array of allowed expense category names
   blockedCategories Json? // Array of blocked expense category names
 

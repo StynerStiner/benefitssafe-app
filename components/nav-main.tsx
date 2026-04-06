@@ -32,6 +32,7 @@ interface SidebarItem {
     title: string;
     url: string;
     circleColor: string;
+    icon?: LucideIcon;
   }[];
   label?: string;
 };
@@ -147,9 +148,13 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
                                   href={subItem.url}
                                   className="flex items-center gap-3.5"
                                 >
-                                  <span
-                                    className={`w-2 h-2 rounded-[50%] ${subItem.circleColor}`}
-                                  ></span>
+                                  {subItem.icon ? (
+                                    <subItem.icon className="w-[18px] h-[18px] shrink-0 text-current" />
+                                  ) : (
+                                    <span
+                                      className={`w-2 h-2 rounded-[50%] ${subItem.circleColor}`}
+                                    ></span>
+                                  )}
                                   <span>{subItem.title}</span>
                                 </Link>
                               )}
