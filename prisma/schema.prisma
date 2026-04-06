@@ -106,6 +106,7 @@ model User {
   inviteTokens    InviteToken[]
   cardholderEligibility CardholderEligibility?
   memberships     OrganizationMembership[]
+  virtualCards    VirtualCard[] @relation("CardBeneficiary")
 
   @@index([organizationId])
   @@index([email])
@@ -411,6 +412,7 @@ model VirtualCard {
   vendorId       String?      // Vendor this card is locked to
   vendor         Vendor?      @relation(fields: [vendorId], references: [id])
   beneficiaryId  String?      // Beneficiary who uses this card
+  beneficiary    User?        @relation("CardBeneficiary", fields: [beneficiaryId], references: [id])
 
   stripeCardId    String  @unique // Stripe Issuing card ID
   last4           String

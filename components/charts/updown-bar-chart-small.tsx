@@ -45,7 +45,7 @@ const UpdownBarChartSmall = () => {
             },
             labels: {
                 formatter: function (y) {
-                    return y.toFixed(0) + "";
+                    return (typeof y === "number" && !isNaN(y)) ? y.toFixed(0) + "" : "0";
                 },
             },
         },

@@ -34,9 +34,11 @@ export async function GET(): Promise<NextResponse> {
       );
     }
 
-    if (user.role !== "nonprofit_admin" && user.role !== "platform_admin") {
+    const readOnlyRoles = ["nonprofit_staff", "auditor", "cpa"];
+    const adminRoles = ["nonprofit_admin", "platform_admin"];
+    if (!adminRoles.includes(user.role) && !readOnlyRoles.includes(user.role)) {
       return NextResponse.json(
-        { error: "Only organization admins can view fund balance" },
+        { error: "Only organization members can view fund balance" },
         { status: 403 },
       );
     }

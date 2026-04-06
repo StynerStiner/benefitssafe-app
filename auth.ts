@@ -181,20 +181,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.mfaPending = user.mfaPending ?? false;
 
         // Fetch organization name + billing fields for session display and middleware gates
-        const org = await prisma.organization.findUnique({
-          where: { id: user.organizationId },
-          select: {
-            name: true,
-            subscriptionStatus: true,
-            trialEndDate: true,
-            billingSubscription: { select: { tier: true, status: true } },
-          },
-        });
-        token.organizationName = org?.name || "";
-        token.subscriptionStatus = org?.subscriptionStatus || "trial";
-        token.trialEndDate = org?.trialEndDate ? org.trialEndDate.toISOString() : null;
-        token.billingTier = org?.billingSubscription?.tier || "free";
-        token.billingStatus = org?.billingSubscription?.status ?? null;
+        try {
+          const org = await prisma.organization.findUnique({
+            where: { id: user.organizationId },
+            select: {
+              name: true,
+              subscriptionStatus: true,
+              trialEndDate: true,
+              billingSubscription: { select: { tier: true, status: true } },
+            },
+          });
+          token.organizationName = org?.name || "";
+          token.subscriptionStatus = org?.subscriptionStatus || "trial";
+          token.trialEndDate = org?.trialEndDate ? org.trialEndDate.toISOString() : null;
+          token.billingTier = org?.billingSubscription?.tier || "free";
+          token.billingStatus = org?.billingSubscription?.status ?? null;
+        } catch (error) {
+          console.error("JWT callback: org lookup failed for", user.organizationId, error);
+          token.organizationName = "";
+          token.subscriptionStatus = "trial";
+          token.trialEndDate = null;
+          token.billingTier = "free";
+          token.billingStatus = null;
+        }
       }
       // Allow clearing mfaPending via session update after MFA verification
       if (trigger === "update" && updateSession?.mfaPending === false) {
@@ -202,18 +211,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       // Refresh billing fields on session update (e.g. after upgrade/downgrade)
       if (trigger === "update" && updateSession?.refreshBilling === true) {
-        const org = await prisma.organization.findUnique({
-          where: { id: token.organizationId },
-          select: {
-            subscriptionStatus: true,
-            trialEndDate: true,
-            billingSubscription: { select: { tier: true, status: true } },
-          },
-        });
-        token.subscriptionStatus = org?.subscriptionStatus || "trial";
-        token.trialEndDate = org?.trialEndDate ? org.trialEndDate.toISOString() : null;
-        token.billingTier = org?.billingSubscription?.tier || "free";
-        token.billingStatus = org?.billingSubscription?.status ?? null;
+        try {
+          const org = await prisma.organization.findUnique({
+            where: { id: token.organizationId },
+            select: {
+              subscriptionStatus: true,
+              trialEndDate: true,
+              billingSubscription: { select: { tier: true, status: true } },
+            },
+          });
+          token.subscriptionStatus = org?.subscriptionStatus || "trial";
+          token.trialEndDate = org?.trialEndDate ? org.trialEndDate.toISOString() : null;
+          token.billingTier = org?.billingSubscription?.tier || "free";
+          token.billingStatus = org?.billingSubscription?.status ?? null;
+        } catch (error) {
+          console.error("JWT callback: billing refresh failed", error);
+        }
       }
       return token;
     },

@@ -119,6 +119,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: checkoutSession.url });
   } catch (error) {
     console.error("POST /api/billing/checkout error:", error);
+    // Surface Stripe-specific errors for debugging
+    const stripeError = error as { type?: string; message?: string; code?: string };
+    if (stripeError?.type === "StripeInvalidRequestError") {
+      return NextResponse.json(
+        { error: `Stripe configuration error: ${stripeError.message || "Invalid request"}` },
+        { status: 400 },
+      );
+    }
     return NextResponse.json({ error: "Failed to create checkout session" }, { status: 500 });
   }
 }

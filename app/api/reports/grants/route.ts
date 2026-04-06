@@ -12,13 +12,12 @@ export async function GET(request: NextRequest) {
     }
 
     const { role, organizationId } = session.user;
-    if (
-      role !== "nonprofit_admin" &&
-      role !== "nonprofit_staff" &&
-      role !== "cpa" &&
-      role !== "auditor" &&
-      role !== "platform_admin"
-    ) {
+    const reportsAllowedRoles = [
+      "nonprofit_admin", "nonprofit_staff", "cpa", "auditor",
+      "platform_admin", "attorney", "compliance_officer",
+      "grant_officer",
+    ];
+    if (!reportsAllowedRoles.includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

@@ -8,11 +8,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 const ALLOWED_ROLES = [
   "nonprofit_admin",
+  "nonprofit_staff",
   "cpa",
   "auditor",
   "attorney",
   "platform_admin",
   "compliance_officer",
+  "grant_officer",
 ];
 
 // GET /api/audit-logs -- list audit logs with filters and pagination

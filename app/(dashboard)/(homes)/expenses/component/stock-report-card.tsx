@@ -17,10 +17,10 @@ interface Expense {
 
 const StockReportCard = ({ expenses }: { expenses: Expense[] }) => {
     // Group expenses by grant to show budget status
-    const grantMap = new Map<string, { name: string; totalRequested: number; approvedTotal: number; count: number }>();
+    const grantMap = new Map<string, { id: string; name: string; totalRequested: number; approvedTotal: number; count: number }>();
     for (const e of expenses) {
         if (!e.grant) continue;
-        const existing = grantMap.get(e.grant.id) || { name: e.grant.name, totalRequested: 0, approvedTotal: 0, count: 0 };
+        const existing = grantMap.get(e.grant.id) || { id: e.grant.id, name: e.grant.name, totalRequested: 0, approvedTotal: 0, count: 0 };
         existing.totalRequested += parseFloat(e.amount || "0");
         existing.count += 1;
         if (e.status === "APPROVED" || e.status === "PAID") {
@@ -58,7 +58,7 @@ const StockReportCard = ({ expenses }: { expenses: Expense[] }) => {
                                 </TableRow>
                             ) : (
                                 grantStats.map((g) => (
-                                    <TableRow key={g.name}>
+                                    <TableRow key={g.id}>
                                         <TableCell className="text-sm font-medium">{g.name}</TableCell>
                                         <TableCell className="text-sm text-center">{g.count}</TableCell>
                                         <TableCell className="text-sm text-end">

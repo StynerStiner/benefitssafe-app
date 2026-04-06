@@ -38,8 +38,16 @@ export async function GET(request: Request) {
       where.grant = { is: { organizationId } };
     } else if (role === "platform_admin") {
       // Platform admins see everything
-    } else if (role === "nonprofit_admin" || role === "cpa") {
-      // Scoped to their organization
+    } else if (
+      role === "nonprofit_admin" ||
+      role === "nonprofit_staff" ||
+      role === "cpa" ||
+      role === "auditor" ||
+      role === "attorney" ||
+      role === "compliance_officer" ||
+      role === "grant_officer"
+    ) {
+      // Scoped to their organization (read-only for non-admin roles)
       where.grant = { is: { organizationId } };
     } else {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -91,8 +99,8 @@ export async function POST(request: Request) {
 
     const { role, id: userId, organizationId } = session.user;
 
-    // Only beneficiaries and nonprofit admins can submit expenses
-    if (role !== "beneficiary" && role !== "nonprofit_admin" && role !== "platform_admin") {
+    // Beneficiaries, nonprofit admins, and staff can submit expenses
+    if (role !== "beneficiary" && role !== "nonprofit_admin" && role !== "nonprofit_staff" && role !== "platform_admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

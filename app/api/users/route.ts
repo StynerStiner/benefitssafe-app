@@ -15,7 +15,11 @@ export async function GET(request: NextRequest) {
     }
 
     const { role, organizationId } = session.user;
-    if (role !== "nonprofit_admin" && role !== "nonprofit_staff" && role !== "platform_admin") {
+    const usersAllowedRoles = [
+      "nonprofit_admin", "nonprofit_staff", "platform_admin",
+      "auditor", "cpa", "attorney", "compliance_officer",
+    ];
+    if (!usersAllowedRoles.includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
