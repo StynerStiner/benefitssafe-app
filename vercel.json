@@ -12,7 +12,7 @@
     },
     {
       "path": "/api/cron/compliance",
-      "schedule": "0 */6 * * *"
+      "schedule": "0 12 * * *"
     },
     {
       "path": "/api/cron/reports",
