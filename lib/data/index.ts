@@ -1,8 +1,8 @@
 // Data Access Layer — single entry point for all dashboard data.
-// Today: queries Prisma directly with Promise.all parallelism.
-// Tomorrow: add Redis cache, read replicas — zero component changes.
+// Uses prismaRead (read replica) for all queries.
+// Writes (cache invalidation) still use the primary via lib/cache.
 
-import { prisma } from "@/lib/db";
+import { prismaRead as prisma } from "@/lib/db-read";
 import { cached, invalidateCacheByPrefix, CACHE_TTL } from "@/lib/cache";
 
 // ============================================
