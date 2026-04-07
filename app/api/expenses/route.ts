@@ -1,6 +1,7 @@
 // ORG-SCOPED: All queries filtered by session.user.organizationId
 // No cross-organization data leakage possible.
 
+import * as Sentry from "@sentry/nextjs";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
@@ -84,6 +85,9 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ data: expenses, total, limit, offset });
   } catch (error) {
+    Sentry.captureException(error, {
+      tags: { route: '/api/expenses', method: 'GET' },
+    });
     console.error("GET /api/expenses error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
@@ -324,6 +328,9 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error) {
+    Sentry.captureException(error, {
+      tags: { route: '/api/expenses', method: 'POST' },
+    });
     console.error("POST /api/expenses error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

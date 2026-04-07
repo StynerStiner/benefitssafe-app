@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
@@ -108,6 +109,9 @@ export async function GET(request: Request) {
       results,
     });
   } catch (error) {
+    Sentry.captureException(error, {
+      tags: { route: '/api/cron/sentinel', method: 'GET' },
+    });
     logger.error('SentinelLayer cron job failed', {
       error: error instanceof Error
         ? error.message : 'Unknown error',

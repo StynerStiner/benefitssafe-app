@@ -2,6 +2,7 @@
 // GET /api/virtual-cards — list cards for the organization (ORG-SCOPED)
 // Also used by beneficiaries to see their own cards
 
+import * as Sentry from "@sentry/nextjs";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
@@ -68,6 +69,9 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ data: cards, total, limit, offset });
   } catch (error) {
+    Sentry.captureException(error, {
+      tags: { route: '/api/virtual-cards', method: 'GET' },
+    });
     console.error("GET /api/virtual-cards error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

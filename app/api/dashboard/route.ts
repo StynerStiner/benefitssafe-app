@@ -2,6 +2,7 @@
 // Returns role-scoped data in a single response, cached for 60 seconds.
 // Individual CRUD routes (/api/expenses, /api/grants, etc.) remain unchanged.
 
+import * as Sentry from "@sentry/nextjs";
 import { auth } from "@/auth";
 import { getDashboardData } from "@/lib/data";
 import { NextResponse } from "next/server";
@@ -21,6 +22,9 @@ export async function GET() {
 
     return NextResponse.json(data);
   } catch (error) {
+    Sentry.captureException(error, {
+      tags: { route: '/api/dashboard', method: 'GET' },
+    });
     console.error("GET /api/dashboard error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
