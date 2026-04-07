@@ -59,18 +59,13 @@ const FinancePage = () => {
     const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
     useEffect(() => {
-        Promise.all([
-            fetch("/api/grants?limit=100").then((r) => r.ok ? r.json() : { data: [] }),
-            fetch("/api/expenses?limit=100").then((r) => r.ok ? r.json() : { data: [] }),
-            fetch("/api/audit-logs").then((r) => r.ok ? r.json() : []),
-        ])
-            .then(([gJson, eJson, a]) => {
-                const g = Array.isArray(gJson) ? gJson : gJson.data;
-                if (Array.isArray(g)) setGrants(g);
-                const e = Array.isArray(eJson) ? eJson : eJson.data;
-                if (Array.isArray(e)) setExpenses(e);
-                const logs = Array.isArray(a) ? a : (a?.logs && Array.isArray(a.logs) ? a.logs : []);
-                setAuditLogs(logs);
+        fetch("/api/dashboard")
+            .then((r) => r.ok ? r.json() : {})
+            .then((data: Record<string, unknown>) => {
+                const d = data as { grants?: { items?: Grant[] }; expenses?: { recentItems?: Expense[] }; auditLog?: { recentItems?: AuditLog[] } };
+                if (d.grants?.items) setGrants(d.grants.items);
+                if (d.expenses?.recentItems) setExpenses(d.expenses.recentItems);
+                if (d.auditLog?.recentItems) setAuditLogs(d.auditLog.recentItems);
             })
             .catch(() => {
                 setError("Failed to load dashboard data. Please try refreshing the page.");

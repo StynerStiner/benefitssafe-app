@@ -9,19 +9,12 @@ import TotalSubscriberCard from "@/app/(dashboard)/(homes)/my-dashboard/componen
 import UserOverviewCard from "@/app/(dashboard)/(homes)/my-dashboard/components/user-overview-card";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
-import type { Metadata } from "next";
+import { DashboardDataProvider } from "@/contexts/DashboardDataContext";
 import { Suspense } from "react";
 
-const metadata: Metadata = {
-  title: "Dashboard | BenefitsSafe",
-  description:
-    "Monitor grant disbursement activity, beneficiary expenses, and organization overview.",
-};
-
-
-export default async function DashboardPage() {
+export default function DashboardPage() {
   return (
-    <>
+    <DashboardDataProvider>
       <DashboardBreadcrumb title="My Dashboard" text="My Dashboard" />
 
       <Suspense fallback={<LoadingSkeleton />}>
@@ -79,6 +72,6 @@ export default async function DashboardPage() {
           </Suspense>
         </div>
       </div>
-    </>
+    </DashboardDataProvider>
   );
 }

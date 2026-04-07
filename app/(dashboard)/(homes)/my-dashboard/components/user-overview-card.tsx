@@ -2,7 +2,8 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Bell } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useDashboardData } from "@/contexts/DashboardDataContext";
 
 interface Notification {
   id: string;
@@ -15,24 +16,12 @@ interface Notification {
 }
 
 const UserOverviewCard = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading } = useDashboardData();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch("/api/notifications?limit=5");
-        const json = await res.json();
-        setNotifications(Array.isArray(json) ? json : json.data ?? []);
-      } catch (error) {
-        console.error("Failed to fetch notifications:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const notifications = useMemo<Notification[]>(() => {
+    if (!data) return [];
+    return (data.notifications?.items ?? []) as Notification[];
+  }, [data]);
 
   if (loading) {
     return (

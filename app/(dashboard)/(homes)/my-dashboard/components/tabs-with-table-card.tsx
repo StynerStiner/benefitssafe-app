@@ -2,7 +2,8 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useDashboardData } from "@/contexts/DashboardDataContext";
 
 interface Grant {
   id: string;
@@ -22,31 +23,17 @@ interface Expense {
 }
 
 const TabsWithTableCard = () => {
-  const [grants, setGrants] = useState<Grant[]>([]);
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading } = useDashboardData();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [grantsRes, expensesRes] = await Promise.all([
-          fetch("/api/grants?limit=10"),
-          fetch("/api/expenses?limit=10"),
-        ]);
+  const grants = useMemo<Grant[]>(() => {
+    if (!data) return [];
+    return (data.grants?.items ?? []) as Grant[];
+  }, [data]);
 
-        const grantsJson = await grantsRes.json();
-        const expensesJson = await expensesRes.json();
-        setGrants(Array.isArray(grantsJson) ? grantsJson : grantsJson.data ?? []);
-        setExpenses(Array.isArray(expensesJson) ? expensesJson : expensesJson.data ?? []);
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const expenses = useMemo<Expense[]>(() => {
+    if (!data) return [];
+    return (data.expenses?.recentItems ?? []) as Expense[];
+  }, [data]);
 
   const statusColor = (status: string) => {
     switch (status) {

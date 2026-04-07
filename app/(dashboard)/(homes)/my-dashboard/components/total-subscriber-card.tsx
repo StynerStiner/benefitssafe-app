@@ -1,75 +1,59 @@
 "use client";
 
 import { Card, CardContent } from '@/components/ui/card';
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { ArrowDown, ArrowUp } from "lucide-react";
 import TotalSubscriberChart from '@/components/charts/total-subscriber-chart';
-
-interface Subscription {
-  status: string;
-  createdAt: string;
-}
+import { useDashboardData } from "@/contexts/DashboardDataContext";
 
 const TotalSubscriberCard = () => {
-  const [activeCount, setActiveCount] = useState(0);
-  const [growthPercent, setGrowthPercent] = useState(0);
-  const [dailyRate, setDailyRate] = useState(0);
-  const [isPositive, setIsPositive] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const { data, loading } = useDashboardData();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch("/api/subscriptions");
-        const json = await res.json();
-        const subscriptions: Subscription[] = Array.isArray(json) ? json : (json?.data || []);
+  const { activeCount, growthPercent, dailyRate, isPositive } = useMemo(() => {
+    if (!data) return { activeCount: 0, growthPercent: 0, dailyRate: 0, isPositive: true };
 
-        // Count active subscriptions
-        const active = subscriptions.filter((s) => s.status === "ACTIVE").length;
+    const subscriptions = (data.subscriptions?.items ?? []) as Array<Record<string, unknown>>;
 
-        // Get this month subscriptions
-        const now = new Date();
-        const thisMonth = subscriptions.filter((s) => {
-          const date = new Date(s.createdAt);
-          return (
-            date.getMonth() === now.getMonth() &&
-            date.getFullYear() === now.getFullYear()
-          );
-        });
+    // Count active subscriptions
+    const active = subscriptions.filter((s) => s.status === "ACTIVE").length;
 
-        // Get last month subscriptions
-        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const lastMonthSubs = subscriptions.filter((s) => {
-          const date = new Date(s.createdAt);
-          return (
-            date.getMonth() === lastMonth.getMonth() &&
-            date.getFullYear() === lastMonth.getFullYear()
-          );
-        });
+    // Get this month subscriptions
+    const now = new Date();
+    const thisMonth = subscriptions.filter((s) => {
+      const date = new Date(s.createdAt as string);
+      return (
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear()
+      );
+    });
 
-        // Calculate growth
-        const growth =
-          lastMonthSubs.length > 0
-            ? ((thisMonth.length - lastMonthSubs.length) / lastMonthSubs.length) * 100
-            : 0;
+    // Get last month subscriptions
+    const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthSubs = subscriptions.filter((s) => {
+      const date = new Date(s.createdAt as string);
+      return (
+        date.getMonth() === lastMonthDate.getMonth() &&
+        date.getFullYear() === lastMonthDate.getFullYear()
+      );
+    });
 
-        // Calculate daily rate
-        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-        const daily = thisMonth.length / daysInMonth;
+    // Calculate growth
+    const growth =
+      lastMonthSubs.length > 0
+        ? ((thisMonth.length - lastMonthSubs.length) / lastMonthSubs.length) * 100
+        : 0;
 
-        setActiveCount(active);
-        setGrowthPercent(Math.abs(growth));
-        setDailyRate(daily);
-        setIsPositive(growth >= 0);
-      } catch (error) {
-        console.error("Failed to fetch subscription stats:", error);
-      } finally {
-        setLoading(false);
-      }
+    // Calculate daily rate
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const daily = thisMonth.length / daysInMonth;
+
+    return {
+      activeCount: active,
+      growthPercent: Math.abs(growth),
+      dailyRate: daily,
+      isPositive: growth >= 0,
     };
-
-    fetchData();
-  }, []);
+  }, [data]);
 
   if (loading) {
     return (

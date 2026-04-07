@@ -274,6 +274,8 @@ model ExpenseRequest {
   @@index([grantId])
   @@index([requestedById])
   @@index([status])
+  @@index([grantId, status])             // Expense queries by grant and status
+  @@index([requestedById, status])       // Expense queries by requester and status
   @@index([grantId, status, createdAt]) // Expense filtering by grant, status, and date range
 }
 
@@ -383,6 +385,7 @@ model Subscription {
 
   @@index([vendorId])
   @@index([grantId])
+  @@index([grantId, status])             // Subscription queries by grant and status
   @@index([vendorId, status]) // Subscription queries by vendor and status
 }
 
@@ -436,6 +439,7 @@ model VirtualCard {
   @@index([vendorId])
   @@index([beneficiaryId])
   @@index([stripeCardId])
+  @@index([organizationId, status])      // Card listing filtered by org and status
 }
 
 enum CardStatus {
@@ -501,6 +505,7 @@ model Transaction {
 
   @@index([cardId])
   @@index([organizationId])
+  @@index([cardId, createdAt])           // Transaction history by card
   @@index([organizationId, createdAt]) // Transaction history time-series queries
 }
 
@@ -569,6 +574,7 @@ model AuditLog {
 
   @@index([organizationId])
   @@index([entityType, entityId])
+  @@index([userId, organizationId])     // Audit queries by user within an org
   @@index([organizationId, createdAt]) // Audit trail time-series queries
 }
 
@@ -632,7 +638,7 @@ model Notification {
   createdAt      DateTime @default(now())
 
   @@index([userId, read])
-  @@index([organizationId])
+  @@index([organizationId, createdAt])   // Notification queries by org and date
 }
 
 // ============================================

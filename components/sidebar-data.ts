@@ -251,6 +251,29 @@ const supportNav: NavItem[] = [
   },
 ];
 
+const billingAdminNav: NavItem[] = [
+  {
+    title: "Billing",
+    url: "#",
+    icon: CreditCard,
+    isActive: true,
+    items: [
+      { title: "Billing & Plans", url: "/settings/billing", circleColor: "bg-blue-600", icon: CreditCard },
+    ],
+  },
+  { label: "Organization" },
+  {
+    title: "Organization",
+    url: "/org-settings",
+    icon: Building2,
+  },
+  {
+    title: "Profile",
+    url: "/profile",
+    icon: UserCircle,
+  },
+];
+
 const platformAdminNav: NavItem[] = [
   {
     title: "Platform",
@@ -298,6 +321,9 @@ export function getNavForRole(role: string): NavItem[] {
 
     case "support_agent":
       return supportNav;
+
+    case "billing_admin":
+      return billingAdminNav;
 
     default:
       return nonprofitAdminNav;

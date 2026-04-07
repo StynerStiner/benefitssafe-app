@@ -2,14 +2,8 @@
 
 import CommonLink from "@/components/shared/common-link";
 import { Card, CardContent } from "@/components/ui/card";
-import { useEffect, useState } from "react";
-
-interface Grant {
-  id: string;
-  name: string;
-  totalAmount: string;
-  _count?: { expenses?: number };
-}
+import { useMemo } from "react";
+import { useDashboardData } from "@/contexts/DashboardDataContext";
 
 interface TopGrant {
   id: string;
@@ -19,37 +13,23 @@ interface TopGrant {
 }
 
 const TopPerformerCard = () => {
-  const [topGrants, setTopGrants] = useState<TopGrant[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading } = useDashboardData();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch("/api/grants?limit=100");
-        const json = await res.json();
-        const grants = (Array.isArray(json) ? json : json.data ?? []) as Grant[];
+  const topGrants = useMemo<TopGrant[]>(() => {
+    if (!data) return [];
+    const grants = (data.grants?.items ?? []) as Array<Record<string, unknown>>;
 
-        // Sort by total amount and get top 6
-        const top = grants
-          .map((g) => ({
-            id: g.id,
-            name: g.name,
-            totalAmount: parseFloat(g.totalAmount || "0"),
-            expenseCount: g._count?.expenses || 0,
-          }))
-          .sort((a, b) => b.totalAmount - a.totalAmount)
-          .slice(0, 6);
-
-        setTopGrants(top);
-      } catch (error) {
-        console.error("Failed to fetch top grants:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+    // Sort by total amount and get top 6
+    return grants
+      .map((g) => ({
+        id: g.id as string,
+        name: g.name as string,
+        totalAmount: parseFloat((g.totalAmount as string) || "0"),
+        expenseCount: ((g._count as Record<string, number> | undefined)?.expenses) || 0,
+      }))
+      .sort((a, b) => b.totalAmount - a.totalAmount)
+      .slice(0, 6);
+  }, [data]);
 
   if (loading) {
     return (

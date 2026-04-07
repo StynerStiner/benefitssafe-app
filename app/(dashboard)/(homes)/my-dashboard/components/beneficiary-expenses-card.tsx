@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Loader2, PlusCircle } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useDashboardData } from "@/contexts/DashboardDataContext";
 
 interface ExpenseItem {
   id: string;
@@ -26,24 +27,13 @@ const statusVariant: Record<string, "warning" | "success" | "danger" | "info" | 
 };
 
 const BeneficiaryExpensesCard = () => {
-  const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading } = useDashboardData();
 
-  const fetchExpenses = useCallback(() => {
-    setLoading(true);
-    fetch("/api/expenses?limit=5")
-      .then((r) => r.ok ? r.json() : { data: [] })
-      .then((json) => {
-        const data = Array.isArray(json) ? json : (json?.data || []);
-        setExpenses(data.slice(0, 5));
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    fetchExpenses();
-  }, [fetchExpenses]);
+  const expenses = useMemo<ExpenseItem[]>(() => {
+    if (!data) return [];
+    const items = (data.expenses?.recentItems ?? []) as ExpenseItem[];
+    return items.slice(0, 5);
+  }, [data]);
 
   const formatAmount = (a: string) =>
     `$${parseFloat(a || "0").toLocaleString("en-US", { minimumFractionDigits: 2 })}`;

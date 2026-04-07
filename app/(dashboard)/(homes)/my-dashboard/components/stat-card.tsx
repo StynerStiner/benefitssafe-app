@@ -2,7 +2,8 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowDown, ArrowUp, FileText, Medal, Wallet } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
+import { useDashboardData } from "@/contexts/DashboardDataContext";
 
 interface CardData {
   title: string;
@@ -16,125 +17,93 @@ interface CardData {
   description: string;
 }
 
-interface Grant {
-  totalAmount: string;
-  spentAmount: string;
-  createdAt: string;
-}
-
-interface Expense {
-  amount: string;
-  status: string;
-  createdAt: string;
-}
-
 const StatCard = () => {
-  const [cardsDatas, setCardsDatas] = useState<CardData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading } = useDashboardData();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [grantsRes, expensesRes, cardsRes] = await Promise.all([
-          fetch("/api/grants?limit=100"),
-          fetch("/api/expenses?limit=100"),
-          fetch("/api/virtual-cards?limit=100"),
-        ]);
+  const cardsDatas = useMemo<CardData[]>(() => {
+    if (!data) return [];
 
-        const grantsJson = await grantsRes.json();
-        const expensesJson = await expensesRes.json();
-        const cardsJson = await cardsRes.json();
-        const grants = (Array.isArray(grantsJson) ? grantsJson : grantsJson.data ?? []) as Grant[];
-        const expenses = (Array.isArray(expensesJson) ? expensesJson : expensesJson.data ?? []) as Expense[];
-        const cards = (Array.isArray(cardsJson) ? cardsJson : cardsJson.data ?? []) as { id: string; status: string }[];
+    const grants = data.grants?.items ?? [];
+    const expenses = data.expenses?.recentItems ?? [];
+    const cards = data.cards?.items ?? [];
 
-        // Personal metrics — API already filters to this beneficiary's data
-        const availableBalance = grants.reduce(
-          (sum, g) => sum + parseFloat(g.totalAmount || "0") - parseFloat(g.spentAmount || "0"),
-          0
-        );
-        const totalSpent = grants.reduce(
-          (sum, g) => sum + parseFloat(g.spentAmount || "0"),
-          0
-        );
-        const pendingExpenses = expenses.filter((e) => e.status === "PENDING");
-        const pendingTotal = pendingExpenses.reduce(
-          (sum, e) => sum + parseFloat(e.amount || "0"),
-          0
-        );
-        const activeCards = cards.filter((c) => c.status === "ACTIVE");
+    // Personal metrics — API already filters to this beneficiary's data
+    const availableBalance = grants.reduce(
+      (sum: number, g: Record<string, unknown>) => sum + parseFloat((g.totalAmount as string) || "0") - parseFloat((g.spentAmount as string) || "0"),
+      0
+    );
+    const totalSpent = grants.reduce(
+      (sum: number, g: Record<string, unknown>) => sum + parseFloat((g.spentAmount as string) || "0"),
+      0
+    );
+    const pendingExpenses = expenses.filter((e: Record<string, unknown>) => e.status === "PENDING");
+    const pendingTotal = pendingExpenses.reduce(
+      (sum: number, e: Record<string, unknown>) => sum + parseFloat((e.amount as string) || "0"),
+      0
+    );
+    const activeCards = cards.filter((c: Record<string, unknown>) => c.status === "ACTIVE");
 
-        const formatAmount = (amount: number) =>
-          amount >= 1000 ? `$${(amount / 1000).toFixed(1)}k` : `$${amount.toFixed(0)}`;
+    const formatAmount = (amount: number) =>
+      amount >= 1000 ? `$${(amount / 1000).toFixed(1)}k` : `$${amount.toFixed(0)}`;
 
-        const data: CardData[] = [
-          {
-            title: "My Grants",
-            value: grants.length.toLocaleString(),
-            icon: Medal,
-            iconBg: "bg-purple-600",
-            gradientFrom: "from-purple-600/10",
-            growth: `${grants.filter((g) => g.createdAt && new Date(g.createdAt) > new Date(Date.now() - 30 * 86400000)).length} this month`,
-            growthIcon: ArrowUp,
-            growthColor: "text-green-600 dark:text-green-400",
-            description: "Assigned to you",
-          },
-          {
-            title: "Available Balance",
-            value: formatAmount(availableBalance),
-            icon: Wallet,
-            iconBg: "bg-primary",
-            gradientFrom: "from-primary/10",
-            growth: formatAmount(totalSpent) + " spent",
-            growthIcon: ArrowUp,
-            growthColor: "text-green-600 dark:text-green-400",
-            description: "Across all grants",
-          },
-          {
-            title: "Pending Requests",
-            value: pendingExpenses.length.toLocaleString(),
-            icon: FileText,
-            iconBg: "bg-amber-600",
-            gradientFrom: "from-amber-600/10",
-            growth: formatAmount(pendingTotal),
-            growthIcon: ArrowUp,
-            growthColor: "text-amber-600 dark:text-amber-400",
-            description: "Awaiting approval",
-          },
-          {
-            title: "Active Cards",
-            value: activeCards.length.toLocaleString(),
-            icon: Wallet,
-            iconBg: "bg-green-600",
-            gradientFrom: "from-green-600/10",
-            growth: `${cards.length} total`,
-            growthIcon: ArrowUp,
-            growthColor: "text-green-600 dark:text-green-400",
-            description: "Virtual cards",
-          },
-          {
-            title: "My Expenses",
-            value: expenses.length.toLocaleString(),
-            icon: FileText,
-            iconBg: "bg-blue-600",
-            gradientFrom: "from-blue-600/10",
-            growth: `${expenses.filter((e) => e.status === "APPROVED" || e.status === "PAID").length} approved`,
-            growthIcon: ArrowUp,
-            growthColor: "text-green-600 dark:text-green-400",
-            description: "Total submitted",
-          },
-        ];
-
-        setCardsDatas(data);
-      } catch (error) {
-        console.error("Failed to fetch dashboard stats:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+    return [
+      {
+        title: "My Grants",
+        value: grants.length.toLocaleString(),
+        icon: Medal,
+        iconBg: "bg-purple-600",
+        gradientFrom: "from-purple-600/10",
+        growth: `${grants.filter((g: Record<string, unknown>) => g.createdAt && new Date(g.createdAt as string) > new Date(Date.now() - 30 * 86400000)).length} this month`,
+        growthIcon: ArrowUp,
+        growthColor: "text-green-600 dark:text-green-400",
+        description: "Assigned to you",
+      },
+      {
+        title: "Available Balance",
+        value: formatAmount(availableBalance),
+        icon: Wallet,
+        iconBg: "bg-primary",
+        gradientFrom: "from-primary/10",
+        growth: formatAmount(totalSpent) + " spent",
+        growthIcon: ArrowUp,
+        growthColor: "text-green-600 dark:text-green-400",
+        description: "Across all grants",
+      },
+      {
+        title: "Pending Requests",
+        value: pendingExpenses.length.toLocaleString(),
+        icon: FileText,
+        iconBg: "bg-amber-600",
+        gradientFrom: "from-amber-600/10",
+        growth: formatAmount(pendingTotal),
+        growthIcon: ArrowUp,
+        growthColor: "text-amber-600 dark:text-amber-400",
+        description: "Awaiting approval",
+      },
+      {
+        title: "Active Cards",
+        value: activeCards.length.toLocaleString(),
+        icon: Wallet,
+        iconBg: "bg-green-600",
+        gradientFrom: "from-green-600/10",
+        growth: `${cards.length} total`,
+        growthIcon: ArrowUp,
+        growthColor: "text-green-600 dark:text-green-400",
+        description: "Virtual cards",
+      },
+      {
+        title: "My Expenses",
+        value: expenses.length.toLocaleString(),
+        icon: FileText,
+        iconBg: "bg-blue-600",
+        gradientFrom: "from-blue-600/10",
+        growth: `${expenses.filter((e: Record<string, unknown>) => e.status === "APPROVED" || e.status === "PAID").length} approved`,
+        growthIcon: ArrowUp,
+        growthColor: "text-green-600 dark:text-green-400",
+        description: "Total submitted",
+      },
+    ];
+  }, [data]);
 
   if (loading) {
     return (

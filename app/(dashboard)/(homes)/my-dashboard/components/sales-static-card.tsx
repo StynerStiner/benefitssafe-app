@@ -4,89 +4,72 @@ import SalesStaticChart from "@/components/charts/sales-static-chart";
 import CustomSelect from "@/components/shared/custom-select";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowUp, ArrowDown } from "lucide-react";
-import { useEffect, useState } from "react";
-
-interface Expense {
-  amount: string;
-  status: string;
-  createdAt: string;
-}
+import { useMemo } from "react";
+import { useDashboardData } from "@/contexts/DashboardDataContext";
 
 const SalesStaticCard = () => {
-  const [totalDisbursed, setTotalDisbursed] = useState(0);
-  const [growthPercent, setGrowthPercent] = useState(0);
-  const [dailyAverage, setDailyAverage] = useState(0);
-  const [isPositive, setIsPositive] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const { data, loading } = useDashboardData();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch("/api/expenses?limit=100");
-        const json = await res.json();
-        const expenses = (Array.isArray(json) ? json : json.data ?? []) as Expense[];
+  const { totalDisbursed, growthPercent, dailyAverage, isPositive } = useMemo(() => {
+    if (!data) return { totalDisbursed: 0, growthPercent: 0, dailyAverage: 0, isPositive: true };
 
-        // Get current month disbursements
-        const now = new Date();
-        const thisMonth = expenses.filter((e) => {
-          const date = new Date(e.createdAt);
-          return (
-            date.getMonth() === now.getMonth() &&
-            date.getFullYear() === now.getFullYear() &&
-            (e.status === "APPROVED" || e.status === "PAID")
-          );
-        });
-        const thisMonthTotal = thisMonth.reduce(
-          (sum, e) => sum + parseFloat(e.amount || "0"),
-          0
-        );
+    const expenses = (data.expenses?.recentItems ?? []) as Array<Record<string, unknown>>;
 
-        // Get last month disbursements for comparison
-        const lastMonth = new Date(
-          now.getFullYear(),
-          now.getMonth() - 1,
-          1
-        );
-        const lastMonthExpenses = expenses.filter((e) => {
-          const date = new Date(e.createdAt);
-          return (
-            date.getMonth() === lastMonth.getMonth() &&
-            date.getFullYear() === lastMonth.getFullYear() &&
-            (e.status === "APPROVED" || e.status === "PAID")
-          );
-        });
-        const lastMonthTotal = lastMonthExpenses.reduce(
-          (sum, e) => sum + parseFloat(e.amount || "0"),
-          0
-        );
+    // Get current month disbursements
+    const now = new Date();
+    const thisMonth = expenses.filter((e) => {
+      const date = new Date(e.createdAt as string);
+      return (
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear() &&
+        (e.status === "APPROVED" || e.status === "PAID")
+      );
+    });
+    const thisMonthTotal = thisMonth.reduce(
+      (sum, e) => sum + parseFloat((e.amount as string) || "0"),
+      0
+    );
 
-        // Calculate growth
-        const growth =
-          lastMonthTotal > 0
-            ? ((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100
-            : 0;
+    // Get last month disbursements for comparison
+    const lastMonthDate = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      1
+    );
+    const lastMonthExpenses = expenses.filter((e) => {
+      const date = new Date(e.createdAt as string);
+      return (
+        date.getMonth() === lastMonthDate.getMonth() &&
+        date.getFullYear() === lastMonthDate.getFullYear() &&
+        (e.status === "APPROVED" || e.status === "PAID")
+      );
+    });
+    const lastMonthTotal = lastMonthExpenses.reduce(
+      (sum, e) => sum + parseFloat((e.amount as string) || "0"),
+      0
+    );
 
-        // Calculate daily average
-        const daysInMonth = new Date(
-          now.getFullYear(),
-          now.getMonth() + 1,
-          0
-        ).getDate();
-        const daily = thisMonthTotal / daysInMonth;
+    // Calculate growth
+    const growth =
+      lastMonthTotal > 0
+        ? ((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100
+        : 0;
 
-        setTotalDisbursed(thisMonthTotal);
-        setGrowthPercent(Math.abs(growth));
-        setDailyAverage(daily);
-        setIsPositive(growth >= 0);
-      } catch (error) {
-        console.error("Failed to fetch disbursement stats:", error);
-      } finally {
-        setLoading(false);
-      }
+    // Calculate daily average
+    const daysInMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0
+    ).getDate();
+    const daily = thisMonthTotal / daysInMonth;
+
+    return {
+      totalDisbursed: thisMonthTotal,
+      growthPercent: Math.abs(growth),
+      dailyAverage: daily,
+      isPositive: growth >= 0,
     };
-
-    fetchData();
-  }, []);
+  }, [data]);
 
   if (loading) {
     return (
