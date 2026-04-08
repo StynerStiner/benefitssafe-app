@@ -75,7 +75,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default process.env.SENTRY_AUTH_TOKEN ? withSentryConfig(nextConfig, {
+export default withSentryConfig(nextConfig, {
   // Suppress source map upload warnings when SENTRY_AUTH_TOKEN is not set
   silent: !process.env.SENTRY_AUTH_TOKEN,
 
@@ -84,4 +84,4 @@ export default process.env.SENTRY_AUTH_TOKEN ? withSentryConfig(nextConfig, {
 
   // Automatically tree-shake Sentry logger statements to reduce bundle size
   disableLogger: true,
-}) : nextConfig;
+});
