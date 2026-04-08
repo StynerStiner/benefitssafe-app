@@ -20,7 +20,9 @@ export async function GET() {
       limit: 100,
     });
 
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=30' },
+    });
   } catch (error) {
     Sentry.captureException(error, {
       tags: { route: '/api/dashboard', method: 'GET' },

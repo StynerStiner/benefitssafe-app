@@ -55,7 +55,9 @@ export async function GET(request: Request) {
       return { data: grants, total, limit, offset };
     });
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=15' },
+    });
   } catch (error) {
     Sentry.captureException(error, {
       tags: { route: '/api/grants', method: 'GET' },

@@ -42,7 +42,9 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    return NextResponse.json({ notifications, unreadCount });
+    return NextResponse.json({ notifications, unreadCount }, {
+      headers: { 'Cache-Control': 'private, max-age=15, stale-while-revalidate=10' },
+    });
   } catch (error) {
     console.error("GET /api/notifications error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

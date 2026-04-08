@@ -10,7 +10,10 @@ function createPrismaClient(): PrismaClient {
   if (!connectionString) {
     throw new Error("DATABASE_URL environment variable is not set");
   }
-  const adapter = new PrismaPg({ connectionString });
+  // 30-second query timeout via PG options (prevents runaway queries)
+  const url = new URL(connectionString);
+  url.searchParams.set("options", "-c statement_timeout=30000");
+  const adapter = new PrismaPg({ connectionString: url.toString() });
   return new PrismaClient({ adapter }) as PrismaClient;
 }
 

@@ -42,6 +42,9 @@ export async function GET() {
       version: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || "dev",
       checks,
     },
-    { status: overall === "down" ? 503 : 200 },
+    {
+      status: overall === "down" ? 503 : 200,
+      headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
+    },
   );
 }

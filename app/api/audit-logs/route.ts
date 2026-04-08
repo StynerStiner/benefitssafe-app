@@ -101,7 +101,9 @@ export async function GET(request: NextRequest) {
       prisma.auditLog.count({ where: where as never }),
     ]);
 
-    return NextResponse.json({ logs, total, limit, offset });
+    return NextResponse.json({ logs, total, limit, offset }, {
+      headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=15' },
+    });
   } catch (error) {
     console.error("GET /api/audit-logs error:", error);
     return NextResponse.json(

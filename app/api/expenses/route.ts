@@ -83,7 +83,9 @@ export async function GET(request: Request) {
 
     // Note: suggestedCategory and approvedAt are included automatically by Prisma
 
-    return NextResponse.json({ data: expenses, total, limit, offset });
+    return NextResponse.json({ data: expenses, total, limit, offset }, {
+      headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=15' },
+    });
   } catch (error) {
     Sentry.captureException(error, {
       tags: { route: '/api/expenses', method: 'GET' },

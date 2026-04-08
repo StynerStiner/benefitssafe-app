@@ -11,7 +11,10 @@ function createReadClient(): PrismaClient {
   if (!readUrl) {
     throw new Error("No database URL configured");
   }
-  const adapter = new PrismaPg({ connectionString: readUrl });
+  // 30-second query timeout via PG options (prevents runaway queries)
+  const url = new URL(readUrl);
+  url.searchParams.set("options", "-c statement_timeout=30000");
+  const adapter = new PrismaPg({ connectionString: url.toString() });
   return new PrismaClient({ adapter }) as PrismaClient;
 }
 

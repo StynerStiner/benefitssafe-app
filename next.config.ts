@@ -65,11 +65,37 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
+    const corsHeaders = [
+      {
+        key: "Access-Control-Allow-Origin",
+        value: process.env.NODE_ENV === "production"
+          ? "https://benefitssafe.com"
+          : "http://localhost:3001",
+      },
+      {
+        key: "Access-Control-Allow-Methods",
+        value: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+      },
+      {
+        key: "Access-Control-Allow-Headers",
+        value: "Content-Type, Authorization, X-Requested-With",
+      },
+      {
+        key: "Access-Control-Allow-Credentials",
+        value: "true",
+      },
+    ];
+
     return [
       {
         // Apply security headers to all routes
         source: "/(.*)",
         headers: securityHeaders,
+      },
+      {
+        // Apply CORS headers to API routes
+        source: "/api/(.*)",
+        headers: corsHeaders,
       },
     ];
   },
