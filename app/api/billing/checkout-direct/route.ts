@@ -12,12 +12,8 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const plan = searchParams.get("plan");
 
-  const baseUrl =
-    process.env.AUTH_URL ||
-    process.env.NEXTAUTH_URL ||
-    "https://app.benefitssafe.com";
-  const marketingUrl =
-    process.env.NEXT_PUBLIC_MARKETING_URL || "https://benefitssafe.com";
+  const baseUrl = "https://app.benefitssafe.com";
+  const marketingUrl = "https://benefitssafe.com";
 
   // Validate plan param
   if (!plan || !VALID_PLANS.includes(plan as (typeof VALID_PLANS)[number])) {
