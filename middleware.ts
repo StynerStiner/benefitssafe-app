@@ -10,6 +10,7 @@ const PUBLIC_PATHS = [
   "/api/verify-ein",
   "/api/promo-codes/verify",
   "/api/webhooks",
+  "/api/billing/checkout-direct",
   "/_next",
   "/public",
   "/favicon.ico",

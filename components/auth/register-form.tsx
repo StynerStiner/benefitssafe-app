@@ -46,6 +46,8 @@ const RegisterForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planParam = searchParams.get("plan");
+  const checkoutSuccess = searchParams.get("checkout_success") === "true";
+  const checkoutSessionId = searchParams.get("session_id");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { loading, setLoading } = useLoading();
@@ -224,6 +226,10 @@ const RegisterForm = () => {
       if (planParam) {
         try { localStorage.setItem("benefitssafe_selected_plan", planParam); } catch {}
       }
+      // Persist checkout session ID so it can be linked after email verification + login
+      if (checkoutSessionId) {
+        try { localStorage.setItem("benefitssafe_checkout_session_id", checkoutSessionId); } catch {}
+      }
       form.reset();
       setTimeout(() => {
         const loginUrl = planParam ? `/auth/login?plan=${planParam}` : "/auth/login";
@@ -247,7 +253,15 @@ const RegisterForm = () => {
 
   return (
     <>
-      {planParam && planLabels[planParam] && (
+      {checkoutSuccess && planParam && planLabels[planParam] && (
+        <div className="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 dark:bg-green-950/30 dark:border-green-800">
+          <p className="text-sm text-center text-green-800 dark:text-green-300">
+            <Check className="inline w-4 h-4 mr-1" />
+            <span className="font-semibold">Payment confirmed!</span> Create your account to get started with {planLabels[planParam]}.
+          </p>
+        </div>
+      )}
+      {planParam && planLabels[planParam] && !checkoutSuccess && (
         <div className="mb-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
           <p className="text-sm text-center">
             <span className="font-semibold">Selected plan:</span>{" "}
