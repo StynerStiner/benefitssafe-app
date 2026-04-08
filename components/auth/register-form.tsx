@@ -220,6 +220,10 @@ const RegisterForm = () => {
       toast.success(
         "Account created! Please check your email to verify your account before signing in."
       );
+      // Persist plan selection so it survives the email verification redirect
+      if (planParam) {
+        try { localStorage.setItem("benefitssafe_selected_plan", planParam); } catch {}
+      }
       form.reset();
       setTimeout(() => {
         const loginUrl = planParam ? `/auth/login?plan=${planParam}` : "/auth/login";
@@ -233,8 +237,24 @@ const RegisterForm = () => {
     }
   };
 
+  const planLabels: Record<string, string> = {
+    seed: "Seed - $49/month",
+    core: "Core - $99/month",
+    network: "Network - $199/month",
+    enterprise: "Enterprise - $399/month",
+    community: "Community - Free",
+  };
+
   return (
     <>
+      {planParam && planLabels[planParam] && (
+        <div className="mb-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
+          <p className="text-sm text-center">
+            <span className="font-semibold">Selected plan:</span>{" "}
+            {planLabels[planParam]}
+          </p>
+        </div>
+      )}
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(handleRegisterFormSubmit)}

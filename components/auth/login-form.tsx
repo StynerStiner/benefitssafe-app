@@ -32,7 +32,12 @@ const LoginForm = () => {
   const formRef = useRef<HTMLFormElement>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const planParam = searchParams.get('plan')
+  // Plan param from URL or persisted from registration (survives email verification redirect)
+  const urlPlan = searchParams.get('plan')
+  const storedPlan = typeof window !== 'undefined'
+    ? (() => { try { return localStorage.getItem('benefitssafe_selected_plan'); } catch { return null; } })()
+    : null
+  const planParam = urlPlan || storedPlan
   const { update: updateSession } = useSession()
 
   // Email verification state
@@ -107,6 +112,8 @@ const LoginForm = () => {
             const redirectUrl = planParam && paidPlans.includes(planParam)
               ? `/settings/billing?plan=${planParam}`
               : '/dashboard'
+            // Clear stored plan so it doesn't persist across sessions
+            try { localStorage.removeItem('benefitssafe_selected_plan'); } catch {}
             window.location.href = redirectUrl
             return
           }
@@ -142,6 +149,7 @@ const LoginForm = () => {
         const mfaRedirect = planParam && paidPlans.includes(planParam)
           ? `/settings/billing?plan=${planParam}`
           : '/dashboard'
+        try { localStorage.removeItem('benefitssafe_selected_plan'); } catch {}
         router.push(mfaRedirect)
       } else {
         toast.error(data.error || 'Invalid verification code.')
