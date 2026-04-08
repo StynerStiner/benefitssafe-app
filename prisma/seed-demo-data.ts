@@ -334,6 +334,7 @@ async function main() {
   // Expense 1 — APPROVED, LIKELY_SAFE
   const exp1 = await prisma.expenseRequest.create({
     data: {
+      organizationId: org.id,
       grantId: grant1.id,
       categoryId: cat1.software,
       requestedById: beneficiary.id,
@@ -356,6 +357,7 @@ async function main() {
   // Expense 2 — APPROVED, LIKELY_SAFE
   const exp2 = await prisma.expenseRequest.create({
     data: {
+      organizationId: org.id,
       grantId: grant1.id,
       categoryId: cat1.profSvc,
       requestedById: beneficiary.id,
@@ -378,6 +380,7 @@ async function main() {
   // Expense 3 — APPROVED, LIKELY_SAFE
   const exp3 = await prisma.expenseRequest.create({
     data: {
+      organizationId: org.id,
       grantId: grant2.id,
       categoryId: cat2.software,
       requestedById: beneficiary.id,
@@ -400,6 +403,7 @@ async function main() {
   // Expense 4 — PENDING, LIKELY_SAFE
   await prisma.expenseRequest.create({
     data: {
+      organizationId: org.id,
       grantId: grant1.id,
       categoryId: cat1.profSvc,
       requestedById: beneficiary.id,
@@ -420,6 +424,7 @@ async function main() {
   // Expense 5 — PENDING, LIKELY_SAFE
   await prisma.expenseRequest.create({
     data: {
+      organizationId: org.id,
       grantId: grant2.id,
       categoryId: cat2.materials,
       requestedById: beneficiary.id,
@@ -440,6 +445,7 @@ async function main() {
   // Expense 6 — PENDING, NEEDS_REVIEW
   await prisma.expenseRequest.create({
     data: {
+      organizationId: org.id,
       grantId: grant1.id,
       categoryId: cat1.materials,
       requestedById: beneficiary.id,
@@ -460,6 +466,7 @@ async function main() {
   // Expense 7 — PAID, LIKELY_SAFE
   const exp7 = await prisma.expenseRequest.create({
     data: {
+      organizationId: org.id,
       grantId: grant1.id,
       categoryId: cat1.software,
       requestedById: beneficiary.id,
@@ -482,6 +489,7 @@ async function main() {
   // Expense 8 — PAID, LIKELY_SAFE
   const exp8 = await prisma.expenseRequest.create({
     data: {
+      organizationId: org.id,
       grantId: grant2.id,
       categoryId: cat2.profSvc,
       requestedById: beneficiary.id,
@@ -504,6 +512,7 @@ async function main() {
   // Expense 9 — NEEDS_REVIEW, NEEDS_REVIEW
   await prisma.expenseRequest.create({
     data: {
+      organizationId: org.id,
       grantId: grant3.id,
       categoryId: cat3.profSvc,
       requestedById: staff.id,
@@ -523,6 +532,7 @@ async function main() {
   // Expense 10 — NEEDS_REVIEW
   await prisma.expenseRequest.create({
     data: {
+      organizationId: org.id,
       grantId: grant1.id,
       categoryId: cat1.materials,
       requestedById: beneficiary.id,
@@ -542,6 +552,7 @@ async function main() {
   // Expense 11 — REJECTED, LIKELY_RISKY
   await prisma.expenseRequest.create({
     data: {
+      organizationId: org.id,
       grantId: grant1.id,
       categoryId: cat1.materials,
       requestedById: beneficiary.id,
@@ -564,6 +575,7 @@ async function main() {
   // Expense 12 — BLOCKED
   await prisma.expenseRequest.create({
     data: {
+      organizationId: org.id,
       grantId: grant1.id,
       categoryId: cat1.profSvc,
       requestedById: beneficiary.id,
@@ -837,6 +849,7 @@ async function main() {
   // Grant 1 — Creative Writing Fellowship ($25,000)
   await prisma.ledgerEntry.create({
     data: {
+      organizationId: org.id,
       grantId: grant1.id,
       type: "CREDIT",
       amount: 25000,
@@ -848,6 +861,7 @@ async function main() {
   });
   await prisma.ledgerEntry.create({
     data: {
+      organizationId: org.id,
       grantId: grant1.id,
       expenseId: exp1.id,
       categoryId: cat1.software,
@@ -861,6 +875,7 @@ async function main() {
   });
   await prisma.ledgerEntry.create({
     data: {
+      organizationId: org.id,
       grantId: grant1.id,
       expenseId: exp7.id,
       categoryId: cat1.software,
@@ -874,6 +889,7 @@ async function main() {
   });
   await prisma.ledgerEntry.create({
     data: {
+      organizationId: org.id,
       grantId: grant1.id,
       expenseId: exp2.id,
       categoryId: cat1.profSvc,
@@ -888,6 +904,7 @@ async function main() {
   // Additional debits to match spentAmount
   await prisma.ledgerEntry.create({
     data: {
+      organizationId: org.id,
       grantId: grant1.id,
       categoryId: cat1.software,
       type: "DEBIT",
@@ -902,6 +919,7 @@ async function main() {
   // Grant 2 — Digital Skills Training ($15,000)
   await prisma.ledgerEntry.create({
     data: {
+      organizationId: org.id,
       grantId: grant2.id,
       type: "CREDIT",
       amount: 15000,
@@ -913,6 +931,7 @@ async function main() {
   });
   await prisma.ledgerEntry.create({
     data: {
+      organizationId: org.id,
       grantId: grant2.id,
       expenseId: exp3.id,
       categoryId: cat2.software,
@@ -926,6 +945,7 @@ async function main() {
   });
   await prisma.ledgerEntry.create({
     data: {
+      organizationId: org.id,
       grantId: grant2.id,
       expenseId: exp8.id,
       categoryId: cat2.profSvc,
@@ -941,6 +961,7 @@ async function main() {
   // Grant 3 — Housing Stability Support ($50,000)
   await prisma.ledgerEntry.create({
     data: {
+      organizationId: org.id,
       grantId: grant3.id,
       type: "CREDIT",
       amount: 50000,
@@ -952,6 +973,7 @@ async function main() {
   });
   await prisma.ledgerEntry.create({
     data: {
+      organizationId: org.id,
       grantId: grant3.id,
       categoryId: cat3.profSvc,
       type: "DEBIT",
@@ -964,6 +986,7 @@ async function main() {
   });
   await prisma.ledgerEntry.create({
     data: {
+      organizationId: org.id,
       grantId: grant3.id,
       categoryId: cat3.profSvc,
       type: "DEBIT",
@@ -976,6 +999,7 @@ async function main() {
   });
   await prisma.ledgerEntry.create({
     data: {
+      organizationId: org.id,
       grantId: grant3.id,
       categoryId: cat3.materials,
       type: "DEBIT",
@@ -990,6 +1014,7 @@ async function main() {
   // Grant 4 — Artist Residency ($8,000 COMPLETED)
   await prisma.ledgerEntry.create({
     data: {
+      organizationId: org.id,
       grantId: grant4.id,
       type: "CREDIT",
       amount: 8000,
@@ -1001,6 +1026,7 @@ async function main() {
   });
   await prisma.ledgerEntry.create({
     data: {
+      organizationId: org.id,
       grantId: grant4.id,
       type: "DEBIT",
       amount: 5000,
@@ -1012,6 +1038,7 @@ async function main() {
   });
   await prisma.ledgerEntry.create({
     data: {
+      organizationId: org.id,
       grantId: grant4.id,
       type: "DEBIT",
       amount: 3000,

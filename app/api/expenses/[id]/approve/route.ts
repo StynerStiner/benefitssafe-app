@@ -120,6 +120,7 @@ export async function PATCH(
       const newGrantRemaining = grantRemaining - amount;
       await tx.ledgerEntry.create({
         data: {
+          organizationId: expense.grant.organizationId,
           grantId: expense.grantId,
           categoryId: expense.categoryId,
           expenseId: expense.id,

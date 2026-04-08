@@ -233,6 +233,7 @@ export async function POST(request: Request) {
     // Create the expense request
     const expense = await prisma.expenseRequest.create({
       data: {
+        organizationId,
         grantId: data.grantId,
         categoryId: category.id,
         requestedById: userId,
