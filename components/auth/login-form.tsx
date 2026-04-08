@@ -16,7 +16,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail, RefreshCw, ShieldCheck } from 'lucide-react'
 import { signIn, useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useRef, useState, useTransition } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
@@ -31,6 +31,8 @@ const LoginForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const planParam = searchParams.get('plan')
   const { update: updateSession } = useSession()
 
   // Email verification state
@@ -100,8 +102,12 @@ const LoginForm = () => {
             // Record login device fingerprint (fire-and-forget)
             fetch('/api/auth/record-login', { method: 'POST' }).catch(() => {})
             toast.success('Login successful!')
-            // Hard redirect -- don't reset loading state, let the page navigate
-            window.location.href = '/dashboard'
+            // Hard redirect -- plan param goes to billing, otherwise dashboard
+            const paidPlans = ['seed', 'core', 'network', 'enterprise']
+            const redirectUrl = planParam && paidPlans.includes(planParam)
+              ? `/settings/billing?plan=${planParam}`
+              : '/dashboard'
+            window.location.href = redirectUrl
             return
           }
         }
@@ -132,7 +138,11 @@ const LoginForm = () => {
         // Record login device fingerprint (fire-and-forget)
         fetch('/api/auth/record-login', { method: 'POST' }).catch(() => {})
         toast.success('Login successful!')
-        router.push('/dashboard')
+        const paidPlans = ['seed', 'core', 'network', 'enterprise']
+        const mfaRedirect = planParam && paidPlans.includes(planParam)
+          ? `/settings/billing?plan=${planParam}`
+          : '/dashboard'
+        router.push(mfaRedirect)
       } else {
         toast.error(data.error || 'Invalid verification code.')
         setMfaToken('')

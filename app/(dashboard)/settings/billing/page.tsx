@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,11 +97,21 @@ const BillingPage = () => {
   const [status, setStatus] = useState<BillingStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [upgradingTier, setUpgradingTier] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const planParam = searchParams.get("plan");
 
   useEffect(() => {
     fetch("/api/billing/status")
       .then((res) => (res.ok ? res.json() : null))
-      .then((data) => setStatus(data))
+      .then((data) => {
+        setStatus(data);
+        // Auto-trigger checkout if plan param is set and it's a paid tier
+        const paidPlans = ["seed", "core", "network", "enterprise"];
+        if (planParam && paidPlans.includes(planParam) && data?.paidTier?.id !== planParam) {
+          // Small delay so the page renders first
+          setTimeout(() => handleUpgrade(planParam), 500);
+        }
+      })
       .catch((err) => console.error("Failed to load billing status:", err))
       .finally(() => setLoading(false));
   }, []);

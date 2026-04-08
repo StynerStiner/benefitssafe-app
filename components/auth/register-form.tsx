@@ -16,7 +16,7 @@ import { registerSchema } from "@/lib/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, Building2, Check, Eye, EyeOff, Hash, Loader2, Lock, Mail, Tag, UserRound, XCircle } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -44,6 +44,8 @@ interface PromoVerificationResult {
 
 const RegisterForm = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const planParam = searchParams.get("plan");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { loading, setLoading } = useLoading();
@@ -220,7 +222,8 @@ const RegisterForm = () => {
       );
       form.reset();
       setTimeout(() => {
-        router.push("/auth/login");
+        const loginUrl = planParam ? `/auth/login?plan=${planParam}` : "/auth/login";
+        router.push(loginUrl);
       }, 2500);
     } catch (error) {
       toast.error("Something went wrong. Please try again.");
