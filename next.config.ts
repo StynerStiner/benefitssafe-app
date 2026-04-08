@@ -28,7 +28,7 @@ const securityHeaders = [
   },
   {
     key: "Content-Security-Policy",
-    value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.amazonaws.com https://*.stripe.com; connect-src 'self' https://api.stripe.com https://*.sentry.io; frame-src https://js.stripe.com https://connect.stripe.com; font-src 'self' data:;",
+    value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline' https://js.stripe.com; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://api.stripe.com https://checkout.stripe.com https://*.upstash.io https://*.sentry.io; frame-src https://js.stripe.com https://hooks.stripe.com;",
   },
 ];
 
