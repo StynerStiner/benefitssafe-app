@@ -394,9 +394,10 @@ async function fetchCompliance(
 
 async function fetchNotifications(
   userId: string,
+  organizationId: string,
 ): Promise<DashboardNotifications> {
   const items = await prisma.notification.findMany({
-    where: { userId },
+    where: { userId, organizationId },
     orderBy: { createdAt: "desc" },
     take: 10,
   });
@@ -451,7 +452,7 @@ export async function getDashboardData(
       fetchers.push(fetchCompliance(organizationId, role).then((d) => ["compliance", d]));
     }
     if (sections.includes("notifications")) {
-      fetchers.push(fetchNotifications(userId).then((d) => ["notifications", d]));
+      fetchers.push(fetchNotifications(userId, organizationId).then((d) => ["notifications", d]));
     }
 
     const results = await Promise.all(fetchers);

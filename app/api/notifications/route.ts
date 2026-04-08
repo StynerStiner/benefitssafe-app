@@ -16,8 +16,10 @@ export async function GET(request: NextRequest) {
     const unreadOnly = request.nextUrl.searchParams.get("unread") === "true";
     const typeFilter = request.nextUrl.searchParams.get("type");
 
+    const { organizationId } = session.user;
     const where: Record<string, unknown> = {
       userId: session.user.id,
+      organizationId, // Required for partition pruning
     };
     if (unreadOnly) {
       where.read = false;
@@ -38,7 +40,7 @@ export async function GET(request: NextRequest) {
         take: limit,
       }),
       prisma.notification.count({
-        where: { userId: session.user.id, read: false },
+        where: { userId: session.user.id, organizationId, read: false },
       }),
     ]);
 

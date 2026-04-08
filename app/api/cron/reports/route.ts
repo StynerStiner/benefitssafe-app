@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
+import { enqueueJob, JobTypes } from "@/lib/queue";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -13,96 +14,39 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  logger.info("Weekly grant report generation started");
+  logger.info("Weekly grant report generation started — enqueuing per-org jobs");
 
   try {
-    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-
     const orgs = await prisma.organization.findMany({
-      select: { id: true, name: true },
+      select: { id: true },
     });
 
-    const results: Array<{
-      orgId: string;
-      orgName: string;
-      grantsReported: number;
-      notificationsCreated: number;
-    }> = [];
-
+    let enqueued = 0;
     for (const org of orgs) {
-      const grants = await prisma.grant.findMany({
-        where: { organizationId: org.id, status: "ACTIVE", archivedAt: null },
-        select: {
-          id: true,
-          name: true,
-          totalAmount: true,
-          spentAmount: true,
-          remainingAmount: true,
-        },
-      });
-
-      // Calculate weekly spending per grant
-      const weeklyExpenses = await prisma.expenseRequest.findMany({
-        where: {
-          grant: { organizationId: org.id },
-          createdAt: { gte: oneWeekAgo },
-          status: { in: ["APPROVED", "PAID"] },
-        },
-        select: { grantId: true, amount: true },
-      });
-
-      const weeklyByGrant = new Map<string, number>();
-      for (const e of weeklyExpenses) {
-        weeklyByGrant.set(e.grantId, (weeklyByGrant.get(e.grantId) || 0) + Number(e.amount));
-      }
-
-      // Create summary notification for org admins
-      if (grants.length > 0) {
-        const admins = await prisma.user.findMany({
-          where: { organizationId: org.id, role: "nonprofit_admin", isActive: true },
-          select: { id: true },
+      try {
+        await enqueueJob("/api/jobs/generate-report", {
+          type: JobTypes.GENERATE_REPORT,
+          data: { orgId: org.id },
         });
-
-        const summaryLines = grants.map((g) => {
-          const weeklySpend = weeklyByGrant.get(g.id) || 0;
-          const remaining = Number(g.remainingAmount);
-          const burnRate = weeklySpend > 0 ? Math.ceil(remaining / weeklySpend) : null;
-          return `${g.name}: $${weeklySpend.toFixed(0)} spent this week, $${remaining.toFixed(0)} remaining${burnRate ? ` (~${burnRate} weeks left)` : ""}`;
-        });
-
-        for (const admin of admins) {
-          await prisma.notification.create({
-            data: {
-              userId: admin.id,
-              organizationId: org.id,
-              type: "weekly_report",
-              title: "Weekly Grant Report",
-              message: summaryLines.join("\n"),
-              entityType: "report",
-              entityId: `weekly-${new Date().toISOString().slice(0, 10)}`,
-              href: "/reports",
-            },
-          });
-        }
-
-        results.push({
+        enqueued++;
+      } catch (err) {
+        logger.error("Failed to enqueue report job", {
           orgId: org.id,
-          orgName: org.name,
-          grantsReported: grants.length,
-          notificationsCreated: admins.length,
+          error: err instanceof Error ? err.message : "Unknown error",
         });
       }
     }
 
-    logger.info("Weekly grant report completed", {
+    logger.info("Weekly report generation — jobs enqueued", {
       totalOrgs: orgs.length,
-      reportsGenerated: results.length,
+      enqueued,
     });
 
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
-      results,
+      orgsEnqueued: enqueued,
+      totalOrgs: orgs.length,
     });
   } catch (error) {
     logger.error("Weekly report generation failed", {

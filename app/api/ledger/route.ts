@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     });
     const grantIds = orgGrants.map((g) => g.id);
 
-    const ledgerWhere = { grantId: { in: grantIds } };
+    const ledgerWhere = { organizationId, grantId: { in: grantIds } };
     const transactionWhere = { organizationId };
 
     const [ledgerEntries, ledgerTotal, transactions, transactionTotal] = await Promise.all([

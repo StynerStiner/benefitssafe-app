@@ -68,6 +68,7 @@ export async function GET(
 
     const transactions = await prisma.transaction.findMany({
       where: {
+        organizationId: card.organizationId,
         cardId: card.id,
         createdAt: {
           gte: startDate,

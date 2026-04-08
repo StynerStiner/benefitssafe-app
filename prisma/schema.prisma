@@ -224,6 +224,7 @@ enum CardMode {
 
 model ExpenseRequest {
   id            String   @id @default(cuid())
+  organizationId String  // Denormalized from Grant for partition-aware queries
   grantId       String
   grant         Grant    @relation(fields: [grantId], references: [id])
   categoryId    String
@@ -271,6 +272,9 @@ model ExpenseRequest {
   ledgerEntries LedgerEntry[]
   virtualCards  VirtualCard[]
 
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, status, createdAt])
   @@index([grantId])
   @@index([requestedById])
   @@index([status])
@@ -514,11 +518,12 @@ model Transaction {
 // ============================================
 
 model LedgerEntry {
-  id         String          @id @default(cuid())
-  grantId    String
-  categoryId String?
-  expenseId  String?
-  expense    ExpenseRequest? @relation(fields: [expenseId], references: [id])
+  id             String          @id @default(cuid())
+  organizationId String          // Denormalized from Grant for partition-aware queries
+  grantId        String
+  categoryId     String?
+  expenseId      String?
+  expense        ExpenseRequest? @relation(fields: [expenseId], references: [id])
 
   type         LedgerType
   amount       Decimal @db.Decimal(12, 2)
@@ -529,6 +534,8 @@ model LedgerEntry {
   createdAt DateTime @default(now())
   // IMMUTABLE — no updatedAt. Ledger entries are NEVER modified.
 
+  @@index([organizationId])
+  @@index([organizationId, createdAt])
   @@index([grantId])
   @@index([expenseId])
   @@index([grantId, createdAt]) // Monthly reconciliation queries at scale

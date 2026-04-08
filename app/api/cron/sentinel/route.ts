@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
+import { enqueueJob, JobTypes } from '@/lib/queue';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -26,87 +27,36 @@ export async function GET(request: Request) {
       select: { id: true, name: true },
     });
 
-    logger.info(`Processing ${orgs.length} organizations`);
+    logger.info(`Enqueuing ${orgs.length} organizations for parallel processing`);
 
-    const results: Array<{
-      orgId: string;
-      orgName: string;
-      status: string;
-      beneficiariesChecked: number;
-    }> = [];
-
+    // Enqueue each org as a separate parallel job instead of sequential processing
+    // 1,000 orgs = 1,000 parallel jobs instead of 1 sequential 30-minute loop
+    let enqueued = 0;
     for (const org of orgs) {
       try {
-        // Get beneficiaries with active benefit flags
-        const beneficiaries = await prisma.user.findMany({
-          where: {
-            organizationId: org.id,
-            role: 'beneficiary',
-            isActive: true,
-          },
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
+        await enqueueJob('/api/jobs/check-thresholds', {
+          type: JobTypes.CHECK_THRESHOLDS,
+          data: { orgId: org.id },
         });
-
-        // Get active grants for threshold checking
-        const grants = await prisma.grant.findMany({
-          where: {
-            organizationId: org.id,
-            status: 'ACTIVE',
-          },
-          select: {
-            id: true,
-            totalAmount: true,
-            spentAmount: true,
-            remainingAmount: true,
-            beneficiaryId: true,
-          },
-        });
-
-        // Log results for this org
-        results.push({
+        enqueued++;
+      } catch (err) {
+        logger.error('Failed to enqueue sentinel job', {
           orgId: org.id,
-          orgName: org.name,
-          status: 'completed',
-          beneficiariesChecked: beneficiaries.length,
-        });
-
-        logger.info('Org sentinel check complete', {
-          orgId: org.id,
-          orgName: org.name,
-          beneficiaries: beneficiaries.length,
-          activeGrants: grants.length,
-        });
-      } catch (orgError) {
-        logger.error('Org sentinel check failed', {
-          orgId: org.id,
-          error: orgError instanceof Error
-            ? orgError.message : 'Unknown error',
-        });
-        results.push({
-          orgId: org.id,
-          orgName: org.name,
-          status: 'failed',
-          beneficiariesChecked: 0,
+          error: err instanceof Error ? err.message : 'Unknown error',
         });
       }
     }
 
-    logger.info('SentinelLayer cron job completed', {
+    logger.info('SentinelLayer cron job completed — jobs enqueued', {
       totalOrgs: orgs.length,
-      successful: results.filter(
-        r => r.status === 'completed').length,
-      failed: results.filter(
-        r => r.status === 'failed').length,
+      enqueued,
     });
 
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
-      results,
+      orgsEnqueued: enqueued,
+      totalOrgs: orgs.length,
     });
   } catch (error) {
     Sentry.captureException(error, {
