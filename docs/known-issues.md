@@ -1,5 +1,5 @@
 # BenefitsSafe Known Issues
-## Last Updated: April 7, 2026
+## Last Updated: April 9, 2026
 
 ---
 
@@ -17,12 +17,8 @@
   - STRIPE_PRICE_NETWORK = price_1TIf4i1lmD1ohIWkgjiDvtyh
   - STRIPE_PRICE_ENTERPRISE = price_1TIf5S1lmD1ohIWkZUK2zHyw
 
-### 2. finance_officer Role — Not in Schema
-- **Severity:** Low
-- **Status:** Open
-- **Description:** `finance_officer` is referenced in sidebar-data.ts but does not exist in the UserRole enum in Prisma schema. No test account exists.
-- **Impact:** None currently — no user has this role
-- **Fix:** Either add to Prisma schema or remove from sidebar-data.ts
+### 2. finance_officer Role — RESOLVED April 9, 2026
+- **Status:** Resolved — replaced with billing_admin in CLAUDE.md. sidebar-data.ts maps it to cpaNav as fallback.
 
 ### 3. billing_admin Role — Minimal Dashboard
 - **Severity:** Low
@@ -51,6 +47,27 @@
 - **Description:** /api/health takes ~2.3 seconds because it actively checks database connectivity, Redis connectivity, and Stripe connectivity on every call.
 - **Impact:** UptimeRobot shows 2.3s response time. This is the health check, not user-facing pages.
 - **Fix:** Could add a lightweight /api/ping that just returns 200, but the thorough health check is more valuable for monitoring.
+
+### 7. npm Audit — 8 Unfixable Vulnerabilities
+- **Severity:** Medium (5 HIGH, 3 MODERATE)
+- **Status:** Accepted Risk
+- **Description:** All 8 vulnerabilities trace to `d3` (deep dependency of `react-simple-maps`) and `hono` (QStash SDK transitive dep). `npm audit fix` resolved 2 issues (defu); remaining 8 require breaking changes.
+- **Impact:** LOW — d3 vulnerabilities are ReDoS in color parsing, never exposed to user input. Hono is a dev-only transitive dependency not used in production request handling.
+- **Remediation:** Monitor for upstream fixes. Consider replacing `react-simple-maps` with static SVG if security scan requires zero HIGH vulns.
+
+### 8. .env.local in Git History
+- **Severity:** High (remediated)
+- **Status:** Remediated
+- **Description:** `.env.local` was committed in early infrastructure commit (`dbefc2a6`). Contains database credentials, Stripe test keys, AWS keys.
+- **Impact:** All credentials have been rotated. File is now in `.gitignore`.
+- **Remediation:** Keys rotated. Git history NOT rewritten (would disrupt collaboration). Commit contains only invalidated credentials.
+
+### 9. Template Images — 120MB+ Oversized
+- **Severity:** Low
+- **Status:** Open
+- **Description:** 77 images in `public/` exceed 100KB. Logo variations are 5-13MB each. Total oversized assets ~120MB.
+- **Impact:** Slower builds and larger deployments. Not user-facing (Next.js doesn't serve unused images).
+- **Remediation:** Compress production logos to WebP < 200KB. Delete unused drafts in `public/full-logos/`.
 
 ---
 
