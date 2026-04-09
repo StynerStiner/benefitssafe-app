@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const offset = Math.max(parseInt(params.get("offset") || "0", 10) || 0, 0);
 
     const where = {
-      vendor: { organizationId },
+      organizationId,
     };
 
     const [subscriptions, total] = await Promise.all([
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
 
     // Verify category belongs to grant
     const category = await prisma.budgetCategory.findFirst({
-      where: { id: data.categoryId, grantId: data.grantId },
+      where: { id: data.categoryId, grantId: data.grantId, organizationId },
     });
     if (!category) {
       return NextResponse.json({ error: "Budget category not found" }, { status: 404 });
@@ -91,6 +91,7 @@ export async function POST(request: Request) {
 
     const subscription = await prisma.subscription.create({
       data: {
+        organizationId,
         vendorId: data.vendorId,
         grantId: data.grantId,
         categoryId: data.categoryId,

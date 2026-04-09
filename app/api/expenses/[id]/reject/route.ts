@@ -70,6 +70,7 @@ export async function PATCH(
     // Create approval record (tracks rejections too)
     await prisma.approval.create({
       data: {
+        organizationId,
         expenseId: id,
         approverId: userId,
         action: "REJECTED",

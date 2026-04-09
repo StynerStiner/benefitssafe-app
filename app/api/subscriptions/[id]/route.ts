@@ -32,7 +32,7 @@ export async function GET(
     const subscription = await prisma.subscription.findFirst({
       where: {
         id,
-        vendor: { organizationId },
+        organizationId,
       },
       include: {
         vendor: { select: { id: true, name: true, type: true, status: true } },
@@ -69,11 +69,11 @@ export async function PATCH(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Verify subscription belongs to org via vendor relation
+    // Verify subscription belongs to org
     const existing = await prisma.subscription.findFirst({
       where: {
         id,
-        vendor: { organizationId },
+        organizationId,
       },
       include: {
         vendor: { select: { id: true, name: true, organizationId: true } },

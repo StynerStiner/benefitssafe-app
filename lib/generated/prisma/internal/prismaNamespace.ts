@@ -2802,6 +2802,7 @@ export type GrantScalarFieldEnum = (typeof GrantScalarFieldEnum)[keyof typeof Gr
 
 export const BudgetCategoryScalarFieldEnum = {
   id: 'id',
+  organizationId: 'organizationId',
   grantId: 'grantId',
   name: 'name',
   allocatedAmount: 'allocatedAmount',
@@ -2874,6 +2875,7 @@ export type VendorScalarFieldEnum = (typeof VendorScalarFieldEnum)[keyof typeof 
 
 export const SubscriptionScalarFieldEnum = {
   id: 'id',
+  organizationId: 'organizationId',
   vendorId: 'vendorId',
   grantId: 'grantId',
   categoryId: 'categoryId',
@@ -2976,6 +2978,7 @@ export type LedgerEntryScalarFieldEnum = (typeof LedgerEntryScalarFieldEnum)[key
 
 export const ApprovalScalarFieldEnum = {
   id: 'id',
+  organizationId: 'organizationId',
   expenseId: 'expenseId',
   approverId: 'approverId',
   action: 'action',

@@ -171,6 +171,7 @@ async function main() {
   for (const { grant, total } of activeGrants) {
     const profSvc = await prisma.budgetCategory.create({
       data: {
+        organizationId: org.id,
         grantId: grant.id,
         name: "Professional Services",
         allocatedAmount: Math.round(total * 0.4 * 100) / 100,
@@ -179,6 +180,7 @@ async function main() {
     });
     const software = await prisma.budgetCategory.create({
       data: {
+        organizationId: org.id,
         grantId: grant.id,
         name: "Software & Subscriptions",
         allocatedAmount: Math.round(total * 0.3 * 100) / 100,
@@ -187,6 +189,7 @@ async function main() {
     });
     const materials = await prisma.budgetCategory.create({
       data: {
+        organizationId: org.id,
         grantId: grant.id,
         name: "Materials & Equipment",
         allocatedAmount: Math.round(total * 0.3 * 100) / 100,
@@ -601,6 +604,7 @@ async function main() {
   for (const exp of [exp1, exp2, exp3, exp7, exp8]) {
     await prisma.approval.create({
       data: {
+        organizationId: org.id,
         expenseId: exp.id,
         approverId: admin.id,
         action: "APPROVED",
@@ -706,6 +710,7 @@ async function main() {
   // Now create subscriptions with card links
   await prisma.subscription.create({
     data: {
+      organizationId: org.id,
       vendorId: vendorAdobe.id,
       grantId: grant1.id,
       categoryId: cat1.software,
@@ -722,6 +727,7 @@ async function main() {
 
   await prisma.subscription.create({
     data: {
+      organizationId: org.id,
       vendorId: vendorScrivener.id,
       grantId: grant1.id,
       categoryId: cat1.software,
@@ -738,6 +744,7 @@ async function main() {
 
   await prisma.subscription.create({
     data: {
+      organizationId: org.id,
       vendorId: vendorChatGPT.id,
       grantId: grant2.id,
       categoryId: cat2.software,
@@ -753,6 +760,7 @@ async function main() {
 
   await prisma.subscription.create({
     data: {
+      organizationId: org.id,
       vendorId: vendorCloudBackup.id,
       grantId: grant2.id,
       categoryId: cat2.software,

@@ -50,6 +50,9 @@ model Organization {
   workflowLogs     WorkflowLog[]
   billingSubscription BillingSubscription?
   usageCounters    UsageCounter[]
+  budgetCategories BudgetCategory[]
+  subscriptions    Subscription[]
+  approvals        Approval[]
 }
 
 model User {
@@ -201,6 +204,8 @@ enum GrantStatus {
 
 model BudgetCategory {
   id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
   grantId         String
   grant           Grant    @relation(fields: [grantId], references: [id])
   name            String   // e.g., "Editing", "Subscriptions", "Travel"
@@ -215,6 +220,7 @@ model BudgetCategory {
   cards    VirtualCard[]
 
   @@index([grantId])
+  @@index([organizationId])
 }
 
 enum CardMode {
@@ -363,11 +369,13 @@ enum VendorStatus {
 }
 
 model Subscription {
-  id         String @id @default(cuid())
-  vendorId   String
-  vendor     Vendor @relation(fields: [vendorId], references: [id])
-  grantId    String
-  categoryId String
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  vendorId       String
+  vendor         Vendor       @relation(fields: [vendorId], references: [id])
+  grantId        String
+  categoryId     String
 
   serviceName String   // e.g., "Adobe Creative Cloud"
   loginEmail  String   // Email used for the subscription account
@@ -389,6 +397,7 @@ model Subscription {
 
   @@index([vendorId])
   @@index([grantId])
+  @@index([organizationId])
   @@index([grantId, status])             // Subscription queries by grant and status
   @@index([vendorId, status]) // Subscription queries by vendor and status
 }
@@ -547,16 +556,19 @@ enum LedgerType {
 }
 
 model Approval {
-  id        String         @id @default(cuid())
-  expenseId String
-  expense   ExpenseRequest @relation(fields: [expenseId], references: [id])
-  approverId String
-  approver   User          @relation(fields: [approverId], references: [id])
-  action    ApprovalAction
-  notes     String?
-  createdAt DateTime       @default(now())
+  id             String         @id @default(cuid())
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id])
+  expenseId      String
+  expense        ExpenseRequest @relation(fields: [expenseId], references: [id])
+  approverId     String
+  approver       User           @relation(fields: [approverId], references: [id])
+  action         ApprovalAction
+  notes          String?
+  createdAt      DateTime       @default(now())
 
   @@index([expenseId])
+  @@index([organizationId])
 }
 
 enum ApprovalAction {

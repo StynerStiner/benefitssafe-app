@@ -135,6 +135,7 @@ export async function PATCH(
       // 5. Create approval record
       await tx.approval.create({
         data: {
+          organizationId,
           expenseId: expense.id,
           approverId: userId,
           action: "APPROVED",

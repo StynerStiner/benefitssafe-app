@@ -50,6 +50,7 @@ export async function POST(
 
     const category = await prisma.budgetCategory.create({
       data: {
+        organizationId,
         grantId,
         name: data.name,
         allocatedAmount: data.allocatedAmount,

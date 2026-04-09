@@ -26,6 +26,7 @@ export type AggregateApproval = {
 
 export type ApprovalMinAggregateOutputType = {
   id: string | null
+  organizationId: string | null
   expenseId: string | null
   approverId: string | null
   action: $Enums.ApprovalAction | null
@@ -35,6 +36,7 @@ export type ApprovalMinAggregateOutputType = {
 
 export type ApprovalMaxAggregateOutputType = {
   id: string | null
+  organizationId: string | null
   expenseId: string | null
   approverId: string | null
   action: $Enums.ApprovalAction | null
@@ -44,6 +46,7 @@ export type ApprovalMaxAggregateOutputType = {
 
 export type ApprovalCountAggregateOutputType = {
   id: number
+  organizationId: number
   expenseId: number
   approverId: number
   action: number
@@ -55,6 +58,7 @@ export type ApprovalCountAggregateOutputType = {
 
 export type ApprovalMinAggregateInputType = {
   id?: true
+  organizationId?: true
   expenseId?: true
   approverId?: true
   action?: true
@@ -64,6 +68,7 @@ export type ApprovalMinAggregateInputType = {
 
 export type ApprovalMaxAggregateInputType = {
   id?: true
+  organizationId?: true
   expenseId?: true
   approverId?: true
   action?: true
@@ -73,6 +78,7 @@ export type ApprovalMaxAggregateInputType = {
 
 export type ApprovalCountAggregateInputType = {
   id?: true
+  organizationId?: true
   expenseId?: true
   approverId?: true
   action?: true
@@ -155,6 +161,7 @@ export type ApprovalGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 
 export type ApprovalGroupByOutputType = {
   id: string
+  organizationId: string
   expenseId: string
   approverId: string
   action: $Enums.ApprovalAction
@@ -185,22 +192,26 @@ export type ApprovalWhereInput = {
   OR?: Prisma.ApprovalWhereInput[]
   NOT?: Prisma.ApprovalWhereInput | Prisma.ApprovalWhereInput[]
   id?: Prisma.StringFilter<"Approval"> | string
+  organizationId?: Prisma.StringFilter<"Approval"> | string
   expenseId?: Prisma.StringFilter<"Approval"> | string
   approverId?: Prisma.StringFilter<"Approval"> | string
   action?: Prisma.EnumApprovalActionFilter<"Approval"> | $Enums.ApprovalAction
   notes?: Prisma.StringNullableFilter<"Approval"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Approval"> | Date | string
+  organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   expense?: Prisma.XOR<Prisma.ExpenseRequestScalarRelationFilter, Prisma.ExpenseRequestWhereInput>
   approver?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
 export type ApprovalOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   expenseId?: Prisma.SortOrder
   approverId?: Prisma.SortOrder
   action?: Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  organization?: Prisma.OrganizationOrderByWithRelationInput
   expense?: Prisma.ExpenseRequestOrderByWithRelationInput
   approver?: Prisma.UserOrderByWithRelationInput
 }
@@ -210,17 +221,20 @@ export type ApprovalWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.ApprovalWhereInput | Prisma.ApprovalWhereInput[]
   OR?: Prisma.ApprovalWhereInput[]
   NOT?: Prisma.ApprovalWhereInput | Prisma.ApprovalWhereInput[]
+  organizationId?: Prisma.StringFilter<"Approval"> | string
   expenseId?: Prisma.StringFilter<"Approval"> | string
   approverId?: Prisma.StringFilter<"Approval"> | string
   action?: Prisma.EnumApprovalActionFilter<"Approval"> | $Enums.ApprovalAction
   notes?: Prisma.StringNullableFilter<"Approval"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Approval"> | Date | string
+  organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   expense?: Prisma.XOR<Prisma.ExpenseRequestScalarRelationFilter, Prisma.ExpenseRequestWhereInput>
   approver?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id">
 
 export type ApprovalOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   expenseId?: Prisma.SortOrder
   approverId?: Prisma.SortOrder
   action?: Prisma.SortOrder
@@ -236,6 +250,7 @@ export type ApprovalScalarWhereWithAggregatesInput = {
   OR?: Prisma.ApprovalScalarWhereWithAggregatesInput[]
   NOT?: Prisma.ApprovalScalarWhereWithAggregatesInput | Prisma.ApprovalScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Approval"> | string
+  organizationId?: Prisma.StringWithAggregatesFilter<"Approval"> | string
   expenseId?: Prisma.StringWithAggregatesFilter<"Approval"> | string
   approverId?: Prisma.StringWithAggregatesFilter<"Approval"> | string
   action?: Prisma.EnumApprovalActionWithAggregatesFilter<"Approval"> | $Enums.ApprovalAction
@@ -248,12 +263,14 @@ export type ApprovalCreateInput = {
   action: $Enums.ApprovalAction
   notes?: string | null
   createdAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutApprovalsInput
   expense: Prisma.ExpenseRequestCreateNestedOneWithoutApprovalsInput
   approver: Prisma.UserCreateNestedOneWithoutApprovalsInput
 }
 
 export type ApprovalUncheckedCreateInput = {
   id?: string
+  organizationId: string
   expenseId: string
   approverId: string
   action: $Enums.ApprovalAction
@@ -266,12 +283,14 @@ export type ApprovalUpdateInput = {
   action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutApprovalsNestedInput
   expense?: Prisma.ExpenseRequestUpdateOneRequiredWithoutApprovalsNestedInput
   approver?: Prisma.UserUpdateOneRequiredWithoutApprovalsNestedInput
 }
 
 export type ApprovalUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   expenseId?: Prisma.StringFieldUpdateOperationsInput | string
   approverId?: Prisma.StringFieldUpdateOperationsInput | string
   action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
@@ -281,6 +300,7 @@ export type ApprovalUncheckedUpdateInput = {
 
 export type ApprovalCreateManyInput = {
   id?: string
+  organizationId: string
   expenseId: string
   approverId: string
   action: $Enums.ApprovalAction
@@ -297,6 +317,7 @@ export type ApprovalUpdateManyMutationInput = {
 
 export type ApprovalUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   expenseId?: Prisma.StringFieldUpdateOperationsInput | string
   approverId?: Prisma.StringFieldUpdateOperationsInput | string
   action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
@@ -316,6 +337,7 @@ export type ApprovalOrderByRelationAggregateInput = {
 
 export type ApprovalCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   expenseId?: Prisma.SortOrder
   approverId?: Prisma.SortOrder
   action?: Prisma.SortOrder
@@ -325,6 +347,7 @@ export type ApprovalCountOrderByAggregateInput = {
 
 export type ApprovalMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   expenseId?: Prisma.SortOrder
   approverId?: Prisma.SortOrder
   action?: Prisma.SortOrder
@@ -334,11 +357,54 @@ export type ApprovalMaxOrderByAggregateInput = {
 
 export type ApprovalMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   expenseId?: Prisma.SortOrder
   approverId?: Prisma.SortOrder
   action?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type ApprovalCreateNestedManyWithoutOrganizationInput = {
+  create?: Prisma.XOR<Prisma.ApprovalCreateWithoutOrganizationInput, Prisma.ApprovalUncheckedCreateWithoutOrganizationInput> | Prisma.ApprovalCreateWithoutOrganizationInput[] | Prisma.ApprovalUncheckedCreateWithoutOrganizationInput[]
+  connectOrCreate?: Prisma.ApprovalCreateOrConnectWithoutOrganizationInput | Prisma.ApprovalCreateOrConnectWithoutOrganizationInput[]
+  createMany?: Prisma.ApprovalCreateManyOrganizationInputEnvelope
+  connect?: Prisma.ApprovalWhereUniqueInput | Prisma.ApprovalWhereUniqueInput[]
+}
+
+export type ApprovalUncheckedCreateNestedManyWithoutOrganizationInput = {
+  create?: Prisma.XOR<Prisma.ApprovalCreateWithoutOrganizationInput, Prisma.ApprovalUncheckedCreateWithoutOrganizationInput> | Prisma.ApprovalCreateWithoutOrganizationInput[] | Prisma.ApprovalUncheckedCreateWithoutOrganizationInput[]
+  connectOrCreate?: Prisma.ApprovalCreateOrConnectWithoutOrganizationInput | Prisma.ApprovalCreateOrConnectWithoutOrganizationInput[]
+  createMany?: Prisma.ApprovalCreateManyOrganizationInputEnvelope
+  connect?: Prisma.ApprovalWhereUniqueInput | Prisma.ApprovalWhereUniqueInput[]
+}
+
+export type ApprovalUpdateManyWithoutOrganizationNestedInput = {
+  create?: Prisma.XOR<Prisma.ApprovalCreateWithoutOrganizationInput, Prisma.ApprovalUncheckedCreateWithoutOrganizationInput> | Prisma.ApprovalCreateWithoutOrganizationInput[] | Prisma.ApprovalUncheckedCreateWithoutOrganizationInput[]
+  connectOrCreate?: Prisma.ApprovalCreateOrConnectWithoutOrganizationInput | Prisma.ApprovalCreateOrConnectWithoutOrganizationInput[]
+  upsert?: Prisma.ApprovalUpsertWithWhereUniqueWithoutOrganizationInput | Prisma.ApprovalUpsertWithWhereUniqueWithoutOrganizationInput[]
+  createMany?: Prisma.ApprovalCreateManyOrganizationInputEnvelope
+  set?: Prisma.ApprovalWhereUniqueInput | Prisma.ApprovalWhereUniqueInput[]
+  disconnect?: Prisma.ApprovalWhereUniqueInput | Prisma.ApprovalWhereUniqueInput[]
+  delete?: Prisma.ApprovalWhereUniqueInput | Prisma.ApprovalWhereUniqueInput[]
+  connect?: Prisma.ApprovalWhereUniqueInput | Prisma.ApprovalWhereUniqueInput[]
+  update?: Prisma.ApprovalUpdateWithWhereUniqueWithoutOrganizationInput | Prisma.ApprovalUpdateWithWhereUniqueWithoutOrganizationInput[]
+  updateMany?: Prisma.ApprovalUpdateManyWithWhereWithoutOrganizationInput | Prisma.ApprovalUpdateManyWithWhereWithoutOrganizationInput[]
+  deleteMany?: Prisma.ApprovalScalarWhereInput | Prisma.ApprovalScalarWhereInput[]
+}
+
+export type ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput = {
+  create?: Prisma.XOR<Prisma.ApprovalCreateWithoutOrganizationInput, Prisma.ApprovalUncheckedCreateWithoutOrganizationInput> | Prisma.ApprovalCreateWithoutOrganizationInput[] | Prisma.ApprovalUncheckedCreateWithoutOrganizationInput[]
+  connectOrCreate?: Prisma.ApprovalCreateOrConnectWithoutOrganizationInput | Prisma.ApprovalCreateOrConnectWithoutOrganizationInput[]
+  upsert?: Prisma.ApprovalUpsertWithWhereUniqueWithoutOrganizationInput | Prisma.ApprovalUpsertWithWhereUniqueWithoutOrganizationInput[]
+  createMany?: Prisma.ApprovalCreateManyOrganizationInputEnvelope
+  set?: Prisma.ApprovalWhereUniqueInput | Prisma.ApprovalWhereUniqueInput[]
+  disconnect?: Prisma.ApprovalWhereUniqueInput | Prisma.ApprovalWhereUniqueInput[]
+  delete?: Prisma.ApprovalWhereUniqueInput | Prisma.ApprovalWhereUniqueInput[]
+  connect?: Prisma.ApprovalWhereUniqueInput | Prisma.ApprovalWhereUniqueInput[]
+  update?: Prisma.ApprovalUpdateWithWhereUniqueWithoutOrganizationInput | Prisma.ApprovalUpdateWithWhereUniqueWithoutOrganizationInput[]
+  updateMany?: Prisma.ApprovalUpdateManyWithWhereWithoutOrganizationInput | Prisma.ApprovalUpdateManyWithWhereWithoutOrganizationInput[]
+  deleteMany?: Prisma.ApprovalScalarWhereInput | Prisma.ApprovalScalarWhereInput[]
 }
 
 export type ApprovalCreateNestedManyWithoutApproverInput = {
@@ -429,16 +495,75 @@ export type EnumApprovalActionFieldUpdateOperationsInput = {
   set?: $Enums.ApprovalAction
 }
 
-export type ApprovalCreateWithoutApproverInput = {
+export type ApprovalCreateWithoutOrganizationInput = {
   id?: string
   action: $Enums.ApprovalAction
   notes?: string | null
   createdAt?: Date | string
   expense: Prisma.ExpenseRequestCreateNestedOneWithoutApprovalsInput
+  approver: Prisma.UserCreateNestedOneWithoutApprovalsInput
+}
+
+export type ApprovalUncheckedCreateWithoutOrganizationInput = {
+  id?: string
+  expenseId: string
+  approverId: string
+  action: $Enums.ApprovalAction
+  notes?: string | null
+  createdAt?: Date | string
+}
+
+export type ApprovalCreateOrConnectWithoutOrganizationInput = {
+  where: Prisma.ApprovalWhereUniqueInput
+  create: Prisma.XOR<Prisma.ApprovalCreateWithoutOrganizationInput, Prisma.ApprovalUncheckedCreateWithoutOrganizationInput>
+}
+
+export type ApprovalCreateManyOrganizationInputEnvelope = {
+  data: Prisma.ApprovalCreateManyOrganizationInput | Prisma.ApprovalCreateManyOrganizationInput[]
+  skipDuplicates?: boolean
+}
+
+export type ApprovalUpsertWithWhereUniqueWithoutOrganizationInput = {
+  where: Prisma.ApprovalWhereUniqueInput
+  update: Prisma.XOR<Prisma.ApprovalUpdateWithoutOrganizationInput, Prisma.ApprovalUncheckedUpdateWithoutOrganizationInput>
+  create: Prisma.XOR<Prisma.ApprovalCreateWithoutOrganizationInput, Prisma.ApprovalUncheckedCreateWithoutOrganizationInput>
+}
+
+export type ApprovalUpdateWithWhereUniqueWithoutOrganizationInput = {
+  where: Prisma.ApprovalWhereUniqueInput
+  data: Prisma.XOR<Prisma.ApprovalUpdateWithoutOrganizationInput, Prisma.ApprovalUncheckedUpdateWithoutOrganizationInput>
+}
+
+export type ApprovalUpdateManyWithWhereWithoutOrganizationInput = {
+  where: Prisma.ApprovalScalarWhereInput
+  data: Prisma.XOR<Prisma.ApprovalUpdateManyMutationInput, Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationInput>
+}
+
+export type ApprovalScalarWhereInput = {
+  AND?: Prisma.ApprovalScalarWhereInput | Prisma.ApprovalScalarWhereInput[]
+  OR?: Prisma.ApprovalScalarWhereInput[]
+  NOT?: Prisma.ApprovalScalarWhereInput | Prisma.ApprovalScalarWhereInput[]
+  id?: Prisma.StringFilter<"Approval"> | string
+  organizationId?: Prisma.StringFilter<"Approval"> | string
+  expenseId?: Prisma.StringFilter<"Approval"> | string
+  approverId?: Prisma.StringFilter<"Approval"> | string
+  action?: Prisma.EnumApprovalActionFilter<"Approval"> | $Enums.ApprovalAction
+  notes?: Prisma.StringNullableFilter<"Approval"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"Approval"> | Date | string
+}
+
+export type ApprovalCreateWithoutApproverInput = {
+  id?: string
+  action: $Enums.ApprovalAction
+  notes?: string | null
+  createdAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutApprovalsInput
+  expense: Prisma.ExpenseRequestCreateNestedOneWithoutApprovalsInput
 }
 
 export type ApprovalUncheckedCreateWithoutApproverInput = {
   id?: string
+  organizationId: string
   expenseId: string
   action: $Enums.ApprovalAction
   notes?: string | null
@@ -471,28 +596,18 @@ export type ApprovalUpdateManyWithWhereWithoutApproverInput = {
   data: Prisma.XOR<Prisma.ApprovalUpdateManyMutationInput, Prisma.ApprovalUncheckedUpdateManyWithoutApproverInput>
 }
 
-export type ApprovalScalarWhereInput = {
-  AND?: Prisma.ApprovalScalarWhereInput | Prisma.ApprovalScalarWhereInput[]
-  OR?: Prisma.ApprovalScalarWhereInput[]
-  NOT?: Prisma.ApprovalScalarWhereInput | Prisma.ApprovalScalarWhereInput[]
-  id?: Prisma.StringFilter<"Approval"> | string
-  expenseId?: Prisma.StringFilter<"Approval"> | string
-  approverId?: Prisma.StringFilter<"Approval"> | string
-  action?: Prisma.EnumApprovalActionFilter<"Approval"> | $Enums.ApprovalAction
-  notes?: Prisma.StringNullableFilter<"Approval"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Approval"> | Date | string
-}
-
 export type ApprovalCreateWithoutExpenseInput = {
   id?: string
   action: $Enums.ApprovalAction
   notes?: string | null
   createdAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutApprovalsInput
   approver: Prisma.UserCreateNestedOneWithoutApprovalsInput
 }
 
 export type ApprovalUncheckedCreateWithoutExpenseInput = {
   id?: string
+  organizationId: string
   approverId: string
   action: $Enums.ApprovalAction
   notes?: string | null
@@ -525,8 +640,45 @@ export type ApprovalUpdateManyWithWhereWithoutExpenseInput = {
   data: Prisma.XOR<Prisma.ApprovalUpdateManyMutationInput, Prisma.ApprovalUncheckedUpdateManyWithoutExpenseInput>
 }
 
+export type ApprovalCreateManyOrganizationInput = {
+  id?: string
+  expenseId: string
+  approverId: string
+  action: $Enums.ApprovalAction
+  notes?: string | null
+  createdAt?: Date | string
+}
+
+export type ApprovalUpdateWithoutOrganizationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expense?: Prisma.ExpenseRequestUpdateOneRequiredWithoutApprovalsNestedInput
+  approver?: Prisma.UserUpdateOneRequiredWithoutApprovalsNestedInput
+}
+
+export type ApprovalUncheckedUpdateWithoutOrganizationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  expenseId?: Prisma.StringFieldUpdateOperationsInput | string
+  approverId?: Prisma.StringFieldUpdateOperationsInput | string
+  action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ApprovalUncheckedUpdateManyWithoutOrganizationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  expenseId?: Prisma.StringFieldUpdateOperationsInput | string
+  approverId?: Prisma.StringFieldUpdateOperationsInput | string
+  action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type ApprovalCreateManyApproverInput = {
   id?: string
+  organizationId: string
   expenseId: string
   action: $Enums.ApprovalAction
   notes?: string | null
@@ -538,11 +690,13 @@ export type ApprovalUpdateWithoutApproverInput = {
   action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutApprovalsNestedInput
   expense?: Prisma.ExpenseRequestUpdateOneRequiredWithoutApprovalsNestedInput
 }
 
 export type ApprovalUncheckedUpdateWithoutApproverInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   expenseId?: Prisma.StringFieldUpdateOperationsInput | string
   action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -551,6 +705,7 @@ export type ApprovalUncheckedUpdateWithoutApproverInput = {
 
 export type ApprovalUncheckedUpdateManyWithoutApproverInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   expenseId?: Prisma.StringFieldUpdateOperationsInput | string
   action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -559,6 +714,7 @@ export type ApprovalUncheckedUpdateManyWithoutApproverInput = {
 
 export type ApprovalCreateManyExpenseInput = {
   id?: string
+  organizationId: string
   approverId: string
   action: $Enums.ApprovalAction
   notes?: string | null
@@ -570,11 +726,13 @@ export type ApprovalUpdateWithoutExpenseInput = {
   action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutApprovalsNestedInput
   approver?: Prisma.UserUpdateOneRequiredWithoutApprovalsNestedInput
 }
 
 export type ApprovalUncheckedUpdateWithoutExpenseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   approverId?: Prisma.StringFieldUpdateOperationsInput | string
   action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -583,6 +741,7 @@ export type ApprovalUncheckedUpdateWithoutExpenseInput = {
 
 export type ApprovalUncheckedUpdateManyWithoutExpenseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   approverId?: Prisma.StringFieldUpdateOperationsInput | string
   action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -593,39 +752,46 @@ export type ApprovalUncheckedUpdateManyWithoutExpenseInput = {
 
 export type ApprovalSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  organizationId?: boolean
   expenseId?: boolean
   approverId?: boolean
   action?: boolean
   notes?: boolean
   createdAt?: boolean
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   expense?: boolean | Prisma.ExpenseRequestDefaultArgs<ExtArgs>
   approver?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["approval"]>
 
 export type ApprovalSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  organizationId?: boolean
   expenseId?: boolean
   approverId?: boolean
   action?: boolean
   notes?: boolean
   createdAt?: boolean
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   expense?: boolean | Prisma.ExpenseRequestDefaultArgs<ExtArgs>
   approver?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["approval"]>
 
 export type ApprovalSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  organizationId?: boolean
   expenseId?: boolean
   approverId?: boolean
   action?: boolean
   notes?: boolean
   createdAt?: boolean
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   expense?: boolean | Prisma.ExpenseRequestDefaultArgs<ExtArgs>
   approver?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["approval"]>
 
 export type ApprovalSelectScalar = {
   id?: boolean
+  organizationId?: boolean
   expenseId?: boolean
   approverId?: boolean
   action?: boolean
@@ -633,16 +799,19 @@ export type ApprovalSelectScalar = {
   createdAt?: boolean
 }
 
-export type ApprovalOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "expenseId" | "approverId" | "action" | "notes" | "createdAt", ExtArgs["result"]["approval"]>
+export type ApprovalOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "expenseId" | "approverId" | "action" | "notes" | "createdAt", ExtArgs["result"]["approval"]>
 export type ApprovalInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   expense?: boolean | Prisma.ExpenseRequestDefaultArgs<ExtArgs>
   approver?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type ApprovalIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   expense?: boolean | Prisma.ExpenseRequestDefaultArgs<ExtArgs>
   approver?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type ApprovalIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   expense?: boolean | Prisma.ExpenseRequestDefaultArgs<ExtArgs>
   approver?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -650,11 +819,13 @@ export type ApprovalIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
 export type $ApprovalPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Approval"
   objects: {
+    organization: Prisma.$OrganizationPayload<ExtArgs>
     expense: Prisma.$ExpenseRequestPayload<ExtArgs>
     approver: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    organizationId: string
     expenseId: string
     approverId: string
     action: $Enums.ApprovalAction
@@ -1054,6 +1225,7 @@ readonly fields: ApprovalFieldRefs;
  */
 export interface Prisma__ApprovalClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   expense<T extends Prisma.ExpenseRequestDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ExpenseRequestDefaultArgs<ExtArgs>>): Prisma.Prisma__ExpenseRequestClient<runtime.Types.Result.GetResult<Prisma.$ExpenseRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   approver<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
@@ -1086,6 +1258,7 @@ export interface Prisma__ApprovalClient<T, Null = never, ExtArgs extends runtime
  */
 export interface ApprovalFieldRefs {
   readonly id: Prisma.FieldRef<"Approval", 'String'>
+  readonly organizationId: Prisma.FieldRef<"Approval", 'String'>
   readonly expenseId: Prisma.FieldRef<"Approval", 'String'>
   readonly approverId: Prisma.FieldRef<"Approval", 'String'>
   readonly action: Prisma.FieldRef<"Approval", 'ApprovalAction'>

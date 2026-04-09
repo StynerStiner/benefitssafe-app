@@ -38,6 +38,7 @@ export type BudgetCategorySumAggregateOutputType = {
 
 export type BudgetCategoryMinAggregateOutputType = {
   id: string | null
+  organizationId: string | null
   grantId: string | null
   name: string | null
   allocatedAmount: runtime.Decimal | null
@@ -49,6 +50,7 @@ export type BudgetCategoryMinAggregateOutputType = {
 
 export type BudgetCategoryMaxAggregateOutputType = {
   id: string | null
+  organizationId: string | null
   grantId: string | null
   name: string | null
   allocatedAmount: runtime.Decimal | null
@@ -60,6 +62,7 @@ export type BudgetCategoryMaxAggregateOutputType = {
 
 export type BudgetCategoryCountAggregateOutputType = {
   id: number
+  organizationId: number
   grantId: number
   name: number
   allocatedAmount: number
@@ -83,6 +86,7 @@ export type BudgetCategorySumAggregateInputType = {
 
 export type BudgetCategoryMinAggregateInputType = {
   id?: true
+  organizationId?: true
   grantId?: true
   name?: true
   allocatedAmount?: true
@@ -94,6 +98,7 @@ export type BudgetCategoryMinAggregateInputType = {
 
 export type BudgetCategoryMaxAggregateInputType = {
   id?: true
+  organizationId?: true
   grantId?: true
   name?: true
   allocatedAmount?: true
@@ -105,6 +110,7 @@ export type BudgetCategoryMaxAggregateInputType = {
 
 export type BudgetCategoryCountAggregateInputType = {
   id?: true
+  organizationId?: true
   grantId?: true
   name?: true
   allocatedAmount?: true
@@ -203,6 +209,7 @@ export type BudgetCategoryGroupByArgs<ExtArgs extends runtime.Types.Extensions.I
 
 export type BudgetCategoryGroupByOutputType = {
   id: string
+  organizationId: string
   grantId: string
   name: string
   allocatedAmount: runtime.Decimal
@@ -237,6 +244,7 @@ export type BudgetCategoryWhereInput = {
   OR?: Prisma.BudgetCategoryWhereInput[]
   NOT?: Prisma.BudgetCategoryWhereInput | Prisma.BudgetCategoryWhereInput[]
   id?: Prisma.StringFilter<"BudgetCategory"> | string
+  organizationId?: Prisma.StringFilter<"BudgetCategory"> | string
   grantId?: Prisma.StringFilter<"BudgetCategory"> | string
   name?: Prisma.StringFilter<"BudgetCategory"> | string
   allocatedAmount?: Prisma.DecimalFilter<"BudgetCategory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -244,6 +252,7 @@ export type BudgetCategoryWhereInput = {
   cardMode?: Prisma.EnumCardModeFilter<"BudgetCategory"> | $Enums.CardMode
   createdAt?: Prisma.DateTimeFilter<"BudgetCategory"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BudgetCategory"> | Date | string
+  organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   grant?: Prisma.XOR<Prisma.GrantScalarRelationFilter, Prisma.GrantWhereInput>
   expenses?: Prisma.ExpenseRequestListRelationFilter
   cards?: Prisma.VirtualCardListRelationFilter
@@ -251,6 +260,7 @@ export type BudgetCategoryWhereInput = {
 
 export type BudgetCategoryOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   grantId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   allocatedAmount?: Prisma.SortOrder
@@ -258,6 +268,7 @@ export type BudgetCategoryOrderByWithRelationInput = {
   cardMode?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  organization?: Prisma.OrganizationOrderByWithRelationInput
   grant?: Prisma.GrantOrderByWithRelationInput
   expenses?: Prisma.ExpenseRequestOrderByRelationAggregateInput
   cards?: Prisma.VirtualCardOrderByRelationAggregateInput
@@ -268,6 +279,7 @@ export type BudgetCategoryWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.BudgetCategoryWhereInput | Prisma.BudgetCategoryWhereInput[]
   OR?: Prisma.BudgetCategoryWhereInput[]
   NOT?: Prisma.BudgetCategoryWhereInput | Prisma.BudgetCategoryWhereInput[]
+  organizationId?: Prisma.StringFilter<"BudgetCategory"> | string
   grantId?: Prisma.StringFilter<"BudgetCategory"> | string
   name?: Prisma.StringFilter<"BudgetCategory"> | string
   allocatedAmount?: Prisma.DecimalFilter<"BudgetCategory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -275,6 +287,7 @@ export type BudgetCategoryWhereUniqueInput = Prisma.AtLeast<{
   cardMode?: Prisma.EnumCardModeFilter<"BudgetCategory"> | $Enums.CardMode
   createdAt?: Prisma.DateTimeFilter<"BudgetCategory"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BudgetCategory"> | Date | string
+  organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   grant?: Prisma.XOR<Prisma.GrantScalarRelationFilter, Prisma.GrantWhereInput>
   expenses?: Prisma.ExpenseRequestListRelationFilter
   cards?: Prisma.VirtualCardListRelationFilter
@@ -282,6 +295,7 @@ export type BudgetCategoryWhereUniqueInput = Prisma.AtLeast<{
 
 export type BudgetCategoryOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   grantId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   allocatedAmount?: Prisma.SortOrder
@@ -301,6 +315,7 @@ export type BudgetCategoryScalarWhereWithAggregatesInput = {
   OR?: Prisma.BudgetCategoryScalarWhereWithAggregatesInput[]
   NOT?: Prisma.BudgetCategoryScalarWhereWithAggregatesInput | Prisma.BudgetCategoryScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"BudgetCategory"> | string
+  organizationId?: Prisma.StringWithAggregatesFilter<"BudgetCategory"> | string
   grantId?: Prisma.StringWithAggregatesFilter<"BudgetCategory"> | string
   name?: Prisma.StringWithAggregatesFilter<"BudgetCategory"> | string
   allocatedAmount?: Prisma.DecimalWithAggregatesFilter<"BudgetCategory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -318,6 +333,7 @@ export type BudgetCategoryCreateInput = {
   cardMode?: $Enums.CardMode
   createdAt?: Date | string
   updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutBudgetCategoriesInput
   grant: Prisma.GrantCreateNestedOneWithoutCategoriesInput
   expenses?: Prisma.ExpenseRequestCreateNestedManyWithoutCategoryInput
   cards?: Prisma.VirtualCardCreateNestedManyWithoutCategoryInput
@@ -325,6 +341,7 @@ export type BudgetCategoryCreateInput = {
 
 export type BudgetCategoryUncheckedCreateInput = {
   id?: string
+  organizationId: string
   grantId: string
   name: string
   allocatedAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -344,6 +361,7 @@ export type BudgetCategoryUpdateInput = {
   cardMode?: Prisma.EnumCardModeFieldUpdateOperationsInput | $Enums.CardMode
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutBudgetCategoriesNestedInput
   grant?: Prisma.GrantUpdateOneRequiredWithoutCategoriesNestedInput
   expenses?: Prisma.ExpenseRequestUpdateManyWithoutCategoryNestedInput
   cards?: Prisma.VirtualCardUpdateManyWithoutCategoryNestedInput
@@ -351,6 +369,7 @@ export type BudgetCategoryUpdateInput = {
 
 export type BudgetCategoryUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   allocatedAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -364,6 +383,7 @@ export type BudgetCategoryUncheckedUpdateInput = {
 
 export type BudgetCategoryCreateManyInput = {
   id?: string
+  organizationId: string
   grantId: string
   name: string
   allocatedAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -385,6 +405,7 @@ export type BudgetCategoryUpdateManyMutationInput = {
 
 export type BudgetCategoryUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   allocatedAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -406,6 +427,7 @@ export type BudgetCategoryOrderByRelationAggregateInput = {
 
 export type BudgetCategoryCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   grantId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   allocatedAmount?: Prisma.SortOrder
@@ -422,6 +444,7 @@ export type BudgetCategoryAvgOrderByAggregateInput = {
 
 export type BudgetCategoryMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   grantId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   allocatedAmount?: Prisma.SortOrder
@@ -433,6 +456,7 @@ export type BudgetCategoryMaxOrderByAggregateInput = {
 
 export type BudgetCategoryMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   grantId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   allocatedAmount?: Prisma.SortOrder
@@ -455,6 +479,48 @@ export type BudgetCategoryScalarRelationFilter = {
 export type BudgetCategoryNullableScalarRelationFilter = {
   is?: Prisma.BudgetCategoryWhereInput | null
   isNot?: Prisma.BudgetCategoryWhereInput | null
+}
+
+export type BudgetCategoryCreateNestedManyWithoutOrganizationInput = {
+  create?: Prisma.XOR<Prisma.BudgetCategoryCreateWithoutOrganizationInput, Prisma.BudgetCategoryUncheckedCreateWithoutOrganizationInput> | Prisma.BudgetCategoryCreateWithoutOrganizationInput[] | Prisma.BudgetCategoryUncheckedCreateWithoutOrganizationInput[]
+  connectOrCreate?: Prisma.BudgetCategoryCreateOrConnectWithoutOrganizationInput | Prisma.BudgetCategoryCreateOrConnectWithoutOrganizationInput[]
+  createMany?: Prisma.BudgetCategoryCreateManyOrganizationInputEnvelope
+  connect?: Prisma.BudgetCategoryWhereUniqueInput | Prisma.BudgetCategoryWhereUniqueInput[]
+}
+
+export type BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput = {
+  create?: Prisma.XOR<Prisma.BudgetCategoryCreateWithoutOrganizationInput, Prisma.BudgetCategoryUncheckedCreateWithoutOrganizationInput> | Prisma.BudgetCategoryCreateWithoutOrganizationInput[] | Prisma.BudgetCategoryUncheckedCreateWithoutOrganizationInput[]
+  connectOrCreate?: Prisma.BudgetCategoryCreateOrConnectWithoutOrganizationInput | Prisma.BudgetCategoryCreateOrConnectWithoutOrganizationInput[]
+  createMany?: Prisma.BudgetCategoryCreateManyOrganizationInputEnvelope
+  connect?: Prisma.BudgetCategoryWhereUniqueInput | Prisma.BudgetCategoryWhereUniqueInput[]
+}
+
+export type BudgetCategoryUpdateManyWithoutOrganizationNestedInput = {
+  create?: Prisma.XOR<Prisma.BudgetCategoryCreateWithoutOrganizationInput, Prisma.BudgetCategoryUncheckedCreateWithoutOrganizationInput> | Prisma.BudgetCategoryCreateWithoutOrganizationInput[] | Prisma.BudgetCategoryUncheckedCreateWithoutOrganizationInput[]
+  connectOrCreate?: Prisma.BudgetCategoryCreateOrConnectWithoutOrganizationInput | Prisma.BudgetCategoryCreateOrConnectWithoutOrganizationInput[]
+  upsert?: Prisma.BudgetCategoryUpsertWithWhereUniqueWithoutOrganizationInput | Prisma.BudgetCategoryUpsertWithWhereUniqueWithoutOrganizationInput[]
+  createMany?: Prisma.BudgetCategoryCreateManyOrganizationInputEnvelope
+  set?: Prisma.BudgetCategoryWhereUniqueInput | Prisma.BudgetCategoryWhereUniqueInput[]
+  disconnect?: Prisma.BudgetCategoryWhereUniqueInput | Prisma.BudgetCategoryWhereUniqueInput[]
+  delete?: Prisma.BudgetCategoryWhereUniqueInput | Prisma.BudgetCategoryWhereUniqueInput[]
+  connect?: Prisma.BudgetCategoryWhereUniqueInput | Prisma.BudgetCategoryWhereUniqueInput[]
+  update?: Prisma.BudgetCategoryUpdateWithWhereUniqueWithoutOrganizationInput | Prisma.BudgetCategoryUpdateWithWhereUniqueWithoutOrganizationInput[]
+  updateMany?: Prisma.BudgetCategoryUpdateManyWithWhereWithoutOrganizationInput | Prisma.BudgetCategoryUpdateManyWithWhereWithoutOrganizationInput[]
+  deleteMany?: Prisma.BudgetCategoryScalarWhereInput | Prisma.BudgetCategoryScalarWhereInput[]
+}
+
+export type BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput = {
+  create?: Prisma.XOR<Prisma.BudgetCategoryCreateWithoutOrganizationInput, Prisma.BudgetCategoryUncheckedCreateWithoutOrganizationInput> | Prisma.BudgetCategoryCreateWithoutOrganizationInput[] | Prisma.BudgetCategoryUncheckedCreateWithoutOrganizationInput[]
+  connectOrCreate?: Prisma.BudgetCategoryCreateOrConnectWithoutOrganizationInput | Prisma.BudgetCategoryCreateOrConnectWithoutOrganizationInput[]
+  upsert?: Prisma.BudgetCategoryUpsertWithWhereUniqueWithoutOrganizationInput | Prisma.BudgetCategoryUpsertWithWhereUniqueWithoutOrganizationInput[]
+  createMany?: Prisma.BudgetCategoryCreateManyOrganizationInputEnvelope
+  set?: Prisma.BudgetCategoryWhereUniqueInput | Prisma.BudgetCategoryWhereUniqueInput[]
+  disconnect?: Prisma.BudgetCategoryWhereUniqueInput | Prisma.BudgetCategoryWhereUniqueInput[]
+  delete?: Prisma.BudgetCategoryWhereUniqueInput | Prisma.BudgetCategoryWhereUniqueInput[]
+  connect?: Prisma.BudgetCategoryWhereUniqueInput | Prisma.BudgetCategoryWhereUniqueInput[]
+  update?: Prisma.BudgetCategoryUpdateWithWhereUniqueWithoutOrganizationInput | Prisma.BudgetCategoryUpdateWithWhereUniqueWithoutOrganizationInput[]
+  updateMany?: Prisma.BudgetCategoryUpdateManyWithWhereWithoutOrganizationInput | Prisma.BudgetCategoryUpdateManyWithWhereWithoutOrganizationInput[]
+  deleteMany?: Prisma.BudgetCategoryScalarWhereInput | Prisma.BudgetCategoryScalarWhereInput[]
 }
 
 export type BudgetCategoryCreateNestedManyWithoutGrantInput = {
@@ -533,6 +599,73 @@ export type BudgetCategoryUpdateOneWithoutCardsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.BudgetCategoryUpdateToOneWithWhereWithoutCardsInput, Prisma.BudgetCategoryUpdateWithoutCardsInput>, Prisma.BudgetCategoryUncheckedUpdateWithoutCardsInput>
 }
 
+export type BudgetCategoryCreateWithoutOrganizationInput = {
+  id?: string
+  name: string
+  allocatedAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cardMode?: $Enums.CardMode
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  grant: Prisma.GrantCreateNestedOneWithoutCategoriesInput
+  expenses?: Prisma.ExpenseRequestCreateNestedManyWithoutCategoryInput
+  cards?: Prisma.VirtualCardCreateNestedManyWithoutCategoryInput
+}
+
+export type BudgetCategoryUncheckedCreateWithoutOrganizationInput = {
+  id?: string
+  grantId: string
+  name: string
+  allocatedAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cardMode?: $Enums.CardMode
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  expenses?: Prisma.ExpenseRequestUncheckedCreateNestedManyWithoutCategoryInput
+  cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutCategoryInput
+}
+
+export type BudgetCategoryCreateOrConnectWithoutOrganizationInput = {
+  where: Prisma.BudgetCategoryWhereUniqueInput
+  create: Prisma.XOR<Prisma.BudgetCategoryCreateWithoutOrganizationInput, Prisma.BudgetCategoryUncheckedCreateWithoutOrganizationInput>
+}
+
+export type BudgetCategoryCreateManyOrganizationInputEnvelope = {
+  data: Prisma.BudgetCategoryCreateManyOrganizationInput | Prisma.BudgetCategoryCreateManyOrganizationInput[]
+  skipDuplicates?: boolean
+}
+
+export type BudgetCategoryUpsertWithWhereUniqueWithoutOrganizationInput = {
+  where: Prisma.BudgetCategoryWhereUniqueInput
+  update: Prisma.XOR<Prisma.BudgetCategoryUpdateWithoutOrganizationInput, Prisma.BudgetCategoryUncheckedUpdateWithoutOrganizationInput>
+  create: Prisma.XOR<Prisma.BudgetCategoryCreateWithoutOrganizationInput, Prisma.BudgetCategoryUncheckedCreateWithoutOrganizationInput>
+}
+
+export type BudgetCategoryUpdateWithWhereUniqueWithoutOrganizationInput = {
+  where: Prisma.BudgetCategoryWhereUniqueInput
+  data: Prisma.XOR<Prisma.BudgetCategoryUpdateWithoutOrganizationInput, Prisma.BudgetCategoryUncheckedUpdateWithoutOrganizationInput>
+}
+
+export type BudgetCategoryUpdateManyWithWhereWithoutOrganizationInput = {
+  where: Prisma.BudgetCategoryScalarWhereInput
+  data: Prisma.XOR<Prisma.BudgetCategoryUpdateManyMutationInput, Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationInput>
+}
+
+export type BudgetCategoryScalarWhereInput = {
+  AND?: Prisma.BudgetCategoryScalarWhereInput | Prisma.BudgetCategoryScalarWhereInput[]
+  OR?: Prisma.BudgetCategoryScalarWhereInput[]
+  NOT?: Prisma.BudgetCategoryScalarWhereInput | Prisma.BudgetCategoryScalarWhereInput[]
+  id?: Prisma.StringFilter<"BudgetCategory"> | string
+  organizationId?: Prisma.StringFilter<"BudgetCategory"> | string
+  grantId?: Prisma.StringFilter<"BudgetCategory"> | string
+  name?: Prisma.StringFilter<"BudgetCategory"> | string
+  allocatedAmount?: Prisma.DecimalFilter<"BudgetCategory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  spentAmount?: Prisma.DecimalFilter<"BudgetCategory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cardMode?: Prisma.EnumCardModeFilter<"BudgetCategory"> | $Enums.CardMode
+  createdAt?: Prisma.DateTimeFilter<"BudgetCategory"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"BudgetCategory"> | Date | string
+}
+
 export type BudgetCategoryCreateWithoutGrantInput = {
   id?: string
   name: string
@@ -541,12 +674,14 @@ export type BudgetCategoryCreateWithoutGrantInput = {
   cardMode?: $Enums.CardMode
   createdAt?: Date | string
   updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutBudgetCategoriesInput
   expenses?: Prisma.ExpenseRequestCreateNestedManyWithoutCategoryInput
   cards?: Prisma.VirtualCardCreateNestedManyWithoutCategoryInput
 }
 
 export type BudgetCategoryUncheckedCreateWithoutGrantInput = {
   id?: string
+  organizationId: string
   name: string
   allocatedAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -583,20 +718,6 @@ export type BudgetCategoryUpdateManyWithWhereWithoutGrantInput = {
   data: Prisma.XOR<Prisma.BudgetCategoryUpdateManyMutationInput, Prisma.BudgetCategoryUncheckedUpdateManyWithoutGrantInput>
 }
 
-export type BudgetCategoryScalarWhereInput = {
-  AND?: Prisma.BudgetCategoryScalarWhereInput | Prisma.BudgetCategoryScalarWhereInput[]
-  OR?: Prisma.BudgetCategoryScalarWhereInput[]
-  NOT?: Prisma.BudgetCategoryScalarWhereInput | Prisma.BudgetCategoryScalarWhereInput[]
-  id?: Prisma.StringFilter<"BudgetCategory"> | string
-  grantId?: Prisma.StringFilter<"BudgetCategory"> | string
-  name?: Prisma.StringFilter<"BudgetCategory"> | string
-  allocatedAmount?: Prisma.DecimalFilter<"BudgetCategory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  spentAmount?: Prisma.DecimalFilter<"BudgetCategory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  cardMode?: Prisma.EnumCardModeFilter<"BudgetCategory"> | $Enums.CardMode
-  createdAt?: Prisma.DateTimeFilter<"BudgetCategory"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"BudgetCategory"> | Date | string
-}
-
 export type BudgetCategoryCreateWithoutExpensesInput = {
   id?: string
   name: string
@@ -605,12 +726,14 @@ export type BudgetCategoryCreateWithoutExpensesInput = {
   cardMode?: $Enums.CardMode
   createdAt?: Date | string
   updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutBudgetCategoriesInput
   grant: Prisma.GrantCreateNestedOneWithoutCategoriesInput
   cards?: Prisma.VirtualCardCreateNestedManyWithoutCategoryInput
 }
 
 export type BudgetCategoryUncheckedCreateWithoutExpensesInput = {
   id?: string
+  organizationId: string
   grantId: string
   name: string
   allocatedAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -645,12 +768,14 @@ export type BudgetCategoryUpdateWithoutExpensesInput = {
   cardMode?: Prisma.EnumCardModeFieldUpdateOperationsInput | $Enums.CardMode
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutBudgetCategoriesNestedInput
   grant?: Prisma.GrantUpdateOneRequiredWithoutCategoriesNestedInput
   cards?: Prisma.VirtualCardUpdateManyWithoutCategoryNestedInput
 }
 
 export type BudgetCategoryUncheckedUpdateWithoutExpensesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   allocatedAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -669,12 +794,14 @@ export type BudgetCategoryCreateWithoutCardsInput = {
   cardMode?: $Enums.CardMode
   createdAt?: Date | string
   updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutBudgetCategoriesInput
   grant: Prisma.GrantCreateNestedOneWithoutCategoriesInput
   expenses?: Prisma.ExpenseRequestCreateNestedManyWithoutCategoryInput
 }
 
 export type BudgetCategoryUncheckedCreateWithoutCardsInput = {
   id?: string
+  organizationId: string
   grantId: string
   name: string
   allocatedAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -709,12 +836,14 @@ export type BudgetCategoryUpdateWithoutCardsInput = {
   cardMode?: Prisma.EnumCardModeFieldUpdateOperationsInput | $Enums.CardMode
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutBudgetCategoriesNestedInput
   grant?: Prisma.GrantUpdateOneRequiredWithoutCategoriesNestedInput
   expenses?: Prisma.ExpenseRequestUpdateManyWithoutCategoryNestedInput
 }
 
 export type BudgetCategoryUncheckedUpdateWithoutCardsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   allocatedAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -725,8 +854,57 @@ export type BudgetCategoryUncheckedUpdateWithoutCardsInput = {
   expenses?: Prisma.ExpenseRequestUncheckedUpdateManyWithoutCategoryNestedInput
 }
 
+export type BudgetCategoryCreateManyOrganizationInput = {
+  id?: string
+  grantId: string
+  name: string
+  allocatedAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  cardMode?: $Enums.CardMode
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type BudgetCategoryUpdateWithoutOrganizationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  allocatedAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cardMode?: Prisma.EnumCardModeFieldUpdateOperationsInput | $Enums.CardMode
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  grant?: Prisma.GrantUpdateOneRequiredWithoutCategoriesNestedInput
+  expenses?: Prisma.ExpenseRequestUpdateManyWithoutCategoryNestedInput
+  cards?: Prisma.VirtualCardUpdateManyWithoutCategoryNestedInput
+}
+
+export type BudgetCategoryUncheckedUpdateWithoutOrganizationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  grantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  allocatedAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cardMode?: Prisma.EnumCardModeFieldUpdateOperationsInput | $Enums.CardMode
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expenses?: Prisma.ExpenseRequestUncheckedUpdateManyWithoutCategoryNestedInput
+  cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutCategoryNestedInput
+}
+
+export type BudgetCategoryUncheckedUpdateManyWithoutOrganizationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  grantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  allocatedAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  cardMode?: Prisma.EnumCardModeFieldUpdateOperationsInput | $Enums.CardMode
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type BudgetCategoryCreateManyGrantInput = {
   id?: string
+  organizationId: string
   name: string
   allocatedAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -743,12 +921,14 @@ export type BudgetCategoryUpdateWithoutGrantInput = {
   cardMode?: Prisma.EnumCardModeFieldUpdateOperationsInput | $Enums.CardMode
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutBudgetCategoriesNestedInput
   expenses?: Prisma.ExpenseRequestUpdateManyWithoutCategoryNestedInput
   cards?: Prisma.VirtualCardUpdateManyWithoutCategoryNestedInput
 }
 
 export type BudgetCategoryUncheckedUpdateWithoutGrantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   allocatedAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -761,6 +941,7 @@ export type BudgetCategoryUncheckedUpdateWithoutGrantInput = {
 
 export type BudgetCategoryUncheckedUpdateManyWithoutGrantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   allocatedAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -811,6 +992,7 @@ export type BudgetCategoryCountOutputTypeCountCardsArgs<ExtArgs extends runtime.
 
 export type BudgetCategorySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  organizationId?: boolean
   grantId?: boolean
   name?: boolean
   allocatedAmount?: boolean
@@ -818,6 +1000,7 @@ export type BudgetCategorySelect<ExtArgs extends runtime.Types.Extensions.Intern
   cardMode?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   grant?: boolean | Prisma.GrantDefaultArgs<ExtArgs>
   expenses?: boolean | Prisma.BudgetCategory$expensesArgs<ExtArgs>
   cards?: boolean | Prisma.BudgetCategory$cardsArgs<ExtArgs>
@@ -826,6 +1009,7 @@ export type BudgetCategorySelect<ExtArgs extends runtime.Types.Extensions.Intern
 
 export type BudgetCategorySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  organizationId?: boolean
   grantId?: boolean
   name?: boolean
   allocatedAmount?: boolean
@@ -833,11 +1017,13 @@ export type BudgetCategorySelectCreateManyAndReturn<ExtArgs extends runtime.Type
   cardMode?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   grant?: boolean | Prisma.GrantDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["budgetCategory"]>
 
 export type BudgetCategorySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  organizationId?: boolean
   grantId?: boolean
   name?: boolean
   allocatedAmount?: boolean
@@ -845,11 +1031,13 @@ export type BudgetCategorySelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   cardMode?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   grant?: boolean | Prisma.GrantDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["budgetCategory"]>
 
 export type BudgetCategorySelectScalar = {
   id?: boolean
+  organizationId?: boolean
   grantId?: boolean
   name?: boolean
   allocatedAmount?: boolean
@@ -859,29 +1047,34 @@ export type BudgetCategorySelectScalar = {
   updatedAt?: boolean
 }
 
-export type BudgetCategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "grantId" | "name" | "allocatedAmount" | "spentAmount" | "cardMode" | "createdAt" | "updatedAt", ExtArgs["result"]["budgetCategory"]>
+export type BudgetCategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "grantId" | "name" | "allocatedAmount" | "spentAmount" | "cardMode" | "createdAt" | "updatedAt", ExtArgs["result"]["budgetCategory"]>
 export type BudgetCategoryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   grant?: boolean | Prisma.GrantDefaultArgs<ExtArgs>
   expenses?: boolean | Prisma.BudgetCategory$expensesArgs<ExtArgs>
   cards?: boolean | Prisma.BudgetCategory$cardsArgs<ExtArgs>
   _count?: boolean | Prisma.BudgetCategoryCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type BudgetCategoryIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   grant?: boolean | Prisma.GrantDefaultArgs<ExtArgs>
 }
 export type BudgetCategoryIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   grant?: boolean | Prisma.GrantDefaultArgs<ExtArgs>
 }
 
 export type $BudgetCategoryPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "BudgetCategory"
   objects: {
+    organization: Prisma.$OrganizationPayload<ExtArgs>
     grant: Prisma.$GrantPayload<ExtArgs>
     expenses: Prisma.$ExpenseRequestPayload<ExtArgs>[]
     cards: Prisma.$VirtualCardPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    organizationId: string
     grantId: string
     name: string
     allocatedAmount: runtime.Decimal
@@ -1283,6 +1476,7 @@ readonly fields: BudgetCategoryFieldRefs;
  */
 export interface Prisma__BudgetCategoryClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   grant<T extends Prisma.GrantDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GrantDefaultArgs<ExtArgs>>): Prisma.Prisma__GrantClient<runtime.Types.Result.GetResult<Prisma.$GrantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   expenses<T extends Prisma.BudgetCategory$expensesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BudgetCategory$expensesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExpenseRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   cards<T extends Prisma.BudgetCategory$cardsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BudgetCategory$cardsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VirtualCardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -1316,6 +1510,7 @@ export interface Prisma__BudgetCategoryClient<T, Null = never, ExtArgs extends r
  */
 export interface BudgetCategoryFieldRefs {
   readonly id: Prisma.FieldRef<"BudgetCategory", 'String'>
+  readonly organizationId: Prisma.FieldRef<"BudgetCategory", 'String'>
   readonly grantId: Prisma.FieldRef<"BudgetCategory", 'String'>
   readonly name: Prisma.FieldRef<"BudgetCategory", 'String'>
   readonly allocatedAmount: Prisma.FieldRef<"BudgetCategory", 'Decimal'>
