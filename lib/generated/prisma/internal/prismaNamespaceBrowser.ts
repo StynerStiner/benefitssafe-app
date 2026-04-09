@@ -223,6 +223,7 @@ export type BudgetCategoryScalarFieldEnum = (typeof BudgetCategoryScalarFieldEnu
 
 export const ExpenseRequestScalarFieldEnum = {
   id: 'id',
+  organizationId: 'organizationId',
   grantId: 'grantId',
   categoryId: 'categoryId',
   requestedById: 'requestedById',
@@ -365,6 +366,7 @@ export type TransactionScalarFieldEnum = (typeof TransactionScalarFieldEnum)[key
 
 export const LedgerEntryScalarFieldEnum = {
   id: 'id',
+  organizationId: 'organizationId',
   grantId: 'grantId',
   categoryId: 'categoryId',
   expenseId: 'expenseId',

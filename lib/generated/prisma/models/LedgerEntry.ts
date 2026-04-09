@@ -38,6 +38,7 @@ export type LedgerEntrySumAggregateOutputType = {
 
 export type LedgerEntryMinAggregateOutputType = {
   id: string | null
+  organizationId: string | null
   grantId: string | null
   categoryId: string | null
   expenseId: string | null
@@ -51,6 +52,7 @@ export type LedgerEntryMinAggregateOutputType = {
 
 export type LedgerEntryMaxAggregateOutputType = {
   id: string | null
+  organizationId: string | null
   grantId: string | null
   categoryId: string | null
   expenseId: string | null
@@ -64,6 +66,7 @@ export type LedgerEntryMaxAggregateOutputType = {
 
 export type LedgerEntryCountAggregateOutputType = {
   id: number
+  organizationId: number
   grantId: number
   categoryId: number
   expenseId: number
@@ -89,6 +92,7 @@ export type LedgerEntrySumAggregateInputType = {
 
 export type LedgerEntryMinAggregateInputType = {
   id?: true
+  organizationId?: true
   grantId?: true
   categoryId?: true
   expenseId?: true
@@ -102,6 +106,7 @@ export type LedgerEntryMinAggregateInputType = {
 
 export type LedgerEntryMaxAggregateInputType = {
   id?: true
+  organizationId?: true
   grantId?: true
   categoryId?: true
   expenseId?: true
@@ -115,6 +120,7 @@ export type LedgerEntryMaxAggregateInputType = {
 
 export type LedgerEntryCountAggregateInputType = {
   id?: true
+  organizationId?: true
   grantId?: true
   categoryId?: true
   expenseId?: true
@@ -215,6 +221,7 @@ export type LedgerEntryGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inte
 
 export type LedgerEntryGroupByOutputType = {
   id: string
+  organizationId: string
   grantId: string
   categoryId: string | null
   expenseId: string | null
@@ -251,6 +258,7 @@ export type LedgerEntryWhereInput = {
   OR?: Prisma.LedgerEntryWhereInput[]
   NOT?: Prisma.LedgerEntryWhereInput | Prisma.LedgerEntryWhereInput[]
   id?: Prisma.StringFilter<"LedgerEntry"> | string
+  organizationId?: Prisma.StringFilter<"LedgerEntry"> | string
   grantId?: Prisma.StringFilter<"LedgerEntry"> | string
   categoryId?: Prisma.StringNullableFilter<"LedgerEntry"> | string | null
   expenseId?: Prisma.StringNullableFilter<"LedgerEntry"> | string | null
@@ -265,6 +273,7 @@ export type LedgerEntryWhereInput = {
 
 export type LedgerEntryOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   grantId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
   expenseId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -282,6 +291,7 @@ export type LedgerEntryWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.LedgerEntryWhereInput | Prisma.LedgerEntryWhereInput[]
   OR?: Prisma.LedgerEntryWhereInput[]
   NOT?: Prisma.LedgerEntryWhereInput | Prisma.LedgerEntryWhereInput[]
+  organizationId?: Prisma.StringFilter<"LedgerEntry"> | string
   grantId?: Prisma.StringFilter<"LedgerEntry"> | string
   categoryId?: Prisma.StringNullableFilter<"LedgerEntry"> | string | null
   expenseId?: Prisma.StringNullableFilter<"LedgerEntry"> | string | null
@@ -296,6 +306,7 @@ export type LedgerEntryWhereUniqueInput = Prisma.AtLeast<{
 
 export type LedgerEntryOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   grantId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
   expenseId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -317,6 +328,7 @@ export type LedgerEntryScalarWhereWithAggregatesInput = {
   OR?: Prisma.LedgerEntryScalarWhereWithAggregatesInput[]
   NOT?: Prisma.LedgerEntryScalarWhereWithAggregatesInput | Prisma.LedgerEntryScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"LedgerEntry"> | string
+  organizationId?: Prisma.StringWithAggregatesFilter<"LedgerEntry"> | string
   grantId?: Prisma.StringWithAggregatesFilter<"LedgerEntry"> | string
   categoryId?: Prisma.StringNullableWithAggregatesFilter<"LedgerEntry"> | string | null
   expenseId?: Prisma.StringNullableWithAggregatesFilter<"LedgerEntry"> | string | null
@@ -330,6 +342,7 @@ export type LedgerEntryScalarWhereWithAggregatesInput = {
 
 export type LedgerEntryCreateInput = {
   id?: string
+  organizationId: string
   grantId: string
   categoryId?: string | null
   type: $Enums.LedgerType
@@ -343,6 +356,7 @@ export type LedgerEntryCreateInput = {
 
 export type LedgerEntryUncheckedCreateInput = {
   id?: string
+  organizationId: string
   grantId: string
   categoryId?: string | null
   expenseId?: string | null
@@ -356,6 +370,7 @@ export type LedgerEntryUncheckedCreateInput = {
 
 export type LedgerEntryUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumLedgerTypeFieldUpdateOperationsInput | $Enums.LedgerType
@@ -369,6 +384,7 @@ export type LedgerEntryUpdateInput = {
 
 export type LedgerEntryUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -382,6 +398,7 @@ export type LedgerEntryUncheckedUpdateInput = {
 
 export type LedgerEntryCreateManyInput = {
   id?: string
+  organizationId: string
   grantId: string
   categoryId?: string | null
   expenseId?: string | null
@@ -395,6 +412,7 @@ export type LedgerEntryCreateManyInput = {
 
 export type LedgerEntryUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumLedgerTypeFieldUpdateOperationsInput | $Enums.LedgerType
@@ -407,6 +425,7 @@ export type LedgerEntryUpdateManyMutationInput = {
 
 export type LedgerEntryUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -430,6 +449,7 @@ export type LedgerEntryOrderByRelationAggregateInput = {
 
 export type LedgerEntryCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   grantId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   expenseId?: Prisma.SortOrder
@@ -448,6 +468,7 @@ export type LedgerEntryAvgOrderByAggregateInput = {
 
 export type LedgerEntryMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   grantId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   expenseId?: Prisma.SortOrder
@@ -461,6 +482,7 @@ export type LedgerEntryMaxOrderByAggregateInput = {
 
 export type LedgerEntryMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   grantId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   expenseId?: Prisma.SortOrder
@@ -525,6 +547,7 @@ export type EnumLedgerTypeFieldUpdateOperationsInput = {
 
 export type LedgerEntryCreateWithoutExpenseInput = {
   id?: string
+  organizationId: string
   grantId: string
   categoryId?: string | null
   type: $Enums.LedgerType
@@ -537,6 +560,7 @@ export type LedgerEntryCreateWithoutExpenseInput = {
 
 export type LedgerEntryUncheckedCreateWithoutExpenseInput = {
   id?: string
+  organizationId: string
   grantId: string
   categoryId?: string | null
   type: $Enums.LedgerType
@@ -578,6 +602,7 @@ export type LedgerEntryScalarWhereInput = {
   OR?: Prisma.LedgerEntryScalarWhereInput[]
   NOT?: Prisma.LedgerEntryScalarWhereInput | Prisma.LedgerEntryScalarWhereInput[]
   id?: Prisma.StringFilter<"LedgerEntry"> | string
+  organizationId?: Prisma.StringFilter<"LedgerEntry"> | string
   grantId?: Prisma.StringFilter<"LedgerEntry"> | string
   categoryId?: Prisma.StringNullableFilter<"LedgerEntry"> | string | null
   expenseId?: Prisma.StringNullableFilter<"LedgerEntry"> | string | null
@@ -591,6 +616,7 @@ export type LedgerEntryScalarWhereInput = {
 
 export type LedgerEntryCreateManyExpenseInput = {
   id?: string
+  organizationId: string
   grantId: string
   categoryId?: string | null
   type: $Enums.LedgerType
@@ -603,6 +629,7 @@ export type LedgerEntryCreateManyExpenseInput = {
 
 export type LedgerEntryUpdateWithoutExpenseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumLedgerTypeFieldUpdateOperationsInput | $Enums.LedgerType
@@ -615,6 +642,7 @@ export type LedgerEntryUpdateWithoutExpenseInput = {
 
 export type LedgerEntryUncheckedUpdateWithoutExpenseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumLedgerTypeFieldUpdateOperationsInput | $Enums.LedgerType
@@ -627,6 +655,7 @@ export type LedgerEntryUncheckedUpdateWithoutExpenseInput = {
 
 export type LedgerEntryUncheckedUpdateManyWithoutExpenseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumLedgerTypeFieldUpdateOperationsInput | $Enums.LedgerType
@@ -641,6 +670,7 @@ export type LedgerEntryUncheckedUpdateManyWithoutExpenseInput = {
 
 export type LedgerEntrySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  organizationId?: boolean
   grantId?: boolean
   categoryId?: boolean
   expenseId?: boolean
@@ -655,6 +685,7 @@ export type LedgerEntrySelect<ExtArgs extends runtime.Types.Extensions.InternalA
 
 export type LedgerEntrySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  organizationId?: boolean
   grantId?: boolean
   categoryId?: boolean
   expenseId?: boolean
@@ -669,6 +700,7 @@ export type LedgerEntrySelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
 
 export type LedgerEntrySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  organizationId?: boolean
   grantId?: boolean
   categoryId?: boolean
   expenseId?: boolean
@@ -683,6 +715,7 @@ export type LedgerEntrySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
 
 export type LedgerEntrySelectScalar = {
   id?: boolean
+  organizationId?: boolean
   grantId?: boolean
   categoryId?: boolean
   expenseId?: boolean
@@ -694,7 +727,7 @@ export type LedgerEntrySelectScalar = {
   createdAt?: boolean
 }
 
-export type LedgerEntryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "grantId" | "categoryId" | "expenseId" | "type" | "amount" | "balanceAfter" | "description" | "reference" | "createdAt", ExtArgs["result"]["ledgerEntry"]>
+export type LedgerEntryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "grantId" | "categoryId" | "expenseId" | "type" | "amount" | "balanceAfter" | "description" | "reference" | "createdAt", ExtArgs["result"]["ledgerEntry"]>
 export type LedgerEntryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   expense?: boolean | Prisma.LedgerEntry$expenseArgs<ExtArgs>
 }
@@ -712,6 +745,7 @@ export type $LedgerEntryPayload<ExtArgs extends runtime.Types.Extensions.Interna
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    organizationId: string
     grantId: string
     categoryId: string | null
     expenseId: string | null
@@ -1146,6 +1180,7 @@ export interface Prisma__LedgerEntryClient<T, Null = never, ExtArgs extends runt
  */
 export interface LedgerEntryFieldRefs {
   readonly id: Prisma.FieldRef<"LedgerEntry", 'String'>
+  readonly organizationId: Prisma.FieldRef<"LedgerEntry", 'String'>
   readonly grantId: Prisma.FieldRef<"LedgerEntry", 'String'>
   readonly categoryId: Prisma.FieldRef<"LedgerEntry", 'String'>
   readonly expenseId: Prisma.FieldRef<"LedgerEntry", 'String'>
