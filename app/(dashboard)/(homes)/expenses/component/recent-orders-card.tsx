@@ -266,7 +266,7 @@ const RecentOrdersCard = ({ expenses, onRefresh }: RecentOrdersCardProps) => {
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-center">
-                                                {exp.status === "PENDING" ? (
+                                                {exp.status === "PENDING" && ["nonprofit_admin", "platform_admin", "compliance_officer", "grant_officer"].includes(session?.user?.role || "") ? (
                                                     <div className="flex items-center justify-center gap-1">
                                                         <Button
                                                             variant="ghost"

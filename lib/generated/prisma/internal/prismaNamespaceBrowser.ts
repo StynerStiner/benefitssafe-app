@@ -110,6 +110,7 @@ export const OrganizationScalarFieldEnum = {
   website: 'website',
   stripeAccountId: 'stripeAccountId',
   stripeFinancialAccountId: 'stripeFinancialAccountId',
+  bankConnectedAt: 'bankConnectedAt',
   plaidItemId: 'plaidItemId',
   logoUrl: 'logoUrl',
   trialStartDate: 'trialStartDate',

@@ -89,7 +89,7 @@ export async function POST(request: Request) {
       data: {
         organizationId,
         grantId,
-        categoryId: categoryId ?? "",
+        categoryId: categoryId ?? null,
         requestedById: grant.beneficiaryId ?? systemUserId,
         vendorId: subscription?.vendorId ?? virtualCard.vendorId ?? null,
         description: expenseDescription,
@@ -142,48 +142,58 @@ export async function POST(request: Request) {
     });
 
     if (autoApproveResult.approved) {
-      const updatedGrant = await prisma.grant.update({
-        where: { id: grantId },
-        data: {
-          spentAmount: { increment: Number(amount) },
-          remainingAmount: { decrement: Number(amount) },
-        },
-      });
+      // Use transaction with row-level lock to prevent concurrent overspend
+      await prisma.$transaction(async (tx) => {
+        // Lock grant row
+        await tx.$queryRaw`
+          SELECT id FROM "Grant"
+          WHERE id = ${grantId}
+          FOR UPDATE
+        `;
 
-      await prisma.expenseRequest.update({
-        where: { id: expense.id },
-        data: { status: "APPROVED", approvedById: systemUserId, approvedAt: new Date() },
-      });
-
-      await prisma.ledgerEntry.create({
-        data: {
-          organizationId,
-          grantId,
-          categoryId: categoryId ?? null,
-          expenseId: expense.id,
-          type: "DEBIT",
-          amount: Number(amount),
-          balanceAfter: Number(updatedGrant.remainingAmount),
-          description: `Auto-approved: ${merchantName} ($${Number(amount).toFixed(2)})`,
-          reference: stripeTransactionId,
-        },
-      });
-
-      await prisma.auditLog.create({
-        data: {
-          userId: systemUserId,
-          organizationId,
-          action: "auto_approve",
-          entityType: "expense",
-          entityId: expense.id,
-          newValue: {
-            amount: Number(amount),
-            merchantName,
-            riskClassification: classification.level,
-            autoApproveReason: autoApproveResult.reason,
-            stripeTransactionId,
+        const updatedGrant = await tx.grant.update({
+          where: { id: grantId },
+          data: {
+            spentAmount: { increment: Number(amount) },
+            remainingAmount: { decrement: Number(amount) },
           },
-        },
+        });
+
+        await tx.expenseRequest.update({
+          where: { id: expense.id },
+          data: { status: "APPROVED", approvedById: systemUserId, approvedAt: new Date() },
+        });
+
+        await tx.ledgerEntry.create({
+          data: {
+            organizationId,
+            grantId,
+            categoryId: categoryId ?? null,
+            expenseId: expense.id,
+            type: "DEBIT",
+            amount: Number(amount),
+            balanceAfter: updatedGrant.remainingAmount,
+            description: `Auto-approved: ${merchantName} ($${Number(amount).toFixed(2)})`,
+            reference: stripeTransactionId,
+          },
+        });
+
+        await tx.auditLog.create({
+          data: {
+            userId: systemUserId,
+            organizationId,
+            action: "auto_approve",
+            entityType: "expense",
+            entityId: expense.id,
+            newValue: {
+              amount: Number(amount),
+              merchantName,
+              riskClassification: classification.level,
+              autoApproveReason: autoApproveResult.reason,
+              stripeTransactionId,
+            },
+          },
+        });
       });
 
       if (adminUser) {

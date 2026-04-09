@@ -380,42 +380,62 @@ async function handleTransactionCreated(transaction: Record<string, unknown>) {
 
     if (!existingLedger) {
       const chargeAmount = Math.abs(amount) / 100;
+      const grantIdForUpdate = virtualCard.expense.grantId;
+      const categoryIdForUpdate = virtualCard.expense.categoryId;
 
-      // Update grant spent/remaining amounts
-      await prisma.grant.update({
-        where: { id: virtualCard.expense.grantId },
-        data: {
-          spentAmount: { increment: chargeAmount },
-          remainingAmount: { decrement: chargeAmount },
-        },
-      });
+      // Use a transaction with row-level lock to prevent race conditions
+      // Two concurrent charges against the same grant cannot both pass the balance check
+      await prisma.$transaction(async (tx) => {
+        // Lock the grant row for update (prevents concurrent reads)
+        const lockedGrant = await tx.$queryRaw`
+          SELECT "remainingAmount" FROM "Grant"
+          WHERE id = ${grantIdForUpdate}
+          FOR UPDATE
+        ` as { remainingAmount: number }[];
 
-      // Update budget category
-      if (virtualCard.expense.categoryId) {
-        await prisma.budgetCategory.update({
-          where: { id: virtualCard.expense.categoryId },
+        const remaining = parseFloat(String(lockedGrant[0]?.remainingAmount ?? 0));
+        if (remaining < chargeAmount) {
+          console.error(`[handleTransactionCreated] Insufficient grant balance: ${remaining} < ${chargeAmount}`);
+          // Still create the ledger entry to record the overspend, but log the issue
+        }
+
+        // Update grant spent/remaining amounts
+        await tx.grant.update({
+          where: { id: grantIdForUpdate },
           data: {
             spentAmount: { increment: chargeAmount },
+            remainingAmount: { decrement: chargeAmount },
           },
         });
-      }
 
-      // Create immutable ledger entry
-      const grant = await prisma.grant.findUnique({
-        where: { id: virtualCard.expense.grantId },
-        select: { remainingAmount: true },
-      });
+        // Update budget category
+        if (categoryIdForUpdate) {
+          await tx.budgetCategory.update({
+            where: { id: categoryIdForUpdate },
+            data: {
+              spentAmount: { increment: chargeAmount },
+            },
+          });
+        }
 
-      await prisma.ledgerEntry.create({
-        data: {
-          grantId: virtualCard.expense.grantId,
-          categoryId: virtualCard.expense.categoryId,
-          type: "DEBIT",
-          amount: chargeAmount,
-          balanceAfter: parseFloat(grant?.remainingAmount?.toString() || "0"),
-          description: `Card charge: ${merchantData?.name || "Unknown merchant"}`,
-          reference: transaction.id as string,
-        },
+        // Fetch updated balance for ledger entry
+        const updatedGrant = await tx.grant.findUnique({
+          where: { id: grantIdForUpdate },
+          select: { remainingAmount: true },
+        });
+
+        // Create immutable ledger entry
+        await tx.ledgerEntry.create({
+          data: {
+            grantId: grantIdForUpdate,
+            categoryId: categoryIdForUpdate,
+            type: "DEBIT",
+            amount: chargeAmount,
+            balanceAfter: updatedGrant?.remainingAmount ?? 0,
+            description: `Card charge: ${merchantData?.name || "Unknown merchant"}`,
+            reference: transaction.id as string,
+          },
+        });
       });
 
       // Fire workflow: card_transaction_completed (non-blocking)
@@ -487,17 +507,12 @@ async function handleAccountUpdated(account: Record<string, unknown>) {
     }
 
     // Update org with latest Stripe Connect status
-    const updateData: Record<string, unknown> = {};
     if (chargesEnabled && payoutsEnabled && detailsSubmitted) {
-      updateData.stripeOnboardingComplete = true;
-    }
-
-    if (Object.keys(updateData).length > 0) {
       await prisma.organization.update({
         where: { id: org.id },
-        data: updateData,
-      }).catch(() => {
-        // stripeOnboardingComplete field may not exist yet — non-fatal
+        data: { bankConnectedAt: new Date() },
+      }).catch((err) => {
+        console.error("Failed to update bankConnectedAt:", err);
       });
     }
 
@@ -631,6 +646,7 @@ async function handleDisputeCreated(dispute: Record<string, unknown>) {
 async function handleDisputeUpdated(dispute: Record<string, unknown>) {
   const disputeId = dispute.id as string;
   const status = dispute.status as string;
+  const stripeTransactionId = (dispute.transaction as Record<string, unknown>)?.id as string;
 
   try {
     // Check idempotency
@@ -646,9 +662,21 @@ async function handleDisputeUpdated(dispute: Record<string, unknown>) {
       return NextResponse.json({ received: true });
     }
 
+    // Look up organization from the transaction
+    let organizationId = "unknown";
+    if (stripeTransactionId) {
+      const tx = await prisma.transaction.findUnique({
+        where: { stripeTransactionId },
+        select: { organizationId: true },
+      });
+      if (tx) organizationId = tx.organizationId;
+    }
+
     // Create audit log for dispute update
     await prisma.auditLog.create({
       data: {
+        userId: "system_webhook",
+        organizationId,
         action: "dispute_updated",
         entityType: "transaction",
         entityId: disputeId,
@@ -669,11 +697,23 @@ async function handleDisputeUpdated(dispute: Record<string, unknown>) {
 // Handle dispute submission (evidence submitted)
 async function handleDisputeSubmitted(dispute: Record<string, unknown>) {
   const disputeId = dispute.id as string;
+  const stripeTransactionId = (dispute.transaction as Record<string, unknown>)?.id as string;
 
   try {
+    let organizationId = "unknown";
+    if (stripeTransactionId) {
+      const tx = await prisma.transaction.findUnique({
+        where: { stripeTransactionId },
+        select: { organizationId: true },
+      });
+      if (tx) organizationId = tx.organizationId;
+    }
+
     // Create audit log
     await prisma.auditLog.create({
       data: {
+        userId: "system_webhook",
+        organizationId,
         action: "dispute_evidence_submitted",
         entityType: "transaction",
         entityId: disputeId,

@@ -146,9 +146,18 @@ export async function POST(
       );
     }
 
-    if (!eligibility || eligibility.eligibilityStatus === "PENDING_VERIFICATION") {
+    if (!eligibility) {
+      // Auto-create eligibility record when admin issues card (implicit approval)
+      await prisma.cardholderEligibility.create({
+        data: {
+          beneficiaryId,
+          organizationId,
+          eligibilityStatus: "ELIGIBLE",
+        },
+      });
+    } else if (eligibility.eligibilityStatus === "PENDING_VERIFICATION") {
       return NextResponse.json(
-        { error: "Beneficiary eligibility has not been verified. Please complete the eligibility verification first." },
+        { error: "Beneficiary eligibility is pending verification. Please complete the eligibility check first." },
         { status: 400 },
       );
     }

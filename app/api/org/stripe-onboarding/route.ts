@@ -153,9 +153,9 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
         }, { stripeAccount: account.id });
         financialAccountId = financialAccount.id;
       } catch (treasuryError) {
-        console.warn("Treasury Financial Account creation failed (dev mode?):", treasuryError);
-        // In development without proper Stripe keys, store a mock ID
-        financialAccountId = `fa_mock_${account.id}`;
+        console.warn("Treasury Financial Account creation failed:", treasuryError);
+        // Store null — Treasury can be configured later. Never store mock IDs.
+        financialAccountId = null;
       }
 
       // Save the account ID and financial account ID

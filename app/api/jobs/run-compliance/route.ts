@@ -57,6 +57,7 @@ export async function POST(request: Request) {
 
       // Check if classification changed
       if (result.level !== expense.riskClassification) {
+        const oldLevel = expense.riskClassification;
         await prisma.expenseRequest.update({
           where: { id: expense.id },
           data: {
@@ -65,6 +66,44 @@ export async function POST(request: Request) {
           },
         });
         reclassified++;
+
+        // Audit log for reclassification
+        await prisma.auditLog.create({
+          data: {
+            userId: "system",
+            organizationId: orgId,
+            action: "compliance_reclassify",
+            entityType: "expense",
+            entityId: expense.id,
+            oldValue: { riskClassification: oldLevel },
+            newValue: { riskClassification: result.level, reason: result.reason },
+          },
+        });
+
+        // Notify admin if risk level increased
+        const riskOrder = ["LIKELY_SAFE", "NEEDS_REVIEW", "LIKELY_RISKY", "BLOCKED"];
+        const oldIdx = riskOrder.indexOf(oldLevel || "LIKELY_SAFE");
+        const newIdx = riskOrder.indexOf(result.level);
+        if (newIdx > oldIdx) {
+          const admin = await prisma.user.findFirst({
+            where: { organizationId: orgId, role: "nonprofit_admin" },
+            select: { id: true },
+          });
+          if (admin) {
+            await prisma.notification.create({
+              data: {
+                userId: admin.id,
+                organizationId: orgId,
+                type: "compliance_reclassified",
+                title: "Expense reclassified to higher risk",
+                message: `Expense "${expense.description}" was reclassified from ${oldLevel} to ${result.level}. Please review.`,
+                entityType: "expense",
+                entityId: expense.id,
+                href: "/expenses",
+              },
+            });
+          }
+        }
       }
 
       // Velocity check: >10 expenses by same user in 1 hour

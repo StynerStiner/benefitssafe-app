@@ -209,7 +209,7 @@ The sidebar is defined in `components/sidebar-data.ts` with a `getNavForRole(rol
 | `platform_admin` | `/medical` | BenefitsSafe staff. God mode |
 | `compliance_officer` | `/podcast` | Compliance specialist |
 | `support` | `/help` | Support staff |
-| `finance_officer` | `/analytics` | Finance team |
+| `billing_admin` | `/settings/billing` | Billing management |
 
 ---
 
