@@ -6,6 +6,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
+import { checkLimitAccess, buildLimitReachedResponse, getCurrentPeriod } from "@/lib/feature-gates";
+import { incrementUsage } from "@/lib/usage-tracker";
 import { screenAgainstOFAC } from "@/lib/ofac-screening";
 import { BLOCKED_MCC_CODES } from "@/lib/mcc-controls";
 import { NextResponse } from "next/server";
@@ -62,6 +64,25 @@ export async function POST(
       return NextResponse.json(
         { error: "Connect your bank account before issuing cards. Go to Organization Settings > Funding to connect." },
         { status: 400 },
+      );
+    }
+
+    // Plan limit gate: check this month's card issuance against tier limit
+    const period = getCurrentPeriod();
+    const usage = await prisma.usageCounter.findUnique({
+      where: { organizationId_period: { organizationId, period } },
+      select: { cardsIssued: true },
+    });
+    const currentCardsIssued = usage?.cardsIssued ?? 0;
+    const limitCheck = await checkLimitAccess(
+      organizationId,
+      "maxCardsPerMonth",
+      currentCardsIssued,
+    );
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        buildLimitReachedResponse("maxCardsPerMonth", limitCheck),
+        { status: 403 },
       );
     }
 
@@ -337,6 +358,7 @@ export async function POST(
     const virtualCard = await prisma.virtualCard.create({
       data: {
         organizationId,
+        grantId: expense.grantId,
         expenseId: expense.id,
         vendorId: expense.vendorId,
         beneficiaryId: expense.requestedById,
@@ -386,6 +408,9 @@ export async function POST(
         })),
       },
     });
+
+    // Increment usage counter for this month
+    await incrementUsage(organizationId, "cardsIssued");
 
     // Fire workflow automation (non-blocking)
     import("@/lib/workflow-engine").then(({ getWorkflowEngine }) => {

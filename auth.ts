@@ -176,8 +176,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.firstName = (user as unknown as { firstName: string }).firstName;
         token.lastName = (user as unknown as { lastName: string }).lastName;
         token.avatarUrl = (user as unknown as { avatarUrl: string | null }).avatarUrl;
-        token.role = user.role;
         token.organizationId = user.organizationId;
+
+        // Use the membership role for this org if it exists, otherwise fall back to user.role
+        // This ensures multi-org users get the correct role per org
+        let effectiveRole = user.role;
+        try {
+          const membership = await prisma.organizationMembership.findFirst({
+            where: {
+              userId: user.id as string,
+              organizationId: user.organizationId,
+              status: "active",
+            },
+            select: { role: true },
+          });
+          if (membership?.role) {
+            effectiveRole = membership.role as typeof effectiveRole;
+          }
+        } catch {
+          // Fall back to user.role if membership lookup fails
+        }
+        token.role = effectiveRole;
         token.mfaPending = user.mfaPending ?? false;
 
         // Fetch organization name + billing fields for session display and middleware gates

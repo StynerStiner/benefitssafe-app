@@ -105,10 +105,12 @@ const BillingPage = () => {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         setStatus(data);
-        // Auto-trigger checkout if plan param is set and it's a paid tier
+        // Only auto-trigger checkout if plan param is set, it's a paid tier,
+        // AND the org doesn't already have an active/trialing subscription for it
         const paidPlans = ["seed", "core", "network", "enterprise"];
-        if (planParam && paidPlans.includes(planParam) && data?.paidTier?.id !== planParam) {
-          // Small delay so the page renders first
+        const alreadyOnPlan = data?.paidTier?.id === planParam;
+        const hasActiveSubscription = data?.billingSubscription?.status === "active" || data?.billingSubscription?.status === "trialing";
+        if (planParam && paidPlans.includes(planParam) && !alreadyOnPlan && !hasActiveSubscription) {
           setTimeout(() => handleUpgrade(planParam), 500);
         }
       })

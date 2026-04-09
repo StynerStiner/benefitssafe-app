@@ -53,48 +53,53 @@ export async function PATCH(
       );
     }
 
-    // Update expense status
-    const updatedExpense = await prisma.expenseRequest.update({
-      where: { id },
-      data: {
-        status: "REJECTED",
-        rejectedReason: parsed.data.reason,
-      },
-      include: {
-        grant: { select: { id: true, name: true } },
-        category: { select: { id: true, name: true } },
-        requestedBy: { select: { id: true, firstName: true, lastName: true, email: true } },
-      },
-    });
-
-    // Create approval record (tracks rejections too)
-    await prisma.approval.create({
-      data: {
-        organizationId,
-        expenseId: id,
-        approverId: userId,
-        action: "REJECTED",
-        notes: parsed.data.notes ?? parsed.data.reason,
-      },
-    });
-
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        userId,
-        organizationId,
-        action: "reject",
-        entityType: "expense",
-        entityId: id,
-        oldValue: { status: "PENDING" },
-        newValue: {
+    // All mutations in a single transaction for consistency
+    const updatedExpense = await prisma.$transaction(async (tx) => {
+      // Update expense status
+      const expense = await tx.expenseRequest.update({
+        where: { id },
+        data: {
           status: "REJECTED",
           rejectedReason: parsed.data.reason,
         },
-      },
+        include: {
+          grant: { select: { id: true, name: true } },
+          category: { select: { id: true, name: true } },
+          requestedBy: { select: { id: true, firstName: true, lastName: true, email: true } },
+        },
+      });
+
+      // Create approval record (tracks rejections too)
+      await tx.approval.create({
+        data: {
+          organizationId,
+          expenseId: id,
+          approverId: userId,
+          action: "REJECTED",
+          notes: parsed.data.notes ?? parsed.data.reason,
+        },
+      });
+
+      // Create audit log
+      await tx.auditLog.create({
+        data: {
+          userId,
+          organizationId,
+          action: "reject",
+          entityType: "expense",
+          entityId: id,
+          oldValue: { status: "PENDING" },
+          newValue: {
+            status: "REJECTED",
+            rejectedReason: parsed.data.reason,
+          },
+        },
+      });
+
+      return expense;
     });
 
-    // Notify the beneficiary who submitted the expense
+    // Notify the beneficiary who submitted the expense (outside tx — non-critical)
     if (updatedExpense.requestedBy) {
       await prisma.notification.create({
         data: {

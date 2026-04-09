@@ -2899,6 +2899,7 @@ export const VirtualCardScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
   categoryId: 'categoryId',
+  grantId: 'grantId',
   expenseId: 'expenseId',
   vendorId: 'vendorId',
   beneficiaryId: 'beneficiaryId',

@@ -74,8 +74,10 @@ export async function POST(request: Request) {
       case "issuing_authorization.created": {
         return handleAuthorizationCreated(event.data.object);
       }
-      case "issuing_transaction.created": {
-        return handleTransactionCreated(event.data.object);
+      // issuing_transaction.created is handled by /api/webhooks/stripe-charges
+      // to avoid duplicate Transaction records. Do NOT process here.
+      case "account.updated": {
+        return handleAccountUpdated(event.data.object);
       }
       case "issuing_dispute.created": {
         return handleDisputeCreated(event.data.object);
@@ -459,6 +461,64 @@ async function handleTransactionCreated(transaction: Record<string, unknown>) {
         }).catch(() => {});
       }
     }
+  }
+
+  return NextResponse.json({ received: true });
+}
+
+// Handle Stripe Connect account updates (bank verification, onboarding complete, etc.)
+async function handleAccountUpdated(account: Record<string, unknown>) {
+  const accountId = account.id as string;
+  const chargesEnabled = account.charges_enabled as boolean;
+  const payoutsEnabled = account.payouts_enabled as boolean;
+  const detailsSubmitted = account.details_submitted as boolean;
+
+  if (!accountId) return NextResponse.json({ received: true });
+
+  try {
+    const org = await prisma.organization.findFirst({
+      where: { stripeAccountId: accountId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      console.log(`account.updated for unknown account ${accountId}, skipping`);
+      return NextResponse.json({ received: true });
+    }
+
+    // Update org with latest Stripe Connect status
+    const updateData: Record<string, unknown> = {};
+    if (chargesEnabled && payoutsEnabled && detailsSubmitted) {
+      updateData.stripeOnboardingComplete = true;
+    }
+
+    if (Object.keys(updateData).length > 0) {
+      await prisma.organization.update({
+        where: { id: org.id },
+        data: updateData,
+      }).catch(() => {
+        // stripeOnboardingComplete field may not exist yet — non-fatal
+      });
+    }
+
+    // Audit log
+    await prisma.auditLog.create({
+      data: {
+        userId: "system",
+        organizationId: org.id,
+        action: "stripe_account_updated",
+        entityType: "organization",
+        entityId: org.id,
+        newValue: JSON.parse(JSON.stringify({
+          stripeAccountId: accountId,
+          chargesEnabled,
+          payoutsEnabled,
+          detailsSubmitted,
+        })),
+      },
+    });
+  } catch (error) {
+    console.error("Failed to process account.updated:", error);
   }
 
   return NextResponse.json({ received: true });

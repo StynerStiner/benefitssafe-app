@@ -343,6 +343,7 @@ export async function POST(
     const virtualCard = await prisma.virtualCard.create({
       data: {
         organizationId,
+        grantId,
         beneficiaryId,
         stripeCardId: stripeCard.id,
         last4: stripeCard.last4 || "0000",

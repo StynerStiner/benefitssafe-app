@@ -131,6 +131,8 @@ const RegisterForm = () => {
           email: values.email,
           password: values.password,
           promoCode: values.promoCode?.trim() || undefined,
+          stripeSessionId: checkoutSessionId || undefined,
+          plan: planParam || undefined,
         }),
       });
 

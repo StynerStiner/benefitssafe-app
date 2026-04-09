@@ -42,6 +42,7 @@ export type VirtualCardMinAggregateOutputType = {
   id: string | null
   organizationId: string | null
   categoryId: string | null
+  grantId: string | null
   expenseId: string | null
   vendorId: string | null
   beneficiaryId: string | null
@@ -63,6 +64,7 @@ export type VirtualCardMaxAggregateOutputType = {
   id: string | null
   organizationId: string | null
   categoryId: string | null
+  grantId: string | null
   expenseId: string | null
   vendorId: string | null
   beneficiaryId: string | null
@@ -84,6 +86,7 @@ export type VirtualCardCountAggregateOutputType = {
   id: number
   organizationId: number
   categoryId: number
+  grantId: number
   expenseId: number
   vendorId: number
   beneficiaryId: number
@@ -119,6 +122,7 @@ export type VirtualCardMinAggregateInputType = {
   id?: true
   organizationId?: true
   categoryId?: true
+  grantId?: true
   expenseId?: true
   vendorId?: true
   beneficiaryId?: true
@@ -140,6 +144,7 @@ export type VirtualCardMaxAggregateInputType = {
   id?: true
   organizationId?: true
   categoryId?: true
+  grantId?: true
   expenseId?: true
   vendorId?: true
   beneficiaryId?: true
@@ -161,6 +166,7 @@ export type VirtualCardCountAggregateInputType = {
   id?: true
   organizationId?: true
   categoryId?: true
+  grantId?: true
   expenseId?: true
   vendorId?: true
   beneficiaryId?: true
@@ -269,6 +275,7 @@ export type VirtualCardGroupByOutputType = {
   id: string
   organizationId: string
   categoryId: string | null
+  grantId: string | null
   expenseId: string | null
   vendorId: string | null
   beneficiaryId: string | null
@@ -313,6 +320,7 @@ export type VirtualCardWhereInput = {
   id?: Prisma.StringFilter<"VirtualCard"> | string
   organizationId?: Prisma.StringFilter<"VirtualCard"> | string
   categoryId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
+  grantId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   expenseId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   vendorId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   beneficiaryId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
@@ -330,6 +338,7 @@ export type VirtualCardWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"VirtualCard"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   category?: Prisma.XOR<Prisma.BudgetCategoryNullableScalarRelationFilter, Prisma.BudgetCategoryWhereInput> | null
+  grant?: Prisma.XOR<Prisma.GrantNullableScalarRelationFilter, Prisma.GrantWhereInput> | null
   expense?: Prisma.XOR<Prisma.ExpenseRequestNullableScalarRelationFilter, Prisma.ExpenseRequestWhereInput> | null
   vendor?: Prisma.XOR<Prisma.VendorNullableScalarRelationFilter, Prisma.VendorWhereInput> | null
   beneficiary?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
@@ -341,6 +350,7 @@ export type VirtualCardOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
+  grantId?: Prisma.SortOrderInput | Prisma.SortOrder
   expenseId?: Prisma.SortOrderInput | Prisma.SortOrder
   vendorId?: Prisma.SortOrderInput | Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -358,6 +368,7 @@ export type VirtualCardOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   organization?: Prisma.OrganizationOrderByWithRelationInput
   category?: Prisma.BudgetCategoryOrderByWithRelationInput
+  grant?: Prisma.GrantOrderByWithRelationInput
   expense?: Prisma.ExpenseRequestOrderByWithRelationInput
   vendor?: Prisma.VendorOrderByWithRelationInput
   beneficiary?: Prisma.UserOrderByWithRelationInput
@@ -373,6 +384,7 @@ export type VirtualCardWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.VirtualCardWhereInput | Prisma.VirtualCardWhereInput[]
   organizationId?: Prisma.StringFilter<"VirtualCard"> | string
   categoryId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
+  grantId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   expenseId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   vendorId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   beneficiaryId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
@@ -389,6 +401,7 @@ export type VirtualCardWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"VirtualCard"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   category?: Prisma.XOR<Prisma.BudgetCategoryNullableScalarRelationFilter, Prisma.BudgetCategoryWhereInput> | null
+  grant?: Prisma.XOR<Prisma.GrantNullableScalarRelationFilter, Prisma.GrantWhereInput> | null
   expense?: Prisma.XOR<Prisma.ExpenseRequestNullableScalarRelationFilter, Prisma.ExpenseRequestWhereInput> | null
   vendor?: Prisma.XOR<Prisma.VendorNullableScalarRelationFilter, Prisma.VendorWhereInput> | null
   beneficiary?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
@@ -400,6 +413,7 @@ export type VirtualCardOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
+  grantId?: Prisma.SortOrderInput | Prisma.SortOrder
   expenseId?: Prisma.SortOrderInput | Prisma.SortOrder
   vendorId?: Prisma.SortOrderInput | Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -429,6 +443,7 @@ export type VirtualCardScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"VirtualCard"> | string
   organizationId?: Prisma.StringWithAggregatesFilter<"VirtualCard"> | string
   categoryId?: Prisma.StringNullableWithAggregatesFilter<"VirtualCard"> | string | null
+  grantId?: Prisma.StringNullableWithAggregatesFilter<"VirtualCard"> | string | null
   expenseId?: Prisma.StringNullableWithAggregatesFilter<"VirtualCard"> | string | null
   vendorId?: Prisma.StringNullableWithAggregatesFilter<"VirtualCard"> | string | null
   beneficiaryId?: Prisma.StringNullableWithAggregatesFilter<"VirtualCard"> | string | null
@@ -462,6 +477,7 @@ export type VirtualCardCreateInput = {
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutCardsInput
   category?: Prisma.BudgetCategoryCreateNestedOneWithoutCardsInput
+  grant?: Prisma.GrantCreateNestedOneWithoutVirtualCardsInput
   expense?: Prisma.ExpenseRequestCreateNestedOneWithoutVirtualCardsInput
   vendor?: Prisma.VendorCreateNestedOneWithoutVirtualCardsInput
   beneficiary?: Prisma.UserCreateNestedOneWithoutVirtualCardsInput
@@ -473,6 +489,7 @@ export type VirtualCardUncheckedCreateInput = {
   id?: string
   organizationId: string
   categoryId?: string | null
+  grantId?: string | null
   expenseId?: string | null
   vendorId?: string | null
   beneficiaryId?: string | null
@@ -508,6 +525,7 @@ export type VirtualCardUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutCardsNestedInput
   category?: Prisma.BudgetCategoryUpdateOneWithoutCardsNestedInput
+  grant?: Prisma.GrantUpdateOneWithoutVirtualCardsNestedInput
   expense?: Prisma.ExpenseRequestUpdateOneWithoutVirtualCardsNestedInput
   vendor?: Prisma.VendorUpdateOneWithoutVirtualCardsNestedInput
   beneficiary?: Prisma.UserUpdateOneWithoutVirtualCardsNestedInput
@@ -519,6 +537,7 @@ export type VirtualCardUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -542,6 +561,7 @@ export type VirtualCardCreateManyInput = {
   id?: string
   organizationId: string
   categoryId?: string | null
+  grantId?: string | null
   expenseId?: string | null
   vendorId?: string | null
   beneficiaryId?: string | null
@@ -579,6 +599,7 @@ export type VirtualCardUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -615,6 +636,7 @@ export type VirtualCardCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  grantId?: Prisma.SortOrder
   expenseId?: Prisma.SortOrder
   vendorId?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
@@ -642,6 +664,7 @@ export type VirtualCardMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  grantId?: Prisma.SortOrder
   expenseId?: Prisma.SortOrder
   vendorId?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
@@ -663,6 +686,7 @@ export type VirtualCardMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
+  grantId?: Prisma.SortOrder
   expenseId?: Prisma.SortOrder
   vendorId?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
@@ -772,6 +796,48 @@ export type VirtualCardUncheckedUpdateManyWithoutBeneficiaryNestedInput = {
   connect?: Prisma.VirtualCardWhereUniqueInput | Prisma.VirtualCardWhereUniqueInput[]
   update?: Prisma.VirtualCardUpdateWithWhereUniqueWithoutBeneficiaryInput | Prisma.VirtualCardUpdateWithWhereUniqueWithoutBeneficiaryInput[]
   updateMany?: Prisma.VirtualCardUpdateManyWithWhereWithoutBeneficiaryInput | Prisma.VirtualCardUpdateManyWithWhereWithoutBeneficiaryInput[]
+  deleteMany?: Prisma.VirtualCardScalarWhereInput | Prisma.VirtualCardScalarWhereInput[]
+}
+
+export type VirtualCardCreateNestedManyWithoutGrantInput = {
+  create?: Prisma.XOR<Prisma.VirtualCardCreateWithoutGrantInput, Prisma.VirtualCardUncheckedCreateWithoutGrantInput> | Prisma.VirtualCardCreateWithoutGrantInput[] | Prisma.VirtualCardUncheckedCreateWithoutGrantInput[]
+  connectOrCreate?: Prisma.VirtualCardCreateOrConnectWithoutGrantInput | Prisma.VirtualCardCreateOrConnectWithoutGrantInput[]
+  createMany?: Prisma.VirtualCardCreateManyGrantInputEnvelope
+  connect?: Prisma.VirtualCardWhereUniqueInput | Prisma.VirtualCardWhereUniqueInput[]
+}
+
+export type VirtualCardUncheckedCreateNestedManyWithoutGrantInput = {
+  create?: Prisma.XOR<Prisma.VirtualCardCreateWithoutGrantInput, Prisma.VirtualCardUncheckedCreateWithoutGrantInput> | Prisma.VirtualCardCreateWithoutGrantInput[] | Prisma.VirtualCardUncheckedCreateWithoutGrantInput[]
+  connectOrCreate?: Prisma.VirtualCardCreateOrConnectWithoutGrantInput | Prisma.VirtualCardCreateOrConnectWithoutGrantInput[]
+  createMany?: Prisma.VirtualCardCreateManyGrantInputEnvelope
+  connect?: Prisma.VirtualCardWhereUniqueInput | Prisma.VirtualCardWhereUniqueInput[]
+}
+
+export type VirtualCardUpdateManyWithoutGrantNestedInput = {
+  create?: Prisma.XOR<Prisma.VirtualCardCreateWithoutGrantInput, Prisma.VirtualCardUncheckedCreateWithoutGrantInput> | Prisma.VirtualCardCreateWithoutGrantInput[] | Prisma.VirtualCardUncheckedCreateWithoutGrantInput[]
+  connectOrCreate?: Prisma.VirtualCardCreateOrConnectWithoutGrantInput | Prisma.VirtualCardCreateOrConnectWithoutGrantInput[]
+  upsert?: Prisma.VirtualCardUpsertWithWhereUniqueWithoutGrantInput | Prisma.VirtualCardUpsertWithWhereUniqueWithoutGrantInput[]
+  createMany?: Prisma.VirtualCardCreateManyGrantInputEnvelope
+  set?: Prisma.VirtualCardWhereUniqueInput | Prisma.VirtualCardWhereUniqueInput[]
+  disconnect?: Prisma.VirtualCardWhereUniqueInput | Prisma.VirtualCardWhereUniqueInput[]
+  delete?: Prisma.VirtualCardWhereUniqueInput | Prisma.VirtualCardWhereUniqueInput[]
+  connect?: Prisma.VirtualCardWhereUniqueInput | Prisma.VirtualCardWhereUniqueInput[]
+  update?: Prisma.VirtualCardUpdateWithWhereUniqueWithoutGrantInput | Prisma.VirtualCardUpdateWithWhereUniqueWithoutGrantInput[]
+  updateMany?: Prisma.VirtualCardUpdateManyWithWhereWithoutGrantInput | Prisma.VirtualCardUpdateManyWithWhereWithoutGrantInput[]
+  deleteMany?: Prisma.VirtualCardScalarWhereInput | Prisma.VirtualCardScalarWhereInput[]
+}
+
+export type VirtualCardUncheckedUpdateManyWithoutGrantNestedInput = {
+  create?: Prisma.XOR<Prisma.VirtualCardCreateWithoutGrantInput, Prisma.VirtualCardUncheckedCreateWithoutGrantInput> | Prisma.VirtualCardCreateWithoutGrantInput[] | Prisma.VirtualCardUncheckedCreateWithoutGrantInput[]
+  connectOrCreate?: Prisma.VirtualCardCreateOrConnectWithoutGrantInput | Prisma.VirtualCardCreateOrConnectWithoutGrantInput[]
+  upsert?: Prisma.VirtualCardUpsertWithWhereUniqueWithoutGrantInput | Prisma.VirtualCardUpsertWithWhereUniqueWithoutGrantInput[]
+  createMany?: Prisma.VirtualCardCreateManyGrantInputEnvelope
+  set?: Prisma.VirtualCardWhereUniqueInput | Prisma.VirtualCardWhereUniqueInput[]
+  disconnect?: Prisma.VirtualCardWhereUniqueInput | Prisma.VirtualCardWhereUniqueInput[]
+  delete?: Prisma.VirtualCardWhereUniqueInput | Prisma.VirtualCardWhereUniqueInput[]
+  connect?: Prisma.VirtualCardWhereUniqueInput | Prisma.VirtualCardWhereUniqueInput[]
+  update?: Prisma.VirtualCardUpdateWithWhereUniqueWithoutGrantInput | Prisma.VirtualCardUpdateWithWhereUniqueWithoutGrantInput[]
+  updateMany?: Prisma.VirtualCardUpdateManyWithWhereWithoutGrantInput | Prisma.VirtualCardUpdateManyWithWhereWithoutGrantInput[]
   deleteMany?: Prisma.VirtualCardScalarWhereInput | Prisma.VirtualCardScalarWhereInput[]
 }
 
@@ -966,6 +1032,7 @@ export type VirtualCardCreateWithoutOrganizationInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   category?: Prisma.BudgetCategoryCreateNestedOneWithoutCardsInput
+  grant?: Prisma.GrantCreateNestedOneWithoutVirtualCardsInput
   expense?: Prisma.ExpenseRequestCreateNestedOneWithoutVirtualCardsInput
   vendor?: Prisma.VendorCreateNestedOneWithoutVirtualCardsInput
   beneficiary?: Prisma.UserCreateNestedOneWithoutVirtualCardsInput
@@ -976,6 +1043,7 @@ export type VirtualCardCreateWithoutOrganizationInput = {
 export type VirtualCardUncheckedCreateWithoutOrganizationInput = {
   id?: string
   categoryId?: string | null
+  grantId?: string | null
   expenseId?: string | null
   vendorId?: string | null
   beneficiaryId?: string | null
@@ -1028,6 +1096,7 @@ export type VirtualCardScalarWhereInput = {
   id?: Prisma.StringFilter<"VirtualCard"> | string
   organizationId?: Prisma.StringFilter<"VirtualCard"> | string
   categoryId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
+  grantId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   expenseId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   vendorId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   beneficiaryId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
@@ -1061,6 +1130,7 @@ export type VirtualCardCreateWithoutBeneficiaryInput = {
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutCardsInput
   category?: Prisma.BudgetCategoryCreateNestedOneWithoutCardsInput
+  grant?: Prisma.GrantCreateNestedOneWithoutVirtualCardsInput
   expense?: Prisma.ExpenseRequestCreateNestedOneWithoutVirtualCardsInput
   vendor?: Prisma.VendorCreateNestedOneWithoutVirtualCardsInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutCardInput
@@ -1071,6 +1141,7 @@ export type VirtualCardUncheckedCreateWithoutBeneficiaryInput = {
   id?: string
   organizationId: string
   categoryId?: string | null
+  grantId?: string | null
   expenseId?: string | null
   vendorId?: string | null
   stripeCardId: string
@@ -1115,6 +1186,78 @@ export type VirtualCardUpdateManyWithWhereWithoutBeneficiaryInput = {
   data: Prisma.XOR<Prisma.VirtualCardUpdateManyMutationInput, Prisma.VirtualCardUncheckedUpdateManyWithoutBeneficiaryInput>
 }
 
+export type VirtualCardCreateWithoutGrantInput = {
+  id?: string
+  stripeCardId: string
+  last4: string
+  expirationMonth: number
+  expirationYear: number
+  spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  merchantLock?: string | null
+  cardType?: string
+  cardLabel?: string | null
+  status?: $Enums.CardStatus
+  expiresAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutCardsInput
+  category?: Prisma.BudgetCategoryCreateNestedOneWithoutCardsInput
+  expense?: Prisma.ExpenseRequestCreateNestedOneWithoutVirtualCardsInput
+  vendor?: Prisma.VendorCreateNestedOneWithoutVirtualCardsInput
+  beneficiary?: Prisma.UserCreateNestedOneWithoutVirtualCardsInput
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutCardInput
+  transactions?: Prisma.TransactionCreateNestedManyWithoutCardInput
+}
+
+export type VirtualCardUncheckedCreateWithoutGrantInput = {
+  id?: string
+  organizationId: string
+  categoryId?: string | null
+  expenseId?: string | null
+  vendorId?: string | null
+  beneficiaryId?: string | null
+  stripeCardId: string
+  last4: string
+  expirationMonth: number
+  expirationYear: number
+  spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  merchantLock?: string | null
+  cardType?: string
+  cardLabel?: string | null
+  status?: $Enums.CardStatus
+  expiresAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutCardInput
+  transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutCardInput
+}
+
+export type VirtualCardCreateOrConnectWithoutGrantInput = {
+  where: Prisma.VirtualCardWhereUniqueInput
+  create: Prisma.XOR<Prisma.VirtualCardCreateWithoutGrantInput, Prisma.VirtualCardUncheckedCreateWithoutGrantInput>
+}
+
+export type VirtualCardCreateManyGrantInputEnvelope = {
+  data: Prisma.VirtualCardCreateManyGrantInput | Prisma.VirtualCardCreateManyGrantInput[]
+  skipDuplicates?: boolean
+}
+
+export type VirtualCardUpsertWithWhereUniqueWithoutGrantInput = {
+  where: Prisma.VirtualCardWhereUniqueInput
+  update: Prisma.XOR<Prisma.VirtualCardUpdateWithoutGrantInput, Prisma.VirtualCardUncheckedUpdateWithoutGrantInput>
+  create: Prisma.XOR<Prisma.VirtualCardCreateWithoutGrantInput, Prisma.VirtualCardUncheckedCreateWithoutGrantInput>
+}
+
+export type VirtualCardUpdateWithWhereUniqueWithoutGrantInput = {
+  where: Prisma.VirtualCardWhereUniqueInput
+  data: Prisma.XOR<Prisma.VirtualCardUpdateWithoutGrantInput, Prisma.VirtualCardUncheckedUpdateWithoutGrantInput>
+}
+
+export type VirtualCardUpdateManyWithWhereWithoutGrantInput = {
+  where: Prisma.VirtualCardScalarWhereInput
+  data: Prisma.XOR<Prisma.VirtualCardUpdateManyMutationInput, Prisma.VirtualCardUncheckedUpdateManyWithoutGrantInput>
+}
+
 export type VirtualCardCreateWithoutCategoryInput = {
   id?: string
   stripeCardId: string
@@ -1130,6 +1273,7 @@ export type VirtualCardCreateWithoutCategoryInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutCardsInput
+  grant?: Prisma.GrantCreateNestedOneWithoutVirtualCardsInput
   expense?: Prisma.ExpenseRequestCreateNestedOneWithoutVirtualCardsInput
   vendor?: Prisma.VendorCreateNestedOneWithoutVirtualCardsInput
   beneficiary?: Prisma.UserCreateNestedOneWithoutVirtualCardsInput
@@ -1140,6 +1284,7 @@ export type VirtualCardCreateWithoutCategoryInput = {
 export type VirtualCardUncheckedCreateWithoutCategoryInput = {
   id?: string
   organizationId: string
+  grantId?: string | null
   expenseId?: string | null
   vendorId?: string | null
   beneficiaryId?: string | null
@@ -1201,6 +1346,7 @@ export type VirtualCardCreateWithoutExpenseInput = {
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutCardsInput
   category?: Prisma.BudgetCategoryCreateNestedOneWithoutCardsInput
+  grant?: Prisma.GrantCreateNestedOneWithoutVirtualCardsInput
   vendor?: Prisma.VendorCreateNestedOneWithoutVirtualCardsInput
   beneficiary?: Prisma.UserCreateNestedOneWithoutVirtualCardsInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutCardInput
@@ -1211,6 +1357,7 @@ export type VirtualCardUncheckedCreateWithoutExpenseInput = {
   id?: string
   organizationId: string
   categoryId?: string | null
+  grantId?: string | null
   vendorId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
@@ -1271,6 +1418,7 @@ export type VirtualCardCreateWithoutVendorInput = {
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutCardsInput
   category?: Prisma.BudgetCategoryCreateNestedOneWithoutCardsInput
+  grant?: Prisma.GrantCreateNestedOneWithoutVirtualCardsInput
   expense?: Prisma.ExpenseRequestCreateNestedOneWithoutVirtualCardsInput
   beneficiary?: Prisma.UserCreateNestedOneWithoutVirtualCardsInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutCardInput
@@ -1281,6 +1429,7 @@ export type VirtualCardUncheckedCreateWithoutVendorInput = {
   id?: string
   organizationId: string
   categoryId?: string | null
+  grantId?: string | null
   expenseId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
@@ -1341,6 +1490,7 @@ export type VirtualCardCreateWithoutSubscriptionsInput = {
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutCardsInput
   category?: Prisma.BudgetCategoryCreateNestedOneWithoutCardsInput
+  grant?: Prisma.GrantCreateNestedOneWithoutVirtualCardsInput
   expense?: Prisma.ExpenseRequestCreateNestedOneWithoutVirtualCardsInput
   vendor?: Prisma.VendorCreateNestedOneWithoutVirtualCardsInput
   beneficiary?: Prisma.UserCreateNestedOneWithoutVirtualCardsInput
@@ -1351,6 +1501,7 @@ export type VirtualCardUncheckedCreateWithoutSubscriptionsInput = {
   id?: string
   organizationId: string
   categoryId?: string | null
+  grantId?: string | null
   expenseId?: string | null
   vendorId?: string | null
   beneficiaryId?: string | null
@@ -1401,6 +1552,7 @@ export type VirtualCardUpdateWithoutSubscriptionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutCardsNestedInput
   category?: Prisma.BudgetCategoryUpdateOneWithoutCardsNestedInput
+  grant?: Prisma.GrantUpdateOneWithoutVirtualCardsNestedInput
   expense?: Prisma.ExpenseRequestUpdateOneWithoutVirtualCardsNestedInput
   vendor?: Prisma.VendorUpdateOneWithoutVirtualCardsNestedInput
   beneficiary?: Prisma.UserUpdateOneWithoutVirtualCardsNestedInput
@@ -1411,6 +1563,7 @@ export type VirtualCardUncheckedUpdateWithoutSubscriptionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1445,6 +1598,7 @@ export type VirtualCardCreateWithoutTransactionsInput = {
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutCardsInput
   category?: Prisma.BudgetCategoryCreateNestedOneWithoutCardsInput
+  grant?: Prisma.GrantCreateNestedOneWithoutVirtualCardsInput
   expense?: Prisma.ExpenseRequestCreateNestedOneWithoutVirtualCardsInput
   vendor?: Prisma.VendorCreateNestedOneWithoutVirtualCardsInput
   beneficiary?: Prisma.UserCreateNestedOneWithoutVirtualCardsInput
@@ -1455,6 +1609,7 @@ export type VirtualCardUncheckedCreateWithoutTransactionsInput = {
   id?: string
   organizationId: string
   categoryId?: string | null
+  grantId?: string | null
   expenseId?: string | null
   vendorId?: string | null
   beneficiaryId?: string | null
@@ -1505,6 +1660,7 @@ export type VirtualCardUpdateWithoutTransactionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutCardsNestedInput
   category?: Prisma.BudgetCategoryUpdateOneWithoutCardsNestedInput
+  grant?: Prisma.GrantUpdateOneWithoutVirtualCardsNestedInput
   expense?: Prisma.ExpenseRequestUpdateOneWithoutVirtualCardsNestedInput
   vendor?: Prisma.VendorUpdateOneWithoutVirtualCardsNestedInput
   beneficiary?: Prisma.UserUpdateOneWithoutVirtualCardsNestedInput
@@ -1515,6 +1671,7 @@ export type VirtualCardUncheckedUpdateWithoutTransactionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1536,6 +1693,7 @@ export type VirtualCardUncheckedUpdateWithoutTransactionsInput = {
 export type VirtualCardCreateManyOrganizationInput = {
   id?: string
   categoryId?: string | null
+  grantId?: string | null
   expenseId?: string | null
   vendorId?: string | null
   beneficiaryId?: string | null
@@ -1568,6 +1726,7 @@ export type VirtualCardUpdateWithoutOrganizationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   category?: Prisma.BudgetCategoryUpdateOneWithoutCardsNestedInput
+  grant?: Prisma.GrantUpdateOneWithoutVirtualCardsNestedInput
   expense?: Prisma.ExpenseRequestUpdateOneWithoutVirtualCardsNestedInput
   vendor?: Prisma.VendorUpdateOneWithoutVirtualCardsNestedInput
   beneficiary?: Prisma.UserUpdateOneWithoutVirtualCardsNestedInput
@@ -1578,6 +1737,7 @@ export type VirtualCardUpdateWithoutOrganizationInput = {
 export type VirtualCardUncheckedUpdateWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1600,6 +1760,7 @@ export type VirtualCardUncheckedUpdateWithoutOrganizationInput = {
 export type VirtualCardUncheckedUpdateManyWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1621,6 +1782,7 @@ export type VirtualCardCreateManyBeneficiaryInput = {
   id?: string
   organizationId: string
   categoryId?: string | null
+  grantId?: string | null
   expenseId?: string | null
   vendorId?: string | null
   stripeCardId: string
@@ -1653,6 +1815,7 @@ export type VirtualCardUpdateWithoutBeneficiaryInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutCardsNestedInput
   category?: Prisma.BudgetCategoryUpdateOneWithoutCardsNestedInput
+  grant?: Prisma.GrantUpdateOneWithoutVirtualCardsNestedInput
   expense?: Prisma.ExpenseRequestUpdateOneWithoutVirtualCardsNestedInput
   vendor?: Prisma.VendorUpdateOneWithoutVirtualCardsNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutCardNestedInput
@@ -1663,6 +1826,7 @@ export type VirtualCardUncheckedUpdateWithoutBeneficiaryInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1685,8 +1849,97 @@ export type VirtualCardUncheckedUpdateManyWithoutBeneficiaryInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  last4?: Prisma.StringFieldUpdateOperationsInput | string
+  expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
+  expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
+  spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type VirtualCardCreateManyGrantInput = {
+  id?: string
+  organizationId: string
+  categoryId?: string | null
+  expenseId?: string | null
+  vendorId?: string | null
+  beneficiaryId?: string | null
+  stripeCardId: string
+  last4: string
+  expirationMonth: number
+  expirationYear: number
+  spendingCap?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  merchantLock?: string | null
+  cardType?: string
+  cardLabel?: string | null
+  status?: $Enums.CardStatus
+  expiresAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type VirtualCardUpdateWithoutGrantInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  last4?: Prisma.StringFieldUpdateOperationsInput | string
+  expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
+  expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
+  spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutCardsNestedInput
+  category?: Prisma.BudgetCategoryUpdateOneWithoutCardsNestedInput
+  expense?: Prisma.ExpenseRequestUpdateOneWithoutVirtualCardsNestedInput
+  vendor?: Prisma.VendorUpdateOneWithoutVirtualCardsNestedInput
+  beneficiary?: Prisma.UserUpdateOneWithoutVirtualCardsNestedInput
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutCardNestedInput
+  transactions?: Prisma.TransactionUpdateManyWithoutCardNestedInput
+}
+
+export type VirtualCardUncheckedUpdateWithoutGrantInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  last4?: Prisma.StringFieldUpdateOperationsInput | string
+  expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
+  expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
+  spendingCap?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  merchantLock?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cardType?: Prisma.StringFieldUpdateOperationsInput | string
+  cardLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumCardStatusFieldUpdateOperationsInput | $Enums.CardStatus
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutCardNestedInput
+  transactions?: Prisma.TransactionUncheckedUpdateManyWithoutCardNestedInput
+}
+
+export type VirtualCardUncheckedUpdateManyWithoutGrantInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1704,6 +1957,7 @@ export type VirtualCardUncheckedUpdateManyWithoutBeneficiaryInput = {
 export type VirtualCardCreateManyCategoryInput = {
   id?: string
   organizationId: string
+  grantId?: string | null
   expenseId?: string | null
   vendorId?: string | null
   beneficiaryId?: string | null
@@ -1736,6 +1990,7 @@ export type VirtualCardUpdateWithoutCategoryInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutCardsNestedInput
+  grant?: Prisma.GrantUpdateOneWithoutVirtualCardsNestedInput
   expense?: Prisma.ExpenseRequestUpdateOneWithoutVirtualCardsNestedInput
   vendor?: Prisma.VendorUpdateOneWithoutVirtualCardsNestedInput
   beneficiary?: Prisma.UserUpdateOneWithoutVirtualCardsNestedInput
@@ -1746,6 +2001,7 @@ export type VirtualCardUpdateWithoutCategoryInput = {
 export type VirtualCardUncheckedUpdateWithoutCategoryInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1768,6 +2024,7 @@ export type VirtualCardUncheckedUpdateWithoutCategoryInput = {
 export type VirtualCardUncheckedUpdateManyWithoutCategoryInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1789,6 +2046,7 @@ export type VirtualCardCreateManyExpenseInput = {
   id?: string
   organizationId: string
   categoryId?: string | null
+  grantId?: string | null
   vendorId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
@@ -1821,6 +2079,7 @@ export type VirtualCardUpdateWithoutExpenseInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutCardsNestedInput
   category?: Prisma.BudgetCategoryUpdateOneWithoutCardsNestedInput
+  grant?: Prisma.GrantUpdateOneWithoutVirtualCardsNestedInput
   vendor?: Prisma.VendorUpdateOneWithoutVirtualCardsNestedInput
   beneficiary?: Prisma.UserUpdateOneWithoutVirtualCardsNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutCardNestedInput
@@ -1831,6 +2090,7 @@ export type VirtualCardUncheckedUpdateWithoutExpenseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1853,6 +2113,7 @@ export type VirtualCardUncheckedUpdateManyWithoutExpenseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1873,6 +2134,7 @@ export type VirtualCardCreateManyVendorInput = {
   id?: string
   organizationId: string
   categoryId?: string | null
+  grantId?: string | null
   expenseId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
@@ -1905,6 +2167,7 @@ export type VirtualCardUpdateWithoutVendorInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutCardsNestedInput
   category?: Prisma.BudgetCategoryUpdateOneWithoutCardsNestedInput
+  grant?: Prisma.GrantUpdateOneWithoutVirtualCardsNestedInput
   expense?: Prisma.ExpenseRequestUpdateOneWithoutVirtualCardsNestedInput
   beneficiary?: Prisma.UserUpdateOneWithoutVirtualCardsNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutCardNestedInput
@@ -1915,6 +2178,7 @@ export type VirtualCardUncheckedUpdateWithoutVendorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1937,6 +2201,7 @@ export type VirtualCardUncheckedUpdateManyWithoutVendorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1997,6 +2262,7 @@ export type VirtualCardSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   id?: boolean
   organizationId?: boolean
   categoryId?: boolean
+  grantId?: boolean
   expenseId?: boolean
   vendorId?: boolean
   beneficiaryId?: boolean
@@ -2014,6 +2280,7 @@ export type VirtualCardSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   category?: boolean | Prisma.VirtualCard$categoryArgs<ExtArgs>
+  grant?: boolean | Prisma.VirtualCard$grantArgs<ExtArgs>
   expense?: boolean | Prisma.VirtualCard$expenseArgs<ExtArgs>
   vendor?: boolean | Prisma.VirtualCard$vendorArgs<ExtArgs>
   beneficiary?: boolean | Prisma.VirtualCard$beneficiaryArgs<ExtArgs>
@@ -2026,6 +2293,7 @@ export type VirtualCardSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   id?: boolean
   organizationId?: boolean
   categoryId?: boolean
+  grantId?: boolean
   expenseId?: boolean
   vendorId?: boolean
   beneficiaryId?: boolean
@@ -2043,6 +2311,7 @@ export type VirtualCardSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   category?: boolean | Prisma.VirtualCard$categoryArgs<ExtArgs>
+  grant?: boolean | Prisma.VirtualCard$grantArgs<ExtArgs>
   expense?: boolean | Prisma.VirtualCard$expenseArgs<ExtArgs>
   vendor?: boolean | Prisma.VirtualCard$vendorArgs<ExtArgs>
   beneficiary?: boolean | Prisma.VirtualCard$beneficiaryArgs<ExtArgs>
@@ -2052,6 +2321,7 @@ export type VirtualCardSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   id?: boolean
   organizationId?: boolean
   categoryId?: boolean
+  grantId?: boolean
   expenseId?: boolean
   vendorId?: boolean
   beneficiaryId?: boolean
@@ -2069,6 +2339,7 @@ export type VirtualCardSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   category?: boolean | Prisma.VirtualCard$categoryArgs<ExtArgs>
+  grant?: boolean | Prisma.VirtualCard$grantArgs<ExtArgs>
   expense?: boolean | Prisma.VirtualCard$expenseArgs<ExtArgs>
   vendor?: boolean | Prisma.VirtualCard$vendorArgs<ExtArgs>
   beneficiary?: boolean | Prisma.VirtualCard$beneficiaryArgs<ExtArgs>
@@ -2078,6 +2349,7 @@ export type VirtualCardSelectScalar = {
   id?: boolean
   organizationId?: boolean
   categoryId?: boolean
+  grantId?: boolean
   expenseId?: boolean
   vendorId?: boolean
   beneficiaryId?: boolean
@@ -2095,10 +2367,11 @@ export type VirtualCardSelectScalar = {
   updatedAt?: boolean
 }
 
-export type VirtualCardOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "categoryId" | "expenseId" | "vendorId" | "beneficiaryId" | "stripeCardId" | "last4" | "expirationMonth" | "expirationYear" | "spendingCap" | "merchantLock" | "cardType" | "cardLabel" | "status" | "expiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["virtualCard"]>
+export type VirtualCardOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "categoryId" | "grantId" | "expenseId" | "vendorId" | "beneficiaryId" | "stripeCardId" | "last4" | "expirationMonth" | "expirationYear" | "spendingCap" | "merchantLock" | "cardType" | "cardLabel" | "status" | "expiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["virtualCard"]>
 export type VirtualCardInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   category?: boolean | Prisma.VirtualCard$categoryArgs<ExtArgs>
+  grant?: boolean | Prisma.VirtualCard$grantArgs<ExtArgs>
   expense?: boolean | Prisma.VirtualCard$expenseArgs<ExtArgs>
   vendor?: boolean | Prisma.VirtualCard$vendorArgs<ExtArgs>
   beneficiary?: boolean | Prisma.VirtualCard$beneficiaryArgs<ExtArgs>
@@ -2109,6 +2382,7 @@ export type VirtualCardInclude<ExtArgs extends runtime.Types.Extensions.Internal
 export type VirtualCardIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   category?: boolean | Prisma.VirtualCard$categoryArgs<ExtArgs>
+  grant?: boolean | Prisma.VirtualCard$grantArgs<ExtArgs>
   expense?: boolean | Prisma.VirtualCard$expenseArgs<ExtArgs>
   vendor?: boolean | Prisma.VirtualCard$vendorArgs<ExtArgs>
   beneficiary?: boolean | Prisma.VirtualCard$beneficiaryArgs<ExtArgs>
@@ -2116,6 +2390,7 @@ export type VirtualCardIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.
 export type VirtualCardIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   category?: boolean | Prisma.VirtualCard$categoryArgs<ExtArgs>
+  grant?: boolean | Prisma.VirtualCard$grantArgs<ExtArgs>
   expense?: boolean | Prisma.VirtualCard$expenseArgs<ExtArgs>
   vendor?: boolean | Prisma.VirtualCard$vendorArgs<ExtArgs>
   beneficiary?: boolean | Prisma.VirtualCard$beneficiaryArgs<ExtArgs>
@@ -2126,6 +2401,7 @@ export type $VirtualCardPayload<ExtArgs extends runtime.Types.Extensions.Interna
   objects: {
     organization: Prisma.$OrganizationPayload<ExtArgs>
     category: Prisma.$BudgetCategoryPayload<ExtArgs> | null
+    grant: Prisma.$GrantPayload<ExtArgs> | null
     expense: Prisma.$ExpenseRequestPayload<ExtArgs> | null
     vendor: Prisma.$VendorPayload<ExtArgs> | null
     beneficiary: Prisma.$UserPayload<ExtArgs> | null
@@ -2136,6 +2412,7 @@ export type $VirtualCardPayload<ExtArgs extends runtime.Types.Extensions.Interna
     id: string
     organizationId: string
     categoryId: string | null
+    grantId: string | null
     expenseId: string | null
     vendorId: string | null
     beneficiaryId: string | null
@@ -2547,6 +2824,7 @@ export interface Prisma__VirtualCardClient<T, Null = never, ExtArgs extends runt
   readonly [Symbol.toStringTag]: "PrismaPromise"
   organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   category<T extends Prisma.VirtualCard$categoryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VirtualCard$categoryArgs<ExtArgs>>): Prisma.Prisma__BudgetCategoryClient<runtime.Types.Result.GetResult<Prisma.$BudgetCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  grant<T extends Prisma.VirtualCard$grantArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VirtualCard$grantArgs<ExtArgs>>): Prisma.Prisma__GrantClient<runtime.Types.Result.GetResult<Prisma.$GrantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   expense<T extends Prisma.VirtualCard$expenseArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VirtualCard$expenseArgs<ExtArgs>>): Prisma.Prisma__ExpenseRequestClient<runtime.Types.Result.GetResult<Prisma.$ExpenseRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   vendor<T extends Prisma.VirtualCard$vendorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VirtualCard$vendorArgs<ExtArgs>>): Prisma.Prisma__VendorClient<runtime.Types.Result.GetResult<Prisma.$VendorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   beneficiary<T extends Prisma.VirtualCard$beneficiaryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VirtualCard$beneficiaryArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -2584,6 +2862,7 @@ export interface VirtualCardFieldRefs {
   readonly id: Prisma.FieldRef<"VirtualCard", 'String'>
   readonly organizationId: Prisma.FieldRef<"VirtualCard", 'String'>
   readonly categoryId: Prisma.FieldRef<"VirtualCard", 'String'>
+  readonly grantId: Prisma.FieldRef<"VirtualCard", 'String'>
   readonly expenseId: Prisma.FieldRef<"VirtualCard", 'String'>
   readonly vendorId: Prisma.FieldRef<"VirtualCard", 'String'>
   readonly beneficiaryId: Prisma.FieldRef<"VirtualCard", 'String'>
@@ -3016,6 +3295,25 @@ export type VirtualCard$categoryArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   include?: Prisma.BudgetCategoryInclude<ExtArgs> | null
   where?: Prisma.BudgetCategoryWhereInput
+}
+
+/**
+ * VirtualCard.grant
+ */
+export type VirtualCard$grantArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Grant
+   */
+  select?: Prisma.GrantSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Grant
+   */
+  omit?: Prisma.GrantOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GrantInclude<ExtArgs> | null
+  where?: Prisma.GrantWhereInput
 }
 
 /**

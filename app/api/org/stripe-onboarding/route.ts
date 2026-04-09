@@ -173,9 +173,9 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
       account: accountId,
       type: "account_onboarding",
       // When user completes onboarding, redirect to dashboard
-      success_url: `${process.env.NEXTAUTH_URL || "http://localhost:3002"}/org-settings?stripe=success`,
+      success_url: `${process.env.NEXTAUTH_URL || "http://localhost:3002"}/org-settings?stripe_connect_success=true`,
       // If user closes onboarding without completing, redirect to retry
-      failure_url: `${process.env.NEXTAUTH_URL || "http://localhost:3002"}/org-settings?stripe=failure`,
+      failure_url: `${process.env.NEXTAUTH_URL || "http://localhost:3002"}/org-settings?stripe_connect_success=false`,
     });
 
     // Create audit log

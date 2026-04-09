@@ -21,6 +21,7 @@ export const createGrantSchema = z.object({
   benefitFlags: benefitFlagsSchema.optional(),
   purpose: z.string().max(500).optional(),
   blockedMCCs: z.array(z.string()).optional(),
+  status: z.enum(["DRAFT", "ACTIVE"]).default("ACTIVE"),
 });
 
 export const updateGrantSchema = createGrantSchema.partial().extend({

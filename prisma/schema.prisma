@@ -186,8 +186,9 @@ model Grant {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  categories BudgetCategory[]
-  expenses   ExpenseRequest[]
+  categories  BudgetCategory[]
+  expenses    ExpenseRequest[]
+  virtualCards VirtualCard[]
 
   @@index([organizationId])
   @@index([beneficiaryId])
@@ -423,6 +424,8 @@ model VirtualCard {
   organization   Organization @relation(fields: [organizationId], references: [id])
   categoryId     String?
   category       BudgetCategory? @relation(fields: [categoryId], references: [id])
+  grantId        String?      // Grant this card was issued from (direct or via expense)
+  grant          Grant?       @relation(fields: [grantId], references: [id])
   expenseId      String?      // Expense this card was issued for
   expense        ExpenseRequest? @relation(fields: [expenseId], references: [id])
   vendorId       String?      // Vendor this card is locked to
@@ -448,6 +451,7 @@ model VirtualCard {
   transactions  Transaction[]
 
   @@index([organizationId])
+  @@index([grantId])
   @@index([expenseId])
   @@index([vendorId])
   @@index([beneficiaryId])

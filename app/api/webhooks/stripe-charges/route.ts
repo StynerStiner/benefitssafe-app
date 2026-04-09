@@ -33,7 +33,75 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: `Webhook Error: ${message}` }, { status: 400 });
   }
 
-  // Only handle issuing transaction events
+  // Handle declined authorizations
+  if (event.type === "issuing_authorization.created") {
+    const authObj = event.data.object as StripeType.Issuing.Authorization;
+    if (!authObj.approved) {
+      try {
+        const stripeCardId = typeof authObj.card === "string" ? authObj.card : authObj.card?.id;
+        const virtualCard = stripeCardId ? await prisma.virtualCard.findUnique({
+          where: { stripeCardId },
+          select: { id: true, organizationId: true, beneficiaryId: true },
+        }) : null;
+
+        if (virtualCard) {
+          // Create declined transaction record
+          await prisma.transaction.create({
+            data: {
+              organizationId: virtualCard.organizationId,
+              cardId: virtualCard.id,
+              stripeTransactionId: authObj.id,
+              amount: Math.abs((authObj.pending_request?.amount || 0)) / 100,
+              merchantName: authObj.merchant_data?.name || "Unknown",
+              merchantCategory: authObj.merchant_data?.category || null,
+              status: "declined",
+              declinedReason: authObj.request_history?.[0]?.reason || "unknown",
+            },
+          }).catch(() => {}); // Ignore duplicate
+
+          // Audit log
+          await prisma.auditLog.create({
+            data: {
+              userId: virtualCard.beneficiaryId || "system",
+              organizationId: virtualCard.organizationId,
+              action: "transaction_declined",
+              entityType: "transaction",
+              entityId: virtualCard.id,
+              newValue: JSON.parse(JSON.stringify({
+                amount: Math.abs((authObj.pending_request?.amount || 0)) / 100,
+                merchantName: authObj.merchant_data?.name,
+                reason: authObj.request_history?.[0]?.reason,
+              })),
+            },
+          });
+
+          // Notify admins
+          const admins = await prisma.user.findMany({
+            where: { organizationId: virtualCard.organizationId, role: { in: ["nonprofit_admin", "platform_admin"] } },
+            select: { id: true },
+          });
+          for (const admin of admins) {
+            await prisma.notification.create({
+              data: {
+                userId: admin.id,
+                organizationId: virtualCard.organizationId,
+                type: "transaction_declined",
+                title: "Card transaction declined",
+                message: `A $${(Math.abs((authObj.pending_request?.amount || 0)) / 100).toFixed(2)} charge at ${authObj.merchant_data?.name || "Unknown"} was declined. Reason: ${authObj.request_history?.[0]?.reason || "unknown"}.`,
+                entityId: virtualCard.id,
+                href: "/audit-trail",
+              },
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Error processing declined authorization:", err);
+      }
+    }
+    return NextResponse.json({ received: true });
+  }
+
+  // Only handle issuing transaction events for completed charges
   if (event.type !== "issuing_transaction.created") {
     return NextResponse.json({ received: true });
   }

@@ -143,7 +143,7 @@ export async function POST(request: Request) {
         benefitFlags: data.benefitFlags ?? undefined,
         purpose: data.purpose,
         blockedMCCs: data.blockedMCCs ?? undefined,
-        status: "ACTIVE",
+        status: data.status || "ACTIVE",
       },
       include: {
         beneficiary: { select: { id: true, firstName: true, lastName: true, email: true } },

@@ -23,6 +23,8 @@ const registerApiSchema = z.object({
     .regex(/[0-9]/, "Must contain at least one number")
     .regex(/[^a-zA-Z0-9]/, "Must contain at least one special character"),
   promoCode: z.string().max(50).optional().or(z.literal("")),
+  stripeSessionId: z.string().max(200).optional(),
+  plan: z.string().max(50).optional(),
 });
 
 /**
@@ -82,7 +84,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { organizationName, firstName, lastName, email, password, promoCode } = parsed.data;
+    const { organizationName, firstName, lastName, email, password, promoCode, stripeSessionId, plan } = parsed.data;
 
     // Validate email against disposable domains and injection attacks
     const emailCheck = validateRecipientEmail(email);
@@ -353,6 +355,79 @@ export async function POST(request: Request) {
 
       return { organization, user };
     });
+
+    // ----------------------------------------------------------------
+    // LINK STRIPE CHECKOUT SESSION (if paid signup via checkout-direct)
+    // ----------------------------------------------------------------
+    if (stripeSessionId) {
+      try {
+        const checkoutSession = await stripe.checkout.sessions.retrieve(stripeSessionId, {
+          expand: ["subscription"],
+        });
+
+        if (checkoutSession.payment_status === "paid" || checkoutSession.status === "complete") {
+          const stripeCustomerId = typeof checkoutSession.customer === "string"
+            ? checkoutSession.customer
+            : checkoutSession.customer?.id;
+          const stripeSubscription = checkoutSession.subscription;
+          const stripeSubscriptionId = typeof stripeSubscription === "string"
+            ? stripeSubscription
+            : stripeSubscription?.id;
+          const stripePriceId = typeof stripeSubscription !== "string" && stripeSubscription?.items?.data?.[0]?.price?.id;
+
+          // Link subscription to organization
+          if (stripeCustomerId && stripeSubscriptionId) {
+            const billingTier = plan || "free";
+
+            await prisma.billingSubscription.upsert({
+              where: { organizationId: result.organization.id },
+              create: {
+                organizationId: result.organization.id,
+                stripeCustomerId,
+                stripeSubscriptionId,
+                stripePriceId: stripePriceId || null,
+                tier: billingTier,
+                status: "active",
+                currentPeriodStart: typeof stripeSubscription !== "string" ? new Date(stripeSubscription.current_period_start * 1000) : new Date(),
+                currentPeriodEnd: typeof stripeSubscription !== "string" ? new Date(stripeSubscription.current_period_end * 1000) : new Date(),
+              },
+              update: {
+                stripeCustomerId,
+                stripeSubscriptionId,
+                stripePriceId: stripePriceId || null,
+                tier: billingTier,
+                status: "active",
+              },
+            });
+
+            await prisma.organization.update({
+              where: { id: result.organization.id },
+              data: { subscriptionStatus: "active" },
+            });
+
+            // Audit log for subscription linking
+            await prisma.auditLog.create({
+              data: {
+                userId: result.user.id,
+                organizationId: result.organization.id,
+                action: "link_subscription",
+                entityType: "billing",
+                entityId: stripeSubscriptionId,
+                newValue: JSON.parse(JSON.stringify({
+                  stripeCustomerId,
+                  stripeSubscriptionId,
+                  tier: billingTier,
+                  source: "checkout_direct_registration",
+                })),
+              },
+            });
+          }
+        }
+      } catch (stripeSessionError) {
+        console.error("Failed to link checkout session:", stripeSessionError);
+        // Don't fail registration — subscription can be linked later via webhook
+      }
+    }
 
     // TODO: Send verification email via Postmark/SendGrid
     // For now, log the verification URL to console for development
