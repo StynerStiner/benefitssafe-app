@@ -11,8 +11,6 @@ import { z } from "zod";
 const DEFAULT_TRIAL_DAYS = 14;
 
 const registerApiSchema = z.object({
-  ein: z.string().regex(/^\d{2}-?\d{7}$/, "EIN must be 9 digits").optional(),
-  einVerified: z.boolean().optional(),
   organizationName: z.string().min(2, "Organization name is required"),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
@@ -84,7 +82,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { ein, einVerified, organizationName, firstName, lastName, email, password, promoCode } = parsed.data;
+    const { organizationName, firstName, lastName, email, password, promoCode } = parsed.data;
 
     // Validate email against disposable domains and injection attacks
     const emailCheck = validateRecipientEmail(email);
@@ -94,9 +92,6 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
-
-    // Normalize EIN: strip dashes for storage
-    const normalizedEIN = ein ? ein.replace(/-/g, "") : undefined;
 
     // ----------------------------------------------------------------
     // ANTI-ABUSE CHECK 1: Duplicate email
@@ -114,33 +109,7 @@ export async function POST(request: Request) {
     }
 
     // ----------------------------------------------------------------
-    // ANTI-ABUSE CHECK 2: One free trial per EIN
-    // If the EIN already has an organization with an active/trial status,
-    // reject to prevent duplicate trial signups.
-    // ----------------------------------------------------------------
-    if (normalizedEIN) {
-      const existingOrgByEIN = await prisma.organization.findFirst({
-        where: {
-          ein: normalizedEIN,
-          subscriptionStatus: { in: ["trial", "active"] },
-        },
-        select: { id: true, name: true },
-      });
-
-      if (existingOrgByEIN) {
-        return NextResponse.json(
-          {
-            error:
-              "An organization with this EIN already has an active account. " +
-              "Contact support if you believe this is an error.",
-          },
-          { status: 409 },
-        );
-      }
-    }
-
-    // ----------------------------------------------------------------
-    // ANTI-ABUSE CHECK 3: One free trial per email domain
+    // ANTI-ABUSE CHECK 2: One free trial per email domain
     // Prevents multiple signups from the same organization using
     // different employees' email addresses. Only applies to
     // non-free-provider domains (e.g., @mynonprofit.org).
@@ -296,9 +265,7 @@ export async function POST(request: Request) {
       const organization = await tx.organization.create({
         data: {
           name: organizationName.trim(),
-          ein: normalizedEIN,
           orgCode,
-          einVerified: einVerified === true,
           stripeAccountId,
           stripeCardholderIdId,
           trialStartDate: now,
@@ -310,8 +277,6 @@ export async function POST(request: Request) {
           name: true,
           orgCode: true,
           stripeAccountId: true,
-          ein: true,
-          einVerified: true,
           trialStartDate: true,
           trialEndDate: true,
           subscriptionStatus: true,
@@ -375,8 +340,6 @@ export async function POST(request: Request) {
           entityId: organization.id,
           newValue: JSON.parse(JSON.stringify({
             organizationName: organization.name,
-            ein: organization.ein || null,
-            einVerified: organization.einVerified,
             adminEmail: user.email,
             adminName: `${user.firstName} ${user.lastName}`,
             stripeConnected: !!stripeAccountId,
@@ -404,7 +367,6 @@ export async function POST(request: Request) {
         message: "Organization created successfully",
         organizationId: result.organization.id,
         userId: result.user.id,
-        einVerified: result.organization.einVerified,
         stripeConnected: !!stripeAccountId,
         onboardingRequired: !stripeAccountId,
         trialDays,

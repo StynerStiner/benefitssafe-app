@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useLoading } from "@/contexts/LoadingContext";
 import { registerSchema } from "@/lib/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangle, Building2, Check, Eye, EyeOff, Hash, Loader2, Lock, Mail, Tag, UserRound, XCircle } from "lucide-react";
+import { Building2, Check, Eye, EyeOff, Loader2, Lock, Mail, Tag, UserRound, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
@@ -23,16 +23,7 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 import SocialLogin from "./social-login";
 
-type EINStatus = "idle" | "verifying" | "verified" | "not_found" | "error";
 type PromoStatus = "idle" | "verifying" | "valid" | "invalid";
-
-interface EINVerificationResult {
-  verified: boolean;
-  organizationName?: string;
-  status?: string;
-  city?: string;
-  state?: string;
-}
 
 interface PromoVerificationResult {
   valid: boolean;
@@ -53,11 +44,6 @@ const RegisterForm = () => {
   const { loading, setLoading } = useLoading();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // EIN verification state
-  const [einStatus, setEinStatus] = useState<EINStatus>("idle");
-  const [einVerified, setEinVerified] = useState(false);
-  const lastVerifiedEIN = useRef<string>("");
-
   // Promo code verification state
   const [promoStatus, setPromoStatus] = useState<PromoStatus>("idle");
   const [promoResult, setPromoResult] = useState<PromoVerificationResult | null>(null);
@@ -66,7 +52,6 @@ const RegisterForm = () => {
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      ein: "",
       organizationName: "",
       firstName: "",
       lastName: "",
@@ -77,66 +62,6 @@ const RegisterForm = () => {
       acceptTerms: false as unknown as true,
     },
   });
-
-  /**
-   * Auto-format EIN as user types: inserts dash after 2nd digit (XX-XXXXXXX).
-   */
-  const formatEIN = (value: string): string => {
-    const digits = value.replace(/[^\d]/g, "").slice(0, 9);
-    if (digits.length > 2) {
-      return `${digits.slice(0, 2)}-${digits.slice(2)}`;
-    }
-    return digits;
-  };
-
-  /**
-   * Verify the EIN against the ProPublica API via our backend endpoint.
-   */
-  const verifyEIN = useCallback(async (ein: string) => {
-    const digits = ein.replace(/[^\d]/g, "");
-    if (digits.length !== 9) return;
-
-    // Skip if already verified this exact EIN
-    if (lastVerifiedEIN.current === digits) return;
-
-    setEinStatus("verifying");
-    setEinVerified(false);
-
-    try {
-      const response = await fetch("/api/verify-ein", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ein }),
-      });
-
-      if (response.status === 429) {
-        setEinStatus("error");
-        return;
-      }
-
-      const data: EINVerificationResult = await response.json();
-
-      if (data.verified && data.organizationName) {
-        setEinStatus("verified");
-        setEinVerified(true);
-        lastVerifiedEIN.current = digits;
-        // Auto-fill organization name from IRS data
-        form.setValue("organizationName", data.organizationName, {
-          shouldValidate: true,
-        });
-      } else {
-        setEinStatus("not_found");
-        setEinVerified(false);
-        lastVerifiedEIN.current = "";
-        // Allow manual entry of org name
-        form.setValue("organizationName", "", { shouldValidate: false });
-      }
-    } catch {
-      setEinStatus("error");
-      setEinVerified(false);
-      lastVerifiedEIN.current = "";
-    }
-  }, [form]);
 
   /**
    * Verify a promo code against the backend.
@@ -200,8 +125,6 @@ const RegisterForm = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ein: values.ein,
-          einVerified,
           organizationName: values.organizationName,
           firstName: values.firstName,
           lastName: values.lastName,
@@ -274,83 +197,6 @@ const RegisterForm = () => {
           onSubmit={form.handleSubmit(handleRegisterFormSubmit)}
           className="space-y-3"
         >
-          {/* EIN Field */}
-          <FormField
-            control={form.control}
-            name="ein"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <div className="relative">
-                    <Hash className="absolute start-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-700 dark:text-neutral-200" />
-                    <Input
-                      {...field}
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="EIN (XX-XXXXXXX) *"
-                      className="ps-13 pe-12 h-11 rounded-lg bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
-                      disabled={loading}
-                      maxLength={10}
-                      onChange={(e) => {
-                        const formatted = formatEIN(e.target.value);
-                        field.onChange(formatted);
-                        // Auto-verify when 9 digits are entered
-                        const digits = formatted.replace(/[^\d]/g, "");
-                        if (digits.length === 9) {
-                          verifyEIN(formatted);
-                        } else {
-                          // Reset verification state when EIN changes
-                          setEinStatus("idle");
-                          setEinVerified(false);
-                          lastVerifiedEIN.current = "";
-                        }
-                      }}
-                      onBlur={() => {
-                        field.onBlur();
-                        const digits = field.value.replace(/[^\d]/g, "");
-                        if (digits.length === 9) {
-                          verifyEIN(field.value);
-                        }
-                      }}
-                    />
-                    {/* Verification status indicator */}
-                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                      {einStatus === "verifying" && (
-                        <Loader2 className="w-5 h-5 animate-spin text-neutral-500" />
-                      )}
-                      {einStatus === "verified" && (
-                        <Check className="w-5 h-5 text-green-600" />
-                      )}
-                      {einStatus === "not_found" && (
-                        <AlertTriangle className="w-5 h-5 text-yellow-600" />
-                      )}
-                      {einStatus === "error" && (
-                        <XCircle className="w-5 h-5 text-red-600" />
-                      )}
-                    </div>
-                  </div>
-                </FormControl>
-                <FormMessage />
-                {/* EIN verification feedback messages */}
-                {einStatus === "verified" && (
-                  <p className="text-sm text-green-600 mt-1">
-                    EIN verified -- organization found in IRS database.
-                  </p>
-                )}
-                {einStatus === "not_found" && (
-                  <p className="text-sm text-yellow-600 mt-1">
-                    EIN not found in IRS database. Your account will require manual review.
-                  </p>
-                )}
-                {einStatus === "error" && (
-                  <p className="text-sm text-red-600 mt-1">
-                    Could not verify EIN. Please try again.
-                  </p>
-                )}
-              </FormItem>
-            )}
-          />
-
           {/* Organization Name */}
           <FormField
             control={form.control}
@@ -365,17 +211,11 @@ const RegisterForm = () => {
                       type="text"
                       placeholder="Organization Name *"
                       className="ps-13 pe-12 h-11 rounded-lg bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
-                      disabled={loading || einVerified}
-                      readOnly={einVerified}
+                      disabled={loading}
                     />
                   </div>
                 </FormControl>
                 <FormMessage />
-                {einVerified && (
-                  <p className="text-sm text-neutral-500 mt-1">
-                    Auto-filled from IRS records. Clear the EIN field to edit manually.
-                  </p>
-                )}
               </FormItem>
             )}
           />

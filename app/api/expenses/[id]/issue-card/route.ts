@@ -53,6 +53,18 @@ export async function POST(
       );
     }
 
+    // Gate: organization must have a connected bank account to issue cards
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { stripeAccountId: true },
+    });
+    if (!org?.stripeAccountId) {
+      return NextResponse.json(
+        { error: "Connect your bank account before issuing cards. Go to Organization Settings > Funding to connect." },
+        { status: 400 },
+      );
+    }
+
     const { id: expenseId } = await params;
     const body = await request.json();
     const parsed = issueCardSchema.safeParse(body);

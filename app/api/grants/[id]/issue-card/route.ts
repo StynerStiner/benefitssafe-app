@@ -56,6 +56,18 @@ export async function POST(
       );
     }
 
+    // Gate: organization must have a connected bank account to issue cards
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { stripeAccountId: true },
+    });
+    if (!org?.stripeAccountId) {
+      return NextResponse.json(
+        { error: "Connect your bank account before issuing cards. Go to Organization Settings > Funding to connect." },
+        { status: 400 },
+      );
+    }
+
     // Plan limit gate: check this month's card issuance against tier limit
     const period = getCurrentPeriod();
     const usage = await prisma.usageCounter.findUnique({

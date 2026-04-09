@@ -4,7 +4,8 @@ import NftPromoBanner from "@/app/(dashboard)/(homes)/virtual-cards/components/n
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import PageDateFilter from "@/components/shared/page-date-filter";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Landmark } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import CardDetailDialog from "./components/card-detail-dialog";
 import EthPriceCard from "./components/eth-price-card";
@@ -39,6 +40,7 @@ const VirtualCardsPage = () => {
     const [error, setError] = useState<string | null>(null);
     const [selectedCard, setSelectedCard] = useState<VirtualCard | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
+    const [bankConnected, setBankConnected] = useState(true);
     const now = new Date();
     const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
     const [selectedYear, setSelectedYear] = useState(now.getFullYear());
@@ -58,6 +60,12 @@ const VirtualCardsPage = () => {
 
     useEffect(() => {
         fetchCards();
+        fetch("/api/org/stripe-account")
+            .then((r) => r.ok ? r.json() : null)
+            .then((data) => {
+                if (data) setBankConnected(!!data.stripeAccountId);
+            })
+            .catch(() => {});
     }, [fetchCards]);
 
     const handleRefresh = useCallback(() => {
@@ -98,7 +106,24 @@ const VirtualCardsPage = () => {
                 </div>
             )}
 
-            {cards.length === 0 && (
+            {!bankConnected && (
+                <div className="mb-6 p-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-center">
+                    <Landmark className="w-12 h-12 text-amber-400 mx-auto mb-3" />
+                    <h6 className="text-lg font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Connect your bank account to issue cards</h6>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+                        A connected bank account is required to fund virtual cards and disburse grant funds.
+                    </p>
+                    <Link
+                        href="/org-settings?tab=funding"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
+                    >
+                        <Landmark className="w-4 h-4" />
+                        Connect Bank Account
+                    </Link>
+                </div>
+            )}
+
+            {bankConnected && cards.length === 0 && (
                 <div className="mb-6 p-8 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-center">
                     <CreditCard className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
                     <h6 className="text-lg font-semibold text-neutral-600 dark:text-neutral-300 mb-1">No virtual cards yet</h6>

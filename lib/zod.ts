@@ -25,7 +25,6 @@ export const loginSchema = z.object({
 // Nonprofit Registration Schema
 export const registerSchema = z
   .object({
-    ein: z.string().regex(/^\d{2}-?\d{7}$/, "EIN must be 9 digits (format: XX-XXXXXXX)"),
     organizationName: z.string().min(2, "Organization name is required"),
     firstName: z.string().min(1, "First name is required"),
     lastName: z.string().min(1, "Last name is required"),
