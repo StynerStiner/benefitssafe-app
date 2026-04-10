@@ -190,7 +190,7 @@ const BillingPage = () => {
 
       {/* Current Plan */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 overflow-x-auto">
           <CardHeader>
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div>
@@ -264,7 +264,7 @@ const BillingPage = () => {
         </Card>
 
         {/* Quick Usage Summary */}
-        <Card>
+        <Card className="overflow-x-auto">
           <CardHeader>
             <CardTitle>Plan Summary</CardTitle>
             <CardDescription>Effective tier limits</CardDescription>
@@ -286,7 +286,7 @@ const BillingPage = () => {
       </div>
 
       {/* Usage vs Limits */}
-      <Card className="mt-6">
+      <Card className="mt-6 overflow-x-auto">
         <CardHeader>
           <CardTitle>Usage This Period</CardTitle>
           <CardDescription>Current usage against your plan limits</CardDescription>
@@ -323,7 +323,7 @@ const BillingPage = () => {
       </Card>
 
       {/* Plan Comparison */}
-      <Card className="mt-6">
+      <Card className="mt-6 overflow-x-auto">
         <CardHeader>
           <CardTitle>Compare Plans</CardTitle>
           <CardDescription>Choose the plan that fits your organization</CardDescription>
