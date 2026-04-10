@@ -100,10 +100,10 @@ const TrendingNftWidgets: React.FC<TrendingNftWidgetsProps> = ({ category = "all
                         {/* Beneficiary Info */}
                         <div className="flex items-center gap-2">
                             <div className="w-7 h-7 rounded-full bg-slate-300 dark:bg-slate-600 flex items-center justify-center text-xs font-semibold">
-                                {card.beneficiaryName.charAt(0).toUpperCase()}
+                                {card.beneficiaryName?.charAt(0).toUpperCase() || "?"}
                             </div>
                             <span className="text-sm text-neutral-500 dark:text-neutral-300 font-medium">
-                                {card.beneficiaryName}
+                                {card.beneficiaryName || "Unassigned"}
                             </span>
                         </div>
 

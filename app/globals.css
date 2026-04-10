@@ -501,3 +501,23 @@ html[layout="boron"] .dashboard-sidebar-container {
   from { height: var(--radix-collapsible-content-height); opacity: 1; }
   to { height: 0; opacity: 0; }
 }
+
+/* FullCalendar mobile toolbar — wrap and shrink buttons below sm */
+@media (max-width: 640px) {
+  .calendar-responsive .fc-toolbar.fc-header-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .calendar-responsive .fc-toolbar-chunk {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .calendar-responsive .fc-button {
+    padding: 0.3em 0.5em;
+    font-size: 0.75rem;
+  }
+  .calendar-responsive .fc-toolbar-title {
+    font-size: 1rem;
+  }
+}

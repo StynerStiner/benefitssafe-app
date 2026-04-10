@@ -329,8 +329,9 @@ const BillingPage = () => {
           <CardDescription>Choose the plan that fits your organization</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto -mx-4 px-4 md:overflow-x-visible md:mx-0 md:px-0">
+            <div className="min-w-[800px] md:min-w-0">
+              <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-neutral-200 dark:border-neutral-700">
                   <th className="text-left py-3 px-4 font-medium text-neutral-600 dark:text-neutral-300">Feature</th>
@@ -407,7 +408,8 @@ const BillingPage = () => {
                   })}
                 </tr>
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>

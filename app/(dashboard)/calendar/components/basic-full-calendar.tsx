@@ -73,21 +73,29 @@ function BasicFullCalendar({ events, onEventCreate, onEventUpdate, onEventDelete
     return (
         <>
             <Card className="card h-full rounded-lg border-0">
-                <CardContent className="card-body p-0 flex flex-col justify-between gap-8">
-                    <FullCalendar
-                        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                        initialView="dayGridMonth"
-                        headerToolbar={{
-                            left: "prev,next today",
-                            center: "title",
-                            right: "dayGridMonth,timeGridWeek,timeGridDay",
-                        }}
-                        selectable={true}
-                        editable={true}
-                        events={calendarEvents}
-                        dateClick={handleDateClick}
-                        eventClick={handleEventClick}
-                    />
+                <CardContent className="card-body p-0 flex flex-col justify-between gap-8 overflow-x-auto">
+                    <div className="min-w-[640px] md:min-w-0 calendar-responsive">
+                        <FullCalendar
+                            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                            initialView="dayGridMonth"
+                            headerToolbar={{
+                                left: "prev,next today",
+                                center: "title",
+                                right: "dayGridMonth,timeGridWeek,timeGridDay",
+                            }}
+                            buttonText={{
+                                today: "Today",
+                                month: "Month",
+                                week: "Week",
+                                day: "Day",
+                            }}
+                            selectable={true}
+                            editable={true}
+                            events={calendarEvents}
+                            dateClick={handleDateClick}
+                            eventClick={handleEventClick}
+                        />
+                    </div>
                 </CardContent>
             </Card>
         </>
