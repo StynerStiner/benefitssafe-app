@@ -502,6 +502,17 @@ html[layout="boron"] .dashboard-sidebar-container {
   to { height: 0; opacity: 0; }
 }
 
+/* Mobile overflow safety net — prevent any page from forcing horizontal scroll */
+.dashboard-body-wrapper {
+  min-width: 0;
+  max-width: 100%;
+}
+.dashboard-body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  min-width: 0;
+}
+
 /* FullCalendar mobile toolbar — wrap and shrink buttons below sm */
 @media (max-width: 640px) {
   .calendar-responsive .fc-toolbar.fc-header-toolbar {
