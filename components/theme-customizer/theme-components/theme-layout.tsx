@@ -39,7 +39,7 @@ const ThemeLayout = () => {
 
     return (
         <div className="theme-setting-item">
-            <h6 className="font-medium text-base mb-3">Theme Layout</h6>
+            <h3 className="font-medium text-base mb-3">Theme Layout</h3>
 
             <div className="grid grid-cols-3 gap-4">
                 {layouts.map((item, index) => (

@@ -42,7 +42,7 @@ const MonthlyCampaignStateCard = ({ expenses }: { expenses?: Expense[] }) => {
         <Card className="card h-full rounded-lg border-0 !p-0 block">
             <CardContent className="card-body p-6 h-full">
                 <div className="">
-                    <h6 className="font-bold text-lg mb-2">Compliance Overview</h6>
+                    <h3 className="font-bold text-lg mb-2">Compliance Overview</h3>
                     <span className="text-neutral-600 dark:text-neutral-200">{totalExpenses.toLocaleString()} Total Expenses</span>
                 </div>
 

@@ -72,7 +72,7 @@ const MarketInfoCard = ({ grants }: { grants: GrantData[] }) => {
     <Card className="card h-full rounded-lg border-0">
       <CardContent className="card-body p-0">
         <div className="flex items-center flex-wrap gap-2 justify-between mb-5">
-          <h6 className="mb-0 font-bold text-lg">Ledger Entries</h6>
+          <h3 className="mb-0 font-bold text-lg">Ledger Entries</h3>
           <div className="border border-neutral-200 dark:border-neutral-500 rounded-md px-4 py-2 pe-0 flex items-center gap-1 text-sm text-neutral-500 dark:text-neutral-300">
             Currency:
             <Select>

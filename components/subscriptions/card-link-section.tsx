@@ -103,7 +103,7 @@ export default function CardLinkSection({
     <div className="space-y-6">
       {/* Card Linking */}
       <div>
-        <h6 className="text-sm font-semibold mb-2">Linked Virtual Card</h6>
+        <h3 className="text-sm font-semibold mb-2">Linked Virtual Card</h3>
         {error && (
           <p className="text-xs text-red-600 dark:text-red-400 mb-2">{error}</p>
         )}
@@ -160,7 +160,7 @@ export default function CardLinkSection({
 
       {/* Billing Update Status Stepper */}
       <div>
-        <h6 className="text-sm font-semibold mb-3">Billing Update Progress</h6>
+        <h3 className="text-sm font-semibold mb-3">Billing Update Progress</h3>
         <div className="flex items-center gap-1">
           {BILLING_STEPS.map((step, i) => {
             const isCompleted = i < currentStepIndex;

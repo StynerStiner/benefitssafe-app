@@ -9,7 +9,7 @@ const RevenueStatisticsCard = () => {
       <CardContent className="card-body p-0">
         <div className="flex items-center flex-wrap gap-2 justify-between">
           <div>
-            <h6 className="mb-2 font-bold text-lg">Revenue Statistics</h6>
+            <h3 className="mb-2 font-bold text-lg">Revenue Statistics</h3>
             <span className="text-sm font-medium text-neutral-500 dark:text-neutral-300">Yearly earning overview</span>
           </div>
           <CustomSelect placeholder="Yearly" options={["Yearly", "Monthly", "Weekly", "Today"]} />

@@ -53,7 +53,7 @@ const CoinAnalyticsCard = ({ grants }: { grants: GrantData[] }) => {
         <Card className="card h-full rounded-lg border-0">
             <CardContent className="card-body p-0">
                 <div className="flex items-center flex-wrap gap-2 justify-between">
-                    <h6 className="mb-0 font-bold text-lg">Grant Balances</h6>
+                    <h3 className="mb-0 font-bold text-lg">Grant Balances</h3>
 
                     <RadioGroup defaultValue={sortedGrants[0]?.id ?? "all"} className='flex items-center gap-4'>
                         {sortedGrants.slice(0, 3).map((g, i) => (

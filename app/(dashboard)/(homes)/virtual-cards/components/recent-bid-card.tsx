@@ -64,7 +64,7 @@ const RecentBidCard = ({ cards }: { cards: VirtualCard[] }) => {
             <Card className="card !p-4">
                 <CardContent className="px-0">
                     <div className="flex items-center flex-wrap gap-2 justify-between mb-5">
-                        <h6 className="font-bold text-lg mb-0">Recent Card Activity</h6>
+                        <h3 className="font-bold text-lg mb-0">Recent Card Activity</h3>
                         <CustomSelect
                             placeholder="All Items"
                             options={[...FILTER_OPTIONS]}

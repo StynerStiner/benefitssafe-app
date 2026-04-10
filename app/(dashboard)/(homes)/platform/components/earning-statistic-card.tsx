@@ -9,7 +9,7 @@ const EarningStatisticCard = () => {
                 <div>
                     <div className="card-header border-b border-neutral-200 dark:border-slate-500 py-4 px-6">
                         <div className="flex items-center flex-wrap gap-2 justify-between">
-                            <h6 className="font-bold text-lg mb-0">Platform Growth</h6>
+                            <h3 className="font-bold text-lg mb-0">Platform Growth</h3>
                             <CustomSelect
                                 placeholder="This Month"
                                 options={["This Month", "This Week", "This Year",]}

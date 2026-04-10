@@ -8,7 +8,7 @@ const TopCountriesCard = () => {
     <Card className="card">
       <CardContent className="px-0">
         <div className="flex flex-wrap items-center justify-between">
-          <h6 className="text-lg mb-0">Top Countries</h6>
+          <h3 className="text-lg mb-0">Top Countries</h3>
           <CustomSelect
             placeholder="Yearly"
             options={["Yearly", "Monthly", "Weekly", "Today"]}

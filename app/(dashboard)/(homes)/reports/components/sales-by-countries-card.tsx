@@ -47,7 +47,7 @@ const SalesByCountriesCard = ({ grants }: { grants?: Grant[] }) => {
             <CardContent className="card-body p-6 h-full flex flex-col justify-between">
 
                 <div className="flex items-center flex-wrap gap-2 justify-between mb-5">
-                    <h6 className="font-bold text-lg mb-0">Spending by Grant</h6>
+                    <h3 className="font-bold text-lg mb-0">Spending by Grant</h3>
                     <CustomSelect
                         placeholder="Monthly"
                         options={["Monthly", "Weekly", "Yearly",]}

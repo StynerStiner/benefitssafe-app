@@ -33,7 +33,7 @@ const TransactionsCard = ({ expenses }: { expenses?: Expense[] }) => {
             <CardContent className="card-body p-6 h-full flex flex-col justify-between">
                 {/* Header */}
                 <div className="flex items-center flex-wrap gap-2 justify-between">
-                    <h6 className="font-bold text-lg mb-0">Recent Expenses</h6>
+                    <h3 className="font-bold text-lg mb-0">Recent Expenses</h3>
                     <CommonLink />
                 </div>
 

@@ -18,7 +18,7 @@ const QuickTransfer = ({ grants }: { grants: Grant[] }) => {
                 <div>
                     <div className="card-header border-b border-neutral-200 dark:border-slate-500 py-4 px-6">
                         <div className="flex items-center flex-wrap gap-2 justify-between">
-                            <h6 className="font-bold text-lg mb-0">Grant Summary</h6>
+                            <h3 className="font-bold text-lg mb-0">Grant Summary</h3>
                             <CommonLink />
                         </div>
                     </div>
@@ -44,7 +44,7 @@ const QuickTransfer = ({ grants }: { grants: Grant[] }) => {
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-neutral-600 dark:text-neutral-300 text-sm">Remaining</span>
-                                    <span className="font-semibold text-green-600">${totalRemaining.toLocaleString("en-US", { maximumFractionDigits: 0 })}</span>
+                                    <span className="font-semibold text-green-700 dark:text-green-500">${totalRemaining.toLocaleString("en-US", { maximumFractionDigits: 0 })}</span>
                                 </div>
                                 <div className="mt-2">
                                     <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-600">

@@ -8,7 +8,7 @@ const StaticCard = () => {
   return (
     <Card className="card h-full rounded-lg border-0">
       <CardContent className="card-body p-0">
-        <h6 className="mb-2 font-bold text-lg">Statistic</h6>
+        <h3 className="mb-2 font-bold text-lg">Statistic</h3>
         <div className="mt-6 space-y-14">
           <div className="flex items-center gap-1 justify-between overflow-hidden">
             <div>

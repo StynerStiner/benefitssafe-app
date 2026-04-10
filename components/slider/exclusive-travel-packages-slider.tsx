@@ -119,7 +119,7 @@ function ExclusiveTravelPackagesSlider({ grants }: { grants?: Grant[] }) {
         >
 
             <div className="flex items-center justify-between mb-4">
-                <h6 className="text-lg mb-0">Expense Category Rules</h6>
+                <h3 className="text-lg mb-0">Expense Category Rules</h3>
                 <div className="flex items-center gap-4">
                     <CarouselPrevious className="flex items-center rounded-full border border-neutral-400 text-neutral-600 dark:text-neutral-300 bg-white hover:bg-blue-600 hover:text-white justify-center active:scale-90 w-10 h-10 relative right-0 left-0 translate-y-0" />
                     <CarouselNext className="flex items-center rounded-full border border-neutral-400 text-neutral-600 dark:text-neutral-300 bg-white hover:bg-blue-600 hover:text-white justify-center active:scale-90 w-10 h-10 relative right-0 left-0 translate-y-0" />

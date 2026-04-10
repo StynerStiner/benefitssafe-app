@@ -11,11 +11,11 @@ interface Expense {
 }
 
 const statusStyles: Record<string, { label: string; classes: string }> = {
-    PENDING: { label: "Pending", classes: "text-yellow-600 bg-yellow-100 dark:bg-yellow-600/25 dark:text-yellow-600" },
-    APPROVED: { label: "Approved", classes: "text-green-600 bg-green-100 dark:bg-green-600/25 dark:text-green-600" },
-    REJECTED: { label: "Rejected", classes: "text-red-600 bg-red-100 dark:bg-red-600/25 dark:text-red-600" },
-    PAID: { label: "Paid", classes: "text-green-600 bg-green-100 dark:bg-green-600/25 dark:text-green-600" },
-    CANCELLED: { label: "Cancelled", classes: "text-red-600 bg-red-100 dark:bg-red-600/25 dark:text-red-600" },
+    PENDING: { label: "Pending", classes: "text-yellow-800 bg-yellow-100 dark:bg-yellow-600/25 dark:text-yellow-400" },
+    APPROVED: { label: "Approved", classes: "text-green-800 bg-green-100 dark:bg-green-600/25 dark:text-green-400" },
+    REJECTED: { label: "Rejected", classes: "text-red-800 bg-red-100 dark:bg-red-600/25 dark:text-red-400" },
+    PAID: { label: "Paid", classes: "text-green-800 bg-green-100 dark:bg-green-600/25 dark:text-green-400" },
+    CANCELLED: { label: "Cancelled", classes: "text-red-800 bg-red-100 dark:bg-red-600/25 dark:text-red-400" },
 };
 
 const PaymentHistory = ({ expenses }: { expenses: Expense[] }) => {
@@ -33,7 +33,7 @@ const PaymentHistory = ({ expenses }: { expenses: Expense[] }) => {
                 <div>
                     <div className="card-header border-b border-neutral-200 dark:border-slate-500 py-4 px-6">
                         <div className="flex items-center flex-wrap gap-2 justify-between">
-                            <h6 className="font-bold text-lg mb-0">Recent Expenses</h6>
+                            <h3 className="font-bold text-lg mb-0">Recent Expenses</h3>
                             <CommonLink />
                         </div>
                     </div>

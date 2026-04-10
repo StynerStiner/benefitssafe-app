@@ -76,7 +76,7 @@ const TrialBanner = () => {
     : "text-sm font-medium text-yellow-900 dark:text-yellow-200";
   const buttonClass = critical
     ? "px-3 py-1.5 text-sm font-semibold rounded-md bg-red-600 hover:bg-red-700 text-white transition-colors"
-    : "px-3 py-1.5 text-sm font-semibold rounded-md bg-yellow-600 hover:bg-yellow-700 text-white transition-colors";
+    : "px-3 py-1.5 text-sm font-semibold rounded-md bg-blue-600 hover:bg-yellow-700 text-white transition-colors";
 
   return (
     <div className={wrapperClass} role="alert">

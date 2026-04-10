@@ -57,7 +57,7 @@ const TrendingBidWidgets = ({ cards }: { cards: any[] }) => {
 
     return (
         <>
-            <h6 className="mb-4">Card Summary</h6>
+            <h3 className="mb-4">Card Summary</h3>
             <div className="gap-6 grid grid-cols-1 sm:grid-cols-12">
                 {trendingBids.map((item) => (
                     <div

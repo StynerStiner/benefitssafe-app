@@ -69,7 +69,7 @@ export default function DisbursementPolicyTab() {
 
   return (
     <div className="p-6">
-      <h6 className="text-lg font-semibold mb-1">Auto-Approval Policy</h6>
+      <h3 className="text-lg font-semibold mb-1">Auto-Approval Policy</h3>
       <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
         Configure when card charges are automatically approved without manual review.
         Only expenses classified as LIKELY_SAFE by the compliance engine are eligible.

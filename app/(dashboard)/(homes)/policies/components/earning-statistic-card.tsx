@@ -40,7 +40,7 @@ const EarningStatisticCard = ({ grants }: { grants: Grant[] }) => {
         <Card className="card h-full rounded-lg border-0 !p-0">
             <CardContent className="card-body p-6">
                 <div className="flex items-center flex-wrap gap-2 justify-between pb-6">
-                    <h6 className="mb-0 font-bold text-lg">Allowed Categories</h6>
+                    <h3 className="mb-0 font-bold text-lg">Allowed Categories</h3>
                     <CustomSelect
                         placeholder="Yearly"
                         options={["Yearly", "Monthly", "Weekly", "Today"]}

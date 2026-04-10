@@ -68,7 +68,7 @@ const TotalSubscriberCard = () => {
   return (
     <Card className="card">
       <CardContent className="card-body p-0">
-        <h6 className="mb-3 font-semibold text-lg">Active Subscriptions</h6>
+        <h3 className="mb-3 font-semibold text-lg">Active Subscriptions</h3>
         <div className="flex items-center gap-2 mb-5">
           <h6 className="font-semibold mb-0">{activeCount.toLocaleString()}</h6>
           <span className={`text-sm font-semibold rounded-full ${isPositive ? "bg-green-100 dark:bg-green-600/25 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-600/50" : "bg-red-100 dark:bg-red-600/25 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-600/50"} px-2 py-1.5 line-height-1 flex items-center gap-1`}>

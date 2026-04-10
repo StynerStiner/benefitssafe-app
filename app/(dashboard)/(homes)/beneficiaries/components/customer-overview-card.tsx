@@ -28,7 +28,7 @@ const CustomerOverviewCard = ({ beneficiaries, selectedMonth, selectedYear }: { 
         <Card className="card h-full rounded-lg border-0 overflow-hidden">
             <CardContent className="card-body p-0">
                 <div className="flex items-center flex-wrap gap-2 justify-between">
-                    <h6 className="mb-0 font-bold text-lg">Benefit Programs Overview</h6>
+                    <h3 className="mb-0 font-bold text-lg">Benefit Programs Overview</h3>
                 </div>
 
                 <div className="flex sm:flex-nowrap flex-wrap items-center mt-4">

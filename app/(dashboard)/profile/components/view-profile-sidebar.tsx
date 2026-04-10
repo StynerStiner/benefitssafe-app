@@ -79,7 +79,7 @@ const ViewProfileSidebar = () => {
           <span className="text-neutral-500 dark:text-neutral-300 mb-4">{user.email}</span>
         </div>
         <div className="mt-6">
-          <h6 className="text-xl mb-4">Personal Info</h6>
+          <h3 className="text-xl mb-4">Personal Info</h3>
           <ul>
             <li className="flex items-center gap-1 mb-3">
               <span className="w-[30%] text-base font-semibold text-neutral-600 dark:text-neutral-200">Full Name</span>

@@ -46,7 +46,7 @@ const ColorCustomization: React.FC = () => {
 
     return (
         <div className="theme-setting-item">
-            <h6 className="font-medium text-base mb-3">Color Scheme</h6>
+            <h3 className="font-medium text-base mb-3">Color Scheme</h3>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                 {colors.map((color) => (
                     <div

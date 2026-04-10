@@ -25,7 +25,7 @@ const BookingCountriesStatus = ({ policy }: { policy: Policy | null }) => {
       <Card className="card h-full rounded-lg border-0 !p-0 dark:bg-[#273142]">
         <CardContent className="card-body p-6">
             <div className="flex items-center flex-wrap gap-2 justify-between pb-6">
-                <h6 className="mb-0 font-bold text-lg">Policy Coverage</h6>
+                <h3 className="mb-0 font-bold text-lg">Policy Coverage</h3>
             </div>
 
             <div className="bg-neutral-100 dark:bg-slate-700/50 h-[160px] overflow-hidden rounded-xl">

@@ -15,7 +15,7 @@ const DailySalesCard = ({ expenses }: { expenses: Expense[] }) => {
     return (
         <Card className="card h-full border-0 rounded-lg">
             <CardContent className="card-body p-0">
-                <h6 className="mb-3 font-bold text-lg">Daily Spending</h6>
+                <h3 className="mb-3 font-bold text-lg">Daily Spending</h3>
                 <div className="flex items-center gap-2">
                     <h6 className="font-semibold mb-0">${totalSpending.toLocaleString("en-US", { maximumFractionDigits: 0 })}</h6>
                     <p className="text-sm mb-0">

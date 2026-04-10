@@ -37,7 +37,7 @@ const StockReportCard = ({ expenses }: { expenses: Expense[] }) => {
         <Card className="card">
             <CardContent className="card-body p-0">
                 <div className="flex items-center justify-between">
-                    <h6 className="mb-3 font-semibold text-lg">Grant Budget Status</h6>
+                    <h3 className="mb-3 font-semibold text-lg">Grant Budget Status</h3>
                     <CommonLink />
                 </div>
 

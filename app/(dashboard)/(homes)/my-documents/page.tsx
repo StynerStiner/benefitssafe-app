@@ -301,7 +301,7 @@ const MyDocumentsPage = () => {
       <Card className="card rounded-lg border-0 !p-0">
         <CardContent className="p-0">
           <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-slate-600">
-            <h6 className="font-bold text-lg mb-0">My Uploaded Documents</h6>
+            <h3 className="font-bold text-lg mb-0">My Uploaded Documents</h3>
             <span className="text-sm text-neutral-500 dark:text-neutral-400">
               {documents.length} document{documents.length !== 1 ? "s" : ""}
             </span>
@@ -312,7 +312,7 @@ const MyDocumentsPage = () => {
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-neutral-100 dark:bg-neutral-800 mb-4">
                 <FileText className="w-8 h-8 text-neutral-400" />
               </div>
-              <h6 className="text-base font-semibold mb-1">No documents yet</h6>
+              <h3 className="text-base font-semibold mb-1">No documents yet</h3>
               <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-sm">
                 Upload your benefits letters, ID documents, and verification files using the form above.
                 Your nonprofit administrator will review them securely.

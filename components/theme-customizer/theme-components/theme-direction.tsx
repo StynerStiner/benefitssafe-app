@@ -23,7 +23,7 @@ const ThemeDirection = () => {
 
     return (
         <div className="theme-setting-item">
-            <h6 className="font-medium text-base mb-3">Page Direction</h6>
+            <h3 className="font-medium text-base mb-3">Page Direction</h3>
             <div className="grid grid-cols-2 gap-4">
                 {/* LTR */}
                 <div

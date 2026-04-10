@@ -33,7 +33,7 @@ const ProjectAnalysisCard = ({ grants, selectedMonth, selectedYear }: { grants: 
         <Card className="card !p-0 border-0 rounded-xl shadow-none">
             <CardContent className="p-0">
                 <div className="border-b border-neutral-200 dark:border-slate-500 py-4 px-6 flex items-center justify-between flex-wrap gap-2">
-                    <h6 className="font-semibold text-lg mb-0 text-foreground">Grant Analysis</h6>
+                    <h3 className="font-semibold text-lg mb-0 text-foreground">Grant Analysis</h3>
                 </div>
                 <div className="card-body p-6">
                     <ul className="flex flex-wrap items-center justify-center gap-6">

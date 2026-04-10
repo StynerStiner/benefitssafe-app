@@ -47,7 +47,7 @@ const BeneficiaryExpensesCard = () => {
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-primary" />
-            <h6 className="mb-0 font-bold text-lg">My Expenses</h6>
+            <h3 className="mb-0 font-bold text-lg">My Expenses</h3>
           </div>
           <AddExpenseForm />
         </div>

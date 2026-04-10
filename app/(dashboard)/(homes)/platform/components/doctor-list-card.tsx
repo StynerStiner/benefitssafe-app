@@ -23,7 +23,7 @@ const DoctorListCard = ({ recentOrgs, loading }: DoctorListCardProps) => {
                 <div>
                     <div className="card-header border-b border-neutral-200 dark:border-slate-500 py-4 px-6">
                         <div className="flex items-center flex-wrap gap-2 justify-between">
-                            <h6 className="font-bold text-lg mb-0">Recent Organizations</h6>
+                            <h3 className="font-bold text-lg mb-0">Recent Organizations</h3>
                             <CommonLink />
                         </div>
                     </div>

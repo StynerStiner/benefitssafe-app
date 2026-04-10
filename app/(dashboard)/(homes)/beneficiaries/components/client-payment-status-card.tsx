@@ -14,7 +14,7 @@ const ClientPaymentStatusCard = ({ beneficiaries }: { beneficiaries: Beneficiary
   return (
     <Card className="card h-full rounded-lg border-0">
       <CardContent className="card-body p-0">
-        <h6 className="mb-0 font-bold text-lg">Beneficiary Activity</h6>
+        <h3 className="mb-0 font-bold text-lg">Beneficiary Activity</h3>
         <span className="text-sm font-medium text-neutral-500 dark:text-neutral-300">Overview</span>
 
         <ul className="flex flex-wrap items-center justify-center mt-8">

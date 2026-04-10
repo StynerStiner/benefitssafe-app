@@ -53,7 +53,7 @@ const TopCreatorsCard = ({ cards, onRefresh, onCardClick }: TopCreatorsCardProps
                 <CardContent className="card-body p-0 flex flex-col justify-between gap-8">
                     <div>
                         <div className="card-header border-b border-neutral-200 dark:border-slate-500 py-4 px-6">
-                            <h6 className="font-bold text-lg mb-0">Card Assignments</h6>
+                            <h3 className="font-bold text-lg mb-0">Card Assignments</h3>
                         </div>
                         <div className="card-body px-6 py-5">
                             <p className="text-neutral-500 dark:text-neutral-300">No cards assigned</p>
@@ -70,7 +70,7 @@ const TopCreatorsCard = ({ cards, onRefresh, onCardClick }: TopCreatorsCardProps
                 <div>
                     <div className="card-header border-b border-neutral-200 dark:border-slate-500 py-4 px-6">
                         <div className="flex items-center flex-wrap gap-2 justify-between">
-                            <h6 className="font-bold text-lg mb-0">Card Assignments</h6>
+                            <h3 className="font-bold text-lg mb-0">Card Assignments</h3>
                             <CommonLink />
                         </div>
                     </div>

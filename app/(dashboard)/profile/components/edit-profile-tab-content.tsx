@@ -18,7 +18,7 @@ import { handleProfileUpdate } from './actions/handleProfileUpdate';
 const EditProfileTabContent = () => {
     return (
         <div>
-            <h6 className="text-base text-neutral-600 dark:text-neutral-200 mb-4">Profile Image</h6>
+            <h3 className="text-base text-neutral-600 dark:text-neutral-200 mb-4">Profile Image</h3>
             <div className="mb-6 mt-4">
                 <AvatarUpload />
             </div>

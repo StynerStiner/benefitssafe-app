@@ -458,10 +458,10 @@ const CardDetailDialog = ({ card, open, onOpenChange }: CardDetailDialogProps) =
                         {statement && !loadingStatement && (
                             <>
                                 {/* Summary */}
-                                <div className="grid grid-cols-3 gap-3 mb-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                                     <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20">
                                         <p className="text-xs text-neutral-500 dark:text-neutral-300">Approved</p>
-                                        <p className="text-sm font-semibold text-green-600 dark:text-green-400">
+                                        <p className="text-sm font-semibold text-green-700 dark:text-green-400">
                                             ${statement.summary.approvedTotal.toFixed(2)}
                                         </p>
                                         <p className="text-xs text-neutral-400">
@@ -488,8 +488,8 @@ const CardDetailDialog = ({ card, open, onOpenChange }: CardDetailDialogProps) =
 
                                 {/* Transaction List */}
                                 {statement.transactions.length > 0 ? (
-                                    <div className="border rounded-lg overflow-hidden">
-                                        <table className="w-full text-sm">
+                                    <div className="border rounded-lg overflow-x-auto">
+                                        <table className="w-full text-sm min-w-[500px]">
                                             <thead>
                                                 <tr className="bg-neutral-50 dark:bg-slate-700">
                                                     <th className="text-left p-2 font-medium text-neutral-500 dark:text-neutral-300">Date</th>

@@ -35,7 +35,7 @@ const CountriesStatusCard = ({ beneficiaries, selectedMonth, selectedYear }: { b
         <Card className="card h-full rounded-lg border-0 !p-0">
             <CardContent className="card-body p-0">
                 <div className="flex items-center flex-wrap gap-2 justify-between p-6">
-                    <h6 className="mb-0 font-bold text-lg">Beneficiary Locations</h6>
+                    <h3 className="mb-0 font-bold text-lg">Beneficiary Locations</h3>
                 </div>
 
                 <div className="bg-neutral-100 dark:bg-slate-700/50 h-[200px] overflow-hidden">

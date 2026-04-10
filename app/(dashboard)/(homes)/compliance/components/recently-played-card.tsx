@@ -48,7 +48,7 @@ const RecentlyPlayedCard = () => {
       <CardContent className="p-0 flex flex-col justify-between gap-0">
         {/* Header */}
         <div className="border-b border-neutral-200 dark:border-slate-500 py-4 px-6 flex items-center justify-between flex-wrap gap-2">
-          <h6 className="font-semibold text-lg mb-0 text-foreground">Recently Played</h6>
+          <h3 className="font-semibold text-lg mb-0 text-foreground">Recently Played</h3>
           <CommonLink />
         </div>
 

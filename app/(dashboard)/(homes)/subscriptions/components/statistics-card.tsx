@@ -23,7 +23,7 @@ const StatisticsCard = ({ subscriptions }: { subscriptions: Subscription[] }) =>
         <Card className="card !p-0 border-0 rounded-xl shadow-none">
             <CardContent className="p-6">
                 <div className="flex items-center justify-between flex-wrap gap-2">
-                    <h6 className="font-semibold text-lg mb-0 text-foreground">Billing Status</h6>
+                    <h3 className="font-semibold text-lg mb-0 text-foreground">Billing Status</h3>
                     <CommonLink />
                 </div>
                 <div className="flex items-center gap-5 flex-sm-nowrap flex-wrap pt-6">

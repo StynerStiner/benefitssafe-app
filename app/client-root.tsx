@@ -47,7 +47,7 @@ export function ClientRoot({
               <Header />
             </SidebarInset>
             <TrialBanner />
-            <div className="dashboard-body bg-neutral-100 dark:bg-[#1e2734] md:p-6 p-4 flex-1">
+            <div className="dashboard-body bg-neutral-100 dark:bg-[#1e2734] md:p-6 p-3 flex-1 overflow-x-hidden">
               {children}
             </div>
             <Footer />

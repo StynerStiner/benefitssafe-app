@@ -213,7 +213,7 @@ const RecentOrdersCard = ({ expenses, onRefresh }: RecentOrdersCardProps) => {
             <Card className="card h-full border-0">
                 <CardContent className="card-body p-0">
                     <div className="flex items-center flex-wrap gap-2 justify-between mb-5">
-                        <h6 className="mb-0 font-bold text-lg">Recent Expense Requests</h6>
+                        <h3 className="mb-0 font-bold text-lg">Recent Expense Requests</h3>
                         <CommonLink />
                     </div>
                     <div className="table-responsive scroll-sm">

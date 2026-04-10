@@ -85,7 +85,7 @@ const NotificationSection: React.FC<NotificationSectionProps> = ({
 
     return (
         <div className="mb-6">
-            <h6 className="text-lg font-semibold mb-3">{title}</h6>
+            <h3 className="text-lg font-semibold mb-3">{title}</h3>
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <Label className="text-base font-medium">{label}</Label>
                 <div className="flex items-center flex-wrap space-x-2">

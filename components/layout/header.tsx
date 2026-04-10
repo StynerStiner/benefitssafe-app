@@ -9,16 +9,22 @@ import NotificationDropdown from './../shared/notification-dropdown';
 
 const Header = () => {
     return (
-        <header className="dashboard-header flex items-center justify-between sm:h-18 h-13 shrink-0 gap-2 md:px-6 px-4 py-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-18 dark:bg-[#273142]">
-            <div className="flex items-center gap-4">
-                <SidebarTrigger className="-ms-1 p-0 size-[unset] cursor-pointer" />
+        <header className="dashboard-header flex items-center justify-between sm:h-18 h-13 shrink-0 gap-2 md:px-6 px-3 py-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-18 dark:bg-[#273142]">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                <SidebarTrigger aria-label="Toggle sidebar menu" className="-ms-1 p-0 size-[unset] cursor-pointer min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center" />
                 <SearchBox />
             </div>
-            <div className="flex items-center gap-3">
-                <OrgBadge />
+            <div className="flex items-center gap-1.5 sm:gap-3">
+                <div className="hidden md:block">
+                    <OrgBadge />
+                </div>
                 <ModeToggle />
-                <LanguageSelect />
-                <MessageDropdown />
+                <div className="hidden sm:block">
+                    <LanguageSelect />
+                </div>
+                <div className="hidden sm:block">
+                    <MessageDropdown />
+                </div>
                 <NotificationDropdown />
                 <ProfileDropdown />
             </div>

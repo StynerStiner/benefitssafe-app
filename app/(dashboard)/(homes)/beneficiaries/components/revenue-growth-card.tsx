@@ -18,7 +18,7 @@ const RevenueGrowthCard = ({ beneficiaries }: { beneficiaries: Beneficiary[] }) 
           <CardContent className="card-body p-0">
             <div className="flex items-center flex-wrap gap-2 justify-between">
               <div>
-                <h6 className="mb-0 font-bold text-lg">Enrollment Growth</h6>
+                <h3 className="mb-0 font-bold text-lg">Enrollment Growth</h3>
                 <span className="text-sm font-medium text-neutral-600 dark:text-neutral-100">Monthly Report</span>
               </div>
               <div className="text-end">

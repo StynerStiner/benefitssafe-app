@@ -45,7 +45,7 @@ const UserOverviewCard = () => {
   return (
     <Card className="card">
       <CardContent className="card-body p-0">
-        <h6 className="mb-3 font-semibold text-lg">Recent Notifications</h6>
+        <h3 className="mb-3 font-semibold text-lg">Recent Notifications</h3>
 
         {notifications.length === 0 ? (
           <p className="text-sm text-neutral-500 text-center py-8">No notifications yet.</p>

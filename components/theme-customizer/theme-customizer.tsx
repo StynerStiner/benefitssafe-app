@@ -43,7 +43,7 @@ const ThemeCustomizer = () => {
 
                 <div className="flex items-center gap-6 px-6 py-4 border-b border-neutral-200 dark:border-slate-700 justify-between">
                     <div className="">
-                        <h6 className="text-sm dark:text-white">Theme Settings</h6>
+                        <h3 className="text-sm dark:text-white">Theme Settings</h3>
                         <p className="text-xs text-neutral-500 dark:text-neutral-200">Customize and preview instantly</p>
                     </div>
                     <div className="">

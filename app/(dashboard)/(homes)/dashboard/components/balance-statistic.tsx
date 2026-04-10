@@ -28,7 +28,7 @@ const BalanceStatistic = ({ expenses, selectedMonth, selectedYear }: { expenses:
         <Card className="card">
             <CardContent className="px-0">
                 <div className="flex flex-wrap items-center justify-between">
-                    <h6 className="text-lg mb-0">Monthly Disbursements</h6>
+                    <h3 className="text-lg mb-0">Monthly Disbursements</h3>
                 </div>
                 <ul className="flex flex-wrap items-center justify-center mt-4 gap-3">
                     <li className="flex items-center gap-2">

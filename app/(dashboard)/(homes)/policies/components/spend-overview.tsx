@@ -36,7 +36,7 @@ const SpendOverview = ({ policy }: { policy: Policy | null }) => {
         <Card className="card h-full rounded-lg border-0 !p-0">
             <CardContent className="card-body p-6">
                 <div className="flex items-center flex-wrap gap-2 justify-between pb-6">
-                    <h6 className="mb-0 font-bold text-lg">Policy Settings</h6>
+                    <h3 className="mb-0 font-bold text-lg">Policy Settings</h3>
                 </div>
 
                 <div className="flex flex-col gap-2.5">

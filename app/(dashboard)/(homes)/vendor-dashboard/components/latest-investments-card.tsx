@@ -36,7 +36,7 @@ const LatestInvestmentsCard = () => {
   return (
     <Card className="card h-full border-0">
       <CardContent className="card-body p-0">
-        <h6 className="mb-0 font-bold text-lg">Recent Activity</h6>
+        <h3 className="mb-0 font-bold text-lg">Recent Activity</h3>
         {loading ? (
           <p className="text-sm text-neutral-500 text-center py-8">Loading...</p>
         ) : notifications.length === 0 ? (

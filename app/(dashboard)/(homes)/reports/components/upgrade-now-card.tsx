@@ -6,7 +6,7 @@ const UpgradeNowCard = () => {
         <div className="trail-bg h-full text-center flex flex-col justify-between items-center p-4 rounded-lg bg-cover bg-no-repeat bg-center"
             style={{ backgroundImage: `url(${TrailBgImage.src})` }}
         >
-            <h6 className="text-white text-xl mb-4">Export Reports</h6>
+            <h3 className="text-white text-xl mb-4">Export Reports</h3>
             <div className="">
                 <p className="text-white mb-6">Download grant and expense reports</p>
                 <Link

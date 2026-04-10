@@ -47,7 +47,7 @@ const AverageDailySalesCard = ({ expenses }: { expenses?: Expense[] }) => {
         <Card className="card h-full rounded-lg border-0 !p-0 block">
             <CardContent className="card-body p-6 h-full flex flex-col justify-between">
                 <div className="flex items-center flex-wrap gap-2 justify-between">
-                    <h6 className="font-bold text-lg mb-0">Average Daily Spending</h6>
+                    <h3 className="font-bold text-lg mb-0">Average Daily Spending</h3>
                     <CustomSelect
                         placeholder="Monthly"
                         options={["Monthly", "Weekly", "Yearly"]}

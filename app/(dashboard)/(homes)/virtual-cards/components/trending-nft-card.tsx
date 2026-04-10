@@ -8,7 +8,7 @@ const TrendingNftCard = ({ cards }: { cards: unknown[] }) => {
             <div className="mb-4 mt-8 flx flex-wrap justify-between gap-4">
                 <Tabs defaultValue="all" className="gap-4">
                     <div className="flex flex-wrap justify-between gap-4">
-                        <h6 className="mb-0">Active Cards</h6>
+                        <h3 className="mb-0">Active Cards</h3>
                         <TabsList className='bg-transparent dark:bg-transparent rounded-none h-[50px] flex items-center gap-2'>
                             <TabsTrigger value="all" className='font-semibold rounded-full px-5 py-0.5 h-[34px] border border-neutral-300 dark:border-neutral-800 text-neutral-900 dark:border-neutral-300 capitalize dark:text-white data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-white dark:data-[state=active]:border-primary dark:data-[state=active]:bg-primary dark:data-[state=active]:text-white'>
                                 All

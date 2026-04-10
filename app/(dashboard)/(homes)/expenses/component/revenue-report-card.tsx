@@ -36,7 +36,7 @@ const RevenueReportCard = ({ expenses, selectedMonth, selectedYear }: { expenses
                     <div className="xl:col-span-12 2xl:col-span-6">
                         <div className="card-body p-6">
                             <div className="flex items-center flex-wrap gap-2 justify-between">
-                                <h6 className="mb-0 font-bold text-lg">Expense Trends</h6>
+                                <h3 className="mb-0 font-bold text-lg">Expense Trends</h3>
                             </div>
                             <ul className="flex flex-wrap items-center mt-4 gap-3">
                                 <li className="flex items-center gap-2">

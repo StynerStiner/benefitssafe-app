@@ -117,7 +117,7 @@ const HelpPage = () => {
                     <Suspense fallback={<LoadingSkeleton />}>
                         <div className="shadow-7 p-5 rounded-xl bg-white dark:bg-[#273142] h-full">
                             <div className="flex items-center flex-wrap gap-2 justify-between">
-                                <h6 className="mb-0 font-bold text-lg">Ticket Priority</h6>
+                                <h3 className="mb-0 font-bold text-lg">Ticket Priority</h3>
                             </div>
                             <div className="relative text-style label-bold">
                                 <TicketPriorityChart series={priorityCounts} />

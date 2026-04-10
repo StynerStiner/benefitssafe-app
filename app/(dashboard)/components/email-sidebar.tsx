@@ -122,7 +122,7 @@ const EmailSidebar = ({ notifications = [], filter = "all", onFilterChange, onMa
                         </li>
                     </ul>
                     <div className="mt-6">
-                        <h6 className="text-lg font-semibold text-neutral-600 dark:text-neutral-200 mb-4">TAGS</h6>
+                        <h3 className="text-lg font-semibold text-neutral-600 dark:text-neutral-200 mb-4">TAGS</h3>
                         <ul>
                             <li className="mb-5">
                                 <span className="line-height-1 font-medium text-neutral-500 dark:text-neutral-300 text-sm flex items-center gap-2.5">

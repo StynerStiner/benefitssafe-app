@@ -60,7 +60,7 @@ const NoticeBoardCard = () => {
   return (
     <Card className="card h-full border-0">
       <CardContent className="card-body p-0">
-        <h6 className="mb-0 font-bold text-lg">Vendor Profile</h6>
+        <h3 className="mb-0 font-bold text-lg">Vendor Profile</h3>
         <div className="space-y-3 mt-4">
           {fields.map((f) => (
             <div key={f.label} className="flex items-center justify-between">

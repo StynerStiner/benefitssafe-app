@@ -63,7 +63,7 @@ const VendorPaymentHistoryCard = () => {
       <CardContent className="card-body">
         <div className="flex items-center gap-2 mb-4">
           <DollarSign className="w-5 h-5 text-primary" />
-          <h6 className="mb-0 font-bold text-lg">Payment History</h6>
+          <h3 className="mb-0 font-bold text-lg">Payment History</h3>
         </div>
 
         {loading ? (

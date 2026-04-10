@@ -60,7 +60,7 @@ const MyTasksCard = ({ grants }: { grants: Grant[] }) => {
         <Card className="card p-6 border-0 rounded-xl shadow-none">
             <CardContent className="p-0">
                 <div className="pb-4 flex items-center justify-between flex-wrap gap-2">
-                    <h6 className="font-semibold text-lg mb-0 text-foreground">Grant Items</h6>
+                    <h3 className="font-semibold text-lg mb-0 text-foreground">Grant Items</h3>
                     <CustomSelect
                         placeholder="All"
                         options={["All", "Active", "Draft", "Completed", "Paused"]}

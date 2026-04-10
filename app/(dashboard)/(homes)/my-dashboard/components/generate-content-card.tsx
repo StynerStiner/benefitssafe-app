@@ -65,7 +65,7 @@ const GenerateContentCard = () => {
     <Card className="card">
       <CardContent className="px-0">
         <div className="flex flex-wrap items-center justify-between">
-          <h6 className="text-lg mb-0">Uploaded Documents</h6>
+          <h3 className="text-lg mb-0">Uploaded Documents</h3>
           <CustomSelect
             placeholder="Monthly"
             options={["Yearly", "Monthly", "Weekly", "Today"]}

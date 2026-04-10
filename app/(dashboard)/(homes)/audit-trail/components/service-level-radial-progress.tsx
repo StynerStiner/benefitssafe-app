@@ -107,7 +107,7 @@ const ServiceLevelRadialProgress = ({ auditLogs = [] }: { auditLogs?: AuditLog[]
             </div>
 
             <div>
-                <h6 className="text-xl">Avg Response Time</h6>
+                <h3 className="text-xl">Avg Response Time</h3>
                 <span className="font-medium text-neutral-500 dark:text-neutral-200">All time</span>
 
                 <div className="mt-3 flex items-start gap-2.5">

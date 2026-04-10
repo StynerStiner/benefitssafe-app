@@ -6,7 +6,7 @@ const MyPortfolioCard = () => {
     <Card className="card h-full rounded-lg border-0">
       <CardContent className="card-body p-0">
         <div className="flex items-center flex-wrap gap-2 justify-between">
-          <h6 className="mb-0 font-bold text-lg">My Portfolio</h6>
+          <h3 className="mb-0 font-bold text-lg">My Portfolio</h3>
         </div>
         <div className="relative">
           <span className="w-[80px] h-[80px] bg-white dark:bg-slate-700 shadow-lg text-neutral-600 dark:text-neutral-200 font-semibold text-xl flex justify-center items-center rounded-full absolute end-0 top-0 z-1 me-11 mt-6">20k</span>

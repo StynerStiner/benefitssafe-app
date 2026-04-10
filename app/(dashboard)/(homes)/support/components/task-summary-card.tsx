@@ -48,7 +48,7 @@ const TaskSummaryCard = ({ notifications }: TaskSummaryCardProps) => {
     return (
         <div className="shadow-7 p-5 rounded-xl bg-white dark:bg-[#273142] h-full gradient-bg-chart relative z-[1]">
             <div className="flex items-center flex-wrap gap-2 justify-between mb-6">
-                <h6 className="mb-0 font-bold text-lg">Support Summary</h6>
+                <h3 className="mb-0 font-bold text-lg">Support Summary</h3>
             </div>
             <div className="">
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
