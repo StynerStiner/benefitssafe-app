@@ -9,8 +9,13 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "BenefitsSafe - Grant Disbursement Platform",
-  description: "BenefitsSafe helps nonprofits disburse restricted grants to SSI/SSDI beneficiaries safely, without triggering benefit loss.",
+  description: "BenefitsSafe dashboard - Manage nonprofit grant disbursements, virtual cards, and SSI/Medi-Cal compliance monitoring without risking beneficiary benefits.",
+  keywords: ["nonprofit", "grant management", "SSI", "Medi-Cal", "virtual cards", "compliance", "fintech"],
   metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3002"),
+  robots: {
+    index: false,
+    follow: false,
+  },
   openGraph: {
     title: "BenefitsSafe - Grant Disbursement for Nonprofits",
     description: "Secure, compliant grant disbursement platform for nonprofits serving benefit-eligible populations.",
