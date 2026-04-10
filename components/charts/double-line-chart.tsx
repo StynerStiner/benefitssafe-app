@@ -91,13 +91,17 @@ const DoubleLineChart: React.FC<DoubleLineChartProps> = ({ colors, series: serie
     };
 
     return (
-        <div className="label--20-px">
-            <Chart
-                options={chartOptions}
-                series={seriesProp || chartSeries}
-                type="area"
-                height={270}
-            />
+        <div className="overflow-x-auto -mx-4 px-4 md:overflow-x-visible md:mx-0 md:px-0">
+            <div className="min-w-[500px] md:min-w-0">
+                <div className="label--20-px">
+                    <Chart
+                        options={chartOptions}
+                        series={seriesProp || chartSeries}
+                        type="area"
+                        height={270}
+                    />
+                </div>
+            </div>
         </div>
     );
 };

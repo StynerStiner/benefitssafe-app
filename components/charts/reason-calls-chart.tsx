@@ -82,13 +82,17 @@ interface ReasonCallsChartProps {
 const ReasonCallsChart = ({ series, categories }: ReasonCallsChartProps) => {
     const options = categories ? { ...chartOptions, xaxis: { ...chartOptions.xaxis, categories } } : chartOptions;
     return (
-        <div className="-mt-[54px]">
-            <Chart
-                options={options}
-                series={series || defaultChartSeries}
-                type="bar"
-                height={470}
-            />
+        <div className="overflow-x-auto -mx-4 px-4 md:overflow-x-visible md:mx-0 md:px-0">
+            <div className="min-w-[500px] md:min-w-0">
+                <div className="-mt-[54px]">
+                    <Chart
+                        options={options}
+                        series={series || defaultChartSeries}
+                        type="bar"
+                        height={470}
+                    />
+                </div>
+            </div>
         </div>
     );
 };

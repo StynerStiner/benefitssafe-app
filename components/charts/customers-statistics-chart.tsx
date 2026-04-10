@@ -42,12 +42,16 @@ const chartSeries = [30, 25]
 
 const CustomersStatisticsChart = () => {
   return (
-    <Chart
-      options={chartOptions}
-      series={chartSeries}
-      type="donut"
-      height={230}
-    />
+    <div className="overflow-x-auto -mx-4 px-4 md:overflow-x-visible md:mx-0 md:px-0">
+      <div className="min-w-[500px] md:min-w-0">
+        <Chart
+          options={chartOptions}
+          series={chartSeries}
+          type="donut"
+          height={230}
+        />
+      </div>
+    </div>
   );
 };
 
