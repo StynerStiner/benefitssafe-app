@@ -65,7 +65,7 @@ const ViewProfileSidebar = () => {
 
   return (
     <div className="user-grid-card relative border border-slate-200 dark:border-slate-600 rounded-2xl overflow-hidden bg-white dark:bg-[#273142] h-full">
-      <img src="/assets/images/user-grid/user-grid-bg1.png" alt="" className="w-full object-cover" />
+      <div className="w-full h-[160px] bg-primary" aria-hidden="true" />
       <div className="pb-6 ms-6 mb-6 me-6 -mt-[100px]">
         <div className="text-center border-b border-slate-200 dark:border-slate-600">
           {user.image ? (
