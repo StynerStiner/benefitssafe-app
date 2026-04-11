@@ -38,20 +38,34 @@ export async function uploadToS3(
     const safeFilename = sanitizeFilename(filename);
     const uniqueFilename = `${folder}/${uuidv4()}-${safeFilename}`;
 
+    // Resolve content type from extension (defensive — fallback to octet-stream)
+    const ext = safeFilename.split(".").pop()?.toLowerCase() || "";
+    const contentType =
+      ext === "jpg" || ext === "jpeg" ? "image/jpeg"
+      : ext === "png" ? "image/png"
+      : ext === "gif" ? "image/gif"
+      : ext === "webp" ? "image/webp"
+      : "application/octet-stream";
+
     const command = new PutObjectCommand({
       Bucket: bucket,
       Key: uniqueFilename,
       Body: file,
-      ContentType: `image/${safeFilename.split(".").pop()}`,
-      // NOTE: Avatars use public-read. For sensitive documents, use private ACL
-      // and generate pre-signed URLs for access.
-      ACL: "public-read",
+      ContentType: contentType,
+      // No ACL — buckets with "Block Public Access" enabled reject per-object ACLs.
+      // Public read access must be configured at the bucket-policy level instead
+      // (recommended setup: bucket policy allowing s3:GetObject on avatars/* prefix).
     });
 
     await s3Client.send(command);
 
-    // Return public URL
-    const bucketUrl = process.env.AWS_S3_BUCKET_URL || `https://${bucket}.s3.amazonaws.com`;
+    // Construct public URL. Prefer explicit AWS_S3_BUCKET_URL (e.g. CloudFront distro),
+    // otherwise build the region-aware virtual-hosted–style URL.
+    const region = process.env.AWS_REGION || "us-east-1";
+    const defaultUrl = region === "us-east-1"
+      ? `https://${bucket}.s3.amazonaws.com`
+      : `https://${bucket}.s3.${region}.amazonaws.com`;
+    const bucketUrl = process.env.AWS_S3_BUCKET_URL || defaultUrl;
     const publicUrl = `${bucketUrl}/${uniqueFilename}`;
 
     return publicUrl;

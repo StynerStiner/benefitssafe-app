@@ -43,23 +43,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ avatarUrl });
   } catch (error) {
-    // TEMPORARY: expose detailed error for avatar upload debugging (revert after diagnosis)
-    const err = error as Error & { name?: string; Code?: string };
     console.error("POST /api/users/avatar error:", error);
-    return NextResponse.json(
-      {
-        error: "Internal server error",
-        debug: {
-          name: err?.name ?? "Unknown",
-          message: err?.message ?? String(error),
-          awsCode: err?.Code ?? null,
-          bucket: process.env.AWS_S3_BUCKET ? "set" : "MISSING",
-          region: process.env.AWS_REGION ?? "MISSING",
-          hasAccessKey: Boolean(process.env.AWS_ACCESS_KEY_ID),
-          hasSecretKey: Boolean(process.env.AWS_SECRET_ACCESS_KEY),
-        },
-      },
-      { status: 500 }
-    );
+    // Never expose internal error messages to the client (A05)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
