@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import UserAvatar from "@/components/shared/user-avatar";
 import { Mail, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -112,9 +113,6 @@ const MessageDropdown = () => {
                   const displayName = other
                     ? `${other.firstName} ${other.lastName}`
                     : c.subject || "Conversation";
-                  const initials = other
-                    ? `${other.firstName.charAt(0)}${other.lastName.charAt(0)}`
-                    : "??";
                   const preview = c.lastMessage?.content || "No messages yet";
                   const time = c.lastMessage
                     ? relativeTime(c.lastMessage.createdAt)
@@ -132,9 +130,12 @@ const MessageDropdown = () => {
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex-shrink-0 relative">
-                          <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold">
-                            {initials}
-                          </div>
+                          <UserAvatar
+                            firstName={other?.firstName}
+                            lastName={other?.lastName}
+                            avatarUrl={other?.avatarUrl}
+                            size={40}
+                          />
                           <span className="absolute end-[2px] -bottom-[1px] w-2.5 h-2.5 bg-green-500 border border-white rounded-full dark:border-gray-600" />
                         </div>
                         <div className="min-w-0">

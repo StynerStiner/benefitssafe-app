@@ -1,7 +1,7 @@
 "use client";
 
 import { getInitials } from "@/lib/utils/get-initials";
-import Image from "next/image";
+import { useState } from "react";
 
 interface UserAvatarProps {
   firstName?: string | null;
@@ -27,18 +27,24 @@ function getColor(name: string): string {
 }
 
 export default function UserAvatar({ firstName, lastName, name, avatarUrl, size = 40, className = "" }: UserAvatarProps) {
+  const [imgError, setImgError] = useState(false);
   const fullName = name?.trim() || `${firstName || ""} ${lastName || ""}`.trim();
   const initials = getInitials(fullName);
   const colorClass = getColor(fullName || "User");
 
-  if (avatarUrl) {
+  // Plain <img> not next/image: avatar URLs live on S3 and we don't want to
+  // maintain a remotePatterns allowlist for every storage host. onError falls
+  // back to initials so a broken URL never leaks the alt text into the UI.
+  if (avatarUrl && !imgError) {
     return (
-      <Image
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
         src={avatarUrl}
         alt={fullName || "User"}
         width={size}
         height={size}
-        className={`rounded-full object-cover ${className}`}
+        onError={() => setImgError(true)}
+        className={`rounded-full object-cover shrink-0 ${className}`}
         style={{ width: size, height: size }}
       />
     );
