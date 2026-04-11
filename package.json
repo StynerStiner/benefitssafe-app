@@ -72,6 +72,7 @@
     "react-apexcharts": "1.4.1",
     "react-day-picker": "^9.13.0",
     "react-dom": "19.2.3",
+    "react-easy-crop": "^5.5.7",
     "react-hook-form": "^7.56.4",
     "react-hot-toast": "^2.5.2",
     "react-markdown": "^10.1.0",
