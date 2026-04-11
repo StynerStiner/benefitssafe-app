@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import CommonLink from '@/components/shared/common-link';
+import { getInitials } from '@/lib/utils/get-initials';
 
 interface Expense {
     amount: string;
@@ -43,7 +44,7 @@ const TopCustomersCard = ({ expenses }: { expenses: Expense[] }) => {
                             <div key={spender.email} className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <span className={`w-10 h-10 rounded-full ${colors[i % colors.length]} text-white flex items-center justify-center text-sm font-semibold shrink-0`}>
-                                        {spender.name.split(" ").map(n => n[0]).join("")}
+                                        {getInitials(spender.name)}
                                     </span>
                                     <div>
                                         <h6 className="text-sm font-medium mb-0">{spender.name}</h6>

@@ -7,6 +7,7 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table";
+import { getInitials } from "@/lib/utils/get-initials";
 import { Check, Edit, Eye, Trash2, X } from "lucide-react";
 
 interface TableVendor {
@@ -76,7 +77,7 @@ export default function UserTable({ vendors, onView, onEdit, onDelete, onApprove
                 ) : (
                     list.map((vendor, index) => {
                         const isLast = index === list.length - 1;
-                        const initials = vendor.name.split(" ").map(w => w[0] || "").join("").slice(0, 2).toUpperCase();
+                        const initials = getInitials(vendor.name);
                         const isPending = vendor.status === "PENDING";
                         return (
                             <TableRow key={vendor.id}>

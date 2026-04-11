@@ -1,4 +1,5 @@
 import CommonLink from "@/components/shared/common-link";
+import { getInitials } from "@/lib/utils/get-initials";
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
@@ -109,7 +110,7 @@ const TeamMembersCard = ({ grants }: { grants: Grant[] }) => {
                                                 >
                                                     <div className="flex items-center gap-3">
                                                         <span className="w-[40px] h-[40px] rounded-full bg-neutral-200 dark:bg-slate-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                                                            {member.name.split(" ").map(n => n[0]).join("")}
+                                                            {getInitials(member.name)}
                                                         </span>
                                                         <div>
                                                             <h6 className="text-base font-medium mb-0">

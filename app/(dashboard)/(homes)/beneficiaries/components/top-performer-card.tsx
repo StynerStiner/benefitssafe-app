@@ -3,6 +3,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import CommonLink from "@/components/shared/common-link";
+import { getInitials } from "@/lib/utils/get-initials";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -108,7 +109,7 @@ const TopPerformerCard = ({ beneficiaries, onRefresh }: TopPerformerCardProps) =
               <p className="text-sm text-neutral-500">No beneficiaries found</p>
             ) : (
               sorted.map((b, index) => {
-                const initials = `${b.firstName[0] || ""}${b.lastName[0] || ""}`;
+                const initials = getInitials(`${b.firstName} ${b.lastName}`);
                 const location = [b.addressCity, b.addressState].filter(Boolean).join(", ") || "No location";
                 const grantCount = b._count?.grantsAsBeneficiary || 0;
                 return (

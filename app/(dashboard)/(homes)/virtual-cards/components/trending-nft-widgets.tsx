@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
+import { getInitials } from "@/lib/utils/get-initials";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
@@ -100,7 +101,7 @@ const TrendingNftWidgets: React.FC<TrendingNftWidgetsProps> = ({ category = "all
                         {/* Beneficiary Info */}
                         <div className="flex items-center gap-2">
                             <div className="w-7 h-7 rounded-full bg-slate-300 dark:bg-slate-600 flex items-center justify-center text-xs font-semibold">
-                                {card.beneficiaryName?.charAt(0).toUpperCase() || "?"}
+                                {getInitials(card.beneficiaryName)}
                             </div>
                             <span className="text-sm text-neutral-500 dark:text-neutral-300 font-medium">
                                 {card.beneficiaryName || "Unassigned"}

@@ -2,6 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, User, X } from "lucide-react";
+import { getInitials } from "@/lib/utils/get-initials";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface BeneficiaryOption {
@@ -139,7 +140,7 @@ export function BeneficiarySearchPicker({
     return (
       <div className="flex items-center gap-2.5 rounded-xl border bg-muted/30 px-3 py-2.5">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shrink-0 text-xs font-bold">
-          {selected.firstName.charAt(0)}{selected.lastName.charAt(0)}
+          {getInitials(`${selected.firstName} ${selected.lastName}`)}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -215,7 +216,7 @@ export function BeneficiarySearchPicker({
                   onClick={() => handleSelect(b)}
                 >
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0 text-xs font-bold">
-                    {b.firstName.charAt(0)}{b.lastName.charAt(0)}
+                    {getInitials(`${b.firstName} ${b.lastName}`)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">

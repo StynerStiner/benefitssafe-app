@@ -6,6 +6,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { getInitials } from "@/lib/utils/get-initials";
 interface ActivityStatus {
     label: string;
     type: "success" | "warning" | "purple";
@@ -46,16 +47,6 @@ function getStatusLabel(status: string): string {
     if (status === "DRAFT") return "Pending";
     if (status === "COMPLETED") return "Completed";
     return status;
-}
-
-function getInitials(name: string): string {
-    return name
-        .split(" ")
-        .map((w) => w[0])
-        .filter(Boolean)
-        .slice(0, 2)
-        .join("")
-        .toUpperCase();
 }
 
 function formatAmount(amount: string): string {
