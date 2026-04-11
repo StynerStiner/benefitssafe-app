@@ -7,16 +7,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { Camera, Mail, Settings, User } from "lucide-react";
+import { Mail, Settings, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useRef, useState } from "react";
-import toast from "react-hot-toast";
+
+const ROLES_WITH_ORG_SETTINGS = new Set([
+  "nonprofit_admin",
+  "platform_admin",
+  "billing_admin",
+]);
 
 const ProfileDropdown = () => {
-  const { data: session, update: updateSession } = useSession();
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { data: session } = useSession();
 
   const firstName = (session?.user as { firstName?: string })?.firstName || session?.user?.name?.split(" ")[0] || "";
   const lastName = (session?.user as { lastName?: string })?.lastName || session?.user?.name?.split(" ").slice(1).join(" ") || "";
@@ -38,38 +40,9 @@ const ProfileDropdown = () => {
     billing_admin: "Billing",
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
-      return;
-    }
-
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/users/avatar", { method: "POST", body: formData });
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        toast.error(data?.error || "Failed to upload");
-        return;
-      }
-      toast.success("Profile photo updated");
-      await updateSession();
-    } catch {
-      toast.error("Upload failed");
-    } finally {
-      setUploading(false);
-      e.target.value = "";
-    }
-  };
+  const settingsHref = ROLES_WITH_ORG_SETTINGS.has(role)
+    ? "/org-settings"
+    : "/settings/billing";
 
   return (
     <DropdownMenu>
@@ -98,33 +71,16 @@ const ProfileDropdown = () => {
       >
         <div className="py-3 px-4 rounded-lg bg-primary/10 dark:bg-primar flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-              <UserAvatar
-                firstName={firstName}
-                lastName={lastName}
-                avatarUrl={avatarUrl}
-                size={44}
-              />
-              <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                {uploading ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Camera className="w-4 h-4 text-white" />
-                )}
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarUpload}
-                className="hidden"
-                disabled={uploading}
-              />
-            </div>
+            <UserAvatar
+              firstName={firstName}
+              lastName={lastName}
+              avatarUrl={avatarUrl}
+              size={44}
+            />
             <div>
-              <h6 className="text-lg text-neutral-900 dark:text-white font-semibold mb-0">
+              <h3 className="text-lg text-neutral-900 dark:text-white font-semibold mb-0">
                 {firstName} {lastName}
-              </h6>
+              </h3>
               <span className="text-sm text-neutral-500 dark:text-neutral-300">
                 {roleLabels[role] || role}
               </span>
@@ -144,7 +100,7 @@ const ProfileDropdown = () => {
             </li>
             <li>
               <Link
-                href="/notifications"
+                href="/messages"
                 className="text-black dark:text-white hover:text-primary dark:hover:text-primary flex items-center gap-3"
               >
                 <Mail className="w-5 h-5" /> Inbox
@@ -152,7 +108,7 @@ const ProfileDropdown = () => {
             </li>
             <li>
               <Link
-                href="/org-settings"
+                href={settingsHref}
                 className="text-black dark:text-white hover:text-primary dark:hover:text-primary flex items-center gap-3"
               >
                 <Settings className="w-5 h-5" /> Settings

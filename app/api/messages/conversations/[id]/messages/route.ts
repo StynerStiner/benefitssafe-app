@@ -81,6 +81,22 @@ export async function POST(
       });
     }
 
+    // Fire-and-forget audit log — every message reply is recorded for compliance.
+    // Do not block the response; log errors to console.
+    prisma.auditLog
+      .create({
+        data: {
+          userId: session.user.id,
+          organizationId: session.user.organizationId ?? "unknown",
+          action: "send_message",
+          entityType: "conversation",
+          entityId: conversationId,
+          oldValue: {},
+          newValue: { messageId: message.id },
+        },
+      })
+      .catch((err) => console.error("audit log write failed:", err));
+
     return NextResponse.json(message, { status: 201 });
   } catch (error) {
     console.error("POST /api/messages/conversations/[id]/messages error:", error);

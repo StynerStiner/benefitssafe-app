@@ -185,6 +185,12 @@ const vendorNav: NavItem[] = [
       { title: "Invoices & Payments", url: "/invoices", circleColor: "bg-yellow-500", icon: Receipt },
     ],
   },
+  { label: "Communication" },
+  {
+    title: "Messages",
+    url: "/messages",
+    icon: MessageSquare,
+  },
   { label: "Account" },
   {
     title: "Profile",
@@ -205,6 +211,12 @@ const cpaNav: NavItem[] = [
       { title: "Ledger", url: "/ledger", circleColor: "bg-red-500", icon: BookOpen },
       { title: "Documents", url: "/documents", circleColor: "bg-yellow-500", icon: FolderOpen },
     ],
+  },
+  { label: "Communication" },
+  {
+    title: "Messages",
+    url: "/messages",
+    icon: MessageSquare,
   },
   { label: "Account" },
   {
@@ -228,6 +240,12 @@ const complianceNav: NavItem[] = [
       { title: "Documents", url: "/documents", circleColor: "bg-yellow-500", icon: FolderOpen },
     ],
   },
+  { label: "Communication" },
+  {
+    title: "Messages",
+    url: "/messages",
+    icon: MessageSquare,
+  },
   { label: "Account" },
   {
     title: "Profile",
@@ -248,6 +266,12 @@ const grantOfficerNav: NavItem[] = [
       { title: "Audit Trail", url: "/audit-trail", circleColor: "bg-red-500", icon: ShieldCheck },
     ],
   },
+  { label: "Communication" },
+  {
+    title: "Messages",
+    url: "/messages",
+    icon: MessageSquare,
+  },
   { label: "Account" },
   {
     title: "Profile",
@@ -266,6 +290,12 @@ const supportNav: NavItem[] = [
     title: "All Users",
     url: "/vendors",
     icon: Users,
+  },
+  { label: "Communication" },
+  {
+    title: "Messages",
+    url: "/messages",
+    icon: MessageSquare,
   },
   { label: "Account" },
   {
@@ -290,6 +320,12 @@ const billingAdminNav: NavItem[] = [
     title: "Organization",
     url: "/org-settings",
     icon: Building2,
+  },
+  { label: "Communication" },
+  {
+    title: "Messages",
+    url: "/messages",
+    icon: MessageSquare,
   },
   {
     title: "Profile",
