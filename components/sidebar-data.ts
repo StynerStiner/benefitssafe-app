@@ -206,6 +206,12 @@ const cpaNav: NavItem[] = [
       { title: "Documents", url: "/documents", circleColor: "bg-yellow-500", icon: FolderOpen },
     ],
   },
+  { label: "Account" },
+  {
+    title: "Profile",
+    url: "/profile",
+    icon: UserCircle,
+  },
 ];
 
 const complianceNav: NavItem[] = [
@@ -222,6 +228,12 @@ const complianceNav: NavItem[] = [
       { title: "Documents", url: "/documents", circleColor: "bg-yellow-500", icon: FolderOpen },
     ],
   },
+  { label: "Account" },
+  {
+    title: "Profile",
+    url: "/profile",
+    icon: UserCircle,
+  },
 ];
 
 const grantOfficerNav: NavItem[] = [
@@ -236,6 +248,12 @@ const grantOfficerNav: NavItem[] = [
       { title: "Audit Trail", url: "/audit-trail", circleColor: "bg-red-500", icon: ShieldCheck },
     ],
   },
+  { label: "Account" },
+  {
+    title: "Profile",
+    url: "/profile",
+    icon: UserCircle,
+  },
 ];
 
 const supportNav: NavItem[] = [
@@ -248,6 +266,12 @@ const supportNav: NavItem[] = [
     title: "All Users",
     url: "/vendors",
     icon: Users,
+  },
+  { label: "Account" },
+  {
+    title: "Profile",
+    url: "/profile",
+    icon: UserCircle,
   },
 ];
 

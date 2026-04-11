@@ -9,11 +9,16 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { getCroppedImageBlob, type CropArea } from "@/lib/crop-image";
 import DefaultUploadedImage from "@/public/assets/images/user-grid/user-grid-img13.png";
-import { Camera, Loader2 } from "lucide-react";
+import { Camera, Loader2, Pencil, Upload } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { StaticImageData } from "next/image";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -34,6 +39,8 @@ const AvatarUpload = () => {
     const [zoom, setZoom] = useState(1);
     const [croppedArea, setCroppedArea] = useState<CropArea | null>(null);
 
+    const hasExistingImage = Boolean(session?.user?.image);
+
     // Load current avatar from session on mount
     useEffect(() => {
         if (session?.user?.image) {
@@ -44,6 +51,44 @@ const AvatarUpload = () => {
     const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
         setCroppedArea(croppedAreaPixels);
     }, []);
+
+    const resetCropState = () => {
+        setCrop({ x: 0, y: 0 });
+        setZoom(1);
+        setCroppedArea(null);
+    };
+
+    const openFilePicker = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleEditCurrent = async () => {
+        if (!session?.user?.image) return;
+        setError(null);
+
+        // Fetch the existing image as a blob and convert to data URL.
+        // This sidesteps canvas tainting from cross-origin S3 URLs by letting
+        // the browser fetch the bytes first, then the <Image> in the cropper
+        // reads from a local data URL (same-origin equivalent for canvas).
+        try {
+            const res = await fetch(session.user.image, { cache: "no-store" });
+            if (!res.ok) throw new Error("Failed to load current photo");
+            const blob = await res.blob();
+            const dataUrl = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.onerror = () => reject(new Error("Failed to read image"));
+                reader.readAsDataURL(blob);
+            });
+            setSourceImage(dataUrl);
+            resetCropState();
+            setDialogOpen(true);
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "Could not load current photo";
+            setError(message);
+            toast.error(message);
+        }
+    };
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -68,9 +113,7 @@ const AvatarUpload = () => {
         const reader = new FileReader();
         reader.onloadend = () => {
             setSourceImage(reader.result as string);
-            setCrop({ x: 0, y: 0 });
-            setZoom(1);
-            setCroppedArea(null);
+            resetCropState();
             setDialogOpen(true);
         };
         reader.readAsDataURL(file);
@@ -135,7 +178,7 @@ const AvatarUpload = () => {
 
     return (
         <div className="avatar-upload">
-            <div className="avatar-edit absolute bottom-0 end-0 me-6 mt-4 z-[1] cursor-pointer">
+            <div className="avatar-edit absolute bottom-0 end-0 me-6 mt-4 z-[1]">
                 <Input
                     type="file"
                     id="imageUpload"
@@ -145,17 +188,48 @@ const AvatarUpload = () => {
                     hidden
                     disabled={uploading}
                 />
-                <Label
-                    htmlFor="imageUpload"
-                    className="w-8 h-8 flex justify-center items-center bg-blue-100 dark:bg-primary/25 text-primary dark:text-blue-400 border border-primary hover:bg-blue-100 text-lg rounded-full cursor-pointer"
-                    aria-label="Upload profile image"
-                >
-                    {uploading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                        <Camera className="w-4 h-4" />
-                    )}
-                </Label>
+                {hasExistingImage ? (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                type="button"
+                                aria-label="Change profile image"
+                                disabled={uploading}
+                                className="w-8 h-8 flex justify-center items-center bg-blue-100 dark:bg-primary/25 text-primary dark:text-blue-400 border border-primary hover:bg-blue-200 rounded-full cursor-pointer disabled:opacity-50"
+                            >
+                                {uploading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <Camera className="w-4 h-4" />
+                                )}
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-52">
+                            <DropdownMenuItem onClick={openFilePicker} className="cursor-pointer min-h-[44px]">
+                                <Upload className="w-4 h-4 mr-2" />
+                                Upload New Photo
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleEditCurrent} className="cursor-pointer min-h-[44px]">
+                                <Pencil className="w-4 h-4 mr-2" />
+                                Edit Current Photo
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={openFilePicker}
+                        aria-label="Upload profile image"
+                        disabled={uploading}
+                        className="w-8 h-8 flex justify-center items-center bg-blue-100 dark:bg-primary/25 text-primary dark:text-blue-400 border border-primary hover:bg-blue-200 rounded-full cursor-pointer disabled:opacity-50"
+                    >
+                        {uploading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                            <Camera className="w-4 h-4" />
+                        )}
+                    </button>
+                )}
             </div>
 
             <div className="avatar-preview relative h-[150px] w-[150px] rounded-full border border-[#487FFF] shadow-md">
