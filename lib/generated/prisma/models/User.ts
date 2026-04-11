@@ -53,6 +53,13 @@ export type UserMinAggregateOutputType = {
   emergencyContactName: string | null
   emergencyContactPhone: string | null
   notes: string | null
+  title: string | null
+  companyName: string | null
+  businessAddress: string | null
+  firmName: string | null
+  licenseNumber: string | null
+  barNumber: string | null
+  organizationName: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -86,6 +93,13 @@ export type UserMaxAggregateOutputType = {
   emergencyContactName: string | null
   emergencyContactPhone: string | null
   notes: string | null
+  title: string | null
+  companyName: string | null
+  businessAddress: string | null
+  firmName: string | null
+  licenseNumber: string | null
+  barNumber: string | null
+  organizationName: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -122,6 +136,13 @@ export type UserCountAggregateOutputType = {
   emergencyContactName: number
   emergencyContactPhone: number
   notes: number
+  title: number
+  companyName: number
+  businessAddress: number
+  firmName: number
+  licenseNumber: number
+  barNumber: number
+  organizationName: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -157,6 +178,13 @@ export type UserMinAggregateInputType = {
   emergencyContactName?: true
   emergencyContactPhone?: true
   notes?: true
+  title?: true
+  companyName?: true
+  businessAddress?: true
+  firmName?: true
+  licenseNumber?: true
+  barNumber?: true
+  organizationName?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -190,6 +218,13 @@ export type UserMaxAggregateInputType = {
   emergencyContactName?: true
   emergencyContactPhone?: true
   notes?: true
+  title?: true
+  companyName?: true
+  businessAddress?: true
+  firmName?: true
+  licenseNumber?: true
+  barNumber?: true
+  organizationName?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -226,6 +261,13 @@ export type UserCountAggregateInputType = {
   emergencyContactName?: true
   emergencyContactPhone?: true
   notes?: true
+  title?: true
+  companyName?: true
+  businessAddress?: true
+  firmName?: true
+  licenseNumber?: true
+  barNumber?: true
+  organizationName?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -335,6 +377,13 @@ export type UserGroupByOutputType = {
   emergencyContactName: string | null
   emergencyContactPhone: string | null
   notes: string | null
+  title: string | null
+  companyName: string | null
+  businessAddress: string | null
+  firmName: string | null
+  licenseNumber: string | null
+  barNumber: string | null
+  organizationName: string | null
   createdAt: Date
   updatedAt: Date
   _count: UserCountAggregateOutputType | null
@@ -392,6 +441,13 @@ export type UserWhereInput = {
   emergencyContactName?: Prisma.StringNullableFilter<"User"> | string | null
   emergencyContactPhone?: Prisma.StringNullableFilter<"User"> | string | null
   notes?: Prisma.StringNullableFilter<"User"> | string | null
+  title?: Prisma.StringNullableFilter<"User"> | string | null
+  companyName?: Prisma.StringNullableFilter<"User"> | string | null
+  businessAddress?: Prisma.StringNullableFilter<"User"> | string | null
+  firmName?: Prisma.StringNullableFilter<"User"> | string | null
+  licenseNumber?: Prisma.StringNullableFilter<"User"> | string | null
+  barNumber?: Prisma.StringNullableFilter<"User"> | string | null
+  organizationName?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
@@ -437,6 +493,13 @@ export type UserOrderByWithRelationInput = {
   emergencyContactName?: Prisma.SortOrderInput | Prisma.SortOrder
   emergencyContactPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  title?: Prisma.SortOrderInput | Prisma.SortOrder
+  companyName?: Prisma.SortOrderInput | Prisma.SortOrder
+  businessAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  firmName?: Prisma.SortOrderInput | Prisma.SortOrder
+  licenseNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  barNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  organizationName?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   organization?: Prisma.OrganizationOrderByWithRelationInput
@@ -485,6 +548,13 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   emergencyContactName?: Prisma.StringNullableFilter<"User"> | string | null
   emergencyContactPhone?: Prisma.StringNullableFilter<"User"> | string | null
   notes?: Prisma.StringNullableFilter<"User"> | string | null
+  title?: Prisma.StringNullableFilter<"User"> | string | null
+  companyName?: Prisma.StringNullableFilter<"User"> | string | null
+  businessAddress?: Prisma.StringNullableFilter<"User"> | string | null
+  firmName?: Prisma.StringNullableFilter<"User"> | string | null
+  licenseNumber?: Prisma.StringNullableFilter<"User"> | string | null
+  barNumber?: Prisma.StringNullableFilter<"User"> | string | null
+  organizationName?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
@@ -530,6 +600,13 @@ export type UserOrderByWithAggregationInput = {
   emergencyContactName?: Prisma.SortOrderInput | Prisma.SortOrder
   emergencyContactPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  title?: Prisma.SortOrderInput | Prisma.SortOrder
+  companyName?: Prisma.SortOrderInput | Prisma.SortOrder
+  businessAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  firmName?: Prisma.SortOrderInput | Prisma.SortOrder
+  licenseNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  barNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  organizationName?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
@@ -572,6 +649,13 @@ export type UserScalarWhereWithAggregatesInput = {
   emergencyContactName?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   emergencyContactPhone?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  title?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  companyName?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  businessAddress?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  firmName?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  licenseNumber?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  barNumber?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  organizationName?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
@@ -607,6 +691,13 @@ export type UserCreateInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
@@ -652,6 +743,13 @@ export type UserUncheckedCreateInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedCreateNestedManyWithoutRequestedByInput
@@ -695,6 +793,13 @@ export type UserUpdateInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
@@ -740,6 +845,13 @@ export type UserUncheckedUpdateInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
@@ -784,6 +896,13 @@ export type UserCreateManyInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -819,6 +938,13 @@ export type UserUpdateManyMutationInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -855,6 +981,13 @@ export type UserUncheckedUpdateManyInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -909,6 +1042,13 @@ export type UserCountOrderByAggregateInput = {
   emergencyContactName?: Prisma.SortOrder
   emergencyContactPhone?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  title?: Prisma.SortOrder
+  companyName?: Prisma.SortOrder
+  businessAddress?: Prisma.SortOrder
+  firmName?: Prisma.SortOrder
+  licenseNumber?: Prisma.SortOrder
+  barNumber?: Prisma.SortOrder
+  organizationName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -942,6 +1082,13 @@ export type UserMaxOrderByAggregateInput = {
   emergencyContactName?: Prisma.SortOrder
   emergencyContactPhone?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  title?: Prisma.SortOrder
+  companyName?: Prisma.SortOrder
+  businessAddress?: Prisma.SortOrder
+  firmName?: Prisma.SortOrder
+  licenseNumber?: Prisma.SortOrder
+  barNumber?: Prisma.SortOrder
+  organizationName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -975,6 +1122,13 @@ export type UserMinOrderByAggregateInput = {
   emergencyContactName?: Prisma.SortOrder
   emergencyContactPhone?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  title?: Prisma.SortOrder
+  companyName?: Prisma.SortOrder
+  businessAddress?: Prisma.SortOrder
+  firmName?: Prisma.SortOrder
+  licenseNumber?: Prisma.SortOrder
+  barNumber?: Prisma.SortOrder
+  organizationName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -1193,6 +1347,13 @@ export type UserCreateWithoutOrganizationInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   expenseRequests?: Prisma.ExpenseRequestCreateNestedManyWithoutRequestedByInput
@@ -1236,6 +1397,13 @@ export type UserUncheckedCreateWithoutOrganizationInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedCreateNestedManyWithoutRequestedByInput
@@ -1309,6 +1477,13 @@ export type UserScalarWhereInput = {
   emergencyContactName?: Prisma.StringNullableFilter<"User"> | string | null
   emergencyContactPhone?: Prisma.StringNullableFilter<"User"> | string | null
   notes?: Prisma.StringNullableFilter<"User"> | string | null
+  title?: Prisma.StringNullableFilter<"User"> | string | null
+  companyName?: Prisma.StringNullableFilter<"User"> | string | null
+  businessAddress?: Prisma.StringNullableFilter<"User"> | string | null
+  firmName?: Prisma.StringNullableFilter<"User"> | string | null
+  licenseNumber?: Prisma.StringNullableFilter<"User"> | string | null
+  barNumber?: Prisma.StringNullableFilter<"User"> | string | null
+  organizationName?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
 }
@@ -1344,6 +1519,13 @@ export type UserCreateWithoutInviteTokensInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
@@ -1388,6 +1570,13 @@ export type UserUncheckedCreateWithoutInviteTokensInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedCreateNestedManyWithoutRequestedByInput
@@ -1446,6 +1635,13 @@ export type UserUpdateWithoutInviteTokensInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
@@ -1490,6 +1686,13 @@ export type UserUncheckedUpdateWithoutInviteTokensInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
@@ -1532,6 +1735,13 @@ export type UserCreateWithoutGrantsInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
@@ -1576,6 +1786,13 @@ export type UserUncheckedCreateWithoutGrantsInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedCreateNestedManyWithoutRequestedByInput
@@ -1634,6 +1851,13 @@ export type UserUpdateWithoutGrantsInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
@@ -1678,6 +1902,13 @@ export type UserUncheckedUpdateWithoutGrantsInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
@@ -1720,6 +1951,13 @@ export type UserCreateWithoutExpenseRequestsInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
@@ -1764,6 +2002,13 @@ export type UserUncheckedCreateWithoutExpenseRequestsInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutApproverInput
@@ -1822,6 +2067,13 @@ export type UserUpdateWithoutExpenseRequestsInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
@@ -1866,6 +2118,13 @@ export type UserUncheckedUpdateWithoutExpenseRequestsInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutApproverNestedInput
@@ -1908,6 +2167,13 @@ export type UserCreateWithoutVendorsInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
@@ -1952,6 +2218,13 @@ export type UserUncheckedCreateWithoutVendorsInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedCreateNestedManyWithoutRequestedByInput
@@ -2010,6 +2283,13 @@ export type UserUpdateWithoutVendorsInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
@@ -2054,6 +2334,13 @@ export type UserUncheckedUpdateWithoutVendorsInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
@@ -2096,6 +2383,13 @@ export type UserCreateWithoutVirtualCardsInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
@@ -2140,6 +2434,13 @@ export type UserUncheckedCreateWithoutVirtualCardsInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedCreateNestedManyWithoutRequestedByInput
@@ -2198,6 +2499,13 @@ export type UserUpdateWithoutVirtualCardsInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
@@ -2242,6 +2550,13 @@ export type UserUncheckedUpdateWithoutVirtualCardsInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
@@ -2284,6 +2599,13 @@ export type UserCreateWithoutCardholderEligibilityInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
@@ -2328,6 +2650,13 @@ export type UserUncheckedCreateWithoutCardholderEligibilityInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedCreateNestedManyWithoutRequestedByInput
@@ -2386,6 +2715,13 @@ export type UserUpdateWithoutCardholderEligibilityInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
@@ -2430,6 +2766,13 @@ export type UserUncheckedUpdateWithoutCardholderEligibilityInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
@@ -2472,6 +2815,13 @@ export type UserCreateWithoutApprovalsInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
@@ -2516,6 +2866,13 @@ export type UserUncheckedCreateWithoutApprovalsInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedCreateNestedManyWithoutRequestedByInput
@@ -2574,6 +2931,13 @@ export type UserUpdateWithoutApprovalsInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
@@ -2618,6 +2982,13 @@ export type UserUncheckedUpdateWithoutApprovalsInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
@@ -2660,6 +3031,13 @@ export type UserCreateWithoutMembershipsInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
@@ -2704,6 +3082,13 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedCreateNestedManyWithoutRequestedByInput
@@ -2762,6 +3147,13 @@ export type UserUpdateWithoutMembershipsInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
@@ -2806,6 +3198,13 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
@@ -2848,6 +3247,13 @@ export type UserCreateManyOrganizationInput = {
   emergencyContactName?: string | null
   emergencyContactPhone?: string | null
   notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -2883,6 +3289,13 @@ export type UserUpdateWithoutOrganizationInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expenseRequests?: Prisma.ExpenseRequestUpdateManyWithoutRequestedByNestedInput
@@ -2926,6 +3339,13 @@ export type UserUncheckedUpdateWithoutOrganizationInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expenseRequests?: Prisma.ExpenseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
@@ -2969,6 +3389,13 @@ export type UserUncheckedUpdateManyWithoutOrganizationInput = {
   emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -3090,6 +3517,13 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   emergencyContactName?: boolean
   emergencyContactPhone?: boolean
   notes?: boolean
+  title?: boolean
+  companyName?: boolean
+  businessAddress?: boolean
+  firmName?: boolean
+  licenseNumber?: boolean
+  barNumber?: boolean
+  organizationName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -3136,6 +3570,13 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   emergencyContactName?: boolean
   emergencyContactPhone?: boolean
   notes?: boolean
+  title?: boolean
+  companyName?: boolean
+  businessAddress?: boolean
+  firmName?: boolean
+  licenseNumber?: boolean
+  barNumber?: boolean
+  organizationName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -3173,6 +3614,13 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   emergencyContactName?: boolean
   emergencyContactPhone?: boolean
   notes?: boolean
+  title?: boolean
+  companyName?: boolean
+  businessAddress?: boolean
+  firmName?: boolean
+  licenseNumber?: boolean
+  barNumber?: boolean
+  organizationName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -3210,11 +3658,18 @@ export type UserSelectScalar = {
   emergencyContactName?: boolean
   emergencyContactPhone?: boolean
   notes?: boolean
+  title?: boolean
+  companyName?: boolean
+  businessAddress?: boolean
+  firmName?: boolean
+  licenseNumber?: boolean
+  barNumber?: boolean
+  organizationName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "firstName" | "lastName" | "phone" | "passwordHash" | "avatarUrl" | "role" | "organizationId" | "isActive" | "emailVerified" | "emailVerifyToken" | "emailVerifyExpiry" | "mfaEnabled" | "mfaSecret" | "mfaBackupCodes" | "lastLoginIp" | "lastLoginUserAgent" | "lastLoginAt" | "trustedDevices" | "beneficiaryCode" | "dateOfBirth" | "addressStreet" | "addressCity" | "addressState" | "addressZip" | "ssnLast4" | "benefitPrograms" | "emergencyContactName" | "emergencyContactPhone" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "firstName" | "lastName" | "phone" | "passwordHash" | "avatarUrl" | "role" | "organizationId" | "isActive" | "emailVerified" | "emailVerifyToken" | "emailVerifyExpiry" | "mfaEnabled" | "mfaSecret" | "mfaBackupCodes" | "lastLoginIp" | "lastLoginUserAgent" | "lastLoginAt" | "trustedDevices" | "beneficiaryCode" | "dateOfBirth" | "addressStreet" | "addressCity" | "addressState" | "addressZip" | "ssnLast4" | "benefitPrograms" | "emergencyContactName" | "emergencyContactPhone" | "notes" | "title" | "companyName" | "businessAddress" | "firmName" | "licenseNumber" | "barNumber" | "organizationName" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   expenseRequests?: boolean | Prisma.User$expenseRequestsArgs<ExtArgs>
@@ -3279,6 +3734,13 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     emergencyContactName: string | null
     emergencyContactPhone: string | null
     notes: string | null
+    title: string | null
+    companyName: string | null
+    businessAddress: string | null
+    firmName: string | null
+    licenseNumber: string | null
+    barNumber: string | null
+    organizationName: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["user"]>
@@ -3744,6 +4206,13 @@ export interface UserFieldRefs {
   readonly emergencyContactName: Prisma.FieldRef<"User", 'String'>
   readonly emergencyContactPhone: Prisma.FieldRef<"User", 'String'>
   readonly notes: Prisma.FieldRef<"User", 'String'>
+  readonly title: Prisma.FieldRef<"User", 'String'>
+  readonly companyName: Prisma.FieldRef<"User", 'String'>
+  readonly businessAddress: Prisma.FieldRef<"User", 'String'>
+  readonly firmName: Prisma.FieldRef<"User", 'String'>
+  readonly licenseNumber: Prisma.FieldRef<"User", 'String'>
+  readonly barNumber: Prisma.FieldRef<"User", 'String'>
+  readonly organizationName: Prisma.FieldRef<"User", 'String'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
 }

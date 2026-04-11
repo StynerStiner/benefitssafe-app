@@ -2748,6 +2748,13 @@ export const UserScalarFieldEnum = {
   emergencyContactName: 'emergencyContactName',
   emergencyContactPhone: 'emergencyContactPhone',
   notes: 'notes',
+  title: 'title',
+  companyName: 'companyName',
+  businessAddress: 'businessAddress',
+  firmName: 'firmName',
+  licenseNumber: 'licenseNumber',
+  barNumber: 'barNumber',
+  organizationName: 'organizationName',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

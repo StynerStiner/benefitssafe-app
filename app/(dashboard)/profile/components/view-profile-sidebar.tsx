@@ -1,5 +1,6 @@
 'use client';
 
+import { roleDisplay } from '@/lib/profile-config';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
@@ -10,6 +11,11 @@ interface UserProfile {
   email: string;
   phone?: string;
   image?: string;
+  role?: string;
+  title?: string;
+  companyName?: string;
+  firmName?: string;
+  organizationName?: string;
 }
 
 const ViewProfileSidebar = () => {
@@ -20,11 +26,9 @@ const ViewProfileSidebar = () => {
   useEffect(() => {
     if (session?.user?.email) {
       fetch('/api/users/profile')
-        .then((res) => res.ok ? res.json() : null)
-        .then((data) => {
-          if (data) {
-            setUser(data);
-          }
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data: UserProfile | null) => {
+          if (data) setUser(data);
         })
         .catch(() => {
           // Fallback to session data if API fails
@@ -36,6 +40,7 @@ const ViewProfileSidebar = () => {
               email: session.user.email || '',
               phone: '',
               image: session.user.image ?? undefined,
+              role: session.user.role,
             });
           }
         })
@@ -63,6 +68,9 @@ const ViewProfileSidebar = () => {
     );
   }
 
+  const badge = user.role ? roleDisplay[user.role] : null;
+  const contextLine = user.firmName || user.companyName || user.organizationName || user.title;
+
   return (
     <div className="user-grid-card relative border border-slate-200 dark:border-slate-600 rounded-2xl overflow-hidden bg-white dark:bg-[#273142] h-full">
       <div className="w-full h-[160px] bg-primary" aria-hidden="true" />
@@ -75,24 +83,40 @@ const ViewProfileSidebar = () => {
               <span className="text-slate-600">No Image</span>
             </div>
           )}
-          <h6 className="mb-0 mt-4">{user.firstName} {user.lastName}</h6>
-          <span className="text-neutral-500 dark:text-neutral-300 mb-4">{user.email}</span>
+          <h3 className="mb-0 mt-4 text-lg font-semibold">{user.firstName} {user.lastName}</h3>
+          {badge && (
+            <span
+              className={`inline-flex items-center px-3 py-1 mt-2 rounded-full text-xs font-semibold ${badge.badgeClass}`}
+              aria-label={`Role: ${badge.label}`}
+            >
+              {badge.label}
+            </span>
+          )}
+          <p className="text-neutral-500 dark:text-neutral-300 mt-2 mb-4 text-sm break-all">{user.email}</p>
         </div>
         <div className="mt-6">
           <h3 className="text-xl mb-4">Personal Info</h3>
           <ul>
-            <li className="flex items-center gap-1 mb-3">
-              <span className="w-[30%] text-base font-semibold text-neutral-600 dark:text-neutral-200">Full Name</span>
-              <span className="w-[70%] text-neutral-500 dark:text-neutral-300 font-medium">: {user.firstName} {user.lastName}</span>
+            <li className="flex items-start gap-1 mb-3">
+              <span className="w-[35%] text-base font-semibold text-neutral-600 dark:text-neutral-200 shrink-0">Full Name</span>
+              <span className="w-[65%] text-neutral-500 dark:text-neutral-300 font-medium break-words">: {user.firstName} {user.lastName}</span>
             </li>
-            <li className="flex items-center gap-1 mb-3">
-              <span className="w-[30%] text-base font-semibold text-neutral-600 dark:text-neutral-200">Email</span>
-              <span className="w-[70%] text-neutral-500 dark:text-neutral-300 font-medium">: {user.email}</span>
+            <li className="flex items-start gap-1 mb-3">
+              <span className="w-[35%] text-base font-semibold text-neutral-600 dark:text-neutral-200 shrink-0">Email</span>
+              <span className="w-[65%] text-neutral-500 dark:text-neutral-300 font-medium break-all">: {user.email}</span>
             </li>
-            <li className="flex items-center gap-1 mb-3">
-              <span className="w-[30%] text-base font-semibold text-neutral-600 dark:text-neutral-200">Phone</span>
-              <span className="w-[70%] text-neutral-500 dark:text-neutral-300 font-medium">: {user.phone || 'Not provided'}</span>
+            <li className="flex items-start gap-1 mb-3">
+              <span className="w-[35%] text-base font-semibold text-neutral-600 dark:text-neutral-200 shrink-0">Phone</span>
+              <span className="w-[65%] text-neutral-500 dark:text-neutral-300 font-medium break-words">: {user.phone || 'Not provided'}</span>
             </li>
+            {contextLine && (
+              <li className="flex items-start gap-1 mb-3">
+                <span className="w-[35%] text-base font-semibold text-neutral-600 dark:text-neutral-200 shrink-0">
+                  {user.firmName ? 'Firm' : user.companyName ? 'Company' : user.organizationName ? 'Organization' : 'Title'}
+                </span>
+                <span className="w-[65%] text-neutral-500 dark:text-neutral-300 font-medium break-words">: {contextLine}</span>
+              </li>
+            )}
           </ul>
         </div>
       </div>

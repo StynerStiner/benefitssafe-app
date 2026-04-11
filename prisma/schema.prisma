@@ -100,6 +100,15 @@ model User {
   emergencyContactPhone String?
   notes                 String?
 
+  // Role-aware profile fields (used by different roles; all optional)
+  title                 String?   // Generic job title for internal staff
+  companyName           String?   // Vendor: their company/business name
+  businessAddress       String?   // Vendor: business street address
+  firmName              String?   // CPA/attorney: firm name
+  licenseNumber         String?   // CPA: professional license number
+  barNumber             String?   // Attorney: bar admission number
+  organizationName      String?   // Grant officer: funding org/foundation name (free-text, distinct from Organization relation)
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
