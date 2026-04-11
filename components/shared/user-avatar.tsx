@@ -1,10 +1,12 @@
 "use client";
 
+import { getInitials } from "@/lib/utils/get-initials";
 import Image from "next/image";
 
 interface UserAvatarProps {
-  firstName?: string;
-  lastName?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  name?: string | null;
   avatarUrl?: string | null;
   size?: number;
   className?: string;
@@ -24,9 +26,9 @@ function getColor(name: string): string {
   return COLORS[Math.abs(hash) % COLORS.length];
 }
 
-export default function UserAvatar({ firstName, lastName, avatarUrl, size = 40, className = "" }: UserAvatarProps) {
-  const initials = `${(firstName || "?")[0]}${(lastName || "")[0] || ""}`.toUpperCase();
-  const fullName = `${firstName || ""} ${lastName || ""}`.trim();
+export default function UserAvatar({ firstName, lastName, name, avatarUrl, size = 40, className = "" }: UserAvatarProps) {
+  const fullName = name?.trim() || `${firstName || ""} ${lastName || ""}`.trim();
+  const initials = getInitials(fullName);
   const colorClass = getColor(fullName || "User");
 
   if (avatarUrl) {

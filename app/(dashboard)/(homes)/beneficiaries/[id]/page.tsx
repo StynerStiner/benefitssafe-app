@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import UserAvatar from "@/components/shared/user-avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -223,7 +224,6 @@ const BeneficiaryProfilePage = () => {
   }
 
   const fullName = `${beneficiary.firstName} ${beneficiary.lastName}`;
-  const initials = `${beneficiary.firstName.charAt(0)}${beneficiary.lastName.charAt(0)}`.toUpperCase();
   const programs = beneficiary.benefitPrograms;
 
   const programList: { key: keyof BenefitPrograms; label: string }[] = [
@@ -264,10 +264,11 @@ const BeneficiaryProfilePage = () => {
           <CardContent>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
-                {/* Initials circle */}
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-semibold text-white">
-                  {initials}
-                </div>
+                <UserAvatar
+                  firstName={beneficiary.firstName}
+                  lastName={beneficiary.lastName}
+                  size={64}
+                />
 
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">

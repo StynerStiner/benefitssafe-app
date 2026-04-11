@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import UserAvatar from "@/components/shared/user-avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -105,7 +106,6 @@ const TeamMemberProfile = () => {
   }
 
   const fullName = `${member.firstName} ${member.lastName}`;
-  const initials = `${member.firstName.charAt(0)}${member.lastName.charAt(0)}`.toUpperCase();
   const location = [member.addressCity, member.addressState].filter(Boolean).join(", ");
 
   return (
@@ -125,9 +125,12 @@ const TeamMemberProfile = () => {
         <CardContent>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-semibold text-white">
-                {initials}
-              </div>
+              <UserAvatar
+                firstName={member.firstName}
+                lastName={member.lastName}
+                avatarUrl={member.avatarUrl}
+                size={64}
+              />
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">

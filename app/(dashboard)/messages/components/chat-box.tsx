@@ -45,7 +45,7 @@ import { useSession } from 'next-auth/react';
 import UserAvatar from "@/components/shared/user-avatar";
 
 // --- CHANGED: Types for API data ---
-interface ConvoParticipant { userId: string; firstName?: string; lastName?: string; email?: string; }
+interface ConvoParticipant { userId: string; firstName?: string; lastName?: string; email?: string; avatarUrl?: string | null; }
 interface ConvoLastMessage { content: string; senderId: string; createdAt: string; }
 interface ConversationItem { id: string; subject: string | null; type: string; updatedAt: string; participants: ConvoParticipant[]; lastMessage: ConvoLastMessage | null; unreadCount: number; }
 // Legacy types kept for backward compat with message fetching
@@ -55,10 +55,12 @@ interface Conversation { id: string; subject: string | null; type: string; updat
 
 interface OrgUser { id: string; firstName: string; lastName: string; email: string; role: string; }
 interface ApiMessage { id: string; senderId: string; content: string; createdAt: string; }
+interface ApiUser { id: string; firstName: string; lastName: string; email: string; avatarUrl: string | null; role: string; }
 
 type ChatItem = {
     id: number | string;
     name: string;
+    avatarUrl: string | null;
     message: string;
     time: string;
     unreadCount: number;
@@ -69,6 +71,7 @@ type PrevChatMessage = {
     id: number | string;
     sender: "me" | "other";
     senderName?: string;
+    senderAvatarUrl?: string | null;
     text: string;
     time: string;
 };
@@ -102,6 +105,7 @@ const ChatBox = () => {
     const [selectedConvoId, setSelectedConvoId] = useState<string | null>(null);
     const [prevData, setPrevData] = useState<PrevChatMessage[]>([]);
     const [selectedName, setSelectedName] = useState("Select a conversation");
+    const [selectedAvatarUrl, setSelectedAvatarUrl] = useState<string | null>(null);
     const [message, setMessage] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -220,10 +224,13 @@ const ChatBox = () => {
                         .filter(Boolean)
                         .join(", ");
                     const displayName = c.subject || participantName || c.type || "Conversation";
+                    // Use the first "other" participant's avatar as the conversation avatar
+                    const firstOther = c.participants?.[0];
 
                     return {
                         id: c.id,
                         name: displayName,
+                        avatarUrl: firstOther?.avatarUrl ?? null,
                         message: c.lastMessage?.content?.substring(0, 30) || "No messages",
                         time: relativeTime(c.updatedAt || c.lastMessage?.createdAt || new Date().toISOString()),
                         unreadCount: c.unreadCount || 0,
@@ -234,6 +241,7 @@ const ChatBox = () => {
                 if (selectFirst && mapped.length > 0) {
                     setSelectedConvoId(mapped[0].id as string);
                     setSelectedName(mapped[0].name);
+                    setSelectedAvatarUrl(mapped[0].avatarUrl);
                 }
             })
             .catch(() => {});
@@ -262,16 +270,22 @@ const ChatBox = () => {
             .then((r) => r.ok ? r.json() : null)
             .then((data) => {
                 const msgs: ApiMessage[] = data?.messages || (Array.isArray(data) ? data : []);
+                const users: Record<string, ApiUser> = data?.users || {};
                 // Only update state if message count changed (avoids unnecessary re-renders)
                 if (msgs.length !== messageCountRef.current) {
                     messageCountRef.current = msgs.length;
-                    const mapped: PrevChatMessage[] = msgs.map((m) => ({
-                        id: m.id,
-                        sender: m.senderId === currentUserId ? "me" as const : "other" as const,
-                        senderName: selectedName,
-                        text: m.content,
-                        time: formatTime(m.createdAt),
-                    }));
+                    const mapped: PrevChatMessage[] = msgs.map((m) => {
+                        const sender = users[m.senderId];
+                        const senderName = sender ? `${sender.firstName} ${sender.lastName}` : undefined;
+                        return {
+                            id: m.id,
+                            sender: m.senderId === currentUserId ? "me" as const : "other" as const,
+                            senderName,
+                            senderAvatarUrl: sender?.avatarUrl ?? null,
+                            text: m.content,
+                            time: formatTime(m.createdAt),
+                        };
+                    });
                     setPrevData(mapped);
                 }
             })
@@ -350,7 +364,11 @@ const ChatBox = () => {
                 <div className="flex items-center justify-between gap-2 px-5 pt-5 pb-4">
                     <div className="flex items-center gap-4">
                         <div className="">
-                            <UserAvatar firstName={session?.user?.name?.split(" ")[0]} lastName={session?.user?.name?.split(" ").slice(1).join(" ")} size={40} />
+                            <UserAvatar
+                                name={session?.user?.name}
+                                avatarUrl={session?.user?.avatarUrl || session?.user?.image || null}
+                                size={40}
+                            />
                         </div>
                         <div className="">
                             <h6 className="text-base mb-0">{session?.user?.name || "User"}</h6>
@@ -465,22 +483,22 @@ const ChatBox = () => {
                     <CommandList className='max-h-[580px]'>
                         <CommandEmpty>No conversations found.</CommandEmpty>
                         <CommandGroup className='p-0'>
-                            {chatList.map(({ id, name, message, time, unreadCount, isActive }) => (
+                            {chatList.map(({ id, name, avatarUrl, message, time, unreadCount, isActive }) => (
                                 <CommandItem
                                     key={id}
                                     value={name}
                                     className='p-0'
-                                    onSelect={() => { setSelectedConvoId(id as string); setSelectedName(name); }}
+                                    onSelect={() => { setSelectedConvoId(id as string); setSelectedName(name); setSelectedAvatarUrl(avatarUrl); }}
                                 >
                                     <Link
                                         key={id}
                                         href="#"
-                                        onClick={(e) => { e.preventDefault(); setSelectedConvoId(id as string); setSelectedName(name); }}
+                                        onClick={(e) => { e.preventDefault(); setSelectedConvoId(id as string); setSelectedName(name); setSelectedAvatarUrl(avatarUrl); }}
                                         className={`flex items-center justify-between gap-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-slate-700 px-6 py-2.5 w-full ${id === selectedConvoId ? "bg-neutral-100 dark:bg-slate-600" : ""} ${isActive ? "active" : ""}`}
                                     >
                                         <div className="flex items-center gap-2">
                                             <div className="img">
-                                                <UserAvatar firstName={name.split(" ")[0]} lastName={name.split(" ").slice(1).join(" ")} size={40} />
+                                                <UserAvatar name={name} avatarUrl={avatarUrl} size={40} />
                                             </div>
                                             <div className="info">
                                                 <h6 className="text-sm mb-1 line-clamp-1">{name}</h6>
@@ -512,7 +530,7 @@ const ChatBox = () => {
                     <div className="flex items-center justify-between gap-2  px-6 py-2.5 active border-b border-neutral-200 dark:border-neutral-600">
                         <div className="flex items-center gap-2">
                             <div className="img">
-                                <UserAvatar firstName={selectedName.split(" ")[0]} lastName={selectedName.split(" ").slice(1).join(" ")} size={40} />
+                                <UserAvatar name={selectedName} avatarUrl={selectedAvatarUrl} size={40} />
                             </div>
                             <div className="info">
                                 <h6 className="text-base mb-0">{selectedName}</h6>
@@ -570,8 +588,8 @@ const ChatBox = () => {
                                     className="max-w-[700px] duration-500 text-neutral-900 flex items-end gap-3"
                                 >
                                     <UserAvatar
-                                        firstName={msg.senderName?.split(" ")[0]}
-                                        lastName={msg.senderName?.split(" ").slice(1).join(" ")}
+                                        name={msg.senderName}
+                                        avatarUrl={msg.senderAvatarUrl}
                                         size={40}
                                     />
                                     <div className="bg-neutral-50 dark:bg-slate-800 dark:text-white rounded-2xl rounded-es-none p-5">
