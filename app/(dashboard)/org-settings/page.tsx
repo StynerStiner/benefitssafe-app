@@ -39,7 +39,8 @@ import {
     Zap,
 } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 interface OrgData {
@@ -54,6 +55,7 @@ interface OrgData {
     addressState: string | null;
     addressZip: string | null;
     stripeAccountId: string | null;
+    logoUrl: string | null;
 }
 
 interface StripeStatus {
@@ -142,6 +144,8 @@ const inputClassName =
 const labelClassName = "text-sm font-semibold mb-2 block text-neutral-900 dark:text-white";
 
 const OrgSettingsPage = () => {
+    const { data: session } = useSession();
+    const canEditLogo = session?.user?.role === "nonprofit_admin" || session?.user?.role === "platform_admin";
     const [org, setOrg] = useState<OrgData | null>(null);
     const [stripeStatus, setStripeStatus] = useState<StripeStatus | null>(null);
     const [loading, setLoading] = useState(true);
@@ -152,6 +156,10 @@ const OrgSettingsPage = () => {
     const [addFundsOpen, setAddFundsOpen] = useState(false);
     const [fundAmount, setFundAmount] = useState("");
     const [fundSubmitting, setFundSubmitting] = useState(false);
+
+    // Logo upload state
+    const [uploadingLogo, setUploadingLogo] = useState(false);
+    const logoInputRef = useRef<HTMLInputElement>(null);
 
     // Form state
     const [name, setName] = useState("");
@@ -306,6 +314,49 @@ const OrgSettingsPage = () => {
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !org?.id) return;
+
+        const allowed = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/svg+xml"];
+        if (!allowed.includes(file.type)) {
+            toast.error("Logo must be PNG, JPEG, WebP, or SVG");
+            if (logoInputRef.current) logoInputRef.current.value = "";
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error("Logo must be under 2MB");
+            if (logoInputRef.current) logoInputRef.current.value = "";
+            return;
+        }
+
+        setUploadingLogo(true);
+        try {
+            const fd = new FormData();
+            fd.append("file", file);
+            const res = await fetch(`/api/organizations/${org.id}/logo`, {
+                method: "POST",
+                body: fd,
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                toast.error(data.error || "Logo upload failed");
+                return;
+            }
+            const data = await res.json();
+            setOrg({ ...org, logoUrl: data.logoUrl });
+            toast.success("Logo updated");
+            // Force sidebar OrgPicker to re-fetch via a full refresh — it
+            // reads /api/memberships once on mount and has no subscription.
+            setTimeout(() => window.location.reload(), 400);
+        } catch {
+            toast.error("Logo upload failed");
+        } finally {
+            setUploadingLogo(false);
+            if (logoInputRef.current) logoInputRef.current.value = "";
+        }
+    };
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -747,6 +798,54 @@ const OrgSettingsPage = () => {
                             </div>
                         </CardHeader>
                         <CardContent>
+                            {/* Logo upload */}
+                            <div className="mb-6 flex items-center gap-5 pb-6 border-b border-neutral-100 dark:border-slate-700">
+                                <div className="w-20 h-20 rounded-lg border border-neutral-200 dark:border-slate-600 bg-neutral-50 dark:bg-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                                    {org?.logoUrl ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img src={org.logoUrl} alt={org.name} className="w-full h-full object-contain" />
+                                    ) : (
+                                        <Building2 className="w-8 h-8 text-neutral-400" />
+                                    )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <Label className={labelClassName}>Organization Logo</Label>
+                                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
+                                        PNG, JPEG, WebP, or SVG. Square images work best. Max 2MB.
+                                    </p>
+                                    <input
+                                        ref={logoInputRef}
+                                        type="file"
+                                        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                                        onChange={handleLogoFileChange}
+                                        className="hidden"
+                                        disabled={uploadingLogo || !canEditLogo}
+                                    />
+                                    {canEditLogo ? (
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => logoInputRef.current?.click()}
+                                            disabled={uploadingLogo}
+                                        >
+                                            {uploadingLogo ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                    Uploading...
+                                                </>
+                                            ) : (
+                                                org?.logoUrl ? "Change Logo" : "Upload Logo"
+                                            )}
+                                        </Button>
+                                    ) : (
+                                        <p className="text-xs text-neutral-400 italic">
+                                            Only organization admins can change the logo.
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
                             <form onSubmit={handleSave}>
                                 <div className="grid md:grid-cols-2 gap-x-5">
                                     <div className="mb-5">

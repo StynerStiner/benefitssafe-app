@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, ChevronDown, Check } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
+import OrgBranding from "@/components/shared/org-branding";
 
 interface Membership {
   id: string;
@@ -88,9 +89,8 @@ export default function OrgPicker() {
 
   if (memberships.length === 1) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-neutral-700 dark:text-neutral-200">
-        <Building2 className="w-4 h-4 text-primary" />
-        <span className="truncate">{activeOrg?.organization.name}</span>
+      <div className="px-3 py-2">
+        {activeOrg && <OrgBranding organization={activeOrg.organization} size="md" />}
       </div>
     );
   }
@@ -101,10 +101,11 @@ export default function OrgPicker() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 w-full px-3 py-2 text-sm font-semibold rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
       >
-        <Building2 className="w-4 h-4 text-primary shrink-0" />
-        <span className="truncate text-neutral-700 dark:text-neutral-200">
-          {activeOrg?.organization.name || "Select Organization"}
-        </span>
+        {activeOrg ? (
+          <OrgBranding organization={activeOrg.organization} size="md" className="flex-1" />
+        ) : (
+          <span className="truncate text-neutral-700 dark:text-neutral-200">Select Organization</span>
+        )}
         <ChevronDown className={`w-4 h-4 ml-auto shrink-0 text-neutral-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
 

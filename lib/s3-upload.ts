@@ -45,6 +45,7 @@ export async function uploadToS3(
       : ext === "png" ? "image/png"
       : ext === "gif" ? "image/gif"
       : ext === "webp" ? "image/webp"
+      : ext === "svg" ? "image/svg+xml"
       : "application/octet-stream";
 
     const command = new PutObjectCommand({
@@ -83,6 +84,16 @@ export async function uploadAvatarToS3(
   const ext = originalFilename.split(".").pop() || "jpg";
   const filename = `${userId}-${Date.now()}.${ext}`;
   return uploadToS3(file, filename, "avatars");
+}
+
+export async function uploadOrgLogoToS3(
+  file: Buffer,
+  organizationId: string,
+  originalFilename: string
+): Promise<string> {
+  const ext = originalFilename.split(".").pop() || "png";
+  const filename = `${organizationId}-${Date.now()}.${ext}`;
+  return uploadToS3(file, filename, "org-logos");
 }
 
 export async function uploadDocumentToS3(
