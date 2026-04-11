@@ -264,7 +264,7 @@ const AvatarUpload = () => {
 
             <Dialog open={dialogOpen} onOpenChange={(open) => { if (!uploading) { if (!open) handleCancel(); else setDialogOpen(open); } }}>
                 <DialogContent
-                    className="p-0 gap-0 w-screen h-[100dvh] max-w-full rounded-none sm:w-full sm:h-auto sm:max-w-[500px] sm:rounded-lg flex flex-col"
+                    className="p-0 gap-0 w-screen h-[100dvh] max-w-full rounded-none sm:w-full sm:h-auto sm:max-w-[600px] sm:rounded-lg flex flex-col"
                     onInteractOutside={(e) => { if (uploading) e.preventDefault(); }}
                     onEscapeKeyDown={(e) => { if (uploading) e.preventDefault(); }}
                 >
@@ -275,7 +275,7 @@ const AvatarUpload = () => {
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="relative flex-1 sm:h-[320px] bg-neutral-900">
+                    <div className="relative h-[60vh] sm:h-[400px] bg-neutral-900">
                         {sourceImage && (
                             <Cropper
                                 image={sourceImage}
