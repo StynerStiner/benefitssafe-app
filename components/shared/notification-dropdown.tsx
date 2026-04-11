@@ -11,6 +11,7 @@ import {
   AlertOctagon,
   AlertTriangle,
   Bell,
+  CheckCheck,
   CreditCard,
   DollarSign,
   FileText,
@@ -95,23 +96,6 @@ const NotificationDropdown = () => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const handleMarkRead = (id: string) => {
-    if (notifications.find((n) => n.id === id)?.read) return;
-    fetch("/api/notifications", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ notificationId: id }),
-    })
-      .then(() => {
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-        );
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-        fetchNotifications();
-      })
-      .catch(() => {});
-  };
-
   const fetchNotifications = useCallback(() => {
     fetch("/api/notifications?limit=5")
       .then((r) => r.ok ? r.json() : null)
@@ -124,14 +108,39 @@ const NotificationDropdown = () => {
       .catch(() => {});
   }, []);
 
+  const handleMarkRead = (id: string) => {
+    if (notifications.find((n) => n.id === id)?.read) return;
+    // Optimistic
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+    fetch(`/api/notifications/${id}`, { method: "PATCH" })
+      .then((r) => { if (!r.ok) throw new Error(); })
+      .catch(() => fetchNotifications());
+  };
+
+  const handleMarkAllRead = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (unreadCount === 0) return;
+    // Optimistic
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setUnreadCount(0);
+    fetch("/api/notifications/read-all", { method: "POST" })
+      .then((r) => { if (!r.ok) throw new Error(); })
+      .catch(() => fetchNotifications());
+  };
+
   useEffect(() => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 120000);
     const handleFocus = () => fetchNotifications();
+    const handleRefresh = () => fetchNotifications();
     window.addEventListener("focus", handleFocus);
+    window.addEventListener("notifications:refresh", handleRefresh);
     return () => {
       clearInterval(interval);
       window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("notifications:refresh", handleRefresh);
     };
   }, [fetchNotifications]);
 
@@ -156,12 +165,18 @@ const NotificationDropdown = () => {
         <div>
           <div className="py-3 px-4 rounded-lg bg-primary/10 dark:bg-primary/25 m-4 flex items-center justify-between gap-2">
             <h6 className="text-lg text-neutral-900 dark:text-white font-semibold mb-0">
-              Notifications
+              Notifications{unreadCount > 0 ? ` (${unreadCount > 99 ? "99+" : unreadCount})` : ""}
             </h6>
             {unreadCount > 0 && (
-              <span className="sm:w-10 sm:h-10 w-8 h-8 bg-white dark:bg-slate-800 text-primary dark:text-primary font-bold flex justify-center items-center rounded-full text-sm">
-                {unreadCount > 99 ? "99+" : unreadCount}
-              </span>
+              <button
+                type="button"
+                onClick={handleMarkAllRead}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                title="Mark all as read"
+              >
+                <CheckCheck className="w-4 h-4" />
+                Read all
+              </button>
             )}
           </div>
           <div className="scroll-sm !border-t-0">

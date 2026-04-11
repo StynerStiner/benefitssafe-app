@@ -47,53 +47,65 @@ const EmailPage = () => {
         fetchNotifications();
     }, [fetchNotifications]);
 
+    // Fires after any mutation so the navbar bell dropdown can refetch its
+    // count/list in the same tab without waiting on the 2-minute poll.
+    const notifyDropdown = () => {
+        if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("notifications:refresh"));
+        }
+    };
+
     const handleMarkRead = async (id: string) => {
         const notification = notifications.find((n) => n.id === id);
         if (!notification || notification.read) return;
+        // Optimistic update
+        setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
         try {
-            const res = await fetch("/api/notifications", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ notificationId: id }),
-            });
+            const res = await fetch(`/api/notifications/${id}`, { method: "PATCH" });
             if (!res.ok) throw new Error("Failed to mark as read");
-            setNotifications((prev) =>
-                prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-            );
+            notifyDropdown();
         } catch (error) {
             console.error("Error marking notification as read:", error);
+            // Rollback
+            setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: false } : n)));
+            toast.error("Failed to mark as read");
         }
     };
 
     const handleDelete = async (id: string) => {
+        const snapshot = notifications;
+        // Optimistic remove
+        setNotifications((prev) => prev.filter((n) => n.id !== id));
+        setSelectedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
         try {
-            const res = await fetch("/api/notifications", {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ notificationIds: [id] }),
-            });
+            const res = await fetch(`/api/notifications/${id}`, { method: "DELETE" });
             if (!res.ok) throw new Error("Failed to delete");
-            setNotifications((prev) => prev.filter((n) => n.id !== id));
-            setSelectedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
             toast.success("Notification deleted");
+            notifyDropdown();
         } catch {
+            setNotifications(snapshot);
             toast.error("Failed to delete notification");
         }
     };
 
     const handleDeleteSelected = async () => {
         if (selectedIds.size === 0) return;
+        const ids = Array.from(selectedIds);
+        const snapshot = notifications;
+        setNotifications((prev) => prev.filter((n) => !selectedIds.has(n.id)));
+        setSelectedIds(new Set());
         try {
-            const res = await fetch("/api/notifications", {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ notificationIds: Array.from(selectedIds) }),
-            });
-            if (!res.ok) throw new Error("Failed to delete");
-            setNotifications((prev) => prev.filter((n) => !selectedIds.has(n.id)));
-            toast.success(`${selectedIds.size} notification${selectedIds.size > 1 ? "s" : ""} deleted`);
-            setSelectedIds(new Set());
+            // Parallel DELETEs — path-based, no body (avoids infra layers that
+            // strip DELETE bodies).
+            const results = await Promise.all(
+                ids.map((id) => fetch(`/api/notifications/${id}`, { method: "DELETE" })),
+            );
+            const failed = results.filter((r) => !r.ok).length;
+            if (failed > 0) throw new Error(`${failed} failed`);
+            toast.success(`${ids.length} notification${ids.length > 1 ? "s" : ""} deleted`);
+            notifyDropdown();
         } catch {
+            setNotifications(snapshot);
             toast.error("Failed to delete notifications");
         }
     };
@@ -108,17 +120,17 @@ const EmailPage = () => {
     };
 
     const handleMarkAllRead = async () => {
+        const snapshot = notifications;
+        // Optimistic update — flip every row to read immediately
+        setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
         try {
-            const res = await fetch("/api/notifications", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ markAllRead: true }),
-            });
+            const res = await fetch("/api/notifications/read-all", { method: "POST" });
             if (!res.ok) throw new Error("Failed to mark all as read");
-            setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
             toast.success("All notifications marked as read");
+            notifyDropdown();
         } catch (error) {
             console.error("Error marking all as read:", error);
+            setNotifications(snapshot);
             toast.error("Failed to mark notifications as read");
         }
     };

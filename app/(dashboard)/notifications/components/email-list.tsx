@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AlertOctagon, AlertTriangle, FileText, DollarSign, CreditCard, Bell, ShieldCheck, Users, Trash2 } from "lucide-react";
+import { AlertOctagon, AlertTriangle, Bell, CheckCheck, CreditCard, DollarSign, FileText, ShieldCheck, Trash2, Users } from "lucide-react";
 import Link from "next/link";
 
 interface Notification {
@@ -79,18 +79,29 @@ const EmailList = ({ notifications, onMarkRead, onDelete, selectedIds, onToggleS
 
     return (
         <ul className="overflow-x-auto">
-            {notifications.map((notification) => (
+            {notifications.map((notification) => {
+                // Threshold types get accent borders always (so critical alerts
+                // still stand out after being read), but the unread BACKGROUND
+                // is the only indicator that the row is unread. Once read, the
+                // bg drops to transparent — matching user expectation.
+                const isUnread = !notification.read;
+                const accentBorder =
+                    notification.type === "threshold_critical"
+                        ? "border-l-4 border-l-red-500"
+                        : notification.type === "threshold_warning"
+                            ? "border-l-4 border-l-amber-500"
+                            : "";
+                const unreadBg = isUnread
+                    ? notification.type === "threshold_critical"
+                        ? "bg-red-50 dark:bg-red-900/20"
+                        : notification.type === "threshold_warning"
+                            ? "bg-amber-50 dark:bg-amber-900/20"
+                            : "bg-blue-50 dark:bg-slate-800/50"
+                    : "";
+                return (
                 <li
                     key={notification.id}
-                    className={`email-item px-6 py-4 flex gap-4 items-center border-b last:border-0 border-neutral-200 dark:border-slate-700 cursor-pointer hover:bg-neutral-200 dark:hover:bg-slate-800 min-w-max ${
-                        notification.type === "threshold_critical"
-                            ? "bg-red-50 dark:bg-red-900/20 border-l-4 border-l-red-500"
-                            : notification.type === "threshold_warning"
-                                ? "bg-amber-50 dark:bg-amber-900/20 border-l-4 border-l-amber-500"
-                                : !notification.read
-                                    ? "bg-blue-50 dark:bg-slate-800/50"
-                                    : ""
-                    }`}
+                    className={`email-item px-6 py-4 flex gap-4 items-center border-b last:border-0 border-neutral-200 dark:border-slate-700 cursor-pointer hover:bg-neutral-200 dark:hover:bg-slate-800 min-w-max ${accentBorder} ${unreadBg}`}
                 >
                     <div className="form-check style-check flex items-center">
                         <Checkbox
@@ -102,20 +113,32 @@ const EmailList = ({ notifications, onMarkRead, onDelete, selectedIds, onToggleS
                     <div className="flex items-center text-xl text-neutral-500 dark:text-neutral-300">
                         {getTypeIcon(notification.type)}
                     </div>
-                    <Link href={notification.href || "#"} onClick={() => onMarkRead?.(notification.id)} className="text-neutral-600 dark:text-neutral-200 font-medium text-base text-line-1 w-[190px]">{notification.title}</Link>
-                    <Link href={notification.href || "#"} onClick={() => onMarkRead?.(notification.id)} className="text-neutral-600 dark:text-neutral-200 font-medium mb-0 line-clamp-1 max-w-[740px]">{notification.message}</Link>
+                    <Link href={notification.href || "#"} onClick={() => onMarkRead?.(notification.id)} className={`dark:text-neutral-200 text-base text-line-1 w-[190px] ${isUnread ? "text-neutral-900 font-semibold" : "text-neutral-600 font-medium"}`}>{notification.title}</Link>
+                    <Link href={notification.href || "#"} onClick={() => onMarkRead?.(notification.id)} className={`dark:text-neutral-200 mb-0 line-clamp-1 max-w-[740px] ${isUnread ? "text-neutral-800 font-medium" : "text-neutral-600 font-normal"}`}>{notification.message}</Link>
                     <span className="text-neutral-600 dark:text-neutral-200 font-medium min-w-max-content ms-auto">{relativeTime(notification.createdAt)}</span>
+                    {isUnread && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 shrink-0 text-neutral-400 hover:text-primary cursor-pointer"
+                            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onMarkRead?.(notification.id); }}
+                            title="Mark as read"
+                        >
+                            <CheckCheck className="w-4 h-4" />
+                        </Button>
+                    )}
                     <Button
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 shrink-0 text-neutral-400 hover:text-red-500 cursor-pointer"
-                        onClick={(e) => { e.stopPropagation(); onDelete?.(notification.id); }}
+                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete?.(notification.id); }}
                         title="Delete notification"
                     >
                         <Trash2 className="w-4 h-4" />
                     </Button>
                 </li>
-            ))}
+                );
+            })}
         </ul>
     );
 };
