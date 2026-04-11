@@ -42,6 +42,7 @@ declare module "@auth/core/jwt" {
     firstName: string;
     lastName: string;
     avatarUrl: string | null;
+    image?: string | null;
     role: UserRole;
     organizationId: string;
     organizationName: string;
@@ -176,6 +177,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.firstName = (user as unknown as { firstName: string }).firstName;
         token.lastName = (user as unknown as { lastName: string }).lastName;
         token.avatarUrl = (user as unknown as { avatarUrl: string | null }).avatarUrl;
+        // Authoritative avatar lookup from DB — ensures OAuth providers (Google,
+        // Microsoft) and Credentials login all populate token.image consistently.
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: user.id as string },
+            select: { avatarUrl: true },
+          });
+          token.image = dbUser?.avatarUrl ?? null;
+          token.avatarUrl = dbUser?.avatarUrl ?? token.avatarUrl ?? null;
+        } catch {
+          token.image = token.avatarUrl ?? null;
+        }
         token.organizationId = user.organizationId;
 
         // Use the membership role for this org if it exists, otherwise fall back to user.role
@@ -228,6 +241,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (trigger === "update" && updateSession?.mfaPending === false) {
         token.mfaPending = false;
       }
+      // Refresh avatarUrl from DB when client calls updateSession({ image })
+      // after a successful avatar upload. Re-reads DB to stay authoritative.
+      if (trigger === "update" && updateSession?.image !== undefined) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { avatarUrl: true },
+          });
+          token.image = dbUser?.avatarUrl ?? null;
+          token.avatarUrl = dbUser?.avatarUrl ?? null;
+        } catch {
+          // Keep existing values on DB error
+        }
+      }
       // Refresh billing fields on session update (e.g. after upgrade/downgrade)
       if (trigger === "update" && updateSession?.refreshBilling === true) {
         try {
@@ -254,6 +281,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session.user.firstName = token.firstName;
       session.user.lastName = token.lastName;
       session.user.avatarUrl = token.avatarUrl;
+      session.user.image = token.image ?? token.avatarUrl ?? null;
       session.user.role = token.role;
       session.user.organizationId = token.organizationId;
       session.user.organizationName = token.organizationName || "";
