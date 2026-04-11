@@ -26,7 +26,8 @@ import Cropper, { type Area } from "react-easy-crop";
 import toast from "react-hot-toast";
 
 const AvatarUpload = () => {
-    const { data: session, update: updateSession } = useSession();
+    const { update: updateSession } = useSession();
+    const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
     const [imagePreview, setImagePreview] = useState<string | StaticImageData>(DefaultUploadedImage);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -39,14 +40,27 @@ const AvatarUpload = () => {
     const [zoom, setZoom] = useState(1);
     const [croppedArea, setCroppedArea] = useState<CropArea | null>(null);
 
-    const hasExistingImage = Boolean(session?.user?.image);
+    const hasExistingImage = Boolean(currentImageUrl);
 
-    // Load current avatar from session on mount
+    // Load current avatar from /api/users/profile (authoritative — reads DB directly).
+    // Session JWT is stale across reloads because the jwt callback doesn't re-read the DB,
+    // so we fetch from the profile API which the view sidebar also uses.
     useEffect(() => {
-        if (session?.user?.image) {
-            setImagePreview(session.user.image);
-        }
-    }, [session?.user?.image]);
+        let cancelled = false;
+        fetch("/api/users/profile")
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data: { image?: string } | null) => {
+                if (cancelled || !data?.image) return;
+                setCurrentImageUrl(data.image);
+                setImagePreview(data.image);
+            })
+            .catch(() => {
+                // Silent fail — widget falls back to default placeholder
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
         setCroppedArea(croppedAreaPixels);
@@ -63,7 +77,7 @@ const AvatarUpload = () => {
     };
 
     const handleEditCurrent = async () => {
-        if (!session?.user?.image) return;
+        if (!currentImageUrl) return;
         setError(null);
 
         // Fetch the existing image as a blob and convert to data URL.
@@ -71,7 +85,7 @@ const AvatarUpload = () => {
         // the browser fetch the bytes first, then the <Image> in the cropper
         // reads from a local data URL (same-origin equivalent for canvas).
         try {
-            const res = await fetch(session.user.image, { cache: "no-store" });
+            const res = await fetch(currentImageUrl, { cache: "no-store" });
             if (!res.ok) throw new Error("Failed to load current photo");
             const blob = await res.blob();
             const dataUrl = await new Promise<string>((resolve, reject) => {
@@ -159,7 +173,10 @@ const AvatarUpload = () => {
 
             const data = await res.json();
             if (data.avatarUrl) {
+                setCurrentImageUrl(data.avatarUrl);
                 setImagePreview(data.avatarUrl);
+                // Best-effort session update for same-tab header/sidebar refresh.
+                // Authoritative source is /api/users/profile, which we re-read on mount.
                 await updateSession({ image: data.avatarUrl });
                 toast.success("Profile photo updated");
             }
