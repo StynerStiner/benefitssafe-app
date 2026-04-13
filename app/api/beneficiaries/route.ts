@@ -9,6 +9,7 @@ import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { createBeneficiarySchema } from "@/lib/validations/beneficiary";
 import { checkLimitAccess, buildLimitReachedResponse } from "@/lib/feature-gates";
 import { incrementUsage } from "@/lib/usage-tracker";
+import { generateMembershipCode } from "@/lib/utils/membership-code";
 import { NextResponse } from "next/server";
 
 // GET /api/beneficiaries — list beneficiaries scoped to organization (paginated)
@@ -265,24 +266,8 @@ export async function POST(request: Request) {
       },
     });
 
-    // Generate memberCode: TM-{orgSeq}-{memberSeq}
-    const orgForCode = await prisma.organization.findUnique({
-      where: { id: organizationId },
-      select: { orgCode: true },
-    });
-
-    let orgSeqForMember = "0000";
-    if (orgForCode?.orgCode) {
-      const match = orgForCode.orgCode.match(/ORG-(\d+)/);
-      if (match) {
-        orgSeqForMember = match[1];
-      }
-    }
-
-    const membershipCount = await prisma.organizationMembership.count({
-      where: { organizationId },
-    });
-    const memberCode = `TM-${orgSeqForMember}-${String(membershipCount + 1).padStart(5, "0")}`;
+    // Generate BS-{orgSeq}-{seq} via the shared utility
+    const memberCode = await generateMembershipCode(prisma, organizationId, "beneficiary");
 
     // Create OrganizationMembership with "pending" status
     await prisma.organizationMembership.create({

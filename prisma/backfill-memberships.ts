@@ -6,6 +6,7 @@
 
 import { PrismaClient } from "../lib/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { generateMembershipCode } from "../lib/utils/membership-code";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -44,11 +45,14 @@ async function main() {
       continue;
     }
 
+    const role = user.role || "member";
+    const memberCode = await generateMembershipCode(prisma, user.organizationId, role);
     await prisma.organizationMembership.create({
       data: {
         userId: user.id,
         organizationId: user.organizationId,
-        role: user.role || "member",
+        role,
+        memberCode,
         status: "active",
         isDefaultOrg: true,
         joinedAt: new Date(),

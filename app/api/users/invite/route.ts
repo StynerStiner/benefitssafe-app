@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { validateRecipientEmail, sanitizeEmailForLog, buildSecureLink } from "@/lib/email-security";
 import { checkLimitAccess, buildLimitReachedResponse } from "@/lib/feature-gates";
+import { generateMembershipCode } from "@/lib/utils/membership-code";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -110,24 +111,8 @@ export async function POST(request: Request) {
       select: { id: true, email: true, firstName: true, lastName: true, role: true },
     });
 
-    // Generate memberCode: TM-{orgSeq}-{memberSeq}
-    const orgForCode = await prisma.organization.findUnique({
-      where: { id: organizationId },
-      select: { orgCode: true },
-    });
-
-    let orgSeqForMember = "0000";
-    if (orgForCode?.orgCode) {
-      const match = orgForCode.orgCode.match(/ORG-(\d+)/);
-      if (match) {
-        orgSeqForMember = match[1];
-      }
-    }
-
-    const membershipCount = await prisma.organizationMembership.count({
-      where: { organizationId },
-    });
-    const memberCode = `TM-${orgSeqForMember}-${String(membershipCount + 1).padStart(5, "0")}`;
+    // Generate TM-/BS-/VN- memberCode based on inviteRole via shared utility
+    const memberCode = await generateMembershipCode(prisma, organizationId, inviteRole);
 
     // Create OrganizationMembership with "pending" status
     await prisma.organizationMembership.create({

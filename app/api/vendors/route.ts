@@ -7,6 +7,7 @@ import { cached, invalidateCacheByPrefix, CACHE_KEYS, CACHE_TTL } from "@/lib/ca
 import { prisma } from "@/lib/db";
 import { validateRecipientEmail, sanitizeEmailForLog, buildSecureLink } from "@/lib/email-security";
 import { createVendorSchema } from "@/lib/validations/vendor";
+import { generateMembershipCode } from "@/lib/utils/membership-code";
 import { NextRequest, NextResponse } from "next/server";
 
 const ALLOWED_ROLES = ["nonprofit_admin", "nonprofit_staff", "platform_admin"];
@@ -135,24 +136,8 @@ export async function POST(request: Request) {
         });
 
         if (!existingMembership) {
-          // Generate memberCode: TM-{orgSeq}-{memberSeq}
-          const orgForMember = await prisma.organization.findUnique({
-            where: { id: organizationId },
-            select: { orgCode: true },
-          });
-
-          let orgSeqMember = "0000";
-          if (orgForMember?.orgCode) {
-            const match = orgForMember.orgCode.match(/ORG-(\d+)/);
-            if (match) {
-              orgSeqMember = match[1];
-            }
-          }
-
-          const membershipCount = await prisma.organizationMembership.count({
-            where: { organizationId },
-          });
-          const memberCode = `TM-${orgSeqMember}-${String(membershipCount + 1).padStart(5, "0")}`;
+          // Generate VN-{orgSeq}-{seq} via the shared utility
+          const memberCode = await generateMembershipCode(prisma, organizationId, "vendor");
 
           await prisma.organizationMembership.create({
             data: {
@@ -186,24 +171,8 @@ export async function POST(request: Request) {
         });
         userId = newUser.id;
 
-        // Generate memberCode: TM-{orgSeq}-{memberSeq}
-        const orgForMember = await prisma.organization.findUnique({
-          where: { id: organizationId },
-          select: { orgCode: true },
-        });
-
-        let orgSeqMember = "0000";
-        if (orgForMember?.orgCode) {
-          const match = orgForMember.orgCode.match(/ORG-(\d+)/);
-          if (match) {
-            orgSeqMember = match[1];
-          }
-        }
-
-        const membershipCount = await prisma.organizationMembership.count({
-          where: { organizationId },
-        });
-        const memberCode = `TM-${orgSeqMember}-${String(membershipCount + 1).padStart(5, "0")}`;
+        // Generate VN-{orgSeq}-{seq} via the shared utility
+        const memberCode = await generateMembershipCode(prisma, organizationId, "vendor");
 
         // Create OrganizationMembership with "pending" status
         await prisma.organizationMembership.create({

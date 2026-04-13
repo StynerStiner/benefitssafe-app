@@ -4,6 +4,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { validateRecipientEmail } from "@/lib/email-security";
+import { generateMembershipCode } from "@/lib/utils/membership-code";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -82,24 +83,8 @@ export async function POST(request: Request) {
         );
       }
 
-      // Generate memberCode: TM-{orgSeq}-{memberSeq}
-      const orgForCode = await prisma.organization.findUnique({
-        where: { id: organizationId },
-        select: { orgCode: true },
-      });
-
-      let orgSeqForMember = "0000";
-      if (orgForCode?.orgCode) {
-        const match = orgForCode.orgCode.match(/ORG-(\d+)/);
-        if (match) {
-          orgSeqForMember = match[1];
-        }
-      }
-
-      const membershipCount = await prisma.organizationMembership.count({
-        where: { organizationId },
-      });
-      const memberCode = `TM-${orgSeqForMember}-${String(membershipCount + 1).padStart(5, "0")}`;
+      // Generate memberCode via shared utility (prefix derived from role)
+      const memberCode = await generateMembershipCode(prisma, organizationId, role);
 
       // Create pending membership
       const membership = await prisma.organizationMembership.create({

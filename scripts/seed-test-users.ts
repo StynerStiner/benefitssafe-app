@@ -1,6 +1,7 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/db";
+import { generateMembershipCode } from "../lib/utils/membership-code";
 
 const ORG_ID = "cmncq0p3e00008qba6uomou5j"; // BenefitsSafe Demo
 const PASSWORD = "TestDev2024!";
@@ -139,12 +140,14 @@ async function main() {
 
     console.log(`CREATED: ${testUser.email} (id: ${user.id}, role: ${testUser.role})`);
 
-    // Create organization membership
+    // Create organization membership with correct per-role memberCode
+    const memberCode = await generateMembershipCode(prisma, ORG_ID, testUser.membershipRole);
     const membership = await prisma.organizationMembership.create({
       data: {
         userId: user.id,
         organizationId: ORG_ID,
         role: testUser.membershipRole,
+        memberCode,
         status: "active",
         isDefaultOrg: true,
       },
