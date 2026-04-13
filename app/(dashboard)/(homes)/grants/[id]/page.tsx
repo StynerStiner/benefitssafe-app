@@ -69,6 +69,31 @@ const MCC_NAMES: Record<string, string> = {
   "4111": "Public Transit",
 };
 
+interface CardBeneficiary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  memberships?: { memberCode: string | null }[];
+}
+
+interface VirtualCardItem {
+  id: string;
+  last4: string;
+  cardLabel: string | null;
+  status: string;
+  spendingCap: string | null;
+  cardType: string;
+  createdAt: string;
+  beneficiaryId: string | null;
+  beneficiary?: CardBeneficiary | null;
+  expense?: {
+    requestedBy?: {
+      firstName: string;
+      lastName: string;
+    };
+  } | null;
+}
+
 interface Grant {
   id: string;
   name: string;
@@ -86,6 +111,7 @@ interface Grant {
   funderRequirements: Record<string, unknown> | string | null;
   approvedMCCs: string[] | null;
   blockedMCCs: string[] | null;
+  whitelistedVendorIds: string[] | null;
   beneficiaryId: string | null;
   beneficiary: {
     id: string;
@@ -99,24 +125,8 @@ interface Grant {
     allocatedAmount: string;
     spentAmount: string;
   }[];
+  virtualCards?: VirtualCardItem[];
   createdAt: string;
-}
-
-interface VirtualCardItem {
-  id: string;
-  last4: string;
-  cardLabel: string | null;
-  status: string;
-  spendingCap: string | null;
-  cardType: string;
-  createdAt: string;
-  beneficiaryId: string | null;
-  expense?: {
-    requestedBy?: {
-      firstName: string;
-      lastName: string;
-    };
-  } | null;
 }
 
 interface AuditLogItem {
@@ -153,10 +163,12 @@ const GrantDetailPage = () => {
   const params = useParams();
   const { data: session } = useSession();
   const orgName = (session?.user as { organizationName?: string })?.organizationName || "this organization";
+  const role = (session?.user as { role?: string })?.role;
+  const isVendor = role === "vendor";
+  const canEdit = role === "nonprofit_admin" || role === "platform_admin";
   const grantId = params.id as string;
 
   const [grant, setGrant] = useState<Grant | null>(null);
-  const [cards, setCards] = useState<VirtualCardItem[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -170,31 +182,25 @@ const GrantDetailPage = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      const [grantRes, cardsRes, logsRes] = await Promise.all([
+      // cards now come from grant.virtualCards (included in the detail API),
+      // so we no longer fetch /api/virtual-cards and filter client-side.
+      const [grantRes, logsRes] = await Promise.all([
         fetch(`/api/grants/${grantId}`),
-        fetch(`/api/virtual-cards?limit=100`),
         fetch(`/api/audit-logs?entityType=grant&entityId=${grantId}&limit=50`),
       ]);
 
       if (!grantRes.ok) {
-        setError("Grant not found or access denied.");
+        setError(
+          grantRes.status === 403
+            ? "You do not have access to this grant."
+            : "Grant not found or access denied.",
+        );
         setLoading(false);
         return;
       }
 
       const grantData = await grantRes.json();
       setGrant(grantData);
-
-      if (cardsRes.ok) {
-        const cardsJson = await cardsRes.json();
-        const allCards = Array.isArray(cardsJson) ? cardsJson : cardsJson.data || [];
-        // Filter cards that belong to this grant (via expense.grantId or metadata)
-        const grantCards = allCards.filter((c: Record<string, unknown>) => {
-          const expense = c.expense as Record<string, unknown> | null | undefined;
-          return expense?.grantId === grantId;
-        });
-        setCards(grantCards);
-      }
 
       if (logsRes.ok) {
         const logsJson = await logsRes.json();
@@ -324,6 +330,19 @@ const GrantDetailPage = () => {
     );
   }
 
+  if (isVendor) {
+    return (
+      <>
+        <DashboardBreadcrumb title="Grant Details" text="Forbidden" />
+        <div className="p-6">
+          <p className="text-red-600 dark:text-red-400">
+            Vendors do not have access to grant detail pages.
+          </p>
+        </div>
+      </>
+    );
+  }
+
   if (error || !grant) {
     return (
       <>
@@ -339,6 +358,17 @@ const GrantDetailPage = () => {
 
   const progress = getProgress(grant.totalAmount, grant.spentAmount);
   const requirementsText = getFunderRequirementsText(grant);
+  const cards: VirtualCardItem[] = grant.virtualCards ?? [];
+
+  // Compliance summary totals derived from the audit-log transaction stream
+  const approvedCount = transactionLogs.filter((l) => (l.newValue as { approved?: boolean } | null)?.approved === true).length;
+  const declinedCount = transactionLogs.filter((l) => (l.newValue as { approved?: boolean } | null)?.approved === false).length;
+  const approvedAmount = transactionLogs
+    .filter((l) => (l.newValue as { approved?: boolean } | null)?.approved === true)
+    .reduce((sum, l) => sum + Number((l.newValue as { amount?: number } | null)?.amount ?? 0), 0);
+  const declinedAmount = transactionLogs
+    .filter((l) => (l.newValue as { approved?: boolean } | null)?.approved === false)
+    .reduce((sum, l) => sum + Number((l.newValue as { amount?: number } | null)?.amount ?? 0), 0);
 
   return (
     <>
@@ -461,6 +491,66 @@ const GrantDetailPage = () => {
           </CardContent>
         </Card>
 
+        {/* COMPLIANCE SUMMARY */}
+        <Card className="card !p-0 border-0 rounded-xl shadow-none">
+          <CardContent className="p-0">
+            <div className="border-b border-neutral-200 dark:border-slate-500 py-4 px-6 flex items-center justify-between flex-wrap gap-2">
+              <h6 className="font-semibold text-lg mb-0 text-foreground">
+                Compliance Summary
+              </h6>
+              <ShieldCheck className="w-5 h-5 text-green-500" />
+            </div>
+            <div className="card-body p-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                  <p className="text-xs text-green-600 dark:text-green-400 mb-1">
+                    Approved
+                  </p>
+                  <p className="text-2xl font-semibold text-green-700 dark:text-green-300">
+                    {approvedCount}
+                  </p>
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                    {formatCurrency(approvedAmount)}
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                  <p className="text-xs text-red-600 dark:text-red-400 mb-1">
+                    Declined
+                  </p>
+                  <p className="text-2xl font-semibold text-red-700 dark:text-red-300">
+                    {declinedCount}
+                  </p>
+                  <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                    {formatCurrency(declinedAmount)}
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mb-1">
+                    Cards Issued
+                  </p>
+                  <p className="text-2xl font-semibold text-blue-700 dark:text-blue-300">
+                    {cards.length}
+                  </p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                    {cards.filter((c) => c.status === "ACTIVE").length} active
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg bg-neutral-50 dark:bg-slate-700 border border-neutral-200 dark:border-slate-600">
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-1">
+                    Utilization
+                  </p>
+                  <p className="text-2xl font-semibold text-neutral-700 dark:text-neutral-200">
+                    {progress}%
+                  </p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                    of {formatCurrency(grant.totalAmount)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* COMPLIANCE RULES */}
         <Card className="card !p-0 border-0 rounded-xl shadow-none">
           <CardContent className="p-0">
@@ -505,9 +595,29 @@ const GrantDetailPage = () => {
                 </div>
               )}
 
-              {!grant.approvedMCCs?.length && !grant.blockedMCCs?.length && (
+              {/* Whitelisted Vendors */}
+              {grant.whitelistedVendorIds && Array.isArray(grant.whitelistedVendorIds) && grant.whitelistedVendorIds.length > 0 && (
+                <div className="mb-6">
+                  <p className="text-sm font-semibold text-foreground mb-3">
+                    Whitelisted Vendors ({grant.whitelistedVendorIds.length})
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {grant.whitelistedVendorIds.map((vid) => (
+                      <Badge key={vid} variant="info">
+                        <ShieldCheck className="w-3 h-3 mr-1" />
+                        {vid}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
+                    Cards issued from this grant can only transact with these vendors.
+                  </p>
+                </div>
+              )}
+
+              {!grant.approvedMCCs?.length && !grant.blockedMCCs?.length && !grant.whitelistedVendorIds?.length && (
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  No specific MCC restrictions configured for this grant. Global compliance rules still apply.
+                  No specific MCC or vendor restrictions configured for this grant. Global compliance rules still apply.
                 </p>
               )}
 
@@ -533,14 +643,16 @@ const GrantDetailPage = () => {
               <h6 className="font-semibold text-lg mb-0 text-foreground">
                 Cards Issued
               </h6>
-              <Button
-                size="sm"
-                onClick={handleOpenIssueDialog}
-                className="flex items-center gap-1"
-              >
-                <Plus className="w-4 h-4" />
-                Issue New Card
-              </Button>
+              {canEdit && (
+                <Button
+                  size="sm"
+                  onClick={handleOpenIssueDialog}
+                  className="flex items-center gap-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  Issue New Card
+                </Button>
+              )}
             </div>
             <div className="card-body p-6">
               {cards.length === 0 ? (
@@ -582,9 +694,22 @@ const GrantDetailPage = () => {
                             {card.cardLabel || `Card ****${card.last4}`}
                           </TableCell>
                           <TableCell className="py-4.5 px-4 border-b first:border-s last:border-e border-neutral-200 dark:border-slate-600">
-                            {card.expense?.requestedBy
-                              ? `${card.expense.requestedBy.firstName} ${card.expense.requestedBy.lastName}`
-                              : "N/A"}
+                            {card.beneficiary ? (
+                              <div className="flex flex-col">
+                                <span>
+                                  {card.beneficiary.firstName} {card.beneficiary.lastName}
+                                </span>
+                                {card.beneficiary.memberships?.[0]?.memberCode && (
+                                  <span className="text-xs font-mono text-neutral-500 dark:text-neutral-400">
+                                    {card.beneficiary.memberships[0].memberCode}
+                                  </span>
+                                )}
+                              </div>
+                            ) : card.expense?.requestedBy ? (
+                              `${card.expense.requestedBy.firstName} ${card.expense.requestedBy.lastName}`
+                            ) : (
+                              "N/A"
+                            )}
                           </TableCell>
                           <TableCell className="py-4.5 px-4 border-b first:border-s last:border-e border-neutral-200 dark:border-slate-600">
                             {formatDate(card.createdAt)}

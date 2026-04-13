@@ -20,6 +20,12 @@ export async function GET(
     const { id } = await params;
     const { organizationId, role } = session.user;
 
+    // Vendors never see grant detail — they have no business touching other
+    // people's compliance rules or cards.
+    if (role === "vendor") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const grant = await prisma.grant.findFirst({
       where: {
         id,
@@ -38,6 +44,23 @@ export async function GET(
           },
           orderBy: { createdAt: "desc" },
           take: 20,
+        },
+        virtualCards: {
+          include: {
+            beneficiary: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                memberships: {
+                  where: { organizationId },
+                  select: { memberCode: true },
+                  take: 1,
+                },
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
         },
       },
     });

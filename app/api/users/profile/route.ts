@@ -40,6 +40,24 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Per-org identity codes. memberCode is scoped to the active org so a
+    // multi-org user sees a different code per organization; orgCode is the
+    // organization's own ORG- sequence.
+    const membership = session.user.organizationId
+      ? await prisma.organizationMembership.findUnique({
+          where: {
+            userId_organizationId: {
+              userId: user.id,
+              organizationId: session.user.organizationId,
+            },
+          },
+          select: {
+            memberCode: true,
+            organization: { select: { orgCode: true } },
+          },
+        })
+      : null;
+
     return NextResponse.json({
       id: user.id,
       firstName: user.firstName,
@@ -57,6 +75,8 @@ export async function GET() {
       organizationName: user.organizationName ?? "",
       emergencyContactName: user.emergencyContactName ?? "",
       emergencyContactPhone: user.emergencyContactPhone ?? "",
+      memberCode: membership?.memberCode ?? null,
+      orgCode: membership?.organization?.orgCode ?? null,
     });
   } catch (error) {
     console.error("GET /api/users/profile error:", error);

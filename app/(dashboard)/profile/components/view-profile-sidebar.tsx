@@ -16,6 +16,8 @@ interface UserProfile {
   companyName?: string;
   firmName?: string;
   organizationName?: string;
+  memberCode?: string | null;
+  orgCode?: string | null;
 }
 
 const ViewProfileSidebar = () => {
@@ -91,6 +93,11 @@ const ViewProfileSidebar = () => {
             >
               {badge.label}
             </span>
+          )}
+          {user.memberCode && (
+            <p className="text-xs font-mono text-neutral-500 dark:text-neutral-400 mt-2" title="Your membership code in this organization">
+              {user.memberCode}
+            </p>
           )}
           <p className="text-neutral-500 dark:text-neutral-300 mt-2 mb-4 text-sm break-all">{user.email}</p>
         </div>
