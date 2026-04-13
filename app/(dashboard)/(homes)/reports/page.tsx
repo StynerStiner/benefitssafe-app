@@ -2,6 +2,8 @@
 
 import DashboardBreadcrumb from '@/components/layout/dashboard-breadcrumb';
 import LoadingSkeleton from '@/components/loading-skeleton';
+import EmptyState from '@/components/shared/empty-state';
+import { BarChart3 } from 'lucide-react';
 import { useEffect, useState } from "react";
 import GrantReportsCard from './components/grant-reports-card';
 import AverageDailySalesCard from './components/average-daily-sales-card';
@@ -76,9 +78,23 @@ const Analytics = () => {
         );
     }
 
+    const hasData = grants.length > 0 || expenses.length > 0 || auditLogs.length > 0;
+
     return (
         <>
             <DashboardBreadcrumb title="Reports" text="Financial Reports" />
+
+            {!hasData && (
+                <div className="mt-6 rounded-xl bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700">
+                    <EmptyState
+                        icon={BarChart3}
+                        title="No report data yet"
+                        message="Reports will populate automatically as grants are created and transactions flow through the system."
+                        ctaLabel="Create a Grant"
+                        ctaHref="/grants"
+                    />
+                </div>
+            )}
 
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
 

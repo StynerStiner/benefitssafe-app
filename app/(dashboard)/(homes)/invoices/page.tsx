@@ -2,7 +2,9 @@
 
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import EmptyState from "@/components/shared/empty-state";
 import PageDateFilter from "@/components/shared/page-date-filter";
+import { FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import CustomersStatisticsCard from "../expenses/component/customers-statistics-card";
 import DailySalesCard from "../expenses/component/daily-sales-card";
@@ -71,6 +73,18 @@ const InvoicesPage = () => {
                     }}
                 />
             </div>
+
+            {expenses.length === 0 && (
+                <div className="mt-6 rounded-xl bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700">
+                    <EmptyState
+                        icon={FileText}
+                        title="No invoices yet"
+                        message="Invoices will appear here when organizations process payments to you. Make sure your vendor profile is complete so nonprofits can send you work."
+                        ctaLabel="Complete Profile"
+                        ctaHref="/profile"
+                    />
+                </div>
+            )}
 
             <div className="">
                 <SalesWidgetsCard expenses={expenses} />

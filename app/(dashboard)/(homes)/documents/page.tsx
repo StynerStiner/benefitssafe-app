@@ -2,6 +2,8 @@
 
 import DashboardBreadcrumb from '@/components/layout/dashboard-breadcrumb';
 import LoadingSkeleton from '@/components/loading-skeleton';
+import EmptyState from '@/components/shared/empty-state';
+import { FileText } from 'lucide-react';
 import { useEffect, useState } from "react";
 import IncomeExpenseCard from './components/income-expense-card';
 import OverallReportCard from './components/overall-report-card';
@@ -51,6 +53,16 @@ const DocumentsPage = () => {
     return (
         <>
             <DashboardBreadcrumb title="Documents" text="Document Management" />
+
+            {documents.length === 0 && (
+                <div className="mt-6 rounded-xl bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700">
+                    <EmptyState
+                        icon={FileText}
+                        title="No documents yet"
+                        message="Upload grant-related documents, receipts, and compliance records here. Documents attached to expenses and grants will also appear automatically."
+                    />
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
 

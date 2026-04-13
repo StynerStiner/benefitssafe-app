@@ -4,6 +4,8 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { captureApiError } from "@/lib/error-handler";
+import { sendEmail } from "@/lib/services/email-service";
+import { buildExpenseApprovedEmail } from "@/lib/services/email-templates";
 import { approveExpenseSchema } from "@/lib/validations/expense";
 import { NextResponse } from "next/server";
 
@@ -176,7 +178,7 @@ export async function PATCH(
       });
     }).catch(() => {});
 
-    // Notify the beneficiary who submitted the expense
+    // Notify the beneficiary who submitted the expense (in-app + email)
     if (result.requestedBy) {
       await prisma.notification.create({
         data: {
@@ -190,6 +192,29 @@ export async function PATCH(
           href: `/expenses`,
         },
       });
+
+      // Fire-and-forget email — notification already persisted.
+      if (result.requestedBy.email) {
+        const baseUrl = process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
+        const tmpl = buildExpenseApprovedEmail({
+          firstName: result.requestedBy.firstName || "there",
+          orgName: session.user.organizationName,
+          expenseDescription: result.description,
+          amount: `$${amount.toFixed(2)}`,
+          grantName: result.grant.name,
+          decisionUrl: `${baseUrl}/expenses`,
+        });
+        sendEmail({
+          to: result.requestedBy.email,
+          subject: tmpl.subject,
+          html: tmpl.html,
+          text: tmpl.text,
+          orgName: session.user.organizationName,
+          userId: result.requestedBy.id,
+          organizationId,
+          emailType: "expense_approved",
+        }).catch((err) => console.error("[expense_approved email] failed:", err));
+      }
     }
 
     return NextResponse.json(result);

@@ -10,6 +10,8 @@ import { checkLimitAccess, buildLimitReachedResponse, getCurrentPeriod } from "@
 import { incrementUsage } from "@/lib/usage-tracker";
 import { screenAgainstOFAC } from "@/lib/ofac-screening";
 import { BLOCKED_MCC_CODES } from "@/lib/mcc-controls";
+import { sendEmail } from "@/lib/services/email-service";
+import { buildCardIssuedEmail } from "@/lib/services/email-templates";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -410,7 +412,7 @@ export async function POST(
       });
     }).catch(() => {});
 
-    // Notify beneficiary about new card
+    // Notify beneficiary about new card (in-app + email)
     await prisma.notification.create({
       data: {
         userId: beneficiaryId,
@@ -422,6 +424,28 @@ export async function POST(
         href: `/virtual-cards/${virtualCard.id}`,
       },
     });
+
+    if (beneficiary.email) {
+      const baseUrl = process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
+      const tmpl = buildCardIssuedEmail({
+        firstName: beneficiary.firstName,
+        orgName: session.user.organizationName,
+        cardLabel: cardLabel || `Card ending ${virtualCard.last4}`,
+        grantName: grant.name,
+        spendingLimit: `$${parseFloat(virtualCard.spendingCap.toString()).toFixed(2)}`,
+        dashboardUrl: `${baseUrl}/virtual-cards`,
+      });
+      sendEmail({
+        to: beneficiary.email,
+        subject: tmpl.subject,
+        html: tmpl.html,
+        text: tmpl.text,
+        orgName: session.user.organizationName,
+        userId: beneficiaryId,
+        organizationId,
+        emailType: "card_issued",
+      }).catch((err) => console.error("[card_issued email] failed:", err));
+    }
 
     // Notify organization admins
     const admins = await prisma.user.findMany({

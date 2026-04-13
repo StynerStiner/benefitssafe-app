@@ -12,19 +12,18 @@ import { Input } from '@/components/ui/input'
 import { useLoading } from '@/contexts/LoadingContext'
 import { forgotPasswordSchema } from '@/lib/zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2, Mail } from 'lucide-react'
+import { CheckCircle2, Loader2, Mail } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useRef, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { z } from 'zod'
 import { handleForgotPasswordAction } from './actions/forgot-password'
 
 const ForgotPasswordComponent = () => {
-  const router = useRouter()
   const { loading, setLoading } = useLoading()
   const [isPending, startTransition] = useTransition()
+  const [submitted, setSubmitted] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
   const form = useForm<z.infer<typeof forgotPasswordSchema>>({
@@ -34,7 +33,7 @@ const ForgotPasswordComponent = () => {
     },
   })
 
-  const onSubmit = (values: z.infer<typeof forgotPasswordSchema>) => {
+  const onSubmit = (_values: z.infer<typeof forgotPasswordSchema>) => {
     setLoading(true)
 
     startTransition(async () => {
@@ -45,8 +44,9 @@ const ForgotPasswordComponent = () => {
         const result = await handleForgotPasswordAction(formData)
 
         if (result?.success) {
-          toast.success('Password Reset code has been sent to your email')
-          router.push('/auth/create-password')
+          // Always show the same success state regardless of whether the
+          // email is actually registered — avoids leaking account existence.
+          setSubmitted(true)
         } else {
           toast.error('Please enter a valid email')
         }
@@ -57,6 +57,31 @@ const ForgotPasswordComponent = () => {
         setTimeout(() => setLoading(false), 1000)
       }
     })
+  }
+
+  if (submitted) {
+    return (
+      <div className="rounded-xl border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-5">
+        <div className="flex items-center gap-2 mb-2">
+          <CheckCircle2 className="w-5 h-5 text-green-600" />
+          <p className="text-sm font-semibold text-green-700 dark:text-green-300">
+            Check your inbox
+          </p>
+        </div>
+        <p className="text-sm text-green-600 dark:text-green-400 mb-4">
+          If an account with that email exists, we&apos;ve sent you a password
+          reset link. The link expires in 60 minutes.
+        </p>
+        <div className="text-sm">
+          <p>
+            Remembered it?{' '}
+            <Link href="/auth/login" className="text-primary font-semibold hover:underline">
+              Sign in
+            </Link>
+          </p>
+        </div>
+      </div>
+    )
   }
 
 

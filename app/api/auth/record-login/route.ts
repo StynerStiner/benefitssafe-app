@@ -3,6 +3,8 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { sendEmail } from "@/lib/services/email-service";
+import { buildDeviceLoginEmail } from "@/lib/services/email-templates";
 import { NextRequest, NextResponse } from "next/server";
 
 interface TrustedDevice {
@@ -43,10 +45,16 @@ export async function POST(request: NextRequest) {
       "unknown";
     const userAgent = request.headers.get("user-agent") || "unknown";
 
-    // Fetch current user to get existing trustedDevices
+    // Fetch current user to get existing trustedDevices + details needed
+    // for the security alert email.
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { trustedDevices: true, organizationId: true },
+      select: {
+        trustedDevices: true,
+        organizationId: true,
+        email: true,
+        firstName: true,
+      },
     });
 
     if (!user) {
@@ -95,7 +103,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Create notification for new device
+    // Create notification for new device (in-app + security alert email)
     if (isNewDevice) {
       const browser = parseBrowser(userAgent);
       const os = parseOS(userAgent);
@@ -111,6 +119,30 @@ export async function POST(request: NextRequest) {
           entityId: session.user.id,
         },
       });
+
+      // Fire-and-forget security alert email. Notification already persisted,
+      // so a failed email never blocks the login flow.
+      if (user.email) {
+        const baseUrl = process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
+        const tmpl = buildDeviceLoginEmail({
+          firstName: user.firstName || "there",
+          orgName: session.user.organizationName,
+          ipAddress: ip,
+          userAgent: `${browser} on ${os}`,
+          when: new Date().toLocaleString("en-US", { dateStyle: "long", timeStyle: "short" }),
+          accountUrl: `${baseUrl}/profile`,
+        });
+        sendEmail({
+          to: user.email,
+          subject: tmpl.subject,
+          html: tmpl.html,
+          text: tmpl.text,
+          orgName: session.user.organizationName,
+          userId: session.user.id,
+          organizationId: user.organizationId,
+          emailType: "device_login",
+        }).catch((err) => console.error("[device_login email] failed:", err));
+      }
     }
 
     // Create audit log entry

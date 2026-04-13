@@ -344,6 +344,202 @@ export interface DeviceLoginEmailParams extends BrandOptions {
   accountUrl: string;
 }
 
+// ─── 9. COMPLIANCE ALERT ──────────────────────────────────────────────────
+
+export interface ComplianceAlertEmailParams extends BrandOptions {
+  adminFirstName: string;
+  alertTitle: string;
+  alertDescription: string;
+  severity: "low" | "medium" | "high" | "critical";
+  actionUrl: string;
+}
+
+export function buildComplianceAlertEmail(p: ComplianceAlertEmailParams): Built {
+  const org = p.orgName || PLATFORM_NAME;
+  const emoji = p.severity === "critical" ? "🚨" : p.severity === "high" ? "⚠️" : "ℹ️";
+  const subject = `${org}: Compliance issue detected — ${p.alertTitle}`;
+
+  const accentBg =
+    p.severity === "critical" || p.severity === "high"
+      ? "#FEF2F2"
+      : p.severity === "medium"
+        ? "#FFFBEB"
+        : "#F0F9FF";
+  const accentBorder =
+    p.severity === "critical" || p.severity === "high"
+      ? "#FECACA"
+      : p.severity === "medium"
+        ? "#FDE68A"
+        : "#BAE6FD";
+  const accentColor =
+    p.severity === "critical" || p.severity === "high"
+      ? "#991B1B"
+      : p.severity === "medium"
+        ? "#92400E"
+        : "#075985";
+
+  const html = shell(
+    `
+    <h1 style="font-size: 22px; font-weight: 600; color: ${accentColor}; margin: 0 0 16px 0;">${emoji} ${escape(p.alertTitle)}</h1>
+    <p style="font-size: 15px; color: #4B5563; line-height: 1.6;">Hi ${escape(p.adminFirstName)},</p>
+    <p style="font-size: 15px; color: #4B5563; line-height: 1.6;">
+      A compliance issue was detected in your organization that needs your review.
+    </p>
+    <div style="background: ${accentBg}; border: 1px solid ${accentBorder}; border-radius: 8px; padding: 16px; margin: 16px 0;">
+      <p style="font-size: 14px; color: ${accentColor}; margin: 0; line-height: 1.6;">
+        <strong>Severity:</strong> ${escape(p.severity.toUpperCase())}<br />
+        ${escape(p.alertDescription)}
+      </p>
+    </div>
+    ${ctaButton(p.actionUrl, "Review Compliance Alert")}
+  `,
+    p,
+  );
+  const text =
+    `Hi ${p.adminFirstName},\n\n` +
+    `${emoji} ${org}: ${p.alertTitle}\n\n` +
+    `Severity: ${p.severity.toUpperCase()}\n` +
+    `${p.alertDescription}\n\n` +
+    `Review: ${p.actionUrl}`;
+  return { subject, html, text };
+}
+
+// ─── 10. GRANT EXPIRING ───────────────────────────────────────────────────
+
+export interface GrantExpiringEmailParams extends BrandOptions {
+  adminFirstName: string;
+  grantName: string;
+  daysRemaining: number;
+  endDate: string;
+  grantUrl: string;
+}
+
+export function buildGrantExpiringEmail(p: GrantExpiringEmailParams): Built {
+  const org = p.orgName || PLATFORM_NAME;
+  const urgent = p.daysRemaining <= 7;
+  const emoji = urgent ? "🚨" : "⏰";
+  const subject = `${org}: Grant "${p.grantName}" expires in ${p.daysRemaining} day${p.daysRemaining === 1 ? "" : "s"}`;
+
+  const accentBg = urgent ? "#FEF2F2" : "#FFFBEB";
+  const accentBorder = urgent ? "#FECACA" : "#FDE68A";
+  const accentColor = urgent ? "#991B1B" : "#92400E";
+
+  const html = shell(
+    `
+    <h1 style="font-size: 22px; font-weight: 600; color: ${accentColor}; margin: 0 0 16px 0;">${emoji} Grant expiring soon</h1>
+    <p style="font-size: 15px; color: #4B5563; line-height: 1.6;">Hi ${escape(p.adminFirstName)},</p>
+    <p style="font-size: 15px; color: #4B5563; line-height: 1.6;">
+      The grant <strong>${escape(p.grantName)}</strong> is ending soon. Review any unspent funds and plan for closeout.
+    </p>
+    <div style="background: ${accentBg}; border: 1px solid ${accentBorder}; border-radius: 8px; padding: 16px; margin: 16px 0;">
+      <p style="font-size: 16px; color: ${accentColor}; font-weight: 700; margin: 0 0 4px 0;">${escape(p.daysRemaining)} day${p.daysRemaining === 1 ? "" : "s"} remaining</p>
+      <p style="font-size: 14px; color: ${accentColor}; margin: 4px 0 0 0;">Ends on ${escape(p.endDate)}</p>
+    </div>
+    ${ctaButton(p.grantUrl, "Review Grant")}
+  `,
+    p,
+  );
+  const text =
+    `Hi ${p.adminFirstName},\n\n` +
+    `${emoji} Grant "${p.grantName}" expires in ${p.daysRemaining} day${p.daysRemaining === 1 ? "" : "s"} (${p.endDate}).\n\n` +
+    `Review any unspent funds and plan for closeout.\n\n` +
+    `Review grant: ${p.grantUrl}\n\n` +
+    `Sent by ${org} via BenefitsSafe.`;
+  return { subject, html, text };
+}
+
+// ─── 11. CARD ISSUED ──────────────────────────────────────────────────────
+
+export interface CardIssuedEmailParams extends BrandOptions {
+  firstName: string;
+  cardLabel: string;
+  grantName?: string | null;
+  spendingLimit?: string | null;
+  dashboardUrl: string;
+}
+
+export function buildCardIssuedEmail(p: CardIssuedEmailParams): Built {
+  const org = p.orgName || PLATFORM_NAME;
+  const subject = `${org}: A new virtual card has been issued to you`;
+
+  const grantLine = p.grantName
+    ? `<p style="font-size: 14px; color: #14532D; margin: 4px 0 0 0;">From grant: <strong>${escape(p.grantName)}</strong></p>`
+    : "";
+  const limitLine = p.spendingLimit
+    ? `<p style="font-size: 14px; color: #14532D; margin: 4px 0 0 0;">Spending limit: <strong>${escape(p.spendingLimit)}</strong></p>`
+    : "";
+
+  const html = shell(
+    `
+    <h1 style="font-size: 22px; font-weight: 600; color: #111827; margin: 0 0 16px 0;">💳 New virtual card issued</h1>
+    <p style="font-size: 15px; color: #4B5563; line-height: 1.6;">Hi ${escape(p.firstName)},</p>
+    <p style="font-size: 15px; color: #4B5563; line-height: 1.6;">
+      ${escape(org)} has issued a new virtual card to you. You can view card details and start using it from your dashboard.
+    </p>
+    <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 16px; margin: 16px 0;">
+      <p style="font-size: 16px; color: #14532D; font-weight: 700; margin: 0;">${escape(p.cardLabel)}</p>
+      ${grantLine}
+      ${limitLine}
+    </div>
+    ${ctaButton(p.dashboardUrl, "View My Cards")}
+    <p style="font-size: 13px; color: #9CA3AF; line-height: 1.5;">
+      Your card is ready to use within the spending rules set by ${escape(org)}. Transactions that don't match the rules will be declined.
+    </p>
+  `,
+    p,
+  );
+  const text =
+    `Hi ${p.firstName},\n\n` +
+    `${org} has issued a new virtual card to you: ${p.cardLabel}\n` +
+    (p.grantName ? `From grant: ${p.grantName}\n` : "") +
+    (p.spendingLimit ? `Spending limit: ${p.spendingLimit}\n` : "") +
+    `\nView your cards: ${p.dashboardUrl}`;
+  return { subject, html, text };
+}
+
+// ─── 12. PAYMENT RECEIVED (Vendor) ────────────────────────────────────────
+
+export interface PaymentReceivedEmailParams extends BrandOptions {
+  vendorName: string;
+  amount: string;
+  invoiceRef?: string | null;
+  paymentDate: string;
+  dashboardUrl: string;
+}
+
+export function buildPaymentReceivedEmail(p: PaymentReceivedEmailParams): Built {
+  const org = p.orgName || PLATFORM_NAME;
+  const subject = `${org}: Payment of ${p.amount} has been processed`;
+  const invoiceLine = p.invoiceRef
+    ? `<p style="font-size: 14px; color: #14532D; margin: 4px 0 0 0;">Reference: <strong>${escape(p.invoiceRef)}</strong></p>`
+    : "";
+
+  const html = shell(
+    `
+    <h1 style="font-size: 22px; font-weight: 600; color: #111827; margin: 0 0 16px 0;">💰 Payment processed</h1>
+    <p style="font-size: 15px; color: #4B5563; line-height: 1.6;">Hi ${escape(p.vendorName)},</p>
+    <p style="font-size: 15px; color: #4B5563; line-height: 1.6;">
+      ${escape(org)} has processed a payment to your account.
+    </p>
+    <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 16px; margin: 16px 0;">
+      <p style="font-size: 22px; color: #14532D; font-weight: 700; margin: 0;">${escape(p.amount)}</p>
+      <p style="font-size: 14px; color: #14532D; margin: 4px 0 0 0;">Processed on ${escape(p.paymentDate)}</p>
+      ${invoiceLine}
+    </div>
+    ${ctaButton(p.dashboardUrl, "View Payment Details")}
+  `,
+    p,
+  );
+  const text =
+    `Hi ${p.vendorName},\n\n` +
+    `${org} has processed a payment to your account.\n\n` +
+    `Amount: ${p.amount}\n` +
+    `Processed: ${p.paymentDate}\n` +
+    (p.invoiceRef ? `Reference: ${p.invoiceRef}\n` : "") +
+    `\nView details: ${p.dashboardUrl}`;
+  return { subject, html, text };
+}
+
 export function buildDeviceLoginEmail(p: DeviceLoginEmailParams): Built {
   const subject = `New login to your BenefitsSafe account`;
   const html = shell(
