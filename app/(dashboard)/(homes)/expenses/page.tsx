@@ -12,7 +12,9 @@ import TransactionsCard from '@/app/(dashboard)/(homes)/expenses/component/trans
 import AddExpenseForm from "./component/add-expense-form";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import EmptyState from "@/components/shared/empty-state";
 import PageDateFilter from "@/components/shared/page-date-filter";
+import { Receipt } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface Expense {
@@ -85,6 +87,16 @@ const EcommercePage = () => {
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
           <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        </div>
+      )}
+
+      {expenses.length === 0 && (
+        <div className="mt-6 rounded-xl bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700">
+          <EmptyState
+            icon={Receipt}
+            title="No expenses yet"
+            message="Expenses will appear here when beneficiaries submit spending requests, or when you record payments against a grant."
+          />
         </div>
       )}
 

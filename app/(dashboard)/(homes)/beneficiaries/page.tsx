@@ -13,9 +13,10 @@ import TopPerformerCard from '@/app/(dashboard)/(homes)/beneficiaries/components
 import AddBeneficiaryForm from '@/app/(dashboard)/(homes)/beneficiaries/components/add-beneficiary-form';
 import DashboardBreadcrumb from '@/components/layout/dashboard-breadcrumb';
 import LoadingSkeleton from '@/components/loading-skeleton';
+import EmptyState from '@/components/shared/empty-state';
 import PageDateFilter from '@/components/shared/page-date-filter';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Search, Users } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface Beneficiary {
@@ -157,6 +158,16 @@ const CrmPage = () => {
         </div>
         <AddBeneficiaryForm onSuccess={handleRefresh} />
       </div>
+
+      {beneficiaries.length === 0 && (
+        <div className="mt-6 rounded-xl bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700">
+          <EmptyState
+            icon={Users}
+            title="No beneficiaries yet"
+            message="Beneficiaries are the people your grants serve — they're the cardholders who spend restricted funds. Add your first beneficiary to start managing their benefits."
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
 

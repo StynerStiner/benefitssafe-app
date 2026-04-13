@@ -3,6 +3,7 @@
 import UsersGridCard from "@/app/(dashboard)/team/users-grid-card";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import CustomSelect from "@/components/shared/custom-select";
+import EmptyState from "@/components/shared/empty-state";
 import SearchBox from "@/components/shared/search-box";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -23,7 +24,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { Plus } from "lucide-react";
+import { Plus, UsersRound } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -190,15 +191,25 @@ const UsersGrid = () => {
                 </CardHeader>
 
                 <CardContent className="card-body p-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4">
-                        {loading ? (
-                            <p className="text-sm text-neutral-500 col-span-full text-center py-8">Loading team...</p>
-                        ) : users.length === 0 ? (
-                            <p className="text-sm text-neutral-500 col-span-full text-center py-8">No team members found</p>
-                        ) : (
+                    {loading ? (
+                        <p className="text-sm text-neutral-500 col-span-full text-center py-8">Loading team...</p>
+                    ) : users.length <= 1 ? (
+                        <EmptyState
+                            icon={UsersRound}
+                            title={users.length === 0 ? "No team members found" : "You're flying solo"}
+                            message={
+                                users.length === 0
+                                    ? "No team members match your current filters."
+                                    : "Invite staff, auditors, or compliance officers to help manage your organization. They'll get their own login and role-scoped access."
+                            }
+                            ctaLabel={users.length <= 1 ? "Invite Team Member" : undefined}
+                            ctaOnClick={users.length <= 1 ? () => setInviteOpen(true) : undefined}
+                        />
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4">
                             <UsersGridCard users={users} onRefresh={handleRefresh} />
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 

@@ -2,6 +2,8 @@
 
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import EmptyState from "@/components/shared/empty-state";
+import { ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import AgentEarnings from "./components/agent-earnings";
 import BestAgentsCard from "./components/best-agents-card";
@@ -70,6 +72,16 @@ const AuditTrailPage = () => {
     return (
         <>
             <DashboardBreadcrumb title="Audit Trail" text="Activity Log" />
+
+            {auditLogs.length === 0 && (
+                <div className="mt-6 rounded-xl bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700">
+                    <EmptyState
+                        icon={ShieldCheck}
+                        title="No audit entries yet"
+                        message="Every data mutation — grants, expenses, approvals, logins — is logged here automatically. Entries will appear as your team uses the platform."
+                    />
+                </div>
+            )}
 
             <div className="">
                 <StateCard auditLogs={auditLogs} />

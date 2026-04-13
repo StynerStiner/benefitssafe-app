@@ -10,6 +10,8 @@ import TotalBalanceCard from "@/app/(dashboard)/(homes)/ledger/components/total-
 import UsersActivateCard from "@/app/(dashboard)/(homes)/ledger/components/users-activate-card";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import EmptyState from "@/components/shared/empty-state";
+import { BookOpen } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface Grant {
@@ -70,9 +72,24 @@ const LedgerPage = () => {
     );
   }
 
+  const hasLedgerData =
+    grants.length > 0 || ledgerEntries.length > 0 || transactions.length > 0;
+
   return (
     <>
       <DashboardBreadcrumb title="Ledger" text="Restricted Fund Ledger" />
+
+      {!hasLedgerData && (
+        <div className="mt-6 rounded-xl bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700">
+          <EmptyState
+            icon={BookOpen}
+            title="No ledger entries yet"
+            message="The restricted fund ledger is immutable and auto-populates from grants, card transactions, and disbursements. Create a grant to see the first entry."
+            ctaLabel="Create Grant"
+            ctaHref="/grants"
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-5 gap-6">
         <StatsCard grants={grants} ledgerEntries={ledgerEntries} />
