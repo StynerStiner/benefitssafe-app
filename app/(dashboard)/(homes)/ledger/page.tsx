@@ -11,6 +11,7 @@ import UsersActivateCard from "@/app/(dashboard)/(homes)/ledger/components/users
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import EmptyState from "@/components/shared/empty-state";
+import ExportButton from "@/components/shared/export-button";
 import { BookOpen } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -77,7 +78,10 @@ const LedgerPage = () => {
 
   return (
     <>
-      <DashboardBreadcrumb title="Ledger" text="Restricted Fund Ledger" />
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <DashboardBreadcrumb title="Ledger" text="Restricted Fund Ledger" />
+        <ExportButton type="ledger" label="Export Ledger" csvOnly />
+      </div>
 
       {!hasLedgerData && (
         <div className="mt-6 rounded-xl bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700">

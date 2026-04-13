@@ -3,6 +3,7 @@
 import DashboardBreadcrumb from '@/components/layout/dashboard-breadcrumb';
 import LoadingSkeleton from '@/components/loading-skeleton';
 import EmptyState from '@/components/shared/empty-state';
+import ExportButton from '@/components/shared/export-button';
 import { BarChart3 } from 'lucide-react';
 import { useEffect, useState } from "react";
 import GrantReportsCard from './components/grant-reports-card';
@@ -82,7 +83,14 @@ const Analytics = () => {
 
     return (
         <>
-            <DashboardBreadcrumb title="Reports" text="Financial Reports" />
+            <div className="flex items-center justify-between flex-wrap gap-2">
+                <DashboardBreadcrumb title="Reports" text="Financial Reports" />
+                <div className="flex items-center gap-2">
+                    <ExportButton type="expense_summary" label="Expenses" />
+                    <ExportButton type="transaction_history" label="Transactions" />
+                    <ExportButton type="audit_trail" label="Audit Trail" />
+                </div>
+            </div>
 
             {!hasData && (
                 <div className="mt-6 rounded-xl bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700">

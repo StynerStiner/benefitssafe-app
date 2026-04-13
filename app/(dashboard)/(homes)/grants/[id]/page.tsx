@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
+import ExportButton from "@/components/shared/export-button";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -372,7 +373,10 @@ const GrantDetailPage = () => {
 
   return (
     <>
-      <DashboardBreadcrumb title="Grant Details" text={grant.name} />
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <DashboardBreadcrumb title="Grant Details" text={grant.name} />
+        <ExportButton type="grant_compliance" grantId={grant.id} label="Compliance Report" />
+      </div>
 
       <div className="grid grid-cols-1 gap-6">
         {/* GRANT OVERVIEW */}

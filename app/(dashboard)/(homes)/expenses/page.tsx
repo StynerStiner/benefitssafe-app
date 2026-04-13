@@ -13,6 +13,7 @@ import AddExpenseForm from "./component/add-expense-form";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import EmptyState from "@/components/shared/empty-state";
+import ExportButton from "@/components/shared/export-button";
 import PageDateFilter from "@/components/shared/page-date-filter";
 import { Receipt } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -80,6 +81,7 @@ const EcommercePage = () => {
               setSelectedYear(year);
             }}
           />
+          <ExportButton type="expense_summary" label="Export" />
           <AddExpenseForm />
         </div>
       </div>
