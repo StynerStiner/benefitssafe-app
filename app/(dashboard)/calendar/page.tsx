@@ -19,6 +19,10 @@ export interface CalendarEventData {
     organizationId: string;
     createdAt: string;
     updatedAt: string;
+    // true when the row is synthesized from grant data (GET /api/events merges
+    // grant-lifecycle entries). Synthetic rows are not editable or deletable;
+    // the source of truth is the Grant itself.
+    synthetic?: boolean;
 }
 
 const CalendarPage = () => {

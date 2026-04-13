@@ -6,6 +6,15 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 
+// Grant-derived events are synthesized in GET /api/events with this ID
+// prefix. They are not real rows and cannot be edited or deleted — the
+// source of truth lives on the Grant itself.
+const SYNTHETIC_GRANT_PREFIX = "grant:";
+
+const SYNTHETIC_REJECTION = {
+  error: "This is a grant-derived calendar entry. Edit the grant instead.",
+};
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -18,6 +27,10 @@ export async function PATCH(
 
     const { organizationId, id: userId } = session.user;
     const { id } = await params;
+
+    if (id.startsWith(SYNTHETIC_GRANT_PREFIX)) {
+      return NextResponse.json(SYNTHETIC_REJECTION, { status: 400 });
+    }
 
     // Verify event belongs to org
     const existing = await prisma.calendarEvent.findFirst({
@@ -75,6 +88,10 @@ export async function DELETE(
 
     const { organizationId, id: userId } = session.user;
     const { id } = await params;
+
+    if (id.startsWith(SYNTHETIC_GRANT_PREFIX)) {
+      return NextResponse.json(SYNTHETIC_REJECTION, { status: 400 });
+    }
 
     // Verify event belongs to org
     const existing = await prisma.calendarEvent.findFirst({

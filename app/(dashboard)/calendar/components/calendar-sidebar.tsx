@@ -41,6 +41,7 @@ export interface SidebarEvent {
     endTime: string;
     description: string;
     category: string;
+    synthetic: boolean;
 }
 
 function toSidebarEvent(event: CalendarEventData): SidebarEvent {
@@ -59,6 +60,7 @@ function toSidebarEvent(event: CalendarEventData): SidebarEvent {
             : "",
         description: event.description || "",
         category: event.category,
+        synthetic: event.synthetic ?? false,
     };
 }
 
@@ -170,15 +172,24 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({ events, onAddEvent, o
                                             <ViewEvent addOnViewEvent={event} />
                                         </DropdownMenuItem>
 
-                                        <DropdownMenuItem asChild>
-                                            <EditEvent onEditEvent={handleUpdateEvent} event={event} />
-                                        </DropdownMenuItem>
+                                        {!event.synthetic && (
+                                            <>
+                                                <DropdownMenuItem asChild>
+                                                    <EditEvent onEditEvent={handleUpdateEvent} event={event} />
+                                                </DropdownMenuItem>
 
-                                        <DropdownMenuItem
-                                            onClick={() => handleRemoveEvent(event.id)}
-                                        >
-                                            <Trash /> Delete
-                                        </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() => handleRemoveEvent(event.id)}
+                                                >
+                                                    <Trash /> Delete
+                                                </DropdownMenuItem>
+                                            </>
+                                        )}
+                                        {event.synthetic && (
+                                            <DropdownMenuItem disabled className="text-xs text-neutral-400">
+                                                Auto-generated from grant
+                                            </DropdownMenuItem>
+                                        )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>

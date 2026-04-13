@@ -36,13 +36,15 @@ interface BasicFullCalendarProps {
 function BasicFullCalendar({ events, onEventCreate, onEventUpdate, onEventDelete }: BasicFullCalendarProps) {
     const calendarEvents = events.map((event) => ({
         id: event.id,
-        title: event.title,
+        title: event.synthetic ? `● ${event.title}` : event.title,
         start: event.startDate,
         end: event.endDate || undefined,
         backgroundColor: event.color || CATEGORY_COLORS[event.category] || CATEGORY_COLORS.general,
+        editable: !event.synthetic,
         extendedProps: {
             description: event.description,
             category: event.category,
+            synthetic: event.synthetic ?? false,
         },
     }));
 
@@ -58,8 +60,13 @@ function BasicFullCalendar({ events, onEventCreate, onEventUpdate, onEventDelete
         }
     };
 
-    // Edit or delete event via event click
-    const handleEventClick = (info: { event: { id: string; title: string } }) => {
+    // Edit or delete event via event click. Synthetic (grant-derived) rows
+    // are read-only — their source of truth is the Grant itself.
+    const handleEventClick = (info: { event: { id: string; title: string; extendedProps: { synthetic?: boolean } } }) => {
+        if (info.event.extendedProps.synthetic || info.event.id.startsWith("grant:")) {
+            alert("This event is auto-generated from a grant. Edit it on the grant page.");
+            return;
+        }
         const newTitle = prompt("Edit Event Title (leave blank and confirm to delete):", info.event.title);
         if (newTitle) {
             onEventUpdate(info.event.id, { title: newTitle });

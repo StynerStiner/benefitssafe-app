@@ -1,10 +1,21 @@
 // ORG-SCOPED: All queries filtered by session.user.organizationId
-// GET  /api/events — List calendar events for org
+// GET  /api/events — List calendar events for org, with synthesized
+//                    grant-lifecycle entries merged in
 // POST /api/events — Create a calendar event
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+
+// Synthetic event IDs use this prefix so the PATCH/DELETE handlers can
+// detect and reject them — grant dates are derived, not first-class rows,
+// and must be edited on the Grant itself, not the calendar.
+const SYNTHETIC_GRANT_PREFIX = "grant:";
+
+// Returns ms between now and `date` (can be negative if past).
+function msUntil(date: Date): number {
+  return date.getTime() - Date.now();
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,25 +24,149 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { organizationId } = session.user;
+    const { organizationId, role } = session.user;
+
+    // Vendors have no calendar use case on BenefitsSafe — return empty
+    // rather than leaking grant dates from the nonprofit they transact with.
+    if (role === "vendor") {
+      return NextResponse.json({ events: [] });
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const start = searchParams.get("start");
     const end = searchParams.get("end");
+
+    const startDate = start ? new Date(start) : null;
+    const endDate = end ? new Date(end) : null;
 
     const where: Record<string, unknown> = {
       organizationId,
     };
 
-    if (start || end) {
+    if (startDate || endDate) {
       const dateFilter: Record<string, Date> = {};
-      if (start) dateFilter.gte = new Date(start);
-      if (end) dateFilter.lte = new Date(end);
+      if (startDate) dateFilter.gte = startDate;
+      if (endDate) dateFilter.lte = endDate;
       where.startDate = dateFilter;
     }
 
-    const events = await prisma.calendarEvent.findMany({
+    // 1. Real calendar rows.
+    const realEvents = await prisma.calendarEvent.findMany({
       where: where as never,
       orderBy: { startDate: "asc" },
+    });
+
+    // 2. Grant-derived synthetic events. Beneficiaries see only their own
+    //    grants; admins and other roles see every grant for the org.
+    const grantWhere: Record<string, unknown> = {
+      organizationId,
+      status: { in: ["ACTIVE", "DRAFT", "PAUSED"] },
+    };
+    if (role === "beneficiary") {
+      grantWhere.beneficiaryId = session.user.id;
+    }
+
+    const grants = await prisma.grant.findMany({
+      where: grantWhere as never,
+      select: {
+        id: true,
+        name: true,
+        startDate: true,
+        endDate: true,
+        status: true,
+      },
+    });
+
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+    const now = new Date();
+    const nowIso = now.toISOString();
+
+    type SyntheticEvent = {
+      id: string;
+      title: string;
+      description: string | null;
+      startDate: string;
+      endDate: string | null;
+      category: string;
+      color: string | null;
+      createdById: string;
+      organizationId: string;
+      createdAt: string;
+      updatedAt: string;
+      synthetic: true;
+    };
+
+    const synthetic: SyntheticEvent[] = [];
+
+    for (const g of grants) {
+      const startIso = g.startDate.toISOString();
+      synthetic.push({
+        id: `${SYNTHETIC_GRANT_PREFIX}${g.id}:start`,
+        title: `Grant Start: ${g.name}`,
+        description: `Grant "${g.name}" begins. Status: ${g.status}.`,
+        startDate: startIso,
+        endDate: null,
+        category: "grants",
+        color: null,
+        createdById: "system",
+        organizationId,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+        synthetic: true,
+      });
+
+      if (g.endDate) {
+        const endIso = g.endDate.toISOString();
+        synthetic.push({
+          id: `${SYNTHETIC_GRANT_PREFIX}${g.id}:end`,
+          title: `Grant End: ${g.name}`,
+          description: `Grant "${g.name}" closes.`,
+          startDate: endIso,
+          endDate: null,
+          category: "grants",
+          color: null,
+          createdById: "system",
+          organizationId,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+          synthetic: true,
+        });
+
+        // "Expiring soon" warning 30 days before end date, only if we're
+        // currently within the 30-day window and the grant hasn't ended.
+        const untilEnd = msUntil(g.endDate);
+        if (untilEnd > 0 && untilEnd <= THIRTY_DAYS_MS) {
+          synthetic.push({
+            id: `${SYNTHETIC_GRANT_PREFIX}${g.id}:expire`,
+            title: `Grant Expiring Soon: ${g.name}`,
+            description: `Grant "${g.name}" ends in ${Math.ceil(untilEnd / (24 * 60 * 60 * 1000))} days.`,
+            // Show the warning today so it appears on the current week.
+            startDate: nowIso,
+            endDate: null,
+            category: "compliance",
+            color: null,
+            createdById: "system",
+            organizationId,
+            createdAt: nowIso,
+            updatedAt: nowIso,
+            synthetic: true,
+          });
+        }
+      }
+    }
+
+    // Apply the caller's start/end window to synthetic events too.
+    const filteredSynthetic = synthetic.filter((s) => {
+      const d = new Date(s.startDate);
+      if (startDate && d < startDate) return false;
+      if (endDate && d > endDate) return false;
+      return true;
+    });
+
+    const events = [...realEvents, ...filteredSynthetic].sort((a, b) => {
+      const aTime = new Date(a.startDate).getTime();
+      const bTime = new Date(b.startDate).getTime();
+      return aTime - bTime;
     });
 
     return NextResponse.json({ events });
