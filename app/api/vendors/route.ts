@@ -7,6 +7,8 @@ import { cached, invalidateCacheByPrefix, CACHE_KEYS, CACHE_TTL } from "@/lib/ca
 import { prisma } from "@/lib/db";
 import { validateRecipientEmail, sanitizeEmailForLog, buildSecureLink } from "@/lib/email-security";
 import { createVendorSchema } from "@/lib/validations/vendor";
+import { sendEmail } from "@/lib/services/email-service";
+import { buildInviteEmail } from "@/lib/services/email-templates";
 import { generateMembershipCode } from "@/lib/utils/membership-code";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -205,50 +207,26 @@ export async function POST(request: Request) {
 
         const inviteUrl = buildSecureLink(`/auth/accept-invite?token=${invite.token}`);
 
-        // Send invite email via Postmark (or console fallback)
-        let emailSent = false;
-
-        if (process.env.POSTMARK_API_TOKEN) {
-          try {
-            const emailRes = await fetch("https://api.postmarkapp.com/email", {
-              method: "POST",
-              headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-                "X-Postmark-Server-Token": process.env.POSTMARK_API_TOKEN,
-              },
-              body: JSON.stringify({
-                From: process.env.POSTMARK_FROM_EMAIL || "noreply@benefitssafe.com",
-                To: data.email,
-                Subject: "You've been invited to BenefitsSafe as a Vendor",
-                TextBody: `Hi ${firstName},\n\nYou've been invited to join BenefitsSafe as a vendor.\n\nSet up your account: ${inviteUrl}\n\nThis link expires in ${INVITE_EXPIRY_DAYS} days.`,
-                MessageStream: "outbound",
-                Headers: [
-                  { Name: "X-BenefitsSafe-Invite", Value: "true" },
-                ],
-              }),
-            });
-
-            emailSent = emailRes.ok;
-            if (!emailRes.ok) {
-              console.error("Postmark vendor invite email failed:", await emailRes.text());
-            }
-          } catch (emailError) {
-            console.error("Failed to send vendor invite email:", emailError);
-          }
-        } else {
-          // Log to console when Postmark not configured (dev mode)
-          console.log("\n========================================");
-          console.log("VENDOR INVITE (Postmark not configured)");
-          console.log("========================================");
-          console.log(`To: ${data.email}`);
-          console.log(`Name: ${firstName} ${lastName}`);
-          console.log(`Role: vendor`);
-          console.log(`Link: ${inviteUrl}`);
-          console.log(`Expires: ${invite.expiresAt.toISOString()}`);
-          console.log("========================================\n");
-          emailSent = true; // In dev, console log counts as "sent"
-        }
+        // Centralized invite email via email-service.
+        const vendorInviteEmail = buildInviteEmail({
+          firstName,
+          orgName: session.user.organizationName,
+          inviteUrl,
+          loginEmail: data.email,
+          expiresDays: INVITE_EXPIRY_DAYS,
+          role: "vendor",
+        });
+        const vendorSendResult = await sendEmail({
+          to: data.email,
+          subject: vendorInviteEmail.subject,
+          html: vendorInviteEmail.html,
+          text: vendorInviteEmail.text,
+          orgName: session.user.organizationName,
+          userId: session.user.id,
+          organizationId,
+          emailType: "invite",
+        });
+        const emailSent = vendorSendResult.sent || vendorSendResult.skipped;
 
         // Audit log for the invite
         await prisma.auditLog.create({

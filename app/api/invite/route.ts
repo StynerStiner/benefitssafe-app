@@ -9,6 +9,8 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { validateRecipientEmail, sanitizeEmailForLog, buildSecureLink } from "@/lib/email-security";
+import { sendEmail } from "@/lib/services/email-service";
+import { buildInviteEmail } from "@/lib/services/email-templates";
 import { NextResponse } from "next/server";
 
 const INVITE_EXPIRY_DAYS = 7;
@@ -165,49 +167,25 @@ export async function POST(request: Request) {
         );
       }
 
-      if (process.env.POSTMARK_API_TOKEN) {
-        try {
-          const emailRes = await fetch("https://api.postmarkapp.com/email", {
-            method: "POST",
-            headers: {
-              "Accept": "application/json",
-              "Content-Type": "application/json",
-              "X-Postmark-Server-Token": process.env.POSTMARK_API_TOKEN,
-            },
-            body: JSON.stringify({
-              From: process.env.POSTMARK_FROM_EMAIL || "noreply@benefitssafe.com",
-              To: user.email,
-              Subject: "You've been invited to BenefitsSafe",
-              HtmlBody: buildInviteEmailHtml(user.firstName, user.organization.name, user.email, inviteUrl),
-              TextBody: `Hi ${user.firstName},\n\n${user.organization.name} has invited you to BenefitsSafe.\n\nYour login email is: ${user.email}\n\nSet up your account: ${inviteUrl}\n\nThis link expires in ${INVITE_EXPIRY_DAYS} days.`,
-              MessageStream: "outbound",
-              Headers: [
-                { Name: "X-BenefitsSafe-Invite", Value: "true" },
-              ],
-            }),
-          });
-
-          emailSent = emailRes.ok;
-          if (!emailRes.ok) {
-            console.error("Postmark email failed:", await emailRes.text());
-          }
-        } catch (emailError) {
-          console.error("Failed to send invite email:", emailError);
-        }
-      } else {
-        // Log to console when Postmark not configured (dev mode)
-        console.log("\n========================================");
-        console.log("INVITE EMAIL (Postmark not configured)");
-        console.log("========================================");
-        console.log(`To: ${user.email}`);
-        console.log(`Name: ${user.firstName}`);
-        console.log(`Org: ${user.organization.name}`);
-        console.log(`Role: ${user.role}`);
-        console.log(`Link: ${inviteUrl}`);
-        console.log(`Expires: ${invite.expiresAt.toISOString()}`);
-        console.log("========================================\n");
-        emailSent = true; // In dev, console log counts as "sent"
-      }
+      const inviteEmailContent = buildInviteEmail({
+        firstName: user.firstName,
+        orgName: user.organization.name,
+        inviteUrl,
+        loginEmail: user.email,
+        expiresDays: INVITE_EXPIRY_DAYS,
+        role: user.role,
+      });
+      const inviteSendResult = await sendEmail({
+        to: user.email,
+        subject: inviteEmailContent.subject,
+        html: inviteEmailContent.html,
+        text: inviteEmailContent.text,
+        orgName: user.organization.name,
+        userId: session.user.id,
+        organizationId,
+        emailType: "invite",
+      });
+      emailSent = inviteSendResult.sent || inviteSendResult.skipped;
     }
 
     // Audit log
@@ -244,38 +222,3 @@ export async function POST(request: Request) {
   }
 }
 
-function buildInviteEmailHtml(firstName: string, orgName: string, email: string, inviteUrl: string) {
-  return `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px;">
-      <div style="text-align: center; margin-bottom: 32px;">
-        <div style="display: inline-flex; align-items: center; gap: 10px;">
-          <div style="background: #1B2A4A; color: white; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px;">&#9632;</div>
-          <span style="font-size: 20px; font-weight: 700; color: #111827;">BenefitsSafe</span>
-        </div>
-      </div>
-      <h1 style="font-size: 24px; font-weight: 600; color: #111827; margin-bottom: 16px;">You're invited!</h1>
-      <p style="font-size: 16px; color: #4B5563; line-height: 1.6;">Hi ${firstName},</p>
-      <p style="font-size: 16px; color: #4B5563; line-height: 1.6;">
-        <strong>${orgName}</strong> has invited you to BenefitsSafe, a secure platform for managing grant disbursements.
-      </p>
-      <p style="font-size: 16px; color: #4B5563; line-height: 1.6;">
-        Your login email is: <strong>${email}</strong>
-      </p>
-      <p style="font-size: 16px; color: #4B5563; line-height: 1.6;">
-        Click the button below to set up your password and access your account. This link expires in ${INVITE_EXPIRY_DAYS} days.
-      </p>
-      <div style="text-align: center; margin: 32px 0;">
-        <a href="${inviteUrl}" style="background: #1B2A4A; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block;">
-          Set Up My Account
-        </a>
-      </div>
-      <p style="font-size: 13px; color: #9CA3AF; line-height: 1.5;">
-        If you didn't expect this invitation, you can safely ignore this email.
-      </p>
-      <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 32px 0;" />
-      <p style="font-size: 12px; color: #9CA3AF; text-align: center;">
-        BenefitsSafe -- Secure grant disbursement for nonprofits
-      </p>
-    </div>
-  `;
-}

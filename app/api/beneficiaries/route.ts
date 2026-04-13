@@ -9,6 +9,8 @@ import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { createBeneficiarySchema } from "@/lib/validations/beneficiary";
 import { checkLimitAccess, buildLimitReachedResponse } from "@/lib/feature-gates";
 import { incrementUsage } from "@/lib/usage-tracker";
+import { sendEmail } from "@/lib/services/email-service";
+import { buildInviteEmail } from "@/lib/services/email-templates";
 import { generateMembershipCode } from "@/lib/utils/membership-code";
 import { NextResponse } from "next/server";
 
@@ -301,38 +303,26 @@ export async function POST(request: Request) {
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3001";
     const inviteUrl = `${baseUrl}/auth/create-password?token=${invite.token}`;
 
-    // Auto-send invite email (or log to console if Postmark not configured)
-    if (process.env.POSTMARK_API_TOKEN) {
-      try {
-        await fetch("https://api.postmarkapp.com/email", {
-          method: "POST",
-          headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "X-Postmark-Server-Token": process.env.POSTMARK_API_TOKEN,
-          },
-          body: JSON.stringify({
-            From: process.env.POSTMARK_FROM_EMAIL || "noreply@benefitssafe.com",
-            To: beneficiary.email,
-            Subject: "You've been invited to BenefitsSafe",
-            TextBody: `Hi ${beneficiary.firstName},\n\nYou've been added to BenefitsSafe.\n\nYour Beneficiary Code: ${beneficiary.beneficiaryCode}\n\nSet up your account: ${inviteUrl}\n\nThis link expires in ${INVITE_EXPIRY_DAYS} days.`,
-            MessageStream: "outbound",
-          }),
-        });
-      } catch (emailError) {
-        console.error("Failed to send invite email:", emailError);
-      }
-    } else {
-      console.log("\n========================================");
-      console.log("INVITE EMAIL (Postmark not configured)");
-      console.log("========================================");
-      console.log(`To: ${beneficiary.email}`);
-      console.log(`Name: ${beneficiary.firstName} ${beneficiary.lastName}`);
-      console.log(`Code: ${beneficiary.beneficiaryCode}`);
-      console.log(`Link: ${inviteUrl}`);
-      console.log(`Expires: ${invite.expiresAt.toISOString()}`);
-      console.log("========================================\n");
-    }
+    // Centralized invite email via email-service (falls back to console log
+    // in dev when POSTMARK_API_TOKEN is not set).
+    const inviteEmail = buildInviteEmail({
+      firstName: beneficiary.firstName,
+      orgName: session.user.organizationName,
+      inviteUrl,
+      loginEmail: beneficiary.email,
+      expiresDays: INVITE_EXPIRY_DAYS,
+      role: "beneficiary",
+    });
+    await sendEmail({
+      to: beneficiary.email,
+      subject: inviteEmail.subject,
+      html: inviteEmail.html,
+      text: inviteEmail.text,
+      orgName: session.user.organizationName,
+      userId: session.user.id,
+      organizationId,
+      emailType: "invite",
+    });
 
     // Audit log
     await prisma.auditLog.create({
