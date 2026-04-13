@@ -1,4 +1,5 @@
 import LatestInvestmentsCard from "@/app/(dashboard)/(homes)/vendor-dashboard/components/latest-investments-card";
+import VendorFirstRunBanner from "@/app/(dashboard)/(homes)/vendor-dashboard/components/first-run-banner";
 import MostLocationCard from "@/app/(dashboard)/(homes)/vendor-dashboard/components/most-location-card";
 import MyPortfolioCard from "@/app/(dashboard)/(homes)/vendor-dashboard/components/my-portfolio-card";
 import NoticeBoardCard from "@/app/(dashboard)/(homes)/vendor-dashboard/components/notice-board-card";
@@ -23,6 +24,7 @@ const InvestmentPage = () => {
   return (
     <>
       <DashboardBreadcrumb title="Vendor Dashboard" text="Vendor Dashboard" />
+      <VendorFirstRunBanner />
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4 gap-6">
         <Suspense fallback={<LoadingSkeleton />}>
           <StatsCard />

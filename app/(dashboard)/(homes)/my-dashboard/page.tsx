@@ -1,4 +1,5 @@
 import BeneficiaryExpensesCard from "@/app/(dashboard)/(homes)/my-dashboard/components/beneficiary-expenses-card";
+import BeneficiaryFirstRunBanner from "@/app/(dashboard)/(homes)/my-dashboard/components/first-run-banner";
 import GenerateContentCard from "@/app/(dashboard)/(homes)/my-dashboard/components/generate-content-card";
 import SalesStaticCard from "@/app/(dashboard)/(homes)/my-dashboard/components/sales-static-card";
 import StatCard from "@/app/(dashboard)/(homes)/my-dashboard/components/stat-card";
@@ -16,6 +17,8 @@ export default function DashboardPage() {
   return (
     <DashboardDataProvider>
       <DashboardBreadcrumb title="My Dashboard" text="My Dashboard" />
+
+      <BeneficiaryFirstRunBanner />
 
       <Suspense fallback={<LoadingSkeleton />}>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6">

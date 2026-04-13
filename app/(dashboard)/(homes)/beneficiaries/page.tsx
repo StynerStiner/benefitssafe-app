@@ -107,7 +107,7 @@ const CrmPage = () => {
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <DashboardBreadcrumb title="Beneficiaries" text="Beneficiary Management" />
         <PageDateFilter
           selectedMonth={selectedMonth}
