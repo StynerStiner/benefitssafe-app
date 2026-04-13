@@ -1,6 +1,7 @@
 "use client";
 
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
+import EmptyState from "@/components/shared/empty-state";
 import PageDateFilter from "@/components/shared/page-date-filter";
 import CustomSelect from "@/components/shared/custom-select";
 import UsersListTable from '@/components/table/users-list-table';
@@ -17,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Search } from "lucide-react";
+import { Search, Store } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import AddVendorForm from "./add-vendor-form";
@@ -260,6 +261,12 @@ const UsersList = () => {
                 <CardContent className="card-body p-6">
                     {loading ? (
                         <p className="text-sm text-neutral-500 text-center py-8">Loading vendors...</p>
+                    ) : vendors.length === 0 ? (
+                        <EmptyState
+                            icon={Store}
+                            title="No vendors yet"
+                            message="Add approved vendors that your beneficiaries can transact with. Vendors can be one-time, service providers, or SaaS subscriptions."
+                        />
                     ) : (
                         <UsersListTable
                             vendors={filteredVendors}

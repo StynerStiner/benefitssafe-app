@@ -2,6 +2,7 @@
 
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import OnboardingChecklist from "@/components/shared/onboarding-checklist";
 import PageDateFilter from "@/components/shared/page-date-filter";
 import { useEffect, useState } from "react";
 import BalanceStatistic from "./components/balance-statistic";
@@ -101,6 +102,8 @@ const FinancePage = () => {
                     <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                 </div>
             )}
+
+            <OnboardingChecklist />
 
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
                 <StatisticsCard grants={grants} expenses={expenses} />

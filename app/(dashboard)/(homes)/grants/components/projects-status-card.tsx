@@ -173,8 +173,13 @@ const ProjectsStatusCard = ({ grants, onRefresh }: ProjectsStatusCardProps) => {
                             <TableBody>
                                 {grants.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={7} className="py-4.5 px-4 border-b first:border-s last:border-e border-neutral-200 dark:border-slate-600 text-center text-neutral-500">
-                                            No grants found
+                                        <TableCell colSpan={7} className="py-10 px-4 border-b first:border-s last:border-e border-neutral-200 dark:border-slate-600 text-center">
+                                            <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-200 mb-1">
+                                                No grants yet
+                                            </p>
+                                            <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-0">
+                                                Create your first grant to start managing fund disbursements. Use the &ldquo;Add Grant&rdquo; button at the top of this page.
+                                            </p>
                                         </TableCell>
                                     </TableRow>
                                 ) : (
