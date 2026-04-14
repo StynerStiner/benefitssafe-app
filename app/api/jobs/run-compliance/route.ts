@@ -105,9 +105,11 @@ export async function POST(request: Request) {
             select: { name: true },
           });
           const orgName = org?.name || undefined;
-          // BLOCKED is critical; everything else is high (risk level jumped up).
-          const severity: "high" | "critical" =
-            result.level === "BLOCKED" ? "critical" : "high";
+          // BLOCKED reclassifications email immediately (someone cannot
+          // spend — critical). All other reclassifications (LIKELY_RISKY,
+          // NEEDS_REVIEW) stay in-app only so admins aren't flooded with
+          // routine risk bumps.
+          const isBlocked = result.level === "BLOCKED";
           const title = "Expense reclassified to higher risk";
           const message = `Expense "${expense.description}" was reclassified from ${oldLevel} to ${result.level}. Please review.`;
 
@@ -125,12 +127,12 @@ export async function POST(request: Request) {
               },
             });
 
-            if (admin.email) {
+            if (isBlocked && admin.email) {
               const tmpl = buildComplianceAlertEmail({
                 adminFirstName: admin.firstName || "there",
                 alertTitle: title,
                 alertDescription: message,
-                severity,
+                severity: "critical",
                 actionUrl: `${APP_BASE_URL}/expenses`,
                 orgName,
               });

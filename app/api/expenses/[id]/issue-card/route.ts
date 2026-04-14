@@ -11,10 +11,7 @@ import { incrementUsage } from "@/lib/usage-tracker";
 import { screenAgainstOFAC } from "@/lib/ofac-screening";
 import { BLOCKED_MCC_CODES } from "@/lib/mcc-controls";
 import { sendEmail } from "@/lib/services/email-service";
-import {
-  buildCardIssuedEmail,
-  buildComplianceAlertEmail,
-} from "@/lib/services/email-templates";
+import { buildCardIssuedEmail } from "@/lib/services/email-templates";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -485,7 +482,9 @@ export async function POST(
       }
     }
 
-    // Notify organization admins (in-app + confirmation email)
+    // Notify organization admins — in-app only.
+    // No email: the admin who issued the card already knows, and other
+    // admins can see the activity in the dashboard. Email is pure noise.
     const admins = await prisma.user.findMany({
       where: {
         organizationId,
@@ -494,12 +493,11 @@ export async function POST(
         },
         isActive: true,
       },
-      select: { id: true, email: true, firstName: true },
+      select: { id: true },
     });
 
     const adminTitle = `Card issued for ${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`;
     const adminMessage = `Virtual card issued to ${expense.requestedBy.firstName} ${expense.requestedBy.lastName} for ${expense.vendor?.name || "expense"}. Amount: ${cardSpendingLimit}.`;
-    const adminActionUrl = `${APP_BASE_URL}/virtual-cards/${virtualCard.id}`;
 
     for (const admin of admins) {
       await prisma.notification.create({
@@ -513,29 +511,6 @@ export async function POST(
           href: `/virtual-cards/${virtualCard.id}`,
         },
       });
-
-      if (admin.email) {
-        const tmpl = buildComplianceAlertEmail({
-          adminFirstName: admin.firstName || "there",
-          alertTitle: adminTitle,
-          alertDescription: adminMessage,
-          severity: "low",
-          actionUrl: adminActionUrl,
-          orgName: session.user.organizationName,
-        });
-        sendEmail({
-          to: admin.email,
-          subject: tmpl.subject,
-          html: tmpl.html,
-          text: tmpl.text,
-          orgName: session.user.organizationName,
-          userId: admin.id,
-          organizationId,
-          emailType: "compliance_alert",
-        }).catch((err) =>
-          console.error("[expenses/issue-card admin email] failed:", err),
-        );
-      }
     }
 
     return NextResponse.json({

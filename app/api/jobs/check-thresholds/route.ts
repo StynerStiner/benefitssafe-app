@@ -50,9 +50,15 @@ export async function POST(request: Request) {
       },
     });
 
-    const warnings: string[] = [];
+    // Collect candidate warnings with per-warning entityIds so we can dedup.
+    // Each warning has a stable key (grantId + warning kind) that lets us
+    // skip re-alerting on the same condition on subsequent cron runs.
+    interface CandidateWarning {
+      entityId: string;
+      message: string;
+    }
+    const candidates: CandidateWarning[] = [];
 
-    // Check grant burn rates
     for (const grant of grants) {
       const spent = Number(grant.spentAmount);
       const total = Number(grant.totalAmount);
@@ -61,20 +67,48 @@ export async function POST(request: Request) {
 
       // Warn if >80% spent
       if (burnRate > 0.8) {
-        warnings.push(`Grant "${grant.name}" is ${(burnRate * 100).toFixed(0)}% spent ($${remaining.toFixed(2)} remaining)`);
+        candidates.push({
+          entityId: `${grant.id}:burn_rate`,
+          message: `Grant "${grant.name}" is ${(burnRate * 100).toFixed(0)}% spent ($${remaining.toFixed(2)} remaining)`,
+        });
       }
 
       // Warn if grant ending within 30 days
       if (grant.endDate) {
         const daysRemaining = Math.ceil((new Date(grant.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
         if (daysRemaining <= 30 && daysRemaining > 0) {
-          warnings.push(`Grant "${grant.name}" expires in ${daysRemaining} days`);
+          candidates.push({
+            entityId: `${grant.id}:expiring`,
+            message: `Grant "${grant.name}" expires in ${daysRemaining} days`,
+          });
         }
       }
     }
 
-    // Create notifications for warnings
-    if (warnings.length > 0) {
+    // Per-warning dedup: drop any candidate whose entityId was already
+    // alerted today. Admins should not see "Grant X at 85%" every day —
+    // one alert per 24-hour window is enough.
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const newWarnings: CandidateWarning[] = [];
+    for (const candidate of candidates) {
+      const existingToday = await prisma.notification.count({
+        where: {
+          organizationId: orgId,
+          type: "sentinel_alert",
+          entityId: candidate.entityId,
+          createdAt: { gte: startOfToday },
+        },
+      });
+      if (existingToday === 0) {
+        newWarnings.push(candidate);
+      }
+    }
+
+    // Create notifications + one aggregate email per admin for any
+    // warnings that are NOT already deduped.
+    if (newWarnings.length > 0) {
       const admins = await prisma.user.findMany({
         where: {
           organizationId: orgId,
@@ -90,27 +124,35 @@ export async function POST(request: Request) {
       const orgName = org?.name || undefined;
 
       // Severity scales with how many warnings — >=3 is high, else medium.
-      const severity: "medium" | "high" = warnings.length >= 3 ? "high" : "medium";
-      const title = `SentinelLayer: ${warnings.length} alert(s)`;
-      const message = warnings.join("; ");
+      const severity: "medium" | "high" =
+        newWarnings.length >= 3 ? "high" : "medium";
+      const title = `SentinelLayer: ${newWarnings.length} alert(s)`;
+      const aggregateMessage = newWarnings.map((w) => w.message).join("; ");
 
       for (const admin of admins) {
-        await prisma.notification.create({
-          data: {
-            userId: admin.id,
-            organizationId: orgId,
-            type: "sentinel_alert",
-            title,
-            message,
-            href: "/reports",
-          },
-        });
+        // Write one notification PER warning so each is individually
+        // deduped on the next cron run. Each notification has its own
+        // entityId keyed to `${grantId}:${warning_kind}`.
+        for (const warning of newWarnings) {
+          await prisma.notification.create({
+            data: {
+              userId: admin.id,
+              organizationId: orgId,
+              type: "sentinel_alert",
+              entityId: warning.entityId,
+              title: "SentinelLayer alert",
+              message: warning.message,
+              href: "/reports",
+            },
+          });
+        }
 
+        // One aggregate email per admin summarizing all new warnings.
         if (admin.email) {
           const tmpl = buildComplianceAlertEmail({
             adminFirstName: admin.firstName || "there",
             alertTitle: title,
-            alertDescription: message,
+            alertDescription: aggregateMessage,
             severity,
             actionUrl: `${APP_BASE_URL}/reports`,
             orgName,

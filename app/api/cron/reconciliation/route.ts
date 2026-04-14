@@ -121,12 +121,20 @@ export async function GET(request: Request) {
     reconciliationResults.summary.ledgerTotal = ledgerTotal;
     reconciliationResults.summary.difference = stripeTotal - ledgerTotal;
 
-    // If discrepancies found, notify admins
+    // If discrepancies found, notify platform admins only.
+    //
+    // This cron is a platform-wide audit job — it scans ALL Stripe issuing
+    // transactions and ALL ledger entries across every nonprofit in one
+    // pass, so individual discrepancies cannot be reliably attributed to
+    // the org that owns them without additional lookups. Emailing every
+    // nonprofit_admin on the platform would leak other orgs' discrepancy
+    // details to unrelated tenants. Narrow to BenefitsSafe internal staff
+    // (platform_admin). If per-org attribution becomes available, this
+    // can fan out again to the affected org's admins.
     if (reconciliationResults.discrepancies.length > 0) {
-      // Get all nonprofit + platform admins with their email for fan-out.
       const admins = await prisma.user.findMany({
         where: {
-          role: { in: ["nonprofit_admin", "platform_admin"] },
+          role: "platform_admin",
           isActive: true,
         },
         select: {

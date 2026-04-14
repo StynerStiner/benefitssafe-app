@@ -11,10 +11,7 @@ import { incrementUsage } from "@/lib/usage-tracker";
 import { screenAgainstOFAC } from "@/lib/ofac-screening";
 import { BLOCKED_MCC_CODES } from "@/lib/mcc-controls";
 import { sendEmail } from "@/lib/services/email-service";
-import {
-  buildCardIssuedEmail,
-  buildComplianceAlertEmail,
-} from "@/lib/services/email-templates";
+import { buildCardIssuedEmail } from "@/lib/services/email-templates";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -450,7 +447,10 @@ export async function POST(
       }).catch((err) => console.error("[card_issued email] failed:", err));
     }
 
-    // Notify organization admins — in-app + confirmation email
+    // Notify organization admins — in-app only.
+    // No email: the admin who issued the card already knows they did it,
+    // and other admins can see the activity in the dashboard. An email
+    // per card issuance is pure noise.
     const admins = await prisma.user.findMany({
       where: {
         organizationId,
@@ -459,12 +459,11 @@ export async function POST(
         },
         isActive: true,
       },
-      select: { id: true, email: true, firstName: true },
+      select: { id: true },
     });
 
     const adminTitle = `Card issued for ${beneficiary.firstName} ${beneficiary.lastName}`;
     const adminMessage = `Virtual card issued to ${beneficiary.firstName} ${beneficiary.lastName} for grant "${grant.name}". Spending limit: $${parseFloat(virtualCard.spendingCap.toString()).toFixed(2)}.`;
-    const adminDashboardUrl = `${process.env.NEXTAUTH_URL || "https://app.benefitssafe.com"}/virtual-cards/${virtualCard.id}`;
 
     for (const admin of admins) {
       await prisma.notification.create({
@@ -478,32 +477,6 @@ export async function POST(
           href: `/virtual-cards/${virtualCard.id}`,
         },
       });
-
-      // Fire-and-forget confirmation email to the admin. Reuses
-      // buildComplianceAlertEmail with severity "low" because this is a
-      // confirmation, not an incident.
-      if (admin.email) {
-        const tmpl = buildComplianceAlertEmail({
-          adminFirstName: admin.firstName || "there",
-          alertTitle: adminTitle,
-          alertDescription: adminMessage,
-          severity: "low",
-          actionUrl: adminDashboardUrl,
-          orgName: session.user.organizationName,
-        });
-        sendEmail({
-          to: admin.email,
-          subject: tmpl.subject,
-          html: tmpl.html,
-          text: tmpl.text,
-          orgName: session.user.organizationName,
-          userId: admin.id,
-          organizationId,
-          emailType: "compliance_alert",
-        }).catch((err) =>
-          console.error("[grants/issue-card admin email] failed:", err),
-        );
-      }
     }
 
     return NextResponse.json({
