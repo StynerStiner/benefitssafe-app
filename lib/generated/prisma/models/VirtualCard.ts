@@ -47,6 +47,7 @@ export type VirtualCardMinAggregateOutputType = {
   vendorId: string | null
   beneficiaryId: string | null
   stripeCardId: string | null
+  issuingMode: string | null
   last4: string | null
   expirationMonth: number | null
   expirationYear: number | null
@@ -69,6 +70,7 @@ export type VirtualCardMaxAggregateOutputType = {
   vendorId: string | null
   beneficiaryId: string | null
   stripeCardId: string | null
+  issuingMode: string | null
   last4: string | null
   expirationMonth: number | null
   expirationYear: number | null
@@ -91,6 +93,7 @@ export type VirtualCardCountAggregateOutputType = {
   vendorId: number
   beneficiaryId: number
   stripeCardId: number
+  issuingMode: number
   last4: number
   expirationMonth: number
   expirationYear: number
@@ -127,6 +130,7 @@ export type VirtualCardMinAggregateInputType = {
   vendorId?: true
   beneficiaryId?: true
   stripeCardId?: true
+  issuingMode?: true
   last4?: true
   expirationMonth?: true
   expirationYear?: true
@@ -149,6 +153,7 @@ export type VirtualCardMaxAggregateInputType = {
   vendorId?: true
   beneficiaryId?: true
   stripeCardId?: true
+  issuingMode?: true
   last4?: true
   expirationMonth?: true
   expirationYear?: true
@@ -171,6 +176,7 @@ export type VirtualCardCountAggregateInputType = {
   vendorId?: true
   beneficiaryId?: true
   stripeCardId?: true
+  issuingMode?: true
   last4?: true
   expirationMonth?: true
   expirationYear?: true
@@ -280,6 +286,7 @@ export type VirtualCardGroupByOutputType = {
   vendorId: string | null
   beneficiaryId: string | null
   stripeCardId: string
+  issuingMode: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -325,6 +332,7 @@ export type VirtualCardWhereInput = {
   vendorId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   beneficiaryId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   stripeCardId?: Prisma.StringFilter<"VirtualCard"> | string
+  issuingMode?: Prisma.StringFilter<"VirtualCard"> | string
   last4?: Prisma.StringFilter<"VirtualCard"> | string
   expirationMonth?: Prisma.IntFilter<"VirtualCard"> | number
   expirationYear?: Prisma.IntFilter<"VirtualCard"> | number
@@ -355,6 +363,7 @@ export type VirtualCardOrderByWithRelationInput = {
   vendorId?: Prisma.SortOrderInput | Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeCardId?: Prisma.SortOrder
+  issuingMode?: Prisma.SortOrder
   last4?: Prisma.SortOrder
   expirationMonth?: Prisma.SortOrder
   expirationYear?: Prisma.SortOrder
@@ -388,6 +397,7 @@ export type VirtualCardWhereUniqueInput = Prisma.AtLeast<{
   expenseId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   vendorId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   beneficiaryId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
+  issuingMode?: Prisma.StringFilter<"VirtualCard"> | string
   last4?: Prisma.StringFilter<"VirtualCard"> | string
   expirationMonth?: Prisma.IntFilter<"VirtualCard"> | number
   expirationYear?: Prisma.IntFilter<"VirtualCard"> | number
@@ -418,6 +428,7 @@ export type VirtualCardOrderByWithAggregationInput = {
   vendorId?: Prisma.SortOrderInput | Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeCardId?: Prisma.SortOrder
+  issuingMode?: Prisma.SortOrder
   last4?: Prisma.SortOrder
   expirationMonth?: Prisma.SortOrder
   expirationYear?: Prisma.SortOrder
@@ -448,6 +459,7 @@ export type VirtualCardScalarWhereWithAggregatesInput = {
   vendorId?: Prisma.StringNullableWithAggregatesFilter<"VirtualCard"> | string | null
   beneficiaryId?: Prisma.StringNullableWithAggregatesFilter<"VirtualCard"> | string | null
   stripeCardId?: Prisma.StringWithAggregatesFilter<"VirtualCard"> | string
+  issuingMode?: Prisma.StringWithAggregatesFilter<"VirtualCard"> | string
   last4?: Prisma.StringWithAggregatesFilter<"VirtualCard"> | string
   expirationMonth?: Prisma.IntWithAggregatesFilter<"VirtualCard"> | number
   expirationYear?: Prisma.IntWithAggregatesFilter<"VirtualCard"> | number
@@ -464,6 +476,7 @@ export type VirtualCardScalarWhereWithAggregatesInput = {
 export type VirtualCardCreateInput = {
   id?: string
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -494,6 +507,7 @@ export type VirtualCardUncheckedCreateInput = {
   vendorId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -512,6 +526,7 @@ export type VirtualCardUncheckedCreateInput = {
 export type VirtualCardUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -542,6 +557,7 @@ export type VirtualCardUncheckedUpdateInput = {
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -566,6 +582,7 @@ export type VirtualCardCreateManyInput = {
   vendorId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -582,6 +599,7 @@ export type VirtualCardCreateManyInput = {
 export type VirtualCardUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -604,6 +622,7 @@ export type VirtualCardUncheckedUpdateManyInput = {
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -641,6 +660,7 @@ export type VirtualCardCountOrderByAggregateInput = {
   vendorId?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   stripeCardId?: Prisma.SortOrder
+  issuingMode?: Prisma.SortOrder
   last4?: Prisma.SortOrder
   expirationMonth?: Prisma.SortOrder
   expirationYear?: Prisma.SortOrder
@@ -669,6 +689,7 @@ export type VirtualCardMaxOrderByAggregateInput = {
   vendorId?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   stripeCardId?: Prisma.SortOrder
+  issuingMode?: Prisma.SortOrder
   last4?: Prisma.SortOrder
   expirationMonth?: Prisma.SortOrder
   expirationYear?: Prisma.SortOrder
@@ -691,6 +712,7 @@ export type VirtualCardMinOrderByAggregateInput = {
   vendorId?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   stripeCardId?: Prisma.SortOrder
+  issuingMode?: Prisma.SortOrder
   last4?: Prisma.SortOrder
   expirationMonth?: Prisma.SortOrder
   expirationYear?: Prisma.SortOrder
@@ -1020,6 +1042,7 @@ export type VirtualCardUpdateOneRequiredWithoutTransactionsNestedInput = {
 export type VirtualCardCreateWithoutOrganizationInput = {
   id?: string
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1048,6 +1071,7 @@ export type VirtualCardUncheckedCreateWithoutOrganizationInput = {
   vendorId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1101,6 +1125,7 @@ export type VirtualCardScalarWhereInput = {
   vendorId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   beneficiaryId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   stripeCardId?: Prisma.StringFilter<"VirtualCard"> | string
+  issuingMode?: Prisma.StringFilter<"VirtualCard"> | string
   last4?: Prisma.StringFilter<"VirtualCard"> | string
   expirationMonth?: Prisma.IntFilter<"VirtualCard"> | number
   expirationYear?: Prisma.IntFilter<"VirtualCard"> | number
@@ -1117,6 +1142,7 @@ export type VirtualCardScalarWhereInput = {
 export type VirtualCardCreateWithoutBeneficiaryInput = {
   id?: string
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1145,6 +1171,7 @@ export type VirtualCardUncheckedCreateWithoutBeneficiaryInput = {
   expenseId?: string | null
   vendorId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1189,6 +1216,7 @@ export type VirtualCardUpdateManyWithWhereWithoutBeneficiaryInput = {
 export type VirtualCardCreateWithoutGrantInput = {
   id?: string
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1217,6 +1245,7 @@ export type VirtualCardUncheckedCreateWithoutGrantInput = {
   vendorId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1261,6 +1290,7 @@ export type VirtualCardUpdateManyWithWhereWithoutGrantInput = {
 export type VirtualCardCreateWithoutCategoryInput = {
   id?: string
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1289,6 +1319,7 @@ export type VirtualCardUncheckedCreateWithoutCategoryInput = {
   vendorId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1333,6 +1364,7 @@ export type VirtualCardUpdateManyWithWhereWithoutCategoryInput = {
 export type VirtualCardCreateWithoutExpenseInput = {
   id?: string
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1361,6 +1393,7 @@ export type VirtualCardUncheckedCreateWithoutExpenseInput = {
   vendorId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1405,6 +1438,7 @@ export type VirtualCardUpdateManyWithWhereWithoutExpenseInput = {
 export type VirtualCardCreateWithoutVendorInput = {
   id?: string
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1433,6 +1467,7 @@ export type VirtualCardUncheckedCreateWithoutVendorInput = {
   expenseId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1477,6 +1512,7 @@ export type VirtualCardUpdateManyWithWhereWithoutVendorInput = {
 export type VirtualCardCreateWithoutSubscriptionsInput = {
   id?: string
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1506,6 +1542,7 @@ export type VirtualCardUncheckedCreateWithoutSubscriptionsInput = {
   vendorId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1539,6 +1576,7 @@ export type VirtualCardUpdateToOneWithWhereWithoutSubscriptionsInput = {
 export type VirtualCardUpdateWithoutSubscriptionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1568,6 +1606,7 @@ export type VirtualCardUncheckedUpdateWithoutSubscriptionsInput = {
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1585,6 +1624,7 @@ export type VirtualCardUncheckedUpdateWithoutSubscriptionsInput = {
 export type VirtualCardCreateWithoutTransactionsInput = {
   id?: string
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1614,6 +1654,7 @@ export type VirtualCardUncheckedCreateWithoutTransactionsInput = {
   vendorId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1647,6 +1688,7 @@ export type VirtualCardUpdateToOneWithWhereWithoutTransactionsInput = {
 export type VirtualCardUpdateWithoutTransactionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1676,6 +1718,7 @@ export type VirtualCardUncheckedUpdateWithoutTransactionsInput = {
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1698,6 +1741,7 @@ export type VirtualCardCreateManyOrganizationInput = {
   vendorId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1714,6 +1758,7 @@ export type VirtualCardCreateManyOrganizationInput = {
 export type VirtualCardUpdateWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1742,6 +1787,7 @@ export type VirtualCardUncheckedUpdateWithoutOrganizationInput = {
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1765,6 +1811,7 @@ export type VirtualCardUncheckedUpdateManyWithoutOrganizationInput = {
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1786,6 +1833,7 @@ export type VirtualCardCreateManyBeneficiaryInput = {
   expenseId?: string | null
   vendorId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1802,6 +1850,7 @@ export type VirtualCardCreateManyBeneficiaryInput = {
 export type VirtualCardUpdateWithoutBeneficiaryInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1830,6 +1879,7 @@ export type VirtualCardUncheckedUpdateWithoutBeneficiaryInput = {
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1853,6 +1903,7 @@ export type VirtualCardUncheckedUpdateManyWithoutBeneficiaryInput = {
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1874,6 +1925,7 @@ export type VirtualCardCreateManyGrantInput = {
   vendorId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1890,6 +1942,7 @@ export type VirtualCardCreateManyGrantInput = {
 export type VirtualCardUpdateWithoutGrantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1918,6 +1971,7 @@ export type VirtualCardUncheckedUpdateWithoutGrantInput = {
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1941,6 +1995,7 @@ export type VirtualCardUncheckedUpdateManyWithoutGrantInput = {
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1962,6 +2017,7 @@ export type VirtualCardCreateManyCategoryInput = {
   vendorId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -1978,6 +2034,7 @@ export type VirtualCardCreateManyCategoryInput = {
 export type VirtualCardUpdateWithoutCategoryInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2006,6 +2063,7 @@ export type VirtualCardUncheckedUpdateWithoutCategoryInput = {
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2029,6 +2087,7 @@ export type VirtualCardUncheckedUpdateManyWithoutCategoryInput = {
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2050,6 +2109,7 @@ export type VirtualCardCreateManyExpenseInput = {
   vendorId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -2066,6 +2126,7 @@ export type VirtualCardCreateManyExpenseInput = {
 export type VirtualCardUpdateWithoutExpenseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2094,6 +2155,7 @@ export type VirtualCardUncheckedUpdateWithoutExpenseInput = {
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2117,6 +2179,7 @@ export type VirtualCardUncheckedUpdateManyWithoutExpenseInput = {
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2138,6 +2201,7 @@ export type VirtualCardCreateManyVendorInput = {
   expenseId?: string | null
   beneficiaryId?: string | null
   stripeCardId: string
+  issuingMode?: string
   last4: string
   expirationMonth: number
   expirationYear: number
@@ -2154,6 +2218,7 @@ export type VirtualCardCreateManyVendorInput = {
 export type VirtualCardUpdateWithoutVendorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2182,6 +2247,7 @@ export type VirtualCardUncheckedUpdateWithoutVendorInput = {
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2205,6 +2271,7 @@ export type VirtualCardUncheckedUpdateManyWithoutVendorInput = {
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiaryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeCardId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuingMode?: Prisma.StringFieldUpdateOperationsInput | string
   last4?: Prisma.StringFieldUpdateOperationsInput | string
   expirationMonth?: Prisma.IntFieldUpdateOperationsInput | number
   expirationYear?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2267,6 +2334,7 @@ export type VirtualCardSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   vendorId?: boolean
   beneficiaryId?: boolean
   stripeCardId?: boolean
+  issuingMode?: boolean
   last4?: boolean
   expirationMonth?: boolean
   expirationYear?: boolean
@@ -2298,6 +2366,7 @@ export type VirtualCardSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   vendorId?: boolean
   beneficiaryId?: boolean
   stripeCardId?: boolean
+  issuingMode?: boolean
   last4?: boolean
   expirationMonth?: boolean
   expirationYear?: boolean
@@ -2326,6 +2395,7 @@ export type VirtualCardSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   vendorId?: boolean
   beneficiaryId?: boolean
   stripeCardId?: boolean
+  issuingMode?: boolean
   last4?: boolean
   expirationMonth?: boolean
   expirationYear?: boolean
@@ -2354,6 +2424,7 @@ export type VirtualCardSelectScalar = {
   vendorId?: boolean
   beneficiaryId?: boolean
   stripeCardId?: boolean
+  issuingMode?: boolean
   last4?: boolean
   expirationMonth?: boolean
   expirationYear?: boolean
@@ -2367,7 +2438,7 @@ export type VirtualCardSelectScalar = {
   updatedAt?: boolean
 }
 
-export type VirtualCardOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "categoryId" | "grantId" | "expenseId" | "vendorId" | "beneficiaryId" | "stripeCardId" | "last4" | "expirationMonth" | "expirationYear" | "spendingCap" | "merchantLock" | "cardType" | "cardLabel" | "status" | "expiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["virtualCard"]>
+export type VirtualCardOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "categoryId" | "grantId" | "expenseId" | "vendorId" | "beneficiaryId" | "stripeCardId" | "issuingMode" | "last4" | "expirationMonth" | "expirationYear" | "spendingCap" | "merchantLock" | "cardType" | "cardLabel" | "status" | "expiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["virtualCard"]>
 export type VirtualCardInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   category?: boolean | Prisma.VirtualCard$categoryArgs<ExtArgs>
@@ -2417,6 +2488,7 @@ export type $VirtualCardPayload<ExtArgs extends runtime.Types.Extensions.Interna
     vendorId: string | null
     beneficiaryId: string | null
     stripeCardId: string
+    issuingMode: string
     last4: string
     expirationMonth: number
     expirationYear: number
@@ -2867,6 +2939,7 @@ export interface VirtualCardFieldRefs {
   readonly vendorId: Prisma.FieldRef<"VirtualCard", 'String'>
   readonly beneficiaryId: Prisma.FieldRef<"VirtualCard", 'String'>
   readonly stripeCardId: Prisma.FieldRef<"VirtualCard", 'String'>
+  readonly issuingMode: Prisma.FieldRef<"VirtualCard", 'String'>
   readonly last4: Prisma.FieldRef<"VirtualCard", 'String'>
   readonly expirationMonth: Prisma.FieldRef<"VirtualCard", 'Int'>
   readonly expirationYear: Prisma.FieldRef<"VirtualCard", 'Int'>

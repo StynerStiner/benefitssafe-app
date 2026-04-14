@@ -450,6 +450,14 @@ model VirtualCard {
   beneficiary    User?        @relation("CardBeneficiary", fields: [beneficiaryId], references: [id])
 
   stripeCardId    String  @unique // Stripe Issuing card ID
+  // Which Stripe account this card lives on:
+  // - "platform"  => issued on acct_1THZmv1lmD1ohIWk (shared Issuing pool)
+  // - "connected" => issued on the nonprofit's own Custom account
+  // Decided at creation time by getIssuingAccount() in lib/stripe-helpers.ts
+  // based on the connected account's live card_issuing capability. Never
+  // changes after issuance — card lifecycle operations must honor the
+  // original account.
+  issuingMode     String   @default("platform") @map("issuing_mode")
   last4           String
   expirationMonth Int
   expirationYear  Int

@@ -9,6 +9,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { stripeOptsForCard } from "@/lib/stripe-helpers";
 import { NextResponse } from "next/server";
 
 export async function POST(
@@ -28,12 +29,13 @@ export async function POST(
     const { id } = await params;
     const card = await prisma.virtualCard.findFirst({
       where: { id, organizationId },
-      select: { id: true, status: true, stripeCardId: true },
+      select: { id: true, status: true, stripeCardId: true, issuingMode: true },
     });
     if (!card) return NextResponse.json({ error: "Card not found" }, { status: 404 });
 
-    // Resolve the connected Stripe account — cards live on it, not on the
-    // platform account.
+    // Only needed for connected-mode cards; platform-mode cards ignore
+    // this. We still fetch the row because stripeOptsForCard inspects
+    // both the card's mode and the org's current stripeAccountId.
     const org = await prisma.organization.findUnique({
       where: { id: organizationId },
       select: { stripeAccountId: true },
@@ -48,12 +50,12 @@ export async function POST(
     // subsequent issuing_authorization.request events are declined by
     // Stripe itself before they even reach our webhook. Dev-mode mock
     // cards (ic_mock_*) cannot be updated at Stripe; we log and continue.
-    if (card.stripeCardId && !card.stripeCardId.startsWith("ic_mock_") && org?.stripeAccountId) {
+    if (card.stripeCardId && !card.stripeCardId.startsWith("ic_mock_")) {
       try {
         await stripe.issuing.cards.update(
           card.stripeCardId,
           { status: "inactive" },
-          { stripeAccount: org.stripeAccountId },
+          stripeOptsForCard(card, org?.stripeAccountId ?? null),
         );
       } catch (stripeErr) {
         // The DB row is already FROZEN; a transient Stripe failure should

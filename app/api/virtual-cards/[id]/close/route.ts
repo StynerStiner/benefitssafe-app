@@ -9,6 +9,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { stripeOptsForCard } from "@/lib/stripe-helpers";
 import { NextResponse } from "next/server";
 
 export async function POST(
@@ -28,11 +29,11 @@ export async function POST(
     const { id } = await params;
     const card = await prisma.virtualCard.findFirst({
       where: { id, organizationId },
-      select: { id: true, status: true, stripeCardId: true },
+      select: { id: true, status: true, stripeCardId: true, issuingMode: true },
     });
     if (!card) return NextResponse.json({ error: "Card not found" }, { status: 404 });
 
-    // Resolve the connected Stripe account — cards live on it.
+    // stripeOptsForCard honors the card's original issuing mode.
     const org = await prisma.organization.findUnique({
       where: { id: organizationId },
       select: { stripeAccountId: true },
@@ -45,12 +46,12 @@ export async function POST(
 
     // Cancel the card at Stripe so it can no longer authorize anywhere.
     // Dev-mode mock cards (ic_mock_*) don't exist at Stripe; skip them.
-    if (card.stripeCardId && !card.stripeCardId.startsWith("ic_mock_") && org?.stripeAccountId) {
+    if (card.stripeCardId && !card.stripeCardId.startsWith("ic_mock_")) {
       try {
         await stripe.issuing.cards.update(
           card.stripeCardId,
           { status: "canceled" },
-          { stripeAccount: org.stripeAccountId },
+          stripeOptsForCard(card, org?.stripeAccountId ?? null),
         );
       } catch (stripeErr) {
         console.error(

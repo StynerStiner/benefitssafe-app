@@ -49,59 +49,29 @@ export async function GET(request: Request) {
       },
     };
 
-    // Stripe Issuing transactions now live on each nonprofit's connected
-    // account rather than the platform, so we must iterate per-org. Bound
-    // the org set to those that actually had app-side Transaction activity
-    // in the period — at 1.8M nonprofits, scanning every org monthly
-    // would be millions of Stripe API calls with nothing to find.
-    const activeOrgRows = await prisma.transaction.findMany({
-      where: { createdAt: { gte: lastMonth, lt: thisMonth } },
-      distinct: ["organizationId"],
-      select: { organizationId: true },
-    });
-    const activeOrgIds = activeOrgRows.map((r) => r.organizationId);
+    // Hybrid reconciliation. Cards live in two places now:
+    //   (a) the BenefitsSafe platform account — all pre-migration cards
+    //       plus every tenant whose connected account has not been
+    //       granted card_issuing yet.
+    //   (b) individual nonprofit Custom connected accounts — tenants
+    //       whose connected account has card_issuing active.
+    // We walk both:
+    //   - One platform-scoped transactions.list covers every platform-
+    //     mode card across every tenant in a single call.
+    //   - Per-connected-org transactions.list covers tenants that have
+    //     graduated to their own connected account.
+    // Bound the connected-account loop to orgs with app-side Transaction
+    // activity in the period to avoid scanning millions of idle tenants.
 
-    const activeOrgs = activeOrgIds.length
-      ? await prisma.organization.findMany({
-          where: {
-            id: { in: activeOrgIds },
-            stripeAccountId: { not: null },
-          },
-          select: { id: true, stripeAccountId: true },
-        })
-      : [];
+    const createdFilter = {
+      gte: Math.floor(lastMonth.getTime() / 1000),
+      lt: Math.floor(thisMonth.getTime() / 1000),
+    };
+    const LIST_LIMIT = 100; // Per-call ceiling; pagination is a follow-up.
 
-    let stripeTotal = 0;
-
-    // NOTE: limit:100 per org is a known cap; per-org pagination is a
-    // follow-up once we have a reconciliation checkpoint model. At current
-    // scale the 100-tx ceiling matches what the previous platform-scoped
-    // call returned anyway — this fix keeps semantics while restoring
-    // correctness under the connected-account architecture.
-    for (const org of activeOrgs) {
-      if (!org.stripeAccountId) continue;
-      let stripeTransactions;
-      try {
-        stripeTransactions = await stripe.issuing.transactions.list(
-          {
-            limit: 100,
-            created: {
-              gte: Math.floor(lastMonth.getTime() / 1000),
-              lt: Math.floor(thisMonth.getTime() / 1000),
-            },
-          },
-          { stripeAccount: org.stripeAccountId },
-        );
-      } catch (err) {
-        console.error(
-          `[reconciliation] transactions.list failed for org ${org.id}:`,
-          err,
-        );
-        continue;
-      }
-
-      for (const stripeTx of stripeTransactions.data) {
-        const amount = Math.abs(stripeTx.amount) / 100; // Convert from cents
+    const processStripeTxnList = async (stripeTxns: { data: Array<{ id: string; amount: number }> }) => {
+      for (const stripeTx of stripeTxns.data) {
+        const amount = Math.abs(stripeTx.amount) / 100; // cents → dollars
         stripeTotal += amount;
 
         const appTx = await prisma.transaction.findUnique({
@@ -125,12 +95,68 @@ export async function GET(request: Request) {
 
         reconciliationResults.processed++;
       }
+    };
+
+    let stripeTotal = 0;
+
+    // ---- Pass A: platform-scoped list (covers all platform-mode cards)
+    try {
+      const platformTxns = await stripe.issuing.transactions.list({
+        limit: LIST_LIMIT,
+        created: createdFilter,
+      });
+      await processStripeTxnList(platformTxns);
+    } catch (err) {
+      console.error("[reconciliation] platform transactions.list failed:", err);
     }
 
-    // Get all ledger debits from last month. Pull organizationId so we
-    // can route the per-transaction retrieve to the right connected
-    // account, and pre-fetch the org→stripeAccount map in one query to
-    // avoid an N+1.
+    // ---- Pass B: per-connected-org list
+    // Only orgs whose Stripe Connect account has card_issuing granted
+    // could have connected-mode transactions — everyone else already got
+    // scanned in Pass A. We approximate "has connected-mode cards" by
+    // joining VirtualCard.issuingMode = 'connected' to the Transaction
+    // period activity set.
+    const connectedModeOrgRows = await prisma.virtualCard.findMany({
+      where: {
+        issuingMode: "connected",
+        transactions: { some: { createdAt: { gte: lastMonth, lt: thisMonth } } },
+      },
+      distinct: ["organizationId"],
+      select: { organizationId: true },
+    });
+    const connectedModeOrgIds = connectedModeOrgRows.map((r) => r.organizationId);
+
+    const connectedOrgs = connectedModeOrgIds.length
+      ? await prisma.organization.findMany({
+          where: {
+            id: { in: connectedModeOrgIds },
+            stripeAccountId: { not: null },
+          },
+          select: { id: true, stripeAccountId: true },
+        })
+      : [];
+
+    for (const org of connectedOrgs) {
+      if (!org.stripeAccountId) continue;
+      try {
+        const connectedTxns = await stripe.issuing.transactions.list(
+          { limit: LIST_LIMIT, created: createdFilter },
+          { stripeAccount: org.stripeAccountId },
+        );
+        await processStripeTxnList(connectedTxns);
+      } catch (err) {
+        console.error(
+          `[reconciliation] transactions.list failed for org ${org.id}:`,
+          err,
+        );
+      }
+    }
+
+    // Ledger → Stripe direction: for each ledger DEBIT with a reference,
+    // confirm the referenced Stripe transaction actually exists on
+    // whichever account the underlying card was issued on. Because cards
+    // can be either platform-mode or connected-mode, we resolve the
+    // routing per-entry via the VirtualCard the Transaction belongs to.
     const ledgerEntries = await prisma.ledgerEntry.findMany({
       where: {
         type: "DEBIT",
@@ -148,55 +174,85 @@ export async function GET(request: Request) {
       },
     });
 
-    const ledgerOrgIds = Array.from(
-      new Set(ledgerEntries.map((e) => e.organizationId)),
-    );
-    const orgsForLedger = ledgerOrgIds.length
-      ? await prisma.organization.findMany({
-          where: { id: { in: ledgerOrgIds } },
-          select: { id: true, stripeAccountId: true },
+    // Pre-fetch all Transaction+VirtualCard rows we need so the loop
+    // below doesn't hit the DB twice per entry.
+    const ledgerRefs = ledgerEntries
+      .map((e) => e.reference)
+      .filter((r): r is string => typeof r === "string" && r.length > 0);
+
+    const txnRows = ledgerRefs.length
+      ? await prisma.transaction.findMany({
+          where: { stripeTransactionId: { in: ledgerRefs } },
+          select: {
+            stripeTransactionId: true,
+            card: {
+              select: {
+                issuingMode: true,
+                organization: { select: { stripeAccountId: true } },
+              },
+            },
+          },
         })
       : [];
-    const orgStripeAccountMap = new Map(
-      orgsForLedger.map((o) => [o.id, o.stripeAccountId]),
-    );
+
+    // reference → { issuingMode, stripeAccountId? }
+    const refToRouting = new Map<
+      string,
+      { issuingMode: string | null; stripeAccountId: string | null }
+    >();
+    for (const row of txnRows) {
+      refToRouting.set(row.stripeTransactionId, {
+        issuingMode: row.card?.issuingMode ?? null,
+        stripeAccountId: row.card?.organization?.stripeAccountId ?? null,
+      });
+    }
 
     let ledgerTotal = 0;
     for (const entry of ledgerEntries) {
       ledgerTotal += parseFloat(entry.amount.toString());
 
-      // Check if referenced Stripe transaction exists on the org's
-      // connected account. Orgs without a Stripe account aren't eligible
-      // for this verification path — skip them rather than calling the
-      // platform account which no longer holds the transaction.
-      if (entry.reference) {
-        const stripeAccountId = orgStripeAccountMap.get(entry.organizationId);
-        if (!stripeAccountId) continue;
-        try {
-          const stripeTx = await stripe.issuing.transactions.retrieve(
-            entry.reference,
-            { stripeAccount: stripeAccountId },
-          );
-          if (!stripeTx) {
-            reconciliationResults.discrepancies.push({
-              type: "ORPHANED_LEDGER_ENTRY",
-              description: `Ledger entry ${entry.id} references non-existent Stripe transaction`,
-              impact: `$${parseFloat(entry.amount.toString()).toFixed(2)} potentially unresolved`,
-            });
-          }
-        } catch (err) {
-          // A retrieve failure is itself an orphan signal — the reference
-          // on the ledger entry doesn't resolve on the org's account.
-          console.error(
-            `[reconciliation] transactions.retrieve failed for entry ${entry.id}:`,
-            err,
-          );
+      if (!entry.reference) continue;
+
+      // Resolve which Stripe account this reference should resolve on.
+      // If the ledger entry references a txn we have no Transaction row
+      // for, we can't know the mode — flag as orphan.
+      const routing = refToRouting.get(entry.reference);
+      if (!routing) {
+        reconciliationResults.discrepancies.push({
+          type: "ORPHANED_LEDGER_ENTRY",
+          description: `Ledger entry ${entry.id} references Stripe transaction ${entry.reference} with no matching app Transaction row`,
+          impact: `$${parseFloat(entry.amount.toString()).toFixed(2)} potentially unresolved`,
+        });
+        continue;
+      }
+
+      const retrieveOpts =
+        routing.issuingMode === "connected" && routing.stripeAccountId
+          ? { stripeAccount: routing.stripeAccountId }
+          : {};
+
+      try {
+        const stripeTx = await stripe.issuing.transactions.retrieve(
+          entry.reference,
+          retrieveOpts,
+        );
+        if (!stripeTx) {
           reconciliationResults.discrepancies.push({
             type: "ORPHANED_LEDGER_ENTRY",
-            description: `Ledger entry ${entry.id} references Stripe transaction that cannot be retrieved on org ${entry.organizationId}`,
+            description: `Ledger entry ${entry.id} references non-existent Stripe transaction`,
             impact: `$${parseFloat(entry.amount.toString()).toFixed(2)} potentially unresolved`,
           });
         }
+      } catch (err) {
+        console.error(
+          `[reconciliation] transactions.retrieve failed for entry ${entry.id}:`,
+          err,
+        );
+        reconciliationResults.discrepancies.push({
+          type: "ORPHANED_LEDGER_ENTRY",
+          description: `Ledger entry ${entry.id} references Stripe transaction that cannot be retrieved (mode: ${routing.issuingMode ?? "unknown"})`,
+          impact: `$${parseFloat(entry.amount.toString()).toFixed(2)} potentially unresolved`,
+        });
       }
     }
 

@@ -13,6 +13,7 @@ import { NextResponse } from "next/server";
 import { readCheckpoint, writeCheckpoint } from "@/lib/cron-checkpoint";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { stripeOptsForCard } from "@/lib/stripe-helpers";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
 
@@ -76,6 +77,7 @@ export async function GET(request: Request) {
         beneficiaryId: string | null;
         status: string;
         expiresAt: Date | null;
+        issuingMode: string | null;
         organization: { stripeAccountId: string | null; name: string | null } | null;
       }> = await prisma.virtualCard.findMany({
         where: {
@@ -89,8 +91,7 @@ export async function GET(request: Request) {
           beneficiaryId: true,
           status: true,
           expiresAt: true,
-          // Cards live on the connected account — we need its id to
-          // route stripe.issuing.cards.update() correctly.
+          issuingMode: true,
           organization: { select: { stripeAccountId: true, name: true } },
         },
         take: BATCH_SIZE,
@@ -106,17 +107,16 @@ export async function GET(request: Request) {
 
     for (const card of expiredCards) {
       try {
-        // Cancel the card on the nonprofit's connected account. Cards
-        // without a stripeAccountId (org never completed onboarding) or
-        // with a dev-mode mock id (ic_mock_*) are skipped for the Stripe
-        // call — we still mark them EXPIRED in the DB so stale state
-        // doesn't block the cron.
-        const connectedAccount = card.organization?.stripeAccountId ?? null;
-        if (connectedAccount && !card.stripeCardId.startsWith("ic_mock_")) {
+        // Cancel the card on whichever account it was issued on.
+        // stripeOptsForCard returns {} for platform-mode cards (so the
+        // call targets the platform account) and {stripeAccount} for
+        // connected-mode cards. Dev-mode mocks and rows with no id
+        // are still skipped for the API call.
+        if (!card.stripeCardId.startsWith("ic_mock_")) {
           await stripe.issuing.cards.update(
             card.stripeCardId,
             { status: "canceled" },
-            { stripeAccount: connectedAccount },
+            stripeOptsForCard(card, card.organization?.stripeAccountId ?? null),
           );
         }
 

@@ -4,6 +4,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { stripeOptsForCard } from "@/lib/stripe-helpers";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -88,15 +89,15 @@ export async function GET(
     }
 
     // PCI-compliant: create an ephemeral key so the front-end can use
-    // Stripe.js to display the card details in a secure Stripe-hosted element.
-    // We never pass the full card number or CVC through our server.
-    // Must be scoped to the connected account that owns the card.
+    // Stripe.js to display the card details in a secure Stripe-hosted
+    // element. Scope to whichever account owns the card: if the card
+    // was issued in "connected" mode we must pass the connected account
+    // id; in "platform" mode we pass nothing and Stripe targets the
+    // platform account.
+    const cardStripeOpts = stripeOptsForCard(card, org?.stripeAccountId ?? null);
     const ephemeralKey = await stripe.ephemeralKeys.create(
       { issuing_card: card.stripeCardId },
-      {
-        apiVersion: "2023-10-16",
-        ...(org?.stripeAccountId ? { stripeAccount: org.stripeAccountId } : {}),
-      },
+      { apiVersion: "2023-10-16", ...cardStripeOpts },
     );
 
     return NextResponse.json({

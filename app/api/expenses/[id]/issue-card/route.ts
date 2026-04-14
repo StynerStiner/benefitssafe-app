@@ -12,8 +12,14 @@ import { screenAgainstOFAC } from "@/lib/ofac-screening";
 import { BLOCKED_MCC_CODES } from "@/lib/mcc-controls";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildCardIssuedEmail } from "@/lib/services/email-templates";
+import { getIssuingAccount } from "@/lib/stripe-helpers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+// Platform Treasury Financial Account id — balance precheck target
+// when cards are issued in platform mode. See STRIPE.md.
+const PLATFORM_FINANCIAL_ACCOUNT_ID =
+  "fa_65UQyXBXwWXIKG7eb8f16UQxkH04SQjPoQwtpHcXKEaX5M";
 
 const APP_BASE_URL =
   process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
@@ -72,12 +78,17 @@ export async function POST(
       );
     }
 
-    // Balance precheck: nonprofit's Treasury Financial Account must have funds.
-    if (org.stripeFinancialAccountId && !org.stripeFinancialAccountId.startsWith("fa_mock_")) {
-      try {
+    // Hybrid routing: connected-account Issuing if available, otherwise
+    // platform Issuing. See lib/stripe-helpers.ts for rationale.
+    const issuing = await getIssuingAccount(org.stripeAccountId);
+    const stripeOpts = issuing.accountId ? { stripeAccount: issuing.accountId } : {};
+
+    // Balance precheck against the appropriate Financial Account.
+    try {
+      if (issuing.mode === "connected" && org.stripeFinancialAccountId && !org.stripeFinancialAccountId.startsWith("fa_mock_")) {
         const fa = await stripe.treasury.financialAccounts.retrieve(
           org.stripeFinancialAccountId,
-          { stripeAccount: org.stripeAccountId },
+          { stripeAccount: issuing.accountId! },
         );
         const availableCash = fa.balance?.cash?.usd || 0;
         if (availableCash <= 0) {
@@ -89,9 +100,22 @@ export async function POST(
             { status: 400 },
           );
         }
-      } catch (balanceErr) {
-        console.error("[expenses/issue-card] Balance precheck failed:", balanceErr);
+      } else if (issuing.mode === "platform") {
+        const fa = await stripe.treasury.financialAccounts.retrieve(
+          PLATFORM_FINANCIAL_ACCOUNT_ID,
+        );
+        const availableCash = fa.balance?.cash?.usd || 0;
+        if (availableCash <= 0) {
+          return NextResponse.json(
+            {
+              error: "The BenefitsSafe platform funding account is temporarily unavailable. Please try again shortly or contact support.",
+            },
+            { status: 503 },
+          );
+        }
       }
+    } catch (balanceErr) {
+      console.error("[expenses/issue-card] Balance precheck failed:", balanceErr);
     }
 
     // Plan limit gate: check this month's card issuance against tier limit
@@ -295,24 +319,24 @@ export async function POST(
 
       let cardholder;
 
-      // Check if beneficiary already has a cardholder stored WITHIN THIS ORG.
-      // Cardholders are scoped to the connected account, so cross-org reuse
-      // would produce retrieve() 404s.
+      // Reuse only cardholders issued in the SAME mode for this org.
+      // Cross-mode reuse would produce retrieve() 404s because cardholders
+      // live on the specific Stripe account that created them.
       const existingCard = await prisma.virtualCard.findFirst({
         where: {
           beneficiaryId: expense.requestedById,
           organizationId,
+          issuingMode: issuing.mode,
           stripeCardId: { not: { startsWith: "ic_mock_" } },
         },
         select: { stripeCardId: true },
       });
 
       if (existingCard) {
-        // Retrieve the cardholder from an existing card on the connected account.
         try {
           const existingStripeCard = await stripe.issuing.cards.retrieve(
             existingCard.stripeCardId,
-            { stripeAccount: org.stripeAccountId },
+            stripeOpts,
           );
           cardholder = existingStripeCard.cardholder;
         } catch {
@@ -349,13 +373,15 @@ export async function POST(
             organizationId,
             beneficiaryId: expense.requestedById,
             platform: "benefitssafe",
+            issuingMode: issuing.mode,
           },
-        }, { stripeAccount: org.stripeAccountId });
+        }, stripeOpts);
         cardholder = cardholderResult;
       }
 
-      // Create a virtual card via Stripe Issuing on the nonprofit's connected
-      // account so the card draws from their own Financial Account.
+      // Create the virtual card via Stripe Issuing on whichever account
+      // getIssuingAccount chose — connected if capability is granted,
+      // platform otherwise.
       stripeCard = await stripe.issuing.cards.create({
         cardholder: typeof cardholder === "string" ? cardholder : cardholder.id,
         type: "virtual",
@@ -377,8 +403,9 @@ export async function POST(
           vendorId: expense.vendorId || "",
           beneficiaryId: expense.requestedById,
           platform: "benefitssafe",
+          issuingMode: issuing.mode,
         },
-      }, { stripeAccount: org.stripeAccountId });
+      }, stripeOpts);
     } catch (stripeError) {
       console.error("Stripe card creation error:", stripeError);
       // Only allow mock cards in local development — NEVER in production
@@ -397,7 +424,8 @@ export async function POST(
       }
     }
 
-    // Store card in database
+    // Store card in database — persist issuingMode so lifecycle ops
+    // route Stripe calls to the correct account later.
     const virtualCard = await prisma.virtualCard.create({
       data: {
         organizationId,
@@ -407,6 +435,7 @@ export async function POST(
         beneficiaryId: expense.requestedById,
         categoryId: expense.categoryId,
         stripeCardId: stripeCard.id,
+        issuingMode: issuing.mode,
         last4: stripeCard.last4 || "0000",
         expirationMonth: stripeCard.exp_month || 12,
         expirationYear: stripeCard.exp_year || 2027,

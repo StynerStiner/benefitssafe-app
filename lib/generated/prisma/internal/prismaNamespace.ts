@@ -2989,6 +2989,7 @@ export const VirtualCardScalarFieldEnum = {
   vendorId: 'vendorId',
   beneficiaryId: 'beneficiaryId',
   stripeCardId: 'stripeCardId',
+  issuingMode: 'issuingMode',
   last4: 'last4',
   expirationMonth: 'expirationMonth',
   expirationYear: 'expirationYear',
