@@ -12,6 +12,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { sendEmail } from "@/lib/services/email-service";
+import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
+
+const APP_BASE_URL =
+  process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
 
 export async function GET(request: Request) {
   try {
@@ -118,6 +123,40 @@ export async function GET(request: Request) {
               href: "/virtual-cards",
             },
           });
+
+          // Fire-and-forget email to the beneficiary. We reuse the
+          // compliance-alert shell for now since there is no dedicated
+          // card_expired template; the tone still reads clearly.
+          const beneficiary = await prisma.user.findUnique({
+            where: { id: card.beneficiaryId },
+            select: { email: true, firstName: true },
+          });
+          const org = await prisma.organization.findUnique({
+            where: { id: card.organizationId },
+            select: { name: true },
+          });
+          if (beneficiary?.email) {
+            const tmpl = buildComplianceAlertEmail({
+              adminFirstName: beneficiary.firstName || "there",
+              alertTitle: "Your virtual card has expired",
+              alertDescription: `Your virtual card ending in ${card.id.slice(-4)} has expired and can no longer be used. Contact your organization if you need a replacement.`,
+              severity: "medium",
+              actionUrl: `${APP_BASE_URL}/virtual-cards`,
+              orgName: org?.name || undefined,
+            });
+            sendEmail({
+              to: beneficiary.email,
+              subject: tmpl.subject,
+              html: tmpl.html,
+              text: tmpl.text,
+              orgName: org?.name || undefined,
+              userId: card.beneficiaryId,
+              organizationId: card.organizationId,
+              emailType: "compliance_alert",
+            }).catch((err) =>
+              console.error("[card-expiration email] expired failed:", err),
+            );
+          }
         }
 
         successCount++;
@@ -148,17 +187,52 @@ export async function GET(request: Request) {
         const daysUntilExpiry = Math.ceil(
           (card.expiresAt!.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
         );
+        const expiringTitle = `Your virtual card expires in ${daysUntilExpiry} days`;
+        const expiringMessage = `Your virtual card will expire on ${card.expiresAt?.toLocaleDateString()}. Request a new card if you'll need it.`;
 
         await prisma.notification.create({
           data: {
             userId: card.beneficiaryId,
             organizationId: card.organizationId,
             type: "card_expiring_soon",
-            title: `Your virtual card expires in ${daysUntilExpiry} days`,
-            message: `Your virtual card will expire on ${card.expiresAt?.toLocaleDateString()}. Request a new card if you'll need it.`,
+            title: expiringTitle,
+            message: expiringMessage,
             href: `/virtual-cards/${card.id}`,
           },
         });
+
+        // Fire-and-forget reminder email to the beneficiary.
+        const beneficiary = await prisma.user.findUnique({
+          where: { id: card.beneficiaryId },
+          select: { email: true, firstName: true },
+        });
+        const org = await prisma.organization.findUnique({
+          where: { id: card.organizationId },
+          select: { name: true },
+        });
+        if (beneficiary?.email) {
+          const tmpl = buildComplianceAlertEmail({
+            adminFirstName: beneficiary.firstName || "there",
+            alertTitle: expiringTitle,
+            alertDescription: expiringMessage,
+            // Low severity for 7-day reminder; the card is still usable.
+            severity: "low",
+            actionUrl: `${APP_BASE_URL}/virtual-cards/${card.id}`,
+            orgName: org?.name || undefined,
+          });
+          sendEmail({
+            to: beneficiary.email,
+            subject: tmpl.subject,
+            html: tmpl.html,
+            text: tmpl.text,
+            orgName: org?.name || undefined,
+            userId: card.beneficiaryId,
+            organizationId: card.organizationId,
+            emailType: "compliance_alert",
+          }).catch((err) =>
+            console.error("[card-expiration email] expiring failed:", err),
+          );
+        }
       }
     }
 

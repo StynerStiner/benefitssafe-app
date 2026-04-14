@@ -9,7 +9,12 @@ import { createExpenseSchema } from "@/lib/validations/expense";
 import { classifyExpense } from "@/utils/compliance-rules";
 import { checkLimitAccess, buildLimitReachedResponse, getCurrentPeriod } from "@/lib/feature-gates";
 import { incrementUsage } from "@/lib/usage-tracker";
+import { sendEmail } from "@/lib/services/email-service";
+import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
 import { NextResponse } from "next/server";
+
+const APP_BASE_URL =
+  process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
 
 // GET /api/expenses — list expenses scoped by role
 export async function GET(request: Request) {
@@ -301,11 +306,16 @@ export async function POST(request: Request) {
     // Notify org admins about new expense submission
     const admins = await prisma.user.findMany({
       where: { organizationId, role: { in: ["nonprofit_admin", "platform_admin"] }, isActive: true },
-      select: { id: true },
+      select: { id: true, email: true, firstName: true },
     });
     const submitterName = expense.requestedBy
       ? `${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`
       : "A user";
+    const expenseAmount = parseFloat(expense.amount.toString()).toFixed(2);
+    const notificationTitle = "New expense request submitted";
+    const notificationMessage = `${submitterName} submitted a $${expenseAmount} expense for "${expense.description}" (${expense.grant.name}).`;
+    const orgNameForEmail = session.user.organizationName || undefined;
+
     for (const admin of admins) {
       if (admin.id !== userId) {
         await prisma.notification.create({
@@ -313,13 +323,38 @@ export async function POST(request: Request) {
             userId: admin.id,
             organizationId,
             type: "expense_submitted",
-            title: "New expense request submitted",
-            message: `${submitterName} submitted a $${parseFloat(expense.amount.toString()).toFixed(2)} expense for "${expense.description}" (${expense.grant.name}).`,
+            title: notificationTitle,
+            message: notificationMessage,
             entityType: "expense",
             entityId: expense.id,
             href: `/expenses`,
           },
         });
+
+        // Fire-and-forget email alert. Uses compliance_alert template with
+        // low severity — this is an informational nudge, not an incident.
+        if (admin.email) {
+          const tmpl = buildComplianceAlertEmail({
+            adminFirstName: admin.firstName || "there",
+            alertTitle: "New expense request submitted",
+            alertDescription: notificationMessage,
+            severity: "low",
+            actionUrl: `${APP_BASE_URL}/expenses`,
+            orgName: orgNameForEmail,
+          });
+          sendEmail({
+            to: admin.email,
+            subject: tmpl.subject,
+            html: tmpl.html,
+            text: tmpl.text,
+            orgName: orgNameForEmail,
+            userId: admin.id,
+            organizationId,
+            emailType: "compliance_alert",
+          }).catch((err) =>
+            console.error("[expenses POST] email send failed:", err),
+          );
+        }
       }
     }
 

@@ -7,6 +7,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { sendEmail } from "@/lib/services/email-service";
+import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
+
+const APP_BASE_URL =
+  process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
 
 export async function GET(request: Request) {
   try {
@@ -118,24 +123,59 @@ export async function GET(request: Request) {
 
     // If discrepancies found, notify admins
     if (reconciliationResults.discrepancies.length > 0) {
-      // Get all platform admins
-      const platformAdmins = await prisma.user.findMany({
-        where: { role: "platform_admin" },
-        select: { id: true, organizationId: true },
+      // Get all nonprofit + platform admins with their email for fan-out.
+      const admins = await prisma.user.findMany({
+        where: {
+          role: { in: ["nonprofit_admin", "platform_admin"] },
+          isActive: true,
+        },
+        select: {
+          id: true,
+          organizationId: true,
+          email: true,
+          firstName: true,
+        },
       });
 
-      for (const admin of platformAdmins) {
+      const title = "Monthly reconciliation: Discrepancies found";
+      const message = `Found ${reconciliationResults.discrepancies.length} discrepancies in ${lastMonth.toLocaleDateString()}. Total difference: $${Math.abs(reconciliationResults.summary.difference).toFixed(2)}. Review details in audit logs.`;
+      const href = `/audit-trail?filter=reconciliation&date=${lastMonth.toISOString().split("T")[0]}`;
+
+      for (const admin of admins) {
         if (admin.organizationId) {
           await prisma.notification.create({
             data: {
               userId: admin.id,
               organizationId: admin.organizationId,
               type: "reconciliation_discrepancy",
-              title: "Monthly reconciliation: Discrepancies found",
-              message: `Found ${reconciliationResults.discrepancies.length} discrepancies in ${lastMonth.toLocaleDateString()}. Total difference: $${Math.abs(reconciliationResults.summary.difference).toFixed(2)}. Review details in audit logs.`,
-              href: `/audit-trail?filter=reconciliation&date=${lastMonth.toISOString().split("T")[0]}`,
+              title,
+              message,
+              href,
             },
           });
+
+          // Fire-and-forget email alert. Reconciliation errors are high
+          // severity — they indicate ledger / Stripe drift.
+          if (admin.email) {
+            const tmpl = buildComplianceAlertEmail({
+              adminFirstName: admin.firstName || "there",
+              alertTitle: "Ledger Reconciliation Issue",
+              alertDescription: message,
+              severity: "high",
+              actionUrl: `${APP_BASE_URL}${href}`,
+            });
+            sendEmail({
+              to: admin.email,
+              subject: tmpl.subject,
+              html: tmpl.html,
+              text: tmpl.text,
+              userId: admin.id,
+              organizationId: admin.organizationId,
+              emailType: "compliance_alert",
+            }).catch((err) =>
+              console.error("[cron-reconciliation] email send failed:", err),
+            );
+          }
         }
       }
     }

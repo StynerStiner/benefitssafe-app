@@ -11,7 +11,10 @@ import { incrementUsage } from "@/lib/usage-tracker";
 import { screenAgainstOFAC } from "@/lib/ofac-screening";
 import { BLOCKED_MCC_CODES } from "@/lib/mcc-controls";
 import { sendEmail } from "@/lib/services/email-service";
-import { buildCardIssuedEmail } from "@/lib/services/email-templates";
+import {
+  buildCardIssuedEmail,
+  buildComplianceAlertEmail,
+} from "@/lib/services/email-templates";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -447,16 +450,21 @@ export async function POST(
       }).catch((err) => console.error("[card_issued email] failed:", err));
     }
 
-    // Notify organization admins
+    // Notify organization admins — in-app + confirmation email
     const admins = await prisma.user.findMany({
       where: {
         organizationId,
         role: {
           in: ["nonprofit_admin", "platform_admin"],
         },
+        isActive: true,
       },
-      select: { id: true },
+      select: { id: true, email: true, firstName: true },
     });
+
+    const adminTitle = `Card issued for ${beneficiary.firstName} ${beneficiary.lastName}`;
+    const adminMessage = `Virtual card issued to ${beneficiary.firstName} ${beneficiary.lastName} for grant "${grant.name}". Spending limit: $${parseFloat(virtualCard.spendingCap.toString()).toFixed(2)}.`;
+    const adminDashboardUrl = `${process.env.NEXTAUTH_URL || "https://app.benefitssafe.com"}/virtual-cards/${virtualCard.id}`;
 
     for (const admin of admins) {
       await prisma.notification.create({
@@ -465,11 +473,37 @@ export async function POST(
           organizationId,
           type: "card_issued_admin",
           entityId: virtualCard.id,
-          title: `Card issued for ${beneficiary.firstName} ${beneficiary.lastName}`,
-          message: `Virtual card issued to ${beneficiary.firstName} ${beneficiary.lastName} for grant "${grant.name}". Spending limit: $${parseFloat(virtualCard.spendingCap.toString()).toFixed(2)}.`,
+          title: adminTitle,
+          message: adminMessage,
           href: `/virtual-cards/${virtualCard.id}`,
         },
       });
+
+      // Fire-and-forget confirmation email to the admin. Reuses
+      // buildComplianceAlertEmail with severity "low" because this is a
+      // confirmation, not an incident.
+      if (admin.email) {
+        const tmpl = buildComplianceAlertEmail({
+          adminFirstName: admin.firstName || "there",
+          alertTitle: adminTitle,
+          alertDescription: adminMessage,
+          severity: "low",
+          actionUrl: adminDashboardUrl,
+          orgName: session.user.organizationName,
+        });
+        sendEmail({
+          to: admin.email,
+          subject: tmpl.subject,
+          html: tmpl.html,
+          text: tmpl.text,
+          orgName: session.user.organizationName,
+          userId: admin.id,
+          organizationId,
+          emailType: "compliance_alert",
+        }).catch((err) =>
+          console.error("[grants/issue-card admin email] failed:", err),
+        );
+      }
     }
 
     return NextResponse.json({

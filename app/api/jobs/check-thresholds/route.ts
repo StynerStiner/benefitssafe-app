@@ -5,7 +5,12 @@
 
 import { prisma } from "@/lib/db";
 import { verifyJobAuth } from "@/lib/queue";
+import { sendEmail } from "@/lib/services/email-service";
+import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
 import { NextResponse } from "next/server";
+
+const APP_BASE_URL =
+  process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
 
 export async function POST(request: Request) {
   if (!verifyJobAuth(request)) {
@@ -72,8 +77,18 @@ export async function POST(request: Request) {
     if (warnings.length > 0) {
       const admins = await prisma.user.findMany({
         where: { organizationId: orgId, role: "nonprofit_admin", isActive: true },
-        select: { id: true },
+        select: { id: true, email: true, firstName: true },
       });
+      const org = await prisma.organization.findUnique({
+        where: { id: orgId },
+        select: { name: true },
+      });
+      const orgName = org?.name || undefined;
+
+      // Severity scales with how many warnings — >=3 is high, else medium.
+      const severity: "medium" | "high" = warnings.length >= 3 ? "high" : "medium";
+      const title = `SentinelLayer: ${warnings.length} alert(s)`;
+      const message = warnings.join("; ");
 
       for (const admin of admins) {
         await prisma.notification.create({
@@ -81,11 +96,34 @@ export async function POST(request: Request) {
             userId: admin.id,
             organizationId: orgId,
             type: "sentinel_alert",
-            title: `SentinelLayer: ${warnings.length} alert(s)`,
-            message: warnings.join("; "),
+            title,
+            message,
             href: "/reports",
           },
         });
+
+        if (admin.email) {
+          const tmpl = buildComplianceAlertEmail({
+            adminFirstName: admin.firstName || "there",
+            alertTitle: title,
+            alertDescription: message,
+            severity,
+            actionUrl: `${APP_BASE_URL}/reports`,
+            orgName,
+          });
+          sendEmail({
+            to: admin.email,
+            subject: tmpl.subject,
+            html: tmpl.html,
+            text: tmpl.text,
+            orgName,
+            userId: admin.id,
+            organizationId: orgId,
+            emailType: "compliance_alert",
+          }).catch((err) =>
+            console.error("[check-thresholds email] failed:", err),
+          );
+        }
       }
     }
 

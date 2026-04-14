@@ -6,6 +6,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { sendEmail } from "@/lib/services/email-service";
+import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
+
+const APP_BASE_URL =
+  process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
 
 interface FraudEvent {
   type: string;
@@ -98,9 +103,15 @@ async function handleEarlyFraudWarning(warning: any) {
           role: {
             in: ["nonprofit_admin", "platform_admin"],
           },
+          isActive: true,
         },
-        select: { id: true },
+        select: { id: true, email: true, firstName: true },
       });
+      const org = await prisma.organization.findUnique({
+        where: { id: transaction.organizationId },
+        select: { name: true },
+      });
+      const orgName = org?.name || undefined;
 
       for (const admin of admins) {
         await prisma.notification.create({
@@ -114,6 +125,30 @@ async function handleEarlyFraudWarning(warning: any) {
             href: `/audit-trail?filter=fraud&chargeId=${chargeId}`,
           },
         });
+
+        // Fire-and-forget email alert. Never blocks the webhook response.
+        if (admin.email) {
+          const tmpl = buildComplianceAlertEmail({
+            adminFirstName: admin.firstName || "there",
+            alertTitle: `Early fraud warning: ${fraudType}`,
+            alertDescription: `Stripe has flagged a potential fraud risk on charge ${chargeId}. Fraud type: ${fraudType}. Please review the transaction immediately and verify card controls are active.`,
+            severity: "critical",
+            actionUrl: `${APP_BASE_URL}/audit-trail?filter=fraud&chargeId=${chargeId}`,
+            orgName,
+          });
+          sendEmail({
+            to: admin.email,
+            subject: tmpl.subject,
+            html: tmpl.html,
+            text: tmpl.text,
+            orgName,
+            userId: admin.id,
+            organizationId: transaction.organizationId,
+            emailType: "compliance_alert",
+          }).catch((err) =>
+            console.error("[fraud-webhook] email send failed:", err),
+          );
+        }
       }
 
       // Log to audit trail
@@ -146,9 +181,12 @@ async function handleChargeFraudDetected(charge: any) {
   try {
     // Alert all platform admins about fraud
     const platformAdmins = await prisma.user.findMany({
-      where: { role: "platform_admin" },
-      select: { id: true, organizationId: true },
+      where: { role: "platform_admin", isActive: true },
+      select: { id: true, organizationId: true, email: true, firstName: true },
     });
+
+    const alertTitle = "Fraud detected on charge";
+    const alertMessage = `Fraud has been detected on charge ${chargeId}. Stripe Radar detected: ${fraudDetails?.user_report || "automatic detection"}. Amount: $${(charge.amount / 100).toFixed(2)}. Status: ${charge.status}`;
 
     for (const admin of platformAdmins) {
       if (admin.organizationId) {
@@ -158,11 +196,33 @@ async function handleChargeFraudDetected(charge: any) {
             organizationId: admin.organizationId,
             type: "charge_fraud_detected",
             entityId: chargeId,
-            title: "Fraud detected on charge",
-            message: `Fraud has been detected on charge ${chargeId}. Stripe Radar detected: ${fraudDetails?.user_report || "automatic detection"}. Amount: $${(charge.amount / 100).toFixed(2)}. Status: ${charge.status}`,
+            title: alertTitle,
+            message: alertMessage,
             href: `/audit-trail?filter=fraud&chargeId=${chargeId}`,
           },
         });
+
+        // Fire-and-forget email alert.
+        if (admin.email) {
+          const tmpl = buildComplianceAlertEmail({
+            adminFirstName: admin.firstName || "there",
+            alertTitle,
+            alertDescription: alertMessage,
+            severity: "critical",
+            actionUrl: `${APP_BASE_URL}/audit-trail?filter=fraud&chargeId=${chargeId}`,
+          });
+          sendEmail({
+            to: admin.email,
+            subject: tmpl.subject,
+            html: tmpl.html,
+            text: tmpl.text,
+            userId: admin.id,
+            organizationId: admin.organizationId,
+            emailType: "compliance_alert",
+          }).catch((err) =>
+            console.error("[fraud-webhook] email send failed:", err),
+          );
+        }
       }
     }
 

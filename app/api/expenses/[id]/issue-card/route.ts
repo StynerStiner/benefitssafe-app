@@ -10,8 +10,16 @@ import { checkLimitAccess, buildLimitReachedResponse, getCurrentPeriod } from "@
 import { incrementUsage } from "@/lib/usage-tracker";
 import { screenAgainstOFAC } from "@/lib/ofac-screening";
 import { BLOCKED_MCC_CODES } from "@/lib/mcc-controls";
+import { sendEmail } from "@/lib/services/email-service";
+import {
+  buildCardIssuedEmail,
+  buildComplianceAlertEmail,
+} from "@/lib/services/email-templates";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+const APP_BASE_URL =
+  process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
 
 const issueCardSchema = z.object({
   cardType: z.enum(["one_time", "monthly", "custom"]).default("one_time"),
@@ -433,7 +441,12 @@ export async function POST(
       });
     }).catch(() => {});
 
-    // Notify beneficiary about new card
+    // Notify beneficiary about new card (in-app + email)
+    const cardSpendingLimit = `$${parseFloat(virtualCard.spendingCap.toString()).toFixed(2)}`;
+    const cardLabelForEmail =
+      virtualCard.cardLabel ||
+      `${expense.vendor?.name || "Card"} ending ${virtualCard.last4}`;
+
     if (expense.requestedById) {
       await prisma.notification.create({
         data: {
@@ -442,22 +455,51 @@ export async function POST(
           type: "card_issued",
           entityId: virtualCard.id,
           title: "New virtual card issued",
-          message: `A new ${virtualCard.cardType} virtual card has been issued for ${expense.vendor?.name || "this purchase"}. Card ending in ${virtualCard.last4}. Spending limit: $${parseFloat(virtualCard.spendingCap.toString()).toFixed(2)}.`,
+          message: `A new ${virtualCard.cardType} virtual card has been issued for ${expense.vendor?.name || "this purchase"}. Card ending in ${virtualCard.last4}. Spending limit: ${cardSpendingLimit}.`,
           href: `/virtual-cards/${virtualCard.id}`,
         },
       });
+
+      // Fire-and-forget email to beneficiary.
+      if (expense.requestedBy?.email) {
+        const tmpl = buildCardIssuedEmail({
+          firstName: expense.requestedBy.firstName || "there",
+          orgName: session.user.organizationName,
+          cardLabel: cardLabelForEmail,
+          grantName: expense.grant?.name || null,
+          spendingLimit: cardSpendingLimit,
+          dashboardUrl: `${APP_BASE_URL}/virtual-cards`,
+        });
+        sendEmail({
+          to: expense.requestedBy.email,
+          subject: tmpl.subject,
+          html: tmpl.html,
+          text: tmpl.text,
+          orgName: session.user.organizationName,
+          userId: expense.requestedById,
+          organizationId,
+          emailType: "card_issued",
+        }).catch((err) =>
+          console.error("[expenses/issue-card beneficiary email] failed:", err),
+        );
+      }
     }
 
-    // Notify organization admins
+    // Notify organization admins (in-app + confirmation email)
     const admins = await prisma.user.findMany({
       where: {
         organizationId,
         role: {
           in: ["nonprofit_admin", "platform_admin"],
         },
+        isActive: true,
       },
-      select: { id: true },
+      select: { id: true, email: true, firstName: true },
     });
+
+    const adminTitle = `Card issued for ${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`;
+    const adminMessage = `Virtual card issued to ${expense.requestedBy.firstName} ${expense.requestedBy.lastName} for ${expense.vendor?.name || "expense"}. Amount: ${cardSpendingLimit}.`;
+    const adminActionUrl = `${APP_BASE_URL}/virtual-cards/${virtualCard.id}`;
 
     for (const admin of admins) {
       await prisma.notification.create({
@@ -466,11 +508,34 @@ export async function POST(
           organizationId,
           type: "card_issued_admin",
           entityId: virtualCard.id,
-          title: `Card issued for ${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`,
-          message: `Virtual card issued to ${expense.requestedBy.firstName} ${expense.requestedBy.lastName} for ${expense.vendor?.name || "expense"}. Amount: $${parseFloat(virtualCard.spendingCap.toString()).toFixed(2)}.`,
+          title: adminTitle,
+          message: adminMessage,
           href: `/virtual-cards/${virtualCard.id}`,
         },
       });
+
+      if (admin.email) {
+        const tmpl = buildComplianceAlertEmail({
+          adminFirstName: admin.firstName || "there",
+          alertTitle: adminTitle,
+          alertDescription: adminMessage,
+          severity: "low",
+          actionUrl: adminActionUrl,
+          orgName: session.user.organizationName,
+        });
+        sendEmail({
+          to: admin.email,
+          subject: tmpl.subject,
+          html: tmpl.html,
+          text: tmpl.text,
+          orgName: session.user.organizationName,
+          userId: admin.id,
+          organizationId,
+          emailType: "compliance_alert",
+        }).catch((err) =>
+          console.error("[expenses/issue-card admin email] failed:", err),
+        );
+      }
     }
 
     return NextResponse.json({

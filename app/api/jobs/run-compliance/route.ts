@@ -5,7 +5,12 @@
 import { prisma } from "@/lib/db";
 import { classifyExpense } from "@/utils/compliance-rules";
 import { verifyJobAuth } from "@/lib/queue";
+import { sendEmail } from "@/lib/services/email-service";
+import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
 import { NextResponse } from "next/server";
+
+const APP_BASE_URL =
+  process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
 
 export async function POST(request: Request) {
   if (!verifyJobAuth(request)) {
@@ -80,28 +85,66 @@ export async function POST(request: Request) {
           },
         });
 
-        // Notify admin if risk level increased
+        // Notify admins + compliance officers if risk level increased
         const riskOrder = ["LIKELY_SAFE", "NEEDS_REVIEW", "LIKELY_RISKY", "BLOCKED"];
         const oldIdx = riskOrder.indexOf(oldLevel || "LIKELY_SAFE");
         const newIdx = riskOrder.indexOf(result.level);
         if (newIdx > oldIdx) {
-          const admin = await prisma.user.findFirst({
-            where: { organizationId: orgId, role: "nonprofit_admin" },
-            select: { id: true },
+          const recipients = await prisma.user.findMany({
+            where: {
+              organizationId: orgId,
+              role: { in: ["nonprofit_admin", "compliance_officer"] },
+              isActive: true,
+            },
+            select: { id: true, email: true, firstName: true },
           });
-          if (admin) {
+          const org = await prisma.organization.findUnique({
+            where: { id: orgId },
+            select: { name: true },
+          });
+          const orgName = org?.name || undefined;
+          // BLOCKED is critical; everything else is high (risk level jumped up).
+          const severity: "high" | "critical" =
+            result.level === "BLOCKED" ? "critical" : "high";
+          const title = "Expense reclassified to higher risk";
+          const message = `Expense "${expense.description}" was reclassified from ${oldLevel} to ${result.level}. Please review.`;
+
+          for (const admin of recipients) {
             await prisma.notification.create({
               data: {
                 userId: admin.id,
                 organizationId: orgId,
                 type: "compliance_reclassified",
-                title: "Expense reclassified to higher risk",
-                message: `Expense "${expense.description}" was reclassified from ${oldLevel} to ${result.level}. Please review.`,
+                title,
+                message,
                 entityType: "expense",
                 entityId: expense.id,
                 href: "/expenses",
               },
             });
+
+            if (admin.email) {
+              const tmpl = buildComplianceAlertEmail({
+                adminFirstName: admin.firstName || "there",
+                alertTitle: title,
+                alertDescription: message,
+                severity,
+                actionUrl: `${APP_BASE_URL}/expenses`,
+                orgName,
+              });
+              sendEmail({
+                to: admin.email,
+                subject: tmpl.subject,
+                html: tmpl.html,
+                text: tmpl.text,
+                orgName,
+                userId: admin.id,
+                organizationId: orgId,
+                emailType: "compliance_alert",
+              }).catch((err) =>
+                console.error("[run-compliance email] failed:", err),
+              );
+            }
           }
         }
       }

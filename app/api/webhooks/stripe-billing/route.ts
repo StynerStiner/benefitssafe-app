@@ -15,8 +15,13 @@
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { coerceTier, TIER_CONFIG, PricingTier } from "@/lib/pricing";
+import { sendEmail } from "@/lib/services/email-service";
+import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
+
+const APP_BASE_URL =
+  process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
 
 // ----------------------------------------------------------------------------
 // Helper: resolve a Stripe priceId back to our internal tier
@@ -39,6 +44,7 @@ async function notifyAdmins(
   title: string,
   message: string,
   href: string = "/settings/billing",
+  emailSeverity: "low" | "medium" | "high" | "critical" | null = null,
 ) {
   const admins = await prisma.user.findMany({
     where: {
@@ -46,12 +52,47 @@ async function notifyAdmins(
       isActive: true,
       role: { in: ["nonprofit_admin", "platform_admin"] },
     },
-    select: { id: true },
+    select: { id: true, email: true, firstName: true },
   });
+
+  // Look up org name once for email branding.
+  let orgName: string | undefined;
+  if (emailSeverity && admins.length > 0) {
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { name: true },
+    });
+    orgName = org?.name || undefined;
+  }
+
   for (const admin of admins) {
     await prisma.notification.create({
       data: { userId: admin.id, organizationId, type, title, message, href },
     });
+
+    // Fire-and-forget email fan-out when the caller requests it.
+    if (emailSeverity && admin.email) {
+      const tmpl = buildComplianceAlertEmail({
+        adminFirstName: admin.firstName || "there",
+        alertTitle: title,
+        alertDescription: message,
+        severity: emailSeverity,
+        actionUrl: `${APP_BASE_URL}${href}`,
+        orgName,
+      });
+      sendEmail({
+        to: admin.email,
+        subject: tmpl.subject,
+        html: tmpl.html,
+        text: tmpl.text,
+        orgName,
+        userId: admin.id,
+        organizationId,
+        emailType: "compliance_alert",
+      }).catch((err) =>
+        console.error("[stripe-billing] email send failed:", err),
+      );
+    }
   }
 }
 
@@ -300,6 +341,8 @@ async function handleSubscriptionUpdated(sub: Stripe.Subscription) {
         "payment_past_due",
         "Payment past due",
         "Your subscription payment is past due. Please update your billing information to avoid losing access.",
+        "/settings/billing",
+        "critical",
       );
     } else if (sub.status === "active" && previousStatus === "past_due") {
       await notifyAdmins(
@@ -373,6 +416,8 @@ async function handleSubscriptionDeleted(sub: Stripe.Subscription) {
     "subscription_canceled",
     "Subscription canceled",
     "Your paid subscription has ended. Choose a plan to restore access.",
+    "/settings/billing",
+    "high",
   );
 }
 
@@ -454,5 +499,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     "payment_failed",
     "Payment failed",
     `Your payment of $${(invoice.amount_due / 100).toFixed(2)} failed. Update your billing information to avoid service interruption.`,
+    "/settings/billing",
+    "critical",
   );
 }
