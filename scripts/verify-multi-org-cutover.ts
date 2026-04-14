@@ -18,13 +18,22 @@ async function compareForOrg(orgId: string, label: string) {
   });
   console.log(`  Beneficiaries  legacy=${legacyBeneCount}  new=${newBeneCount}  ${legacyBeneCount === newBeneCount ? "✓" : "✗ MISMATCH"}`);
 
-  // Team list (everything except beneficiary/vendor)
-  const teamRoles = ["nonprofit_admin", "nonprofit_staff", "cpa", "auditor", "attorney", "grant_officer"] as const;
+  // Team list (everything except beneficiary/vendor). We deliberately use a
+  // mutable array typed as UserRole[] so this script type-checks under the
+  // same strict tsconfig the Vercel build applies to scripts/.
+  const teamRoles: ("nonprofit_admin" | "nonprofit_staff" | "cpa" | "auditor" | "attorney" | "grant_officer")[] = [
+    "nonprofit_admin",
+    "nonprofit_staff",
+    "cpa",
+    "auditor",
+    "attorney",
+    "grant_officer",
+  ];
   const legacyTeamCount = await prisma.user.count({
     where: { organizationId: orgId, role: { in: teamRoles } },
   });
   const newTeamCount = await prisma.organizationMembership.count({
-    where: { organizationId: orgId, role: { in: teamRoles as unknown as string[] }, status: "active" },
+    where: { organizationId: orgId, role: { in: teamRoles as string[] }, status: "active" },
   });
   console.log(`  Team           legacy=${legacyTeamCount}  new=${newTeamCount}  ${legacyTeamCount === newTeamCount ? "✓" : "✗ MISMATCH"}`);
 
