@@ -49,46 +49,88 @@ export async function GET(request: Request) {
       },
     };
 
-    // Get all Stripe transactions from last month
-    const stripeTransactions = await stripe.issuing.transactions.list({
-      limit: 100,
-      created: {
-        gte: Math.floor(lastMonth.getTime() / 1000),
-        lt: Math.floor(thisMonth.getTime() / 1000),
-      },
+    // Stripe Issuing transactions now live on each nonprofit's connected
+    // account rather than the platform, so we must iterate per-org. Bound
+    // the org set to those that actually had app-side Transaction activity
+    // in the period — at 1.8M nonprofits, scanning every org monthly
+    // would be millions of Stripe API calls with nothing to find.
+    const activeOrgRows = await prisma.transaction.findMany({
+      where: { createdAt: { gte: lastMonth, lt: thisMonth } },
+      distinct: ["organizationId"],
+      select: { organizationId: true },
     });
+    const activeOrgIds = activeOrgRows.map((r) => r.organizationId);
+
+    const activeOrgs = activeOrgIds.length
+      ? await prisma.organization.findMany({
+          where: {
+            id: { in: activeOrgIds },
+            stripeAccountId: { not: null },
+          },
+          select: { id: true, stripeAccountId: true },
+        })
+      : [];
 
     let stripeTotal = 0;
 
-    // Validate each Stripe transaction is in our ledger
-    for (const stripeTx of stripeTransactions.data) {
-      const amount = Math.abs(stripeTx.amount) / 100; // Convert from cents
-      stripeTotal += amount;
-
-      // Check if this transaction is in our system
-      const appTx = await prisma.transaction.findUnique({
-        where: { stripeTransactionId: stripeTx.id },
-        select: { id: true, amount: true },
-      });
-
-      if (!appTx) {
-        reconciliationResults.discrepancies.push({
-          type: "MISSING_TRANSACTION",
-          description: `Stripe transaction ${stripeTx.id} not found in app database`,
-          impact: `$${amount.toFixed(2)} unrecorded`,
-        });
-      } else if (appTx.amount !== amount) {
-        reconciliationResults.discrepancies.push({
-          type: "AMOUNT_MISMATCH",
-          description: `Transaction ${stripeTx.id}: Stripe shows $${amount.toFixed(2)}, app shows $${appTx.amount?.toFixed(2)}`,
-          impact: `Discrepancy: $${Math.abs(amount - (appTx.amount || 0)).toFixed(2)}`,
-        });
+    // NOTE: limit:100 per org is a known cap; per-org pagination is a
+    // follow-up once we have a reconciliation checkpoint model. At current
+    // scale the 100-tx ceiling matches what the previous platform-scoped
+    // call returned anyway — this fix keeps semantics while restoring
+    // correctness under the connected-account architecture.
+    for (const org of activeOrgs) {
+      if (!org.stripeAccountId) continue;
+      let stripeTransactions;
+      try {
+        stripeTransactions = await stripe.issuing.transactions.list(
+          {
+            limit: 100,
+            created: {
+              gte: Math.floor(lastMonth.getTime() / 1000),
+              lt: Math.floor(thisMonth.getTime() / 1000),
+            },
+          },
+          { stripeAccount: org.stripeAccountId },
+        );
+      } catch (err) {
+        console.error(
+          `[reconciliation] transactions.list failed for org ${org.id}:`,
+          err,
+        );
+        continue;
       }
 
-      reconciliationResults.processed++;
+      for (const stripeTx of stripeTransactions.data) {
+        const amount = Math.abs(stripeTx.amount) / 100; // Convert from cents
+        stripeTotal += amount;
+
+        const appTx = await prisma.transaction.findUnique({
+          where: { stripeTransactionId: stripeTx.id },
+          select: { id: true, amount: true },
+        });
+
+        if (!appTx) {
+          reconciliationResults.discrepancies.push({
+            type: "MISSING_TRANSACTION",
+            description: `Stripe transaction ${stripeTx.id} not found in app database`,
+            impact: `$${amount.toFixed(2)} unrecorded`,
+          });
+        } else if (appTx.amount !== amount) {
+          reconciliationResults.discrepancies.push({
+            type: "AMOUNT_MISMATCH",
+            description: `Transaction ${stripeTx.id}: Stripe shows $${amount.toFixed(2)}, app shows $${appTx.amount?.toFixed(2)}`,
+            impact: `Discrepancy: $${Math.abs(amount - (appTx.amount || 0)).toFixed(2)}`,
+          });
+        }
+
+        reconciliationResults.processed++;
+      }
     }
 
-    // Get all ledger debits from last month
+    // Get all ledger debits from last month. Pull organizationId so we
+    // can route the per-transaction retrieve to the right connected
+    // account, and pre-fetch the org→stripeAccount map in one query to
+    // avoid an N+1.
     const ledgerEntries = await prisma.ledgerEntry.findMany({
       where: {
         type: "DEBIT",
@@ -97,20 +139,61 @@ export async function GET(request: Request) {
           lt: thisMonth,
         },
       },
-      select: { id: true, amount: true, reference: true, grantId: true },
+      select: {
+        id: true,
+        amount: true,
+        reference: true,
+        grantId: true,
+        organizationId: true,
+      },
     });
+
+    const ledgerOrgIds = Array.from(
+      new Set(ledgerEntries.map((e) => e.organizationId)),
+    );
+    const orgsForLedger = ledgerOrgIds.length
+      ? await prisma.organization.findMany({
+          where: { id: { in: ledgerOrgIds } },
+          select: { id: true, stripeAccountId: true },
+        })
+      : [];
+    const orgStripeAccountMap = new Map(
+      orgsForLedger.map((o) => [o.id, o.stripeAccountId]),
+    );
 
     let ledgerTotal = 0;
     for (const entry of ledgerEntries) {
       ledgerTotal += parseFloat(entry.amount.toString());
 
-      // Check if referenced Stripe transaction exists
+      // Check if referenced Stripe transaction exists on the org's
+      // connected account. Orgs without a Stripe account aren't eligible
+      // for this verification path — skip them rather than calling the
+      // platform account which no longer holds the transaction.
       if (entry.reference) {
-        const stripeTx = await stripe.issuing.transactions.retrieve(entry.reference);
-        if (!stripeTx) {
+        const stripeAccountId = orgStripeAccountMap.get(entry.organizationId);
+        if (!stripeAccountId) continue;
+        try {
+          const stripeTx = await stripe.issuing.transactions.retrieve(
+            entry.reference,
+            { stripeAccount: stripeAccountId },
+          );
+          if (!stripeTx) {
+            reconciliationResults.discrepancies.push({
+              type: "ORPHANED_LEDGER_ENTRY",
+              description: `Ledger entry ${entry.id} references non-existent Stripe transaction`,
+              impact: `$${parseFloat(entry.amount.toString()).toFixed(2)} potentially unresolved`,
+            });
+          }
+        } catch (err) {
+          // A retrieve failure is itself an orphan signal — the reference
+          // on the ledger entry doesn't resolve on the org's account.
+          console.error(
+            `[reconciliation] transactions.retrieve failed for entry ${entry.id}:`,
+            err,
+          );
           reconciliationResults.discrepancies.push({
             type: "ORPHANED_LEDGER_ENTRY",
-            description: `Ledger entry ${entry.id} references non-existent Stripe transaction`,
+            description: `Ledger entry ${entry.id} references Stripe transaction that cannot be retrieved on org ${entry.organizationId}`,
             impact: `$${parseFloat(entry.amount.toString()).toFixed(2)} potentially unresolved`,
           });
         }

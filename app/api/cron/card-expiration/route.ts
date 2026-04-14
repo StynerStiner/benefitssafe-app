@@ -76,6 +76,7 @@ export async function GET(request: Request) {
         beneficiaryId: string | null;
         status: string;
         expiresAt: Date | null;
+        organization: { stripeAccountId: string | null; name: string | null } | null;
       }> = await prisma.virtualCard.findMany({
         where: {
           expiresAt: { lte: now },
@@ -88,6 +89,9 @@ export async function GET(request: Request) {
           beneficiaryId: true,
           status: true,
           expiresAt: true,
+          // Cards live on the connected account — we need its id to
+          // route stripe.issuing.cards.update() correctly.
+          organization: { select: { stripeAccountId: true, name: true } },
         },
         take: BATCH_SIZE,
         ...(expireCursor ? { skip: 1, cursor: { id: expireCursor } } : {}),
@@ -102,10 +106,19 @@ export async function GET(request: Request) {
 
     for (const card of expiredCards) {
       try {
-        // Update Stripe card status to lost (effectively disables it)
-        await stripe.issuing.cards.update(card.stripeCardId, {
-          status: "canceled",
-        });
+        // Cancel the card on the nonprofit's connected account. Cards
+        // without a stripeAccountId (org never completed onboarding) or
+        // with a dev-mode mock id (ic_mock_*) are skipped for the Stripe
+        // call — we still mark them EXPIRED in the DB so stale state
+        // doesn't block the cron.
+        const connectedAccount = card.organization?.stripeAccountId ?? null;
+        if (connectedAccount && !card.stripeCardId.startsWith("ic_mock_")) {
+          await stripe.issuing.cards.update(
+            card.stripeCardId,
+            { status: "canceled" },
+            { stripeAccount: connectedAccount },
+          );
+        }
 
         // Update database
         await prisma.virtualCard.update({
@@ -151,10 +164,7 @@ export async function GET(request: Request) {
             where: { id: card.beneficiaryId },
             select: { email: true, firstName: true },
           });
-          const org = await prisma.organization.findUnique({
-            where: { id: card.organizationId },
-            select: { name: true },
-          });
+          const orgName = card.organization?.name || undefined;
           if (beneficiary?.email) {
             const tmpl = buildComplianceAlertEmail({
               adminFirstName: beneficiary.firstName || "there",
@@ -162,14 +172,14 @@ export async function GET(request: Request) {
               alertDescription: `Your virtual card ending in ${card.id.slice(-4)} has expired and can no longer be used. Contact your organization if you need a replacement.`,
               severity: "medium",
               actionUrl: `${APP_BASE_URL}/virtual-cards`,
-              orgName: org?.name || undefined,
+              orgName,
             });
             sendEmail({
               to: beneficiary.email,
               subject: tmpl.subject,
               html: tmpl.html,
               text: tmpl.text,
-              orgName: org?.name || undefined,
+              orgName,
               userId: card.beneficiaryId,
               organizationId: card.organizationId,
               emailType: "compliance_alert",

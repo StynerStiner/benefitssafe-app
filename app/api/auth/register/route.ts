@@ -219,12 +219,18 @@ export async function POST(request: Request) {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Create Stripe Connect account for the organization
+    // Create Stripe Connect account for the organization.
+    //
+    // Note: we do NOT pre-create an Issuing cardholder here. Cardholders
+    // live on the nonprofit's own connected account and must be created
+    // per-beneficiary just-in-time during card issuance (with full KYC).
+    // A platform-scoped org cardholder has no callers anywhere in the app
+    // and the previous code wrote it to a non-existent Organization
+    // column (`stripeCardholderIdId`), meaning the path was dead-lettered
+    // at Prisma validation time anyway.
     let stripeAccountId: string | null = null;
-    let stripeCardholderIdId: string | null = null;
 
     try {
-      // Create Stripe Connect Express account
       const stripeAccount = await stripe.accounts.create({
         type: "express",
         country: "US",
@@ -235,23 +241,10 @@ export async function POST(request: Request) {
         },
       });
       stripeAccountId = stripeAccount.id;
-
-      // Create cardholder for issuing cards
-      const cardholder = await stripe.issuing.cardholders.create({
-        type: "business",
-        billing: {
-          address: {
-            country: "US",
-          },
-        },
-        name: organizationName.trim(),
-        email: email.toLowerCase().trim(),
-      });
-      stripeCardholderIdId = cardholder.id;
     } catch (stripeError) {
       console.error("Stripe account creation failed:", stripeError);
-      // Don't fail registration if Stripe fails -- log but continue
-      // Organization can be connected to Stripe later
+      // Don't fail registration if Stripe fails — the org can finish
+      // onboarding later via /api/org/stripe-onboarding.
     }
 
     // Generate email verification token
@@ -269,7 +262,6 @@ export async function POST(request: Request) {
           name: organizationName.trim(),
           orgCode,
           stripeAccountId,
-          stripeCardholderIdId,
           trialStartDate: now,
           trialEndDate,
           subscriptionStatus: "trial",
