@@ -408,6 +408,7 @@ export const ModelName = {
   PromoRedemption: 'PromoRedemption',
   CalendarEvent: 'CalendarEvent',
   OrganizationMembership: 'OrganizationMembership',
+  CronCheckpoint: 'CronCheckpoint',
   Integration: 'Integration',
   WorkflowTrigger: 'WorkflowTrigger',
   WorkflowLog: 'WorkflowLog',
@@ -429,7 +430,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organization" | "user" | "inviteToken" | "grant" | "budgetCategory" | "expenseRequest" | "vendor" | "subscription" | "virtualCard" | "cardholderEligibility" | "transaction" | "ledgerEntry" | "approval" | "auditLog" | "conversation" | "conversationParticipant" | "message" | "notification" | "document" | "disbursementPolicy" | "promoCode" | "promoRedemption" | "calendarEvent" | "organizationMembership" | "integration" | "workflowTrigger" | "workflowLog" | "grantReport" | "billingSubscription" | "usageCounter"
+    modelProps: "organization" | "user" | "inviteToken" | "grant" | "budgetCategory" | "expenseRequest" | "vendor" | "subscription" | "virtualCard" | "cardholderEligibility" | "transaction" | "ledgerEntry" | "approval" | "auditLog" | "conversation" | "conversationParticipant" | "message" | "notification" | "document" | "disbursementPolicy" | "promoCode" | "promoRedemption" | "calendarEvent" | "organizationMembership" | "cronCheckpoint" | "integration" | "workflowTrigger" | "workflowLog" | "grantReport" | "billingSubscription" | "usageCounter"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2209,6 +2210,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CronCheckpoint: {
+      payload: Prisma.$CronCheckpointPayload<ExtArgs>
+      fields: Prisma.CronCheckpointFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CronCheckpointFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronCheckpointPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CronCheckpointFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronCheckpointPayload>
+        }
+        findFirst: {
+          args: Prisma.CronCheckpointFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronCheckpointPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CronCheckpointFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronCheckpointPayload>
+        }
+        findMany: {
+          args: Prisma.CronCheckpointFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronCheckpointPayload>[]
+        }
+        create: {
+          args: Prisma.CronCheckpointCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronCheckpointPayload>
+        }
+        createMany: {
+          args: Prisma.CronCheckpointCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CronCheckpointCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronCheckpointPayload>[]
+        }
+        delete: {
+          args: Prisma.CronCheckpointDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronCheckpointPayload>
+        }
+        update: {
+          args: Prisma.CronCheckpointUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronCheckpointPayload>
+        }
+        deleteMany: {
+          args: Prisma.CronCheckpointDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CronCheckpointUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CronCheckpointUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronCheckpointPayload>[]
+        }
+        upsert: {
+          args: Prisma.CronCheckpointUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CronCheckpointPayload>
+        }
+        aggregate: {
+          args: Prisma.CronCheckpointAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCronCheckpoint>
+        }
+        groupBy: {
+          args: Prisma.CronCheckpointGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CronCheckpointGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CronCheckpointCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CronCheckpointCountAggregateOutputType> | number
+        }
+      }
+    }
     Integration: {
       payload: Prisma.$IntegrationPayload<ExtArgs>
       fields: Prisma.IntegrationFieldRefs
@@ -3167,10 +3242,23 @@ export const OrganizationMembershipScalarFieldEnum = {
   lastAccessedAt: 'lastAccessedAt',
   orgSpecificTitle: 'orgSpecificTitle',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  notes: 'notes'
 } as const
 
 export type OrganizationMembershipScalarFieldEnum = (typeof OrganizationMembershipScalarFieldEnum)[keyof typeof OrganizationMembershipScalarFieldEnum]
+
+
+export const CronCheckpointScalarFieldEnum = {
+  id: 'id',
+  cronName: 'cronName',
+  lastCursor: 'lastCursor',
+  lastRunAt: 'lastRunAt',
+  processedCount: 'processedCount',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CronCheckpointScalarFieldEnum = (typeof CronCheckpointScalarFieldEnum)[keyof typeof CronCheckpointScalarFieldEnum]
 
 
 export const IntegrationScalarFieldEnum = {
@@ -3745,6 +3833,7 @@ export type GlobalOmitConfig = {
   promoRedemption?: Prisma.PromoRedemptionOmit
   calendarEvent?: Prisma.CalendarEventOmit
   organizationMembership?: Prisma.OrganizationMembershipOmit
+  cronCheckpoint?: Prisma.CronCheckpointOmit
   integration?: Prisma.IntegrationOmit
   workflowTrigger?: Prisma.WorkflowTriggerOmit
   workflowLog?: Prisma.WorkflowLogOmit

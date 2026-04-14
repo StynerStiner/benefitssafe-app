@@ -1,8 +1,11 @@
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from 'next/server';
+import { readCheckpoint, writeCheckpoint } from '@/lib/cron-checkpoint';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { enqueueJob, JobTypes } from '@/lib/queue';
+
+const CRON_NAME = "sentinel-dispatcher";
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -22,15 +25,16 @@ export async function GET(request: Request) {
   logger.info('SentinelLayer cron job started');
 
   try {
-    // Cursor-paginated dispatcher — see app/api/cron/compliance/route.ts
-    // for the same pattern. Hard cap of MAX_ENQUEUE_PER_RUN per tick so
-    // the cron Lambda always returns within maxDuration.
+    // Cursor-paginated dispatcher with persistent checkpoint — see
+    // app/api/cron/compliance/route.ts for the full pattern.
     const BATCH_SIZE = 500;
     const MAX_ENQUEUE_PER_RUN = 5000;
 
-    let cursor: string | undefined = undefined;
+    const startCursor = await readCheckpoint(CRON_NAME);
+    let cursor: string | undefined = startCursor ?? undefined;
     let enqueued = 0;
     let scanned = 0;
+    let reachedEnd = false;
 
     while (enqueued < MAX_ENQUEUE_PER_RUN) {
       const batch: { id: string }[] = await prisma.organization.findMany({
@@ -40,7 +44,10 @@ export async function GET(request: Request) {
         orderBy: { id: "asc" },
       });
 
-      if (batch.length === 0) break;
+      if (batch.length === 0) {
+        reachedEnd = true;
+        break;
+      }
       scanned += batch.length;
 
       const results = await Promise.allSettled(
@@ -63,12 +70,19 @@ export async function GET(request: Request) {
       }
 
       cursor = batch[batch.length - 1]!.id;
-      if (batch.length < BATCH_SIZE) break;
+      if (batch.length < BATCH_SIZE) {
+        reachedEnd = true;
+        break;
+      }
     }
+
+    const nextCursor = reachedEnd ? null : (cursor ?? null);
+    await writeCheckpoint(CRON_NAME, nextCursor, enqueued);
 
     logger.info('SentinelLayer cron job completed — jobs enqueued', {
       scanned,
       enqueued,
+      reachedEnd,
       budgetExhausted: enqueued >= MAX_ENQUEUE_PER_RUN,
     });
 
@@ -77,7 +91,8 @@ export async function GET(request: Request) {
       timestamp: new Date().toISOString(),
       orgsScanned: scanned,
       orgsEnqueued: enqueued,
-      lastCursor: cursor ?? null,
+      reachedEnd,
+      lastCursor: nextCursor,
       budgetExhausted: enqueued >= MAX_ENQUEUE_PER_RUN,
     });
   } catch (error) {

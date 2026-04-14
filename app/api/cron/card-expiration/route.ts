@@ -10,10 +10,16 @@
 // 3. Schedule for daily at 2 AM UTC
 
 import { NextResponse } from "next/server";
+import { readCheckpoint, writeCheckpoint } from "@/lib/cron-checkpoint";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
+
+// Each pass has its own checkpoint so they advance independently across
+// cron firings even when one pass exhausts its budget before the other.
+const CRON_NAME_EXPIRE = "card-expiration-expire";
+const CRON_NAME_NOTIFY = "card-expiration-notify";
 
 const APP_BASE_URL =
   process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
@@ -55,9 +61,13 @@ export async function GET(request: Request) {
 
     // ------------------------------------------------------------------
     // Pass 1: EXPIRE cards whose expiresAt has passed.
+    // Resumes from the last cron firing's checkpoint so we don't re-scan
+    // already-processed cards on each tick.
     // ------------------------------------------------------------------
-    let expireCursor: string | undefined = undefined;
+    const expireStartCursor = await readCheckpoint(CRON_NAME_EXPIRE);
+    let expireCursor: string | undefined = expireStartCursor ?? undefined;
     let processedExpired = 0;
+    let expireReachedEnd = false;
     while (processedExpired < MAX_EXPIRE_PER_RUN) {
       const expiredCards: Array<{
         id: string;
@@ -84,7 +94,10 @@ export async function GET(request: Request) {
         orderBy: { id: "asc" },
       });
 
-      if (expiredCards.length === 0) break;
+      if (expiredCards.length === 0) {
+        expireReachedEnd = true;
+        break;
+      }
       processedExpired += expiredCards.length;
 
     for (const card of expiredCards) {
@@ -174,18 +187,29 @@ export async function GET(request: Request) {
     }
 
       expireCursor = expiredCards[expiredCards.length - 1]!.id;
-      if (expiredCards.length < BATCH_SIZE) break;
+      if (expiredCards.length < BATCH_SIZE) {
+        expireReachedEnd = true;
+        break;
+      }
     }
+
+    await writeCheckpoint(
+      CRON_NAME_EXPIRE,
+      expireReachedEnd ? null : (expireCursor ?? null),
+      processedExpired,
+    );
 
     // ------------------------------------------------------------------
     // Pass 2: NOTIFY cards expiring within 7 days but not yet expired.
     // The window also bounds the candidate set to a small fraction of
     // the global card population (only cards with expiresAt in the
-    // upcoming week).
+    // upcoming week). Has its own checkpoint independent of pass 1.
     // ------------------------------------------------------------------
-    let notifyCursor: string | undefined = undefined;
+    const notifyStartCursor = await readCheckpoint(CRON_NAME_NOTIFY);
+    let notifyCursor: string | undefined = notifyStartCursor ?? undefined;
     let processedNotify = 0;
     let cardsNotifiedTotal = 0;
+    let notifyReachedEnd = false;
     while (processedNotify < MAX_NOTIFY_PER_RUN) {
       const cardsExpiring7Days: Array<{
         id: string;
@@ -210,7 +234,10 @@ export async function GET(request: Request) {
         orderBy: { id: "asc" },
       });
 
-      if (cardsExpiring7Days.length === 0) break;
+      if (cardsExpiring7Days.length === 0) {
+        notifyReachedEnd = true;
+        break;
+      }
       processedNotify += cardsExpiring7Days.length;
 
     for (const card of cardsExpiring7Days) {
@@ -279,8 +306,17 @@ export async function GET(request: Request) {
     }
 
       notifyCursor = cardsExpiring7Days[cardsExpiring7Days.length - 1]!.id;
-      if (cardsExpiring7Days.length < BATCH_SIZE) break;
+      if (cardsExpiring7Days.length < BATCH_SIZE) {
+        notifyReachedEnd = true;
+        break;
+      }
     }
+
+    await writeCheckpoint(
+      CRON_NAME_NOTIFY,
+      notifyReachedEnd ? null : (notifyCursor ?? null),
+      processedNotify,
+    );
 
     // Create job completion audit log
     await prisma.auditLog.create({

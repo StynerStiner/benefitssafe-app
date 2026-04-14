@@ -162,6 +162,11 @@ export type CalendarEvent = Prisma.CalendarEventModel
  */
 export type OrganizationMembership = Prisma.OrganizationMembershipModel
 /**
+ * Model CronCheckpoint
+ * 
+ */
+export type CronCheckpoint = Prisma.CronCheckpointModel
+/**
  * Model Integration
  * 
  */

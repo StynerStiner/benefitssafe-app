@@ -812,6 +812,12 @@ model OrganizationMembership {
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  // Per-org private notes about this member. Lets nonprofit A keep a
+  // case file on Maria without leaking those notes to nonprofit B that
+  // also has Maria as a beneficiary. The legacy User.notes field is
+  // retained for backward compat but new writes go here.
+  notes            String?
+
   @@unique([userId, organizationId])
   @@index([userId])
   @@index([organizationId])
@@ -820,6 +826,22 @@ model OrganizationMembership {
   // (organizationId, role, status) on every beneficiary/team list call.
   // Keeps the query an indexed range read at 900M+ rows.
   @@index([organizationId, role, status])
+}
+
+model CronCheckpoint {
+  // Resumable cursor checkpoint for dispatcher crons. Each row is keyed
+  // by a stable cronName ("compliance-dispatcher", "sentinel-dispatcher",
+  // etc.) and stores the last-processed entity id so the next cron tick
+  // picks up where the previous one stopped, instead of re-scanning the
+  // table from the beginning.
+  id             String   @id @default(cuid())
+  cronName       String   @unique
+  lastCursor     String?
+  lastRunAt      DateTime @default(now())
+  processedCount Int      @default(0)
+  updatedAt      DateTime @updatedAt
+
+  @@index([cronName])
 }
 
 // ── Composio Workflow Automation ────────────────────

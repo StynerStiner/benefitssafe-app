@@ -96,8 +96,27 @@ export async function uploadOrgLogoToS3(
   return uploadToS3(file, filename, "org-logos");
 }
 
+/**
+ * Upload a document scoped to an organization.
+ *
+ * Key layout:
+ *   Legacy (pre-org-namespace): documents/{uuid}-{entityId}-{ts}.{ext}
+ *   New    (post-org-namespace): documents/{orgId}/{uuid}-{entityId}-{ts}.{ext}
+ *
+ * Existing documents are NOT migrated — both layouts are served by the
+ * same bucket. A bucket policy that grants pre-signed URL access scoped
+ * to `documents/${orgId}/*` will only protect new uploads; legacy
+ * objects under `documents/*` need a separate bucket policy or a lazy
+ * background re-key job.
+ *
+ * The org prefix exists so that even if signed URLs aren't strictly
+ * enforced, an authenticated user from org A cannot guess org B's
+ * document URL pattern — every key carries the owning org id as a
+ * structural prefix.
+ */
 export async function uploadDocumentToS3(
   file: Buffer,
+  organizationId: string,
   entityId: string,
   originalFilename: string,
   fileType: string = "application/pdf"
@@ -108,10 +127,10 @@ export async function uploadDocumentToS3(
       throw new Error("AWS_S3_BUCKET environment variable not set");
     }
 
-    // Generate unique key for document with sanitized extension
     const rawExt = originalFilename.split(".").pop() || "pdf";
     const ext = sanitizeFilename(rawExt);
-    const uniqueFilename = `documents/${uuidv4()}-${sanitizeFilename(entityId)}-${Date.now()}.${ext}`;
+    const safeOrgId = sanitizeFilename(organizationId);
+    const uniqueFilename = `documents/${safeOrgId}/${uuidv4()}-${sanitizeFilename(entityId)}-${Date.now()}.${ext}`;
 
     const command = new PutObjectCommand({
       Bucket: bucket,

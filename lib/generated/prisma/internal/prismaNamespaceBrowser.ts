@@ -75,6 +75,7 @@ export const ModelName = {
   PromoRedemption: 'PromoRedemption',
   CalendarEvent: 'CalendarEvent',
   OrganizationMembership: 'OrganizationMembership',
+  CronCheckpoint: 'CronCheckpoint',
   Integration: 'Integration',
   WorkflowTrigger: 'WorkflowTrigger',
   WorkflowLog: 'WorkflowLog',
@@ -574,10 +575,23 @@ export const OrganizationMembershipScalarFieldEnum = {
   lastAccessedAt: 'lastAccessedAt',
   orgSpecificTitle: 'orgSpecificTitle',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  notes: 'notes'
 } as const
 
 export type OrganizationMembershipScalarFieldEnum = (typeof OrganizationMembershipScalarFieldEnum)[keyof typeof OrganizationMembershipScalarFieldEnum]
+
+
+export const CronCheckpointScalarFieldEnum = {
+  id: 'id',
+  cronName: 'cronName',
+  lastCursor: 'lastCursor',
+  lastRunAt: 'lastRunAt',
+  processedCount: 'processedCount',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CronCheckpointScalarFieldEnum = (typeof CronCheckpointScalarFieldEnum)[keyof typeof CronCheckpointScalarFieldEnum]
 
 
 export const IntegrationScalarFieldEnum = {

@@ -8,6 +8,7 @@
 // Audit logs the event.
 
 import { prisma } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -24,6 +25,32 @@ const BCRYPT_ROUNDS = 12;
 
 export async function POST(request: Request) {
   try {
+    // Rate limit per IP BEFORE bcrypt. bcrypt(rounds=12) costs ~250ms of
+    // CPU per call; without a gate, a bot can pin every server core and
+    // DoS the auth system. 5 attempts per 15 minutes per IP is enough for
+    // a real user fat-fingering their password.
+    const ip =
+      request.headers.get("x-forwarded-for") ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
+    const limit = rateLimit(`reset-password:${ip}`, {
+      maxRequests: 5,
+      windowMs: 15 * 60 * 1000,
+    });
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Too many attempts. Try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(
+              Math.ceil((limit.resetAt.getTime() - Date.now()) / 1000),
+            ),
+          },
+        },
+      );
+    }
+
     const body = await request.json().catch(() => ({}));
     const parsed = resetPasswordSchema.safeParse(body);
     if (!parsed.success) {

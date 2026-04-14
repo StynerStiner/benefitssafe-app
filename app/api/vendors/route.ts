@@ -256,35 +256,67 @@ export async function POST(request: Request) {
 
     let orgSeq = "0000";
     if (org?.orgCode) {
-      // orgCode format is "ORG-00001", extract the numeric part
       const match = org.orgCode.match(/ORG-(\d+)/);
       if (match) {
         orgSeq = match[1];
       }
     }
 
-    const vendorCount = await prisma.vendor.count({
-      where: { organizationId },
-    });
-    const vendorCode = `VN-${orgSeq}-${String(vendorCount + 1).padStart(5, "0")}`;
+    // Race-safe vendorCode + create. The previous version used a simple
+    // count() then string-formatted the next sequence — two concurrent
+    // POSTs in the same org would both observe count=N and both try to
+    // write VN-X-N+1, hitting the @unique constraint and 500ing one of
+    // the requests. We now compute the next code from the *current max*
+    // (which respects gaps from prior failed attempts) and wrap the
+    // create() in a retry loop that catches Prisma P2002 unique-violation
+    // errors. On retry we re-read the max so the second attempt sees
+    // the row that won the race.
+    const codePrefix = `VN-${orgSeq}-`;
+    let vendor: { id: string; name: string; vendorCode: string | null; status: string; userId: string | null } | null = null;
+    let lastErr: unknown = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const maxVendor = await prisma.vendor.findFirst({
+        where: { organizationId, vendorCode: { startsWith: codePrefix } },
+        orderBy: { vendorCode: "desc" },
+        select: { vendorCode: true },
+      });
+      const lastSeq = maxVendor?.vendorCode
+        ? parseInt(maxVendor.vendorCode.split("-").pop() || "0", 10) || 0
+        : 0;
+      const candidateCode = `${codePrefix}${String(lastSeq + 1).padStart(5, "0")}`;
 
-    const vendor = await prisma.vendor.create({
-      data: {
-        organizationId,
-        name: data.name,
-        vendorCode,
-        email: data.email || null,
-        type: data.type,
-        phone: data.phone || null,
-        website: data.website || null,
-        address: data.address || null,
-        paymentMethod: data.paymentMethod || null,
-        taxIdCollected: data.taxIdCollected || false,
-        form1099Required: data.form1099Required || false,
-        userId,
-      },
-      select: { id: true, name: true, vendorCode: true, status: true, userId: true },
-    });
+      try {
+        vendor = await prisma.vendor.create({
+          data: {
+            organizationId,
+            name: data.name,
+            vendorCode: candidateCode,
+            email: data.email || null,
+            type: data.type,
+            phone: data.phone || null,
+            website: data.website || null,
+            address: data.address || null,
+            paymentMethod: data.paymentMethod || null,
+            taxIdCollected: data.taxIdCollected || false,
+            form1099Required: data.form1099Required || false,
+            userId,
+          },
+          select: { id: true, name: true, vendorCode: true, status: true, userId: true },
+        });
+        break;
+      } catch (e: unknown) {
+        const err = e as { code?: string };
+        if (err.code === "P2002" && attempt < 2) {
+          // unique-constraint collision on vendorCode — retry with a fresh max.
+          lastErr = e;
+          continue;
+        }
+        throw e;
+      }
+    }
+    if (!vendor) {
+      throw lastErr ?? new Error("Failed to assign a unique vendorCode after 3 attempts");
+    }
 
     await prisma.auditLog.create({
       data: {

@@ -31,9 +31,9 @@ function buildProfileSelect(viewingOrgId: string) {
     benefitPrograms: true,
     emergencyContactName: true,
     emergencyContactPhone: true,
-    // KNOWN LIMITATION: User.notes is currently shared across all orgs
-    // a beneficiary belongs to. Per-org notes need to live on
-    // OrganizationMembership in a follow-up PDR.
+    // Legacy: User.notes is shared across all orgs a beneficiary
+    // belongs to. New writes go to OrganizationMembership.notes
+    // (per-org private notes) — see GET handler below.
     notes: true,
     passwordHash: true,
     createdAt: true,
@@ -118,13 +118,17 @@ export async function GET(
     // User.organizationId would be wrong: a beneficiary could be in our org
     // via a membership while their User.organizationId still points at the
     // org where they originally registered.
+    //
+    // We also pull the per-org notes from the membership row so the admin
+    // sees their own org's private notes (not whatever User.notes happened
+    // to be set to by another nonprofit).
     const membership = await prisma.organizationMembership.findFirst({
       where: {
         userId: id,
         organizationId,
         role: "beneficiary",
       },
-      select: { id: true },
+      select: { id: true, notes: true },
     });
     if (!membership) {
       return NextResponse.json(
@@ -177,13 +181,17 @@ export async function GET(
     });
 
     // Mask SSN — only show last 4 as ***-**-XXXX
-    // Exclude passwordHash and inviteTokens from response
+    // Exclude passwordHash and inviteTokens from response.
+    // Notes: prefer the per-org membership.notes (private to this nonprofit)
+    // over the legacy global User.notes. Both fields exist; the membership
+    // value wins when set so each nonprofit sees its own annotations.
     const { passwordHash: _ph, inviteTokens: _it, ...rest } = beneficiary;
     const masked = {
       ...rest,
       ssnLast4: beneficiary.ssnLast4
         ? `***-**-${beneficiary.ssnLast4}`
         : null,
+      notes: membership.notes ?? beneficiary.notes,
       inviteStatus,
       inviteSentAt,
       inviteHistory,
@@ -218,10 +226,10 @@ export async function PATCH(
     const { id } = await params;
 
     // Verify beneficiary belongs to this org via membership (multi-org safe).
-    // KNOWN LIMITATION: this PATCH still writes to the User row, so updates
-    // to phone/address/notes propagate to every other nonprofit that has
-    // this user as a beneficiary. Per-org overrides are out of scope for
-    // this PDR — see `notes` comment in buildProfileSelect.
+    // Notes are now per-org: data.notes writes to OrganizationMembership.notes
+    // so each nonprofit's annotations stay private. Other shared User-level
+    // fields (phone, address, DOB) still write to the User row — they're
+    // person-level attributes and intentionally cross-org.
     const membership = await prisma.organizationMembership.findFirst({
       where: { userId: id, organizationId, role: "beneficiary" },
       select: { id: true },
@@ -247,6 +255,15 @@ export async function PATCH(
     const clean = (val: string | undefined): string | null | undefined =>
       val === undefined ? undefined : val && val.trim() ? val.trim() : null;
 
+    // notes is per-org → write to membership; everything else is shared
+    // User-level data so we update the User row as before.
+    if (data.notes !== undefined) {
+      await prisma.organizationMembership.update({
+        where: { id: membership.id },
+        data: { notes: clean(data.notes) },
+      });
+    }
+
     const updated = await prisma.user.update({
       where: { id },
       data: {
@@ -264,7 +281,6 @@ export async function PATCH(
         ...(data.benefitPrograms !== undefined && { benefitPrograms: data.benefitPrograms }),
         ...(data.emergencyContactName !== undefined && { emergencyContactName: clean(data.emergencyContactName) }),
         ...(data.emergencyContactPhone !== undefined && { emergencyContactPhone: clean(data.emergencyContactPhone) }),
-        ...(data.notes !== undefined && { notes: clean(data.notes) }),
         ...(data.isActive !== undefined && { isActive: data.isActive }),
       },
       select: { id: true, firstName: true, lastName: true, email: true },

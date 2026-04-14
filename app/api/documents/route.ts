@@ -81,9 +81,17 @@ export async function POST(request: Request) {
 
     const data = parsed.data;
 
-    // Upload to S3
+    // Upload to S3 — namespaced by the caller's organizationId so two
+    // different nonprofits cannot collide on entityId-based keys and
+    // structurally isolate documents at the bucket prefix level.
     const buffer = Buffer.from(await file.arrayBuffer());
-    const fileUrl = await uploadDocumentToS3(buffer, data.entityId, file.name, file.type);
+    const fileUrl = await uploadDocumentToS3(
+      buffer,
+      session.user.organizationId,
+      data.entityId,
+      file.name,
+      file.type,
+    );
 
     // Create document record in database
     const document = await prisma.document.create({

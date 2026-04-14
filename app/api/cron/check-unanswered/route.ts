@@ -8,11 +8,13 @@
 // This ensures no beneficiary is left waiting. If a staff member is out,
 // the manager gets notified and can join the conversation.
 
+import { readCheckpoint, writeCheckpoint } from "@/lib/cron-checkpoint";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 const FIRST_ESCALATION_HOURS = 24;
 const URGENT_ESCALATION_HOURS = 48;
+const CRON_NAME = "check-unanswered";
 
 export async function GET(request: Request) {
   try {
@@ -50,9 +52,11 @@ export async function GET(request: Request) {
       messages: Array<{ id: string; senderId: string; createdAt: Date }>;
     }
 
-    let cursor: string | undefined = undefined;
+    const startCursor = await readCheckpoint(CRON_NAME);
+    let cursor: string | undefined = startCursor ?? undefined;
     let processed = 0;
     let escalationCount = 0;
+    let reachedEnd = false;
 
     while (processed < MAX_PER_RUN) {
       const conversations: ConvoRow[] = await prisma.conversation.findMany({
@@ -78,7 +82,10 @@ export async function GET(request: Request) {
         orderBy: { id: "asc" },
       });
 
-      if (conversations.length === 0) break;
+      if (conversations.length === 0) {
+        reachedEnd = true;
+        break;
+      }
       processed += conversations.length;
 
       // Batched sender lookup: one query for all latest senders in this
@@ -191,14 +198,24 @@ export async function GET(request: Request) {
     }
 
       cursor = conversations[conversations.length - 1]!.id;
-      if (conversations.length < BATCH_SIZE) break;
+      if (conversations.length < BATCH_SIZE) {
+        reachedEnd = true;
+        break;
+      }
     }
+
+    await writeCheckpoint(
+      CRON_NAME,
+      reachedEnd ? null : (cursor ?? null),
+      processed,
+    );
 
     return NextResponse.json({
       message: `Checked conversations. ${escalationCount} escalation(s) sent.`,
       checkedAt: now.toISOString(),
       processed,
       escalations: escalationCount,
+      reachedEnd,
       budgetExhausted: processed >= MAX_PER_RUN,
     });
   } catch (error) {

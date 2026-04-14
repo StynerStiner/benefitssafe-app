@@ -7,11 +7,13 @@
 // service. Always returns 200 with a generic message, even when the email
 // is not found, so an attacker cannot probe for account existence.
 //
-// Rate limit: max 3 reset tokens per email per hour — enforced by counting
-// rows in InviteToken. If exceeded, still return 200 (no leak).
+// Rate limit: max 3 reset requests per email per hour, enforced by the
+// in-memory rateLimit() helper. The previous implementation counted rows
+// in InviteToken, which under bot flood would lock the InviteToken table.
 
 import { prisma } from "@/lib/db";
 import { validateRecipientEmail } from "@/lib/email-security";
+import { rateLimit } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildPasswordResetEmail } from "@/lib/services/email-templates";
 import { NextResponse } from "next/server";
@@ -27,8 +29,6 @@ const GENERIC_OK = {
 };
 
 const TOKEN_TTL_MINUTES = 60;
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
-const RATE_LIMIT_MAX = 3;
 
 export async function POST(request: Request) {
   try {
@@ -47,16 +47,16 @@ export async function POST(request: Request) {
       return NextResponse.json(GENERIC_OK);
     }
 
-    // Rate limit per email per hour. We count prior password_reset rows in
-    // InviteToken — no Redis required, no schema change.
-    const recentCount = await prisma.inviteToken.count({
-      where: {
-        sentTo: email,
-        method: "password_reset",
-        createdAt: { gte: new Date(Date.now() - RATE_LIMIT_WINDOW_MS) },
-      },
+    // Rate limit per email per hour. Uses the in-memory rateLimit() helper
+    // (same one used by /api/auth/login) instead of a DB count, which would
+    // hold a row lock on the InviteToken table under a bot flood.
+    // We still return GENERIC_OK on rate-limit hit so attackers can't tell
+    // the difference between "user exists, throttled" and "no such user".
+    const limit = rateLimit(`forgot-password:${email}`, {
+      maxRequests: 3,
+      windowMs: 60 * 60 * 1000,
     });
-    if (recentCount >= RATE_LIMIT_MAX) {
+    if (!limit.allowed) {
       return NextResponse.json(GENERIC_OK);
     }
 

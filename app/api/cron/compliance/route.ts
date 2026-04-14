@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { readCheckpoint, writeCheckpoint } from "@/lib/cron-checkpoint";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { enqueueJob, JobTypes } from "@/lib/queue";
+
+const CRON_NAME = "compliance-dispatcher";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -17,18 +20,18 @@ export async function GET(request: Request) {
   logger.info("Compliance deep scan started — enqueuing per-org jobs");
 
   try {
-    // Cursor-based pagination: never load more than BATCH_SIZE org ids in
-    // memory at once. At 1.8M nonprofits a single findMany() would OOM the
-    // 300s cron Lambda. The MAX_ENQUEUE_PER_RUN budget caps work per cron
-    // tick so the function returns under maxDuration; remaining orgs are
-    // picked up on the next scheduled run (or by re-firing this endpoint
-    // until the cursor exhausts the table).
+    // Cursor-based pagination + persistent checkpoint. Each tick processes
+    // at most MAX_ENQUEUE_PER_RUN orgs starting from the previous tick's
+    // cursor; when we hit the end of the table the cursor resets to null
+    // and the next tick begins a fresh sweep.
     const BATCH_SIZE = 500;
     const MAX_ENQUEUE_PER_RUN = 5000;
 
-    let cursor: string | undefined = undefined;
+    const startCursor = await readCheckpoint(CRON_NAME);
+    let cursor: string | undefined = startCursor ?? undefined;
     let enqueued = 0;
     let scanned = 0;
+    let reachedEnd = false;
 
     while (enqueued < MAX_ENQUEUE_PER_RUN) {
       const batch: { id: string }[] = await prisma.organization.findMany({
@@ -38,7 +41,10 @@ export async function GET(request: Request) {
         orderBy: { id: "asc" },
       });
 
-      if (batch.length === 0) break;
+      if (batch.length === 0) {
+        reachedEnd = true;
+        break;
+      }
       scanned += batch.length;
 
       // Parallelize enqueues within the batch — QStash handles the
@@ -63,12 +69,22 @@ export async function GET(request: Request) {
       }
 
       cursor = batch[batch.length - 1]!.id;
-      if (batch.length < BATCH_SIZE) break;
+      if (batch.length < BATCH_SIZE) {
+        // Partial last page = end of table reached.
+        reachedEnd = true;
+        break;
+      }
     }
+
+    // If we drained the table, reset the checkpoint to null so the next
+    // tick begins a fresh sweep. Otherwise persist the cursor we reached.
+    const nextCursor = reachedEnd ? null : (cursor ?? null);
+    await writeCheckpoint(CRON_NAME, nextCursor, enqueued);
 
     logger.info("Compliance deep scan — jobs enqueued", {
       scanned,
       enqueued,
+      reachedEnd,
       budgetExhausted: enqueued >= MAX_ENQUEUE_PER_RUN,
     });
 
@@ -77,7 +93,8 @@ export async function GET(request: Request) {
       timestamp: new Date().toISOString(),
       orgsScanned: scanned,
       orgsEnqueued: enqueued,
-      lastCursor: cursor ?? null,
+      reachedEnd,
+      lastCursor: nextCursor,
       budgetExhausted: enqueued >= MAX_ENQUEUE_PER_RUN,
     });
   } catch (error) {
