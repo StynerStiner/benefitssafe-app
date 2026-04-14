@@ -22,41 +22,63 @@ export async function GET(request: Request) {
   logger.info('SentinelLayer cron job started');
 
   try {
-    // Get all organizations
-    const orgs = await prisma.organization.findMany({
-      select: { id: true, name: true },
-    });
+    // Cursor-paginated dispatcher — see app/api/cron/compliance/route.ts
+    // for the same pattern. Hard cap of MAX_ENQUEUE_PER_RUN per tick so
+    // the cron Lambda always returns within maxDuration.
+    const BATCH_SIZE = 500;
+    const MAX_ENQUEUE_PER_RUN = 5000;
 
-    logger.info(`Enqueuing ${orgs.length} organizations for parallel processing`);
-
-    // Enqueue each org as a separate parallel job instead of sequential processing
-    // 1,000 orgs = 1,000 parallel jobs instead of 1 sequential 30-minute loop
+    let cursor: string | undefined = undefined;
     let enqueued = 0;
-    for (const org of orgs) {
-      try {
-        await enqueueJob('/api/jobs/check-thresholds', {
-          type: JobTypes.CHECK_THRESHOLDS,
-          data: { orgId: org.id },
-        });
-        enqueued++;
-      } catch (err) {
-        logger.error('Failed to enqueue sentinel job', {
-          orgId: org.id,
-          error: err instanceof Error ? err.message : 'Unknown error',
-        });
+    let scanned = 0;
+
+    while (enqueued < MAX_ENQUEUE_PER_RUN) {
+      const batch: { id: string }[] = await prisma.organization.findMany({
+        select: { id: true },
+        take: BATCH_SIZE,
+        ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+        orderBy: { id: "asc" },
+      });
+
+      if (batch.length === 0) break;
+      scanned += batch.length;
+
+      const results = await Promise.allSettled(
+        batch.map((org) =>
+          enqueueJob('/api/jobs/check-thresholds', {
+            type: JobTypes.CHECK_THRESHOLDS,
+            data: { orgId: org.id },
+          }),
+        ),
+      );
+
+      for (const r of results) {
+        if (r.status === 'fulfilled') {
+          enqueued++;
+        } else {
+          logger.error('Failed to enqueue sentinel job', {
+            error: r.reason instanceof Error ? r.reason.message : 'Unknown error',
+          });
+        }
       }
+
+      cursor = batch[batch.length - 1]!.id;
+      if (batch.length < BATCH_SIZE) break;
     }
 
     logger.info('SentinelLayer cron job completed — jobs enqueued', {
-      totalOrgs: orgs.length,
+      scanned,
       enqueued,
+      budgetExhausted: enqueued >= MAX_ENQUEUE_PER_RUN,
     });
 
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
+      orgsScanned: scanned,
       orgsEnqueued: enqueued,
-      totalOrgs: orgs.length,
+      lastCursor: cursor ?? null,
+      budgetExhausted: enqueued >= MAX_ENQUEUE_PER_RUN,
     });
   } catch (error) {
     Sentry.captureException(error, {

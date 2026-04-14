@@ -304,6 +304,10 @@ export async function POST(request: Request) {
     // nonprofit and train admins to filter BenefitsSafe entirely.
     // The in-app badge count is sufficient; admins open the dashboard
     // to approve anyway.
+    //
+    // Bounded to 200 admins per org and batched into a single
+    // createMany call — at scale a 500-admin org would otherwise fire
+    // 500 sequential notification.create calls and time out the request.
     const admins = await prisma.user.findMany({
       where: {
         organizationId,
@@ -313,6 +317,7 @@ export async function POST(request: Request) {
         isActive: true,
       },
       select: { id: true },
+      take: 200,
     });
     const submitterName = expense.requestedBy
       ? `${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`
@@ -321,21 +326,20 @@ export async function POST(request: Request) {
     const notificationTitle = "New expense request submitted";
     const notificationMessage = `${submitterName} submitted a $${expenseAmount} expense for "${expense.description}" (${expense.grant.name}).`;
 
-    for (const admin of admins) {
-      if (admin.id !== userId) {
-        await prisma.notification.create({
-          data: {
-            userId: admin.id,
-            organizationId,
-            type: "expense_submitted",
-            title: notificationTitle,
-            message: notificationMessage,
-            entityType: "expense",
-            entityId: expense.id,
-            href: `/expenses`,
-          },
-        });
-      }
+    const notificationRows = admins
+      .filter((admin) => admin.id !== userId)
+      .map((admin) => ({
+        userId: admin.id,
+        organizationId,
+        type: "expense_submitted",
+        title: notificationTitle,
+        message: notificationMessage,
+        entityType: "expense",
+        entityId: expense.id,
+        href: `/expenses`,
+      }));
+    if (notificationRows.length > 0) {
+      await prisma.notification.createMany({ data: notificationRows });
     }
 
     return NextResponse.json(

@@ -108,6 +108,11 @@ export async function POST(request: Request) {
 
     // Create notifications + one aggregate email per admin for any
     // warnings that are NOT already deduped.
+    //
+    // Bounded to 200 admins per org. The previous nested for-loop fired
+    // (admins × warnings) sequential notification.create calls — at
+    // 500 admins × 5 warnings that's 2500 round-trips per cron run.
+    // We now flatten the cross-product and write a single createMany.
     if (newWarnings.length > 0) {
       const admins = await prisma.user.findMany({
         where: {
@@ -116,6 +121,7 @@ export async function POST(request: Request) {
           isActive: true,
         },
         select: { id: true, email: true, firstName: true },
+        take: 200,
       });
       const org = await prisma.organization.findUnique({
         where: { id: orgId },
@@ -129,47 +135,49 @@ export async function POST(request: Request) {
       const title = `SentinelLayer: ${newWarnings.length} alert(s)`;
       const aggregateMessage = newWarnings.map((w) => w.message).join("; ");
 
-      for (const admin of admins) {
-        // Write one notification PER warning so each is individually
-        // deduped on the next cron run. Each notification has its own
-        // entityId keyed to `${grantId}:${warning_kind}`.
-        for (const warning of newWarnings) {
-          await prisma.notification.create({
-            data: {
-              userId: admin.id,
-              organizationId: orgId,
-              type: "sentinel_alert",
-              entityId: warning.entityId,
-              title: "SentinelLayer alert",
-              message: warning.message,
-              href: "/reports",
-            },
-          });
-        }
+      // Flat (admin × warning) cross-product — one row per pair so the
+      // existing per-warning entityId dedup on subsequent cron runs
+      // continues to work.
+      const notificationRows = admins.flatMap((admin) =>
+        newWarnings.map((warning) => ({
+          userId: admin.id,
+          organizationId: orgId,
+          type: "sentinel_alert",
+          entityId: warning.entityId,
+          title: "SentinelLayer alert",
+          message: warning.message,
+          href: "/reports",
+        })),
+      );
+      if (notificationRows.length > 0) {
+        await prisma.notification.createMany({ data: notificationRows });
+      }
 
-        // One aggregate email per admin summarizing all new warnings.
-        if (admin.email) {
-          const tmpl = buildComplianceAlertEmail({
-            adminFirstName: admin.firstName || "there",
-            alertTitle: title,
-            alertDescription: aggregateMessage,
-            severity,
-            actionUrl: `${APP_BASE_URL}/reports`,
-            orgName,
-          });
-          sendEmail({
-            to: admin.email,
-            subject: tmpl.subject,
-            html: tmpl.html,
-            text: tmpl.text,
-            orgName,
-            userId: admin.id,
-            organizationId: orgId,
-            emailType: "compliance_alert",
-          }).catch((err) =>
-            console.error("[check-thresholds email] failed:", err),
-          );
-        }
+      // One aggregate email per admin summarizing all new warnings.
+      // Fire-and-forget — emails are not awaited so the cron job
+      // returns quickly even with 200 recipients.
+      for (const admin of admins) {
+        if (!admin.email) continue;
+        const tmpl = buildComplianceAlertEmail({
+          adminFirstName: admin.firstName || "there",
+          alertTitle: title,
+          alertDescription: aggregateMessage,
+          severity,
+          actionUrl: `${APP_BASE_URL}/reports`,
+          orgName,
+        });
+        sendEmail({
+          to: admin.email,
+          subject: tmpl.subject,
+          html: tmpl.html,
+          text: tmpl.text,
+          orgName,
+          userId: admin.id,
+          organizationId: orgId,
+          emailType: "compliance_alert",
+        }).catch((err) =>
+          console.error("[check-thresholds email] failed:", err),
+        );
       }
     }
 

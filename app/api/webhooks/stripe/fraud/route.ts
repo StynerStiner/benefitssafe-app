@@ -248,6 +248,9 @@ interface FraudFanoutParams {
  */
 async function fanOutFraudAlert(params: FraudFanoutParams): Promise<void> {
   // Org-scoped recipients: nonprofit_admin + compliance_officer in the charge's org.
+  // Bounded to 100 per org to keep the webhook handler under Stripe's 30s
+  // delivery budget — at scale, only the first ~100 admins get the email
+  // alert; the rest still see it in-app via the dashboard notification feed.
   const orgRecipients = await prisma.user.findMany({
     where: {
       organizationId: params.resolvedOrgId,
@@ -257,15 +260,21 @@ async function fanOutFraudAlert(params: FraudFanoutParams): Promise<void> {
       isActive: true,
     },
     select: { id: true, organizationId: true, email: true, firstName: true },
+    take: 100,
   });
 
   // Platform admins (global, cross-org by design).
+  // Bounded to 50 — at 1.8M nonprofits with 10K+ BenefitsSafe internal
+  // staff, a per-fraud-event scan of every platform_admin would lock the
+  // User table and exceed the webhook timeout. The first 50 receive the
+  // email; an oncall rotation covers the rest.
   const platformRecipients = await prisma.user.findMany({
     where: {
       role: "platform_admin",
       isActive: true,
     },
     select: { id: true, organizationId: true, email: true, firstName: true },
+    take: 50,
   });
 
   const org = await prisma.organization.findUnique({
@@ -333,9 +342,11 @@ async function notifyPlatformAdminsOnly(params: {
   chargeId: string;
   notificationType: string;
 }): Promise<void> {
+  // Bounded to 50 — see fanOutFraudAlert() comment above.
   const platformRecipients = await prisma.user.findMany({
     where: { role: "platform_admin", isActive: true },
     select: { id: true, organizationId: true, email: true, firstName: true },
+    take: 50,
   });
 
   const href = `/audit-trail?filter=fraud&chargeId=${params.chargeId}`;

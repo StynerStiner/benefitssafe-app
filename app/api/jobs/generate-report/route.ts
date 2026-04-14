@@ -62,26 +62,29 @@ export async function POST(request: Request) {
       return `${g.name}: $${weeklySpend.toFixed(2)} this week, $${remaining.toFixed(2)} remaining${weeksLeft > 0 ? ` (~${weeksLeft} weeks at current rate)` : ""}`;
     });
 
-    // Notify admins
+    // Notify admins. Bounded to 200 per org and batched into a single
+    // createMany — at scale a 500-admin org would otherwise fire 500
+    // sequential notification.create calls per weekly cron run.
     const admins = await prisma.user.findMany({
       where: { organizationId: orgId, role: "nonprofit_admin", isActive: true },
       select: { id: true },
+      take: 200,
     });
 
     const message = grants.length > 0
       ? `Weekly spending: $${totalWeeklySpend.toFixed(2)} across ${grants.length} grant(s). ${reportLines.join("; ")}`
       : "No active grants this week.";
 
-    for (const admin of admins) {
-      await prisma.notification.create({
-        data: {
+    if (admins.length > 0) {
+      await prisma.notification.createMany({
+        data: admins.map((admin) => ({
           userId: admin.id,
           organizationId: orgId,
           type: "weekly_report",
           title: "Weekly Grant Spending Report",
           message,
           href: "/reports",
-        },
+        })),
       });
     }
 

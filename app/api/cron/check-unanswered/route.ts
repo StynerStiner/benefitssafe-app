@@ -24,85 +24,120 @@ export async function GET(request: Request) {
 
     const now = new Date();
     const twentyFourHoursAgo = new Date(now.getTime() - FIRST_ESCALATION_HOURS * 60 * 60 * 1000);
-    const fortyEightHoursAgo = new Date(now.getTime() - URGENT_ESCALATION_HOURS * 60 * 60 * 1000);
+    const seventyTwoHoursAgo = new Date(now.getTime() - 72 * 60 * 60 * 1000);
 
-    // Find all conversations where the last message was from a beneficiary
-    // and no staff member has responded within the escalation window
-    const conversations = await prisma.conversation.findMany({
-      where: {
-        messages: {
-          some: {
-            createdAt: { lt: twentyFourHoursAgo },
-          },
-        },
-      },
-      select: {
-        id: true,
-        organizationId: true,
-        updatedAt: true,
-        participants: {
-          select: { userId: true },
-        },
-        messages: {
-          select: {
-            id: true,
-            senderId: true,
-            createdAt: true,
-          },
-          orderBy: { createdAt: "desc" },
-          take: 1,
-        },
-      },
-    });
+    // Cursor-paginated scan + windowed candidate set. The previous query
+    // loaded EVERY conversation that had ever had a message older than
+    // 24h — at 1.8M nonprofits × 100 conversations each = 180M rows in
+    // one Lambda. We now:
+    //   1. Restrict to conversations updated in the last 72h (covers
+    //      the 24h and 48h escalation thresholds; older conversations
+    //      were either already escalated or are stale).
+    //   2. Page through them in batches of 200.
+    //   3. Cap total processed per run to MAX_PER_RUN.
+    //   4. Eagerly include the latest message + its sender's role so we
+    //      avoid the per-conversation findUnique N+1.
+    const BATCH_SIZE = 200;
+    const MAX_PER_RUN = 2000;
+    const escalatableRoles = [
+      "beneficiary", "vendor", "cpa", "auditor", "attorney", "grant_officer",
+    ];
 
+    interface ConvoRow {
+      id: string;
+      organizationId: string;
+      updatedAt: Date;
+      messages: Array<{ id: string; senderId: string; createdAt: Date }>;
+    }
+
+    let cursor: string | undefined = undefined;
+    let processed = 0;
     let escalationCount = 0;
+
+    while (processed < MAX_PER_RUN) {
+      const conversations: ConvoRow[] = await prisma.conversation.findMany({
+        where: {
+          updatedAt: { gte: seventyTwoHoursAgo },
+        },
+        select: {
+          id: true,
+          organizationId: true,
+          updatedAt: true,
+          messages: {
+            select: {
+              id: true,
+              senderId: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: "desc" },
+            take: 1,
+          },
+        },
+        take: BATCH_SIZE,
+        ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+        orderBy: { id: "asc" },
+      });
+
+      if (conversations.length === 0) break;
+      processed += conversations.length;
+
+      // Batched sender lookup: one query for all latest senders in this
+      // batch instead of N findUnique calls. The Message model has no
+      // direct `sender` relation in the Prisma schema, so we resolve
+      // senderIds against User in bulk and build a Map.
+      const senderIds = Array.from(
+        new Set(
+          conversations
+            .map((c) => c.messages[0]?.senderId)
+            .filter((id): id is string => !!id),
+        ),
+      );
+      const senders = senderIds.length
+        ? await prisma.user.findMany({
+            where: { id: { in: senderIds } },
+            select: { id: true, role: true, firstName: true, lastName: true },
+          })
+        : [];
+      const senderById = new Map(senders.map((s) => [s.id, s]));
+
+      // Pre-fetch any escalation notifications already sent in the last
+      // 24h for THIS BATCH of conversations — turns the per-conversation
+      // findFirst into one batched query.
+      const batchConvIds = conversations.map((c) => c.id);
+      const existingEscalations = await prisma.notification.findMany({
+        where: {
+          entityType: "conversation",
+          entityId: { in: batchConvIds },
+          type: { in: ["unanswered_warning", "unanswered_urgent"] },
+          createdAt: { gt: twentyFourHoursAgo },
+        },
+        select: { entityId: true, type: true },
+      });
+      const escalatedKeys = new Set(
+        existingEscalations.map((e) => `${e.entityId}:${e.type}`),
+      );
 
     for (const convo of conversations) {
       const lastMessage = convo.messages[0];
       if (!lastMessage) continue;
 
-      // Get the sender's role to check if they're a beneficiary
-      const sender = await prisma.user.findUnique({
-        where: { id: lastMessage.senderId },
-        select: { role: true, firstName: true, lastName: true },
-      });
-
+      const sender = senderById.get(lastMessage.senderId);
       if (!sender) continue;
-
-      // Escalate if the last message was from any non-admin role that needs a response
-      // Client roles: beneficiary, vendor
-      // Professional roles: CPA, auditor, attorney, grant_officer (ignoring them is equally bad)
-      // Staff-to-staff and admin messages don't escalate
-      const escalatableRoles = [
-        "beneficiary", "vendor", "cpa", "auditor", "attorney", "grant_officer",
-      ];
       if (!escalatableRoles.includes(sender.role)) continue;
 
       const messageAge = now.getTime() - new Date(lastMessage.createdAt).getTime();
       const hoursOld = messageAge / (1000 * 60 * 60);
 
-      // Determine escalation level
       let escalationType: "first" | "urgent" | null = null;
       if (hoursOld >= URGENT_ESCALATION_HOURS) {
         escalationType = "urgent";
       } else if (hoursOld >= FIRST_ESCALATION_HOURS) {
         escalationType = "first";
       }
-
       if (!escalationType) continue;
 
-      // Check if we already sent this escalation notification
-      const existingNotification = await prisma.notification.findFirst({
-        where: {
-          organizationId: convo.organizationId,
-          type: escalationType === "urgent" ? "unanswered_urgent" : "unanswered_warning",
-          entityType: "conversation",
-          entityId: convo.id,
-          createdAt: { gt: twentyFourHoursAgo }, // Don't re-notify within 24h
-        },
-      });
-
-      if (existingNotification) continue;
+      const notifKey = `${convo.id}:${escalationType === "urgent" ? "unanswered_urgent" : "unanswered_warning"}`;
+      if (escalatedKeys.has(notifKey)) continue;
 
       // Find all admins in this organization
       const admins = await prisma.user.findMany({
@@ -112,6 +147,7 @@ export async function GET(request: Request) {
           isActive: true,
         },
         select: { id: true },
+        take: 100,
       });
 
       // Role-aware labels for notification messages
@@ -154,10 +190,16 @@ export async function GET(request: Request) {
       escalationCount++;
     }
 
+      cursor = conversations[conversations.length - 1]!.id;
+      if (conversations.length < BATCH_SIZE) break;
+    }
+
     return NextResponse.json({
       message: `Checked conversations. ${escalationCount} escalation(s) sent.`,
       checkedAt: now.toISOString(),
+      processed,
       escalations: escalationCount,
+      budgetExhausted: processed >= MAX_PER_RUN,
     });
   } catch (error) {
     console.error("Cron check-unanswered error:", error);

@@ -816,6 +816,10 @@ model OrganizationMembership {
   @@index([userId])
   @@index([organizationId])
   @@index([userId, status])
+  // Hot path for multi-org list endpoints: filters by
+  // (organizationId, role, status) on every beneficiary/team list call.
+  // Keeps the query an indexed range read at 900M+ rows.
+  @@index([organizationId, role, status])
 }
 
 // ── Composio Workflow Automation ────────────────────
