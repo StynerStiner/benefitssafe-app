@@ -76,7 +76,11 @@ export async function POST(request: Request) {
     // Create notifications for warnings
     if (warnings.length > 0) {
       const admins = await prisma.user.findMany({
-        where: { organizationId: orgId, role: "nonprofit_admin", isActive: true },
+        where: {
+          organizationId: orgId,
+          role: { in: ["nonprofit_admin", "platform_admin"] },
+          isActive: true,
+        },
         select: { id: true, email: true, firstName: true },
       });
       const org = await prisma.organization.findUnique({

@@ -50,7 +50,7 @@ async function notifyAdmins(
     where: {
       organizationId,
       isActive: true,
-      role: { in: ["nonprofit_admin", "platform_admin"] },
+      role: { in: ["nonprofit_admin", "platform_admin", "billing_admin"] },
     },
     select: { id: true, email: true, firstName: true },
   });

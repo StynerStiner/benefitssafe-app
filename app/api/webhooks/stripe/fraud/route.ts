@@ -101,7 +101,7 @@ async function handleEarlyFraudWarning(warning: any) {
         where: {
           organizationId: transaction.organizationId,
           role: {
-            in: ["nonprofit_admin", "platform_admin"],
+            in: ["nonprofit_admin", "platform_admin", "compliance_officer"],
           },
           isActive: true,
         },
@@ -179,9 +179,18 @@ async function handleChargeFraudDetected(charge: any) {
   const fraudDetails = charge.fraud_details;
 
   try {
-    // Alert all platform admins about fraud
+    // Alert all platform admins + compliance officers about fraud.
+    // NOTE: this loop preserves the existing shape where each recipient gets
+    // a notification scoped to their own organizationId. It does not attempt
+    // to resolve the charge to a specific org — platform_admin is BenefitsSafe
+    // internal staff (tiny set) and compliance_officer is included per the
+    // email coverage PDR. If the compliance_officer set grows large this
+    // handler should be rewritten to first resolve charge → organization.
     const platformAdmins = await prisma.user.findMany({
-      where: { role: "platform_admin", isActive: true },
+      where: {
+        role: { in: ["platform_admin", "compliance_officer"] },
+        isActive: true,
+      },
       select: { id: true, organizationId: true, email: true, firstName: true },
     });
 

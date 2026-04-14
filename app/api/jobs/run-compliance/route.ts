@@ -93,7 +93,9 @@ export async function POST(request: Request) {
           const recipients = await prisma.user.findMany({
             where: {
               organizationId: orgId,
-              role: { in: ["nonprofit_admin", "compliance_officer"] },
+              role: {
+                in: ["nonprofit_admin", "compliance_officer", "platform_admin"],
+              },
               isActive: true,
             },
             select: { id: true, email: true, firstName: true },

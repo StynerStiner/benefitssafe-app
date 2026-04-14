@@ -6,8 +6,13 @@
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { enqueueJob, JobTypes } from "@/lib/queue";
+import { sendEmail } from "@/lib/services/email-service";
+import { buildPaymentReceivedEmail } from "@/lib/services/email-templates";
 import { NextResponse } from "next/server";
 import type StripeType from "stripe";
+
+const APP_BASE_URL =
+  process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
 
 export async function POST(request: Request) {
   let event: Stripe.Event;
@@ -172,6 +177,51 @@ export async function POST(request: Request) {
         grantId,
       },
     });
+
+    // 4a. Fire-and-forget vendor payment_received email.
+    // If this card is linked to a vendor (via active subscription or via the
+    // card's direct vendor lock), let that vendor know a payment was processed.
+    const vendorIdForEmail =
+      subscription?.vendor?.id || virtualCard.vendorId || null;
+    if (vendorIdForEmail) {
+      (async () => {
+        try {
+          const [vendor, org] = await Promise.all([
+            prisma.vendor.findUnique({
+              where: { id: vendorIdForEmail },
+              select: { name: true, email: true },
+            }),
+            prisma.organization.findUnique({
+              where: { id: organizationId },
+              select: { name: true },
+            }),
+          ]);
+          if (vendor?.email) {
+            const tmpl = buildPaymentReceivedEmail({
+              vendorName: vendor.name,
+              amount: `$${amount.toFixed(2)}`,
+              invoiceRef: stripeTransactionId,
+              paymentDate: new Date().toISOString().slice(0, 10),
+              dashboardUrl: `${APP_BASE_URL}/invoices`,
+              orgName: org?.name || undefined,
+            });
+            sendEmail({
+              to: vendor.email,
+              subject: tmpl.subject,
+              html: tmpl.html,
+              text: tmpl.text,
+              orgName: org?.name || undefined,
+              organizationId,
+              emailType: "payment_received",
+            }).catch((err) =>
+              console.error("[stripe-charges payment_received] send failed:", err),
+            );
+          }
+        } catch (err) {
+          console.error("[stripe-charges payment_received] lookup failed:", err);
+        }
+      })();
+    }
 
     // 5. Enqueue heavy processing (compliance, auto-approve, ledger, notifications)
     // Returns 200 to Stripe in <500ms instead of blocking for 5+ seconds

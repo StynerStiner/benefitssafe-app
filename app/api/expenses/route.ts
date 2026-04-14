@@ -303,9 +303,17 @@ export async function POST(request: Request) {
       }).catch(() => {});
     }
 
-    // Notify org admins about new expense submission
+    // Notify org admins + staff about new expense submission.
+    // nonprofit_staff are included because they can also review/approve
+    // expense requests in this org.
     const admins = await prisma.user.findMany({
-      where: { organizationId, role: { in: ["nonprofit_admin", "platform_admin"] }, isActive: true },
+      where: {
+        organizationId,
+        role: {
+          in: ["nonprofit_admin", "nonprofit_staff", "platform_admin"],
+        },
+        isActive: true,
+      },
       select: { id: true, email: true, firstName: true },
     });
     const submitterName = expense.requestedBy
