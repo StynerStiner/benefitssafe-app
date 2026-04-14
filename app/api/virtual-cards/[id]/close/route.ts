@@ -1,7 +1,14 @@
 // POST /api/virtual-cards/[id]/close — Cancel a card (ORG-SCOPED)
+//
+// Updates the DB status to CANCELLED AND cancels the card at Stripe via
+// stripe.issuing.cards.update(stripeCardId, { status: "canceled" }).
+// Without the Stripe sync a "closed" card would still authorize at
+// merchants — canceled status at Stripe is irreversible, so this is the
+// correct terminal action for a compromised or invalidated card.
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { stripe } from "@/lib/stripe";
 import { NextResponse } from "next/server";
 
 export async function POST(
@@ -21,7 +28,7 @@ export async function POST(
     const { id } = await params;
     const card = await prisma.virtualCard.findFirst({
       where: { id, organizationId },
-      select: { id: true, status: true },
+      select: { id: true, status: true, stripeCardId: true },
     });
     if (!card) return NextResponse.json({ error: "Card not found" }, { status: 404 });
 
@@ -29,6 +36,21 @@ export async function POST(
       where: { id },
       data: { status: "CANCELLED" },
     });
+
+    // Cancel the card at Stripe so it can no longer authorize anywhere.
+    // Dev-mode mock cards (ic_mock_*) don't exist at Stripe; skip them.
+    if (card.stripeCardId && !card.stripeCardId.startsWith("ic_mock_")) {
+      try {
+        await stripe.issuing.cards.update(card.stripeCardId, {
+          status: "canceled",
+        });
+      } catch (stripeErr) {
+        console.error(
+          "[close] Stripe card cancellation failed:",
+          stripeErr instanceof Error ? stripeErr.message : stripeErr,
+        );
+      }
+    }
 
     await prisma.auditLog.create({
       data: {

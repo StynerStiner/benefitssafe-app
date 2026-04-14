@@ -1,7 +1,14 @@
 // POST /api/virtual-cards/[id]/pause — Freeze a card (ORG-SCOPED)
+//
+// Updates the DB status to FROZEN AND syncs the status to Stripe by
+// calling stripe.issuing.cards.update(stripeCardId, { status: "inactive" }).
+// Without the Stripe sync a "frozen" card would still authorize at
+// merchants — the DB flag is only consulted by our own UI, Stripe's
+// authorization endpoint doesn't know about it.
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { stripe } from "@/lib/stripe";
 import { NextResponse } from "next/server";
 
 export async function POST(
@@ -29,6 +36,25 @@ export async function POST(
       where: { id },
       data: { status: "FROZEN" },
     });
+
+    // Sync to Stripe — actually freeze the card at the network level so
+    // subsequent issuing_authorization.request events are declined by
+    // Stripe itself before they even reach our webhook. Dev-mode mock
+    // cards (ic_mock_*) cannot be updated at Stripe; we log and continue.
+    if (card.stripeCardId && !card.stripeCardId.startsWith("ic_mock_")) {
+      try {
+        await stripe.issuing.cards.update(card.stripeCardId, {
+          status: "inactive",
+        });
+      } catch (stripeErr) {
+        // The DB row is already FROZEN; a transient Stripe failure should
+        // not roll back the user's intent. Log for manual reconciliation.
+        console.error(
+          "[pause] Stripe card update failed:",
+          stripeErr instanceof Error ? stripeErr.message : stripeErr,
+        );
+      }
+    }
 
     await prisma.auditLog.create({
       data: {
