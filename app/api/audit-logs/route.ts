@@ -54,8 +54,13 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: Record<string, unknown> = {};
 
-    // Platform-level roles see all orgs; org-level roles are scoped
-    if (role !== "platform_admin" && role !== "compliance_officer") {
+    // Only platform_admin (BenefitsSafe internal staff) can see cross-org
+    // audit logs. Every other role — including compliance_officer, which
+    // is an ORG-level role per prisma/schema.prisma:155 (User.organizationId
+    // is a required field) — is strictly scoped to their own organization.
+    // Granting compliance_officer cross-org visibility was a full-platform
+    // audit log leak.
+    if (role !== "platform_admin") {
       where.organizationId = organizationId;
     }
 

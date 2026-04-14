@@ -83,75 +83,41 @@ async function handleEarlyFraudWarning(warning: any) {
   const fraudType = warning.fraud_type; // "card_never_received", "unauthorized_transaction"
 
   try {
-    // Find related transaction
-    const transaction = await prisma.transaction.findFirst({
-      where: {
-        // Could map chargeId to transaction if needed
-      },
-      select: {
-        id: true,
-        organizationId: true,
-        cardId: true,
-      },
-    });
+    // Attempt to map the Stripe charge to one of our Transactions.
+    // We don't have a direct charge_id → transaction mapping, so the
+    // best-effort lookup matches `stripeTransactionId === chargeId` —
+    // harmless if it doesn't match, and correct when it does.
+    //
+    // IMPORTANT: never fall back to an empty `where` clause here. A
+    // previous version of this handler did `findFirst({ where: {} })`
+    // which returned an arbitrary Transaction row and fanned fraud alerts
+    // to an unrelated org's admins.
+    const transaction = chargeId
+      ? await prisma.transaction.findFirst({
+          where: { stripeTransactionId: chargeId },
+          select: {
+            id: true,
+            organizationId: true,
+            cardId: true,
+          },
+        })
+      : null;
 
     if (transaction) {
-      // Create alert
-      const admins = await prisma.user.findMany({
-        where: {
-          organizationId: transaction.organizationId,
-          role: {
-            in: ["nonprofit_admin", "platform_admin", "compliance_officer"],
-          },
-          isActive: true,
-        },
-        select: { id: true, email: true, firstName: true },
+      // Happy path: charge resolved to a specific org. Fan out to that
+      // org's admins + compliance_officer, plus every platform_admin.
+      await fanOutFraudAlert({
+        resolvedOrgId: transaction.organizationId,
+        resolvedEntityId: transaction.cardId,
+        title: "Early fraud warning",
+        message: `Stripe has flagged a potential fraud risk: ${fraudType}. Charge: ${chargeId}. Please review immediately.`,
+        alertTitle: `Early fraud warning: ${fraudType}`,
+        alertDescription: `Stripe has flagged a potential fraud risk on charge ${chargeId}. Fraud type: ${fraudType}. Please review the transaction immediately and verify card controls are active.`,
+        chargeId,
+        notificationType: "fraud_warning",
       });
-      const org = await prisma.organization.findUnique({
-        where: { id: transaction.organizationId },
-        select: { name: true },
-      });
-      const orgName = org?.name || undefined;
 
-      for (const admin of admins) {
-        await prisma.notification.create({
-          data: {
-            userId: admin.id,
-            organizationId: transaction.organizationId,
-            type: "fraud_warning",
-            entityId: transaction.cardId,
-            title: "Early fraud warning",
-            message: `Stripe has flagged a potential fraud risk: ${fraudType}. Charge: ${chargeId}. Please review immediately.`,
-            href: `/audit-trail?filter=fraud&chargeId=${chargeId}`,
-          },
-        });
-
-        // Fire-and-forget email alert. Never blocks the webhook response.
-        if (admin.email) {
-          const tmpl = buildComplianceAlertEmail({
-            adminFirstName: admin.firstName || "there",
-            alertTitle: `Early fraud warning: ${fraudType}`,
-            alertDescription: `Stripe has flagged a potential fraud risk on charge ${chargeId}. Fraud type: ${fraudType}. Please review the transaction immediately and verify card controls are active.`,
-            severity: "critical",
-            actionUrl: `${APP_BASE_URL}/audit-trail?filter=fraud&chargeId=${chargeId}`,
-            orgName,
-          });
-          sendEmail({
-            to: admin.email,
-            subject: tmpl.subject,
-            html: tmpl.html,
-            text: tmpl.text,
-            orgName,
-            userId: admin.id,
-            organizationId: transaction.organizationId,
-            emailType: "compliance_alert",
-          }).catch((err) =>
-            console.error("[fraud-webhook] email send failed:", err),
-          );
-        }
-      }
-
-      // Log to audit trail
+      // Audit log scoped to the resolved org.
       await prisma.auditLog.create({
         data: {
           organizationId: transaction.organizationId,
@@ -164,6 +130,16 @@ async function handleEarlyFraudWarning(warning: any) {
             warningId: warning.id,
           },
         },
+      });
+    } else {
+      // Fallback: charge could not be attributed to any of our Transactions.
+      // Notify platform_admin ONLY with a note about the unresolvable org —
+      // never guess at an org to attribute this to.
+      await notifyPlatformAdminsOnly({
+        title: "Early fraud warning (unresolved org)",
+        message: `Stripe early fraud warning on charge ${chargeId} (${fraudType}) — could not map to a BenefitsSafe transaction. Manual triage required.`,
+        chargeId,
+        notificationType: "fraud_warning",
       });
     }
 
@@ -178,64 +154,51 @@ async function handleChargeFraudDetected(charge: any) {
   const chargeId = charge.id;
   const fraudDetails = charge.fraud_details;
 
+  const alertTitle = "Fraud detected on charge";
+  const alertMessage = `Fraud has been detected on charge ${chargeId}. Stripe Radar detected: ${fraudDetails?.user_report || "automatic detection"}. Amount: $${(charge.amount / 100).toFixed(2)}. Status: ${charge.status}`;
+
   try {
-    // Alert all platform admins + compliance officers about fraud.
-    // NOTE: this loop preserves the existing shape where each recipient gets
-    // a notification scoped to their own organizationId. It does not attempt
-    // to resolve the charge to a specific org — platform_admin is BenefitsSafe
-    // internal staff (tiny set) and compliance_officer is included per the
-    // email coverage PDR. If the compliance_officer set grows large this
-    // handler should be rewritten to first resolve charge → organization.
-    const platformAdmins = await prisma.user.findMany({
-      where: {
-        role: { in: ["platform_admin", "compliance_officer"] },
-        isActive: true,
-      },
-      select: { id: true, organizationId: true, email: true, firstName: true },
-    });
+    // Resolve chargeId → Transaction → organizationId FIRST.
+    //
+    // Previously this handler queried `role: "platform_admin" | "compliance_officer"`
+    // globally with no org filter, then wrote notifications scoped to each
+    // recipient's own org — leaking charge details across every tenant
+    // that had a compliance_officer. At 1.8M nonprofits that would mean
+    // hundreds of thousands of cross-tenant notifications per fraud event.
+    //
+    // The correct model: platform_admin is cross-org by design (BenefitsSafe
+    // internal staff), so they get notified globally. Everyone else is
+    // strictly scoped to the org that actually owns the charge.
+    const transaction = chargeId
+      ? await prisma.transaction.findFirst({
+          where: { stripeTransactionId: chargeId },
+          select: { id: true, organizationId: true, cardId: true },
+        })
+      : null;
 
-    const alertTitle = "Fraud detected on charge";
-    const alertMessage = `Fraud has been detected on charge ${chargeId}. Stripe Radar detected: ${fraudDetails?.user_report || "automatic detection"}. Amount: $${(charge.amount / 100).toFixed(2)}. Status: ${charge.status}`;
-
-    for (const admin of platformAdmins) {
-      if (admin.organizationId) {
-        await prisma.notification.create({
-          data: {
-            userId: admin.id,
-            organizationId: admin.organizationId,
-            type: "charge_fraud_detected",
-            entityId: chargeId,
-            title: alertTitle,
-            message: alertMessage,
-            href: `/audit-trail?filter=fraud&chargeId=${chargeId}`,
-          },
-        });
-
-        // Fire-and-forget email alert.
-        if (admin.email) {
-          const tmpl = buildComplianceAlertEmail({
-            adminFirstName: admin.firstName || "there",
-            alertTitle,
-            alertDescription: alertMessage,
-            severity: "critical",
-            actionUrl: `${APP_BASE_URL}/audit-trail?filter=fraud&chargeId=${chargeId}`,
-          });
-          sendEmail({
-            to: admin.email,
-            subject: tmpl.subject,
-            html: tmpl.html,
-            text: tmpl.text,
-            userId: admin.id,
-            organizationId: admin.organizationId,
-            emailType: "compliance_alert",
-          }).catch((err) =>
-            console.error("[fraud-webhook] email send failed:", err),
-          );
-        }
-      }
+    if (transaction) {
+      await fanOutFraudAlert({
+        resolvedOrgId: transaction.organizationId,
+        resolvedEntityId: chargeId,
+        title: alertTitle,
+        message: alertMessage,
+        alertTitle,
+        alertDescription: alertMessage,
+        chargeId,
+        notificationType: "charge_fraud_detected",
+      });
+    } else {
+      // Charge can't be attributed — notify platform_admin only.
+      await notifyPlatformAdminsOnly({
+        title: `${alertTitle} (unresolved org)`,
+        message: `${alertMessage} — could not map this charge to a BenefitsSafe transaction. Manual triage required.`,
+        chargeId,
+        notificationType: "charge_fraud_detected",
+      });
     }
 
-    // Create system audit log
+    // Create system audit log (no organizationId: this is a platform-level
+    // audit record of the fraud event itself).
     await prisma.auditLog.create({
       data: {
         action: "fraud_detected",
@@ -246,6 +209,7 @@ async function handleChargeFraudDetected(charge: any) {
           amount: charge.amount / 100,
           fraudDetails,
           status: charge.status,
+          resolvedOrgId: transaction?.organizationId || null,
           detectedAt: new Date().toISOString(),
         },
       },
@@ -256,6 +220,191 @@ async function handleChargeFraudDetected(charge: any) {
     console.error("Failed to handle charge fraud detection:", error);
     return NextResponse.json({ received: true });
   }
+}
+
+// ============================================================================
+// Shared fraud-alert fan-out helpers
+// ============================================================================
+
+interface FraudFanoutParams {
+  resolvedOrgId: string;
+  resolvedEntityId: string | null;
+  title: string;
+  message: string;
+  alertTitle: string;
+  alertDescription: string;
+  chargeId: string;
+  notificationType: string;
+}
+
+/**
+ * Fan out a fraud alert for a charge that HAS been resolved to a specific
+ * organization. Writes notifications + emails to:
+ *  - every nonprofit_admin + compliance_officer in the resolved org
+ *  - every platform_admin globally (BenefitsSafe internal staff are trusted
+ *    with cross-org visibility by design)
+ *
+ * Never fans out to admins of orgs other than the resolved one.
+ */
+async function fanOutFraudAlert(params: FraudFanoutParams): Promise<void> {
+  // Org-scoped recipients: nonprofit_admin + compliance_officer in the charge's org.
+  const orgRecipients = await prisma.user.findMany({
+    where: {
+      organizationId: params.resolvedOrgId,
+      role: {
+        in: ["nonprofit_admin", "compliance_officer"],
+      },
+      isActive: true,
+    },
+    select: { id: true, organizationId: true, email: true, firstName: true },
+  });
+
+  // Platform admins (global, cross-org by design).
+  const platformRecipients = await prisma.user.findMany({
+    where: {
+      role: "platform_admin",
+      isActive: true,
+    },
+    select: { id: true, organizationId: true, email: true, firstName: true },
+  });
+
+  const org = await prisma.organization.findUnique({
+    where: { id: params.resolvedOrgId },
+    select: { name: true },
+  });
+  const orgName = org?.name || undefined;
+
+  const href = `/audit-trail?filter=fraud&chargeId=${params.chargeId}`;
+
+  // Org recipients: notification scoped to the charge's org.
+  for (const admin of orgRecipients) {
+    await prisma.notification.create({
+      data: {
+        userId: admin.id,
+        organizationId: params.resolvedOrgId,
+        type: params.notificationType,
+        entityId: params.resolvedEntityId,
+        title: params.title,
+        message: params.message,
+        href,
+      },
+    });
+    sendFraudEmail(admin, orgName, params, href);
+  }
+
+  // Platform admins: notification scoped to their own home org (they're
+  // internal staff; this is intentional because platform_admin is trusted
+  // to see cross-org data). But the message body explicitly mentions the
+  // resolved org so they know which tenant to triage.
+  const crossOrgMessage = `${params.message} (org: ${orgName || params.resolvedOrgId})`;
+  for (const admin of platformRecipients) {
+    if (!admin.organizationId) continue;
+    await prisma.notification.create({
+      data: {
+        userId: admin.id,
+        organizationId: admin.organizationId,
+        type: params.notificationType,
+        entityId: params.resolvedEntityId,
+        title: params.title,
+        message: crossOrgMessage,
+        href,
+      },
+    });
+    sendFraudEmail(
+      admin,
+      orgName,
+      {
+        ...params,
+        alertDescription: `${params.alertDescription}\n\nOrg: ${orgName || params.resolvedOrgId}`,
+      },
+      href,
+    );
+  }
+}
+
+/**
+ * Fallback path for fraud alerts where the charge could NOT be resolved
+ * to a specific organization. Only platform_admin gets notified — never
+ * fan out to random orgs' admins or compliance officers in this case.
+ */
+async function notifyPlatformAdminsOnly(params: {
+  title: string;
+  message: string;
+  chargeId: string;
+  notificationType: string;
+}): Promise<void> {
+  const platformRecipients = await prisma.user.findMany({
+    where: { role: "platform_admin", isActive: true },
+    select: { id: true, organizationId: true, email: true, firstName: true },
+  });
+
+  const href = `/audit-trail?filter=fraud&chargeId=${params.chargeId}`;
+
+  for (const admin of platformRecipients) {
+    if (!admin.organizationId) continue;
+    await prisma.notification.create({
+      data: {
+        userId: admin.id,
+        organizationId: admin.organizationId,
+        type: params.notificationType,
+        entityId: params.chargeId,
+        title: params.title,
+        message: params.message,
+        href,
+      },
+    });
+
+    if (admin.email) {
+      const tmpl = buildComplianceAlertEmail({
+        adminFirstName: admin.firstName || "there",
+        alertTitle: params.title,
+        alertDescription: params.message,
+        severity: "critical",
+        actionUrl: `${APP_BASE_URL}${href}`,
+      });
+      sendEmail({
+        to: admin.email,
+        subject: tmpl.subject,
+        html: tmpl.html,
+        text: tmpl.text,
+        userId: admin.id,
+        organizationId: admin.organizationId,
+        emailType: "compliance_alert",
+      }).catch((err) =>
+        console.error("[fraud-webhook] platform email send failed:", err),
+      );
+    }
+  }
+}
+
+/** Fire-and-forget email helper used by fanOutFraudAlert. */
+function sendFraudEmail(
+  admin: { id: string; organizationId: string | null; email: string | null; firstName: string | null },
+  orgName: string | undefined,
+  params: FraudFanoutParams,
+  href: string,
+): void {
+  if (!admin.email || !admin.organizationId) return;
+  const tmpl = buildComplianceAlertEmail({
+    adminFirstName: admin.firstName || "there",
+    alertTitle: params.alertTitle,
+    alertDescription: params.alertDescription,
+    severity: "critical",
+    actionUrl: `${APP_BASE_URL}${href}`,
+    orgName,
+  });
+  sendEmail({
+    to: admin.email,
+    subject: tmpl.subject,
+    html: tmpl.html,
+    text: tmpl.text,
+    orgName,
+    userId: admin.id,
+    organizationId: admin.organizationId,
+    emailType: "compliance_alert",
+  }).catch((err) =>
+    console.error("[fraud-webhook] email send failed:", err),
+  );
 }
 
 async function handleAuthorizationFraudCheck(authorization: any) {

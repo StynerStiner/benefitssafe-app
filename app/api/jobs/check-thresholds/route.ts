@@ -178,7 +178,7 @@ export async function POST(request: Request) {
       orgId,
       beneficiaries: beneficiaries.length,
       grants: grants.length,
-      warnings: warnings.length,
+      warnings: newWarnings.length,
     });
   } catch (error) {
     console.error("[check-thresholds] Error:", error);
