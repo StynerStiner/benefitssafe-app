@@ -342,6 +342,7 @@ const platformAdminNav: NavItem[] = [
     isActive: true,
     items: [
       { title: "Platform Overview", url: "/platform", circleColor: "bg-red-600", icon: LayoutDashboard },
+      { title: "Internal Staff", url: "/platform/internal-staff", circleColor: "bg-purple-600", icon: UserCog },
     ],
   },
   { label: "Org Management" },

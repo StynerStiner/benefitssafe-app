@@ -208,7 +208,7 @@ The sidebar is defined in `components/sidebar-data.ts` with a `getNavForRole(rol
 | `vendor` | `/investment` | External vendor. Own profile |
 | `platform_admin` | `/medical` | BenefitsSafe staff. God mode |
 | `compliance_officer` | `/podcast` | Compliance specialist |
-| `support` | `/help` | Support staff |
+| `support_agent` | `/help` | Support staff |
 | `billing_admin` | `/settings/billing` | Billing management |
 
 ---

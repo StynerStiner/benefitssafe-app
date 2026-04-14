@@ -7,7 +7,7 @@
 //   - "beneficiary" / "family_member"   -> BS-
 //   - "vendor"                          -> VN-
 //   - everything else (platform_admin, nonprofit_admin, nonprofit_staff,
-//     compliance_officer, auditor, attorney, grant_officer, support,
+//     compliance_officer, auditor, attorney, grant_officer, support_agent,
 //     billing_admin, cpa, member, ...) -> TM-
 //
 // This is the ONLY place membership codes are generated. Every API route

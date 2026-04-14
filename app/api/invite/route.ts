@@ -8,6 +8,12 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import {
+  ORG_INVITABLE_ROLES,
+  PLATFORM_INVITABLE_ROLES,
+  isPlatformInvitableRole,
+  isOrgInvitableRole,
+} from "@/lib/constants/invitable-roles";
 import { validateRecipientEmail, sanitizeEmailForLog, buildSecureLink } from "@/lib/email-security";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildInviteEmail } from "@/lib/services/email-templates";
@@ -15,14 +21,12 @@ import { NextResponse } from "next/server";
 
 const INVITE_EXPIRY_DAYS = 7;
 
-const INVITABLE_ROLES = [
-  "beneficiary",
-  "nonprofit_staff",
-  "vendor",
-  "cpa",
-  "auditor",
-  "attorney",
-  "grant_officer",
+// Invitable roles split by who is allowed to invite them. nonprofit_admin
+// can invite ORG roles only; platform_admin can invite both. Anyone trying
+// to invite a PLATFORM role from outside platform_admin is rejected.
+const ALL_INVITABLE_ROLES = [
+  ...ORG_INVITABLE_ROLES,
+  ...PLATFORM_INVITABLE_ROLES,
 ];
 
 export async function POST(request: Request) {
@@ -44,6 +48,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
     }
 
+    // For platform_admin re-inviting an existing internal staff user, we
+    // skip the org-membership filter — internal staff may sit in a different
+    // platform org than the inviting platform_admin. nonprofit_admin is
+    // always restricted to their own org's users.
+    const isPlatformCaller = role === "platform_admin";
+
     // Validate overrideEmail if provided
     if (overrideEmail) {
       const emailCheck = validateRecipientEmail(overrideEmail);
@@ -52,17 +62,19 @@ export async function POST(request: Request) {
       }
     }
 
-    // Verify the user exists, belongs to the org, and has an invitable role
+    // Verify the user exists and has an invitable role. nonprofit_admin
+    // callers are constrained to their own org; platform_admin can invite
+    // any user across orgs (needed for cross-org internal staff).
     const user = await prisma.user.findFirst({
-      where: {
-        id: userId,
-        organizationId,
-      },
+      where: isPlatformCaller
+        ? { id: userId }
+        : { id: userId, organizationId },
       select: {
         id: true,
         email: true,
         firstName: true,
         role: true,
+        organizationId: true,
         passwordHash: true,
         organization: { select: { name: true } },
       },
@@ -72,10 +84,31 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (!INVITABLE_ROLES.includes(user.role)) {
+    if (!(ALL_INVITABLE_ROLES as readonly string[]).includes(user.role)) {
       return NextResponse.json(
         { error: `Cannot invite users with role: ${user.role}` },
         { status: 400 },
+      );
+    }
+
+    // Critical permission check: only platform_admin may (re-)invite users
+    // whose role is in PLATFORM_INVITABLE_ROLES. A nonprofit_admin trying
+    // to invite a platform_admin / compliance_officer / support_agent /
+    // billing_admin — even one already seeded inside their own org — must
+    // get a 403, since those roles operate on behalf of BenefitsSafe and
+    // must never be manufactured by tenant admins.
+    if (isPlatformInvitableRole(user.role) && !isPlatformCaller) {
+      return NextResponse.json(
+        { error: "Only platform_admin can invite internal staff roles" },
+        { status: 403 },
+      );
+    }
+    // And nonprofit_admin can only invite ORG_INVITABLE_ROLES (defense in
+    // depth — already covered by the check above, but make it explicit).
+    if (!isPlatformCaller && !isOrgInvitableRole(user.role)) {
+      return NextResponse.json(
+        { error: "Forbidden role for non-platform inviter" },
+        { status: 403 },
       );
     }
 
