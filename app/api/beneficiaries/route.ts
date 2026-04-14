@@ -36,80 +36,99 @@ export async function GET(request: Request) {
     const offset = Math.max(Number.isNaN(rawOffset) ? 0 : rawOffset, 0);
 
     const includeInactive = searchParams.get("includeInactive") === "true";
-    const userWhere = {
+
+    // ------------------------------------------------------------------
+    // Multi-org list query: scope by OrganizationMembership, NOT by
+    // User.organizationId. At 1.8M nonprofits a beneficiary may belong to
+    // many orgs simultaneously; their User.organizationId only points to
+    // their currently active session org and is the wrong filter for
+    // "show me MY org's beneficiaries".
+    //
+    // Status filter:
+    //   default → only active memberships
+    //   ?includeInactive=true → all statuses (pending, suspended, etc.)
+    //
+    // Child data scoping: grants are pulled via the User relation and
+    // MUST be filtered by `organizationId` to avoid leaking grants the
+    // beneficiary holds at other nonprofits.
+    // ------------------------------------------------------------------
+    const membershipWhere = {
       organizationId,
-      role: "beneficiary" as const,
-      ...(includeInactive ? {} : { isActive: true }),
+      role: "beneficiary",
+      ...(includeInactive ? {} : { status: "active" }),
     };
 
-    const [beneficiaries, total] = await Promise.all([
-      prisma.user.findMany({
-        where: userWhere,
+    const [memberships, total] = await Promise.all([
+      prisma.organizationMembership.findMany({
+        where: membershipWhere,
         select: {
           id: true,
-          beneficiaryCode: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          phone: true,
-          avatarUrl: true,
-          addressCity: true,
-          addressState: true,
-          isActive: true,
-          passwordHash: false,
-          createdAt: true,
-          benefitPrograms: true,
-          grants: {
-            where: { archivedAt: null },
+          memberCode: true,
+          status: true,
+          user: {
             select: {
               id: true,
-              name: true,
-              status: true,
-              remainingAmount: true,
+              beneficiaryCode: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              phone: true,
+              avatarUrl: true,
+              addressCity: true,
+              addressState: true,
+              isActive: true,
+              createdAt: true,
+              benefitPrograms: true,
+              // Org-scoped grants only — never leak grants from other orgs.
+              grants: {
+                where: { archivedAt: null, organizationId },
+                select: {
+                  id: true,
+                  name: true,
+                  status: true,
+                  remainingAmount: true,
+                },
+              },
+              inviteTokens: {
+                where: { expiresAt: { gt: new Date() } },
+                select: { usedAt: true },
+                orderBy: { createdAt: "desc" as const },
+                take: 1,
+              },
             },
           },
-          memberships: {
-            where: { organizationId },
-            select: { status: true },
-            take: 1,
-          },
-          inviteTokens: {
-            where: { expiresAt: { gt: new Date() } },
-            select: { usedAt: true },
-            orderBy: { createdAt: "desc" as const },
-            take: 1,
-          },
         },
-        orderBy: { lastName: "asc" },
+        orderBy: { user: { lastName: "asc" } },
         take: limit,
         skip: offset,
       }),
-      prisma.user.count({ where: userWhere }),
+      prisma.organizationMembership.count({ where: membershipWhere }),
     ]);
 
-    // Transform to include summary stats and onboarding status
-    const result = beneficiaries.map((b) => {
+    // Transform to the same flat shape the UI already consumes. The
+    // per-org `memberCode` from the membership row replaces the legacy
+    // global `User.beneficiaryCode` for display.
+    const result = memberships.map((m) => {
+      const b = m.user;
       const activeGrants = b.grants.filter((g) => g.status === "ACTIVE");
       const totalRemaining = b.grants.reduce(
         (sum, g) => sum + Number(g.remainingAmount),
         0,
       );
 
-      // Compute onboarding status
-      const membershipStatus = b.memberships[0]?.status || "pending";
       const latestToken = b.inviteTokens[0];
       let onboardingStatus: "active" | "pending_password" | "pending_invite" = "pending_invite";
-
-      if (membershipStatus === "active") {
+      if (m.status === "active") {
         onboardingStatus = "active";
       } else if (latestToken && !latestToken.usedAt) {
-        // Token exists but hasn't been used -- invite sent, password not set
         onboardingStatus = "pending_password";
       }
 
       return {
         id: b.id,
-        beneficiaryCode: b.beneficiaryCode,
+        // Prefer the per-org memberCode; fall back to legacy beneficiaryCode
+        // for old rows that haven't been re-coded for this org.
+        beneficiaryCode: m.memberCode || b.beneficiaryCode,
         firstName: b.firstName,
         lastName: b.lastName,
         email: b.email,
@@ -206,15 +225,112 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check for existing email globally (email has unique constraint)
+    // ------------------------------------------------------------------
+    // Multi-org: a single User row can be a beneficiary at many nonprofits.
+    // If a user with this email already exists, we link them to THIS org via
+    // a new OrganizationMembership instead of returning 409. Their existing
+    // profile (DOB, SSN, benefit programs, address) is reused as-is — the
+    // requesting admin's form fields are intentionally ignored to avoid
+    // overwriting another nonprofit's view of the same person.
+    //
+    // Cross-org isolation rules in this branch:
+    //   - We NEVER reveal which other orgs the user already belongs to.
+    //   - We NEVER touch User.organizationId (that's the user's currently
+    //     active session org, mutated only by /api/memberships/switch).
+    //   - We NEVER overwrite User-level fields (phone, address, DOB).
+    //   - Per-org notes / status overrides are out of scope for this PDR
+    //     and will need OrganizationMembership-level fields in the future.
+    // ------------------------------------------------------------------
     const existing = await prisma.user.findUnique({
       where: { email: data.email },
-      select: { id: true },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        beneficiaryCode: true,
+      },
     });
+
     if (existing) {
+      // The email is taken by SOMEONE on the platform. Determine if linking
+      // them as a beneficiary in THIS org is safe.
+
+      // Refuse if the existing user is something incompatible with being
+      // a beneficiary (e.g. an internal staff user). Don't reveal the role
+      // — a generic 409 is enough to avoid enumeration.
+      const compatibleRoles = ["beneficiary", "nonprofit_staff", "vendor"];
+      if (!compatibleRoles.includes(existing.role)) {
+        return NextResponse.json(
+          { error: "A user with this email already exists" },
+          { status: 409 },
+        );
+      }
+
+      // Already a beneficiary in THIS org? Hard 409.
+      const existingMembership = await prisma.organizationMembership.findFirst({
+        where: {
+          userId: existing.id,
+          organizationId,
+          role: "beneficiary",
+        },
+        select: { id: true },
+      });
+      if (existingMembership) {
+        return NextResponse.json(
+          { error: "This person is already a beneficiary in your organization" },
+          { status: 409 },
+        );
+      }
+
+      // Link them: new beneficiary membership in this org with a fresh
+      // BS- memberCode. status starts at "pending" so the existing
+      // accept-invite / activation paths can flip it on first login.
+      const memberCode = await generateMembershipCode(prisma, organizationId, "beneficiary");
+
+      await prisma.organizationMembership.create({
+        data: {
+          userId: existing.id,
+          organizationId,
+          role: "beneficiary",
+          memberCode,
+          status: "pending",
+          invitedBy: session.user.id,
+          isDefaultOrg: false,
+        },
+      });
+
+      // Audit log scoped to this org only — never references other orgs.
+      await prisma.auditLog.create({
+        data: {
+          userId: session.user.id,
+          organizationId,
+          action: "link_existing_beneficiary",
+          entityType: "user",
+          entityId: existing.id,
+          newValue: {
+            email: existing.email,
+            memberCode,
+          },
+        },
+      });
+
+      await incrementUsage(organizationId, "beneficiariesAdded");
+
       return NextResponse.json(
-        { error: "A user with this email already exists" },
-        { status: 409 },
+        {
+          id: existing.id,
+          firstName: existing.firstName,
+          lastName: existing.lastName,
+          email: existing.email,
+          beneficiaryCode: existing.beneficiaryCode,
+          memberCode,
+          existingUser: true,
+          message:
+            "This person is already registered on BenefitsSafe. They have been added as a beneficiary in your organization.",
+        },
+        { status: 201 },
       );
     }
 

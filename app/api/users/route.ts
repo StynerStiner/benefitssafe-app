@@ -29,53 +29,72 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(params.get("limit") || "20"), 100);
     const offset = parseInt(params.get("offset") || "0");
 
-    // Build where clause with search
-    const where: Record<string, unknown> = {
+    // ------------------------------------------------------------------
+    // Multi-org list: scope by OrganizationMembership, NOT User.organizationId.
+    // A team member (nonprofit_staff, cpa, auditor, attorney, etc.) may
+    // belong to many nonprofits via multiple memberships. The User row's
+    // organizationId only points at their currently active session org and
+    // is the wrong filter for "show me MY org's team".
+    // ------------------------------------------------------------------
+    const membershipWhere: Record<string, unknown> = {
       organizationId,
+      status: "active",
     };
-
     if (roleFilter) {
-      where.role = roleFilter;
+      membershipWhere.role = roleFilter;
     }
-
     if (search) {
-      where.OR = [
-        { firstName: { contains: search, mode: "insensitive" } },
-        { lastName: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-        { phone: { contains: search } },
-        { id: { contains: search } },
-      ];
+      membershipWhere.user = {
+        OR: [
+          { firstName: { contains: search, mode: "insensitive" } },
+          { lastName: { contains: search, mode: "insensitive" } },
+          { email: { contains: search, mode: "insensitive" } },
+          { phone: { contains: search } },
+          { id: { contains: search } },
+        ],
+      };
     }
 
-    const [users, total] = await Promise.all([
-      prisma.user.findMany({
-        where: where as never,
+    const [memberships, total] = await Promise.all([
+      prisma.organizationMembership.findMany({
+        where: membershipWhere as never,
         select: {
           id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          phone: true,
+          memberCode: true,
+          status: true,
           role: true,
-          isActive: true,
-          avatarUrl: true,
-          beneficiaryCode: true,
-          addressCity: true,
-          addressState: true,
-          createdAt: true,
-          memberships: {
-            where: { organizationId },
-            select: { id: true, memberCode: true, status: true },
-            take: 1,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              phone: true,
+              role: true,
+              isActive: true,
+              avatarUrl: true,
+              beneficiaryCode: true,
+              addressCity: true,
+              addressState: true,
+              createdAt: true,
+            },
           },
         },
-        orderBy: { lastName: "asc" },
+        orderBy: { user: { lastName: "asc" } },
         take: limit,
         skip: offset,
       }),
-      prisma.user.count({ where: where as never }),
+      prisma.organizationMembership.count({ where: membershipWhere as never }),
     ]);
+
+    // Flatten to the same shape the existing UI consumes. The per-org
+    // memberCode comes from the membership row; the role we surface is
+    // the membership role (per-org) not User.role (global / last-active).
+    const users = memberships.map((m) => ({
+      ...m.user,
+      role: m.role || m.user.role,
+      memberships: [{ id: m.id, memberCode: m.memberCode, status: m.status }],
+    }));
 
     return NextResponse.json({
       users,

@@ -8,78 +8,92 @@ import { NextResponse } from "next/server";
 
 // Full profile select — includes all profile fields.
 // ssnLast4 is masked before returning.
-const profileSelect = {
-  id: true,
-  firstName: true,
-  lastName: true,
-  email: true,
-  phone: true,
-  isActive: true,
-  dateOfBirth: true,
-  addressStreet: true,
-  addressCity: true,
-  addressState: true,
-  addressZip: true,
-  ssnLast4: true,
-  benefitPrograms: true,
-  emergencyContactName: true,
-  emergencyContactPhone: true,
-  notes: true,
-  passwordHash: true,
-  createdAt: true,
-  inviteTokens: {
-    select: {
-      id: true,
-      sentTo: true,
-      method: true,
-      createdAt: true,
-      expiresAt: true,
-      usedAt: true,
+//
+// IMPORTANT: `grants` and `expenseRequests` MUST be filtered by the viewing
+// org's organizationId. Because they're pulled via the User relation, with
+// no org filter Prisma would return every grant/expense the beneficiary
+// holds across every nonprofit they belong to — a cross-tenant data leak
+// at multi-org scale. The buildProfileSelect() helper closes that gap.
+function buildProfileSelect(viewingOrgId: string) {
+  return {
+    id: true,
+    firstName: true,
+    lastName: true,
+    email: true,
+    phone: true,
+    isActive: true,
+    dateOfBirth: true,
+    addressStreet: true,
+    addressCity: true,
+    addressState: true,
+    addressZip: true,
+    ssnLast4: true,
+    benefitPrograms: true,
+    emergencyContactName: true,
+    emergencyContactPhone: true,
+    // KNOWN LIMITATION: User.notes is currently shared across all orgs
+    // a beneficiary belongs to. Per-org notes need to live on
+    // OrganizationMembership in a follow-up PDR.
+    notes: true,
+    passwordHash: true,
+    createdAt: true,
+    inviteTokens: {
+      select: {
+        id: true,
+        sentTo: true,
+        method: true,
+        createdAt: true,
+        expiresAt: true,
+        usedAt: true,
+      },
+      orderBy: { createdAt: "desc" as const },
     },
-    orderBy: { createdAt: "desc" as const },
-  },
-  grants: {
-    where: { archivedAt: null },
-    select: {
-      id: true,
-      name: true,
-      grantIssuerName: true,
-      totalAmount: true,
-      spentAmount: true,
-      remainingAmount: true,
-      status: true,
-      startDate: true,
-      endDate: true,
-      benefitFlags: true,
-      categories: {
-        select: {
-          id: true,
-          name: true,
-          allocatedAmount: true,
-          spentAmount: true,
+    grants: {
+      where: { archivedAt: null, organizationId: viewingOrgId },
+      select: {
+        id: true,
+        name: true,
+        grantIssuerName: true,
+        totalAmount: true,
+        spentAmount: true,
+        remainingAmount: true,
+        status: true,
+        startDate: true,
+        endDate: true,
+        benefitFlags: true,
+        categories: {
+          select: {
+            id: true,
+            name: true,
+            allocatedAmount: true,
+            spentAmount: true,
+          },
         },
       },
+      orderBy: { createdAt: "desc" as const },
     },
-    orderBy: { createdAt: "desc" as const },
-  },
-  expenseRequests: {
-    where: { archivedAt: null },
-    select: {
-      id: true,
-      description: true,
-      amount: true,
-      expenseType: true,
-      status: true,
-      riskClassification: true,
-      riskNotes: true,
-      rejectedReason: true,
-      createdAt: true,
-      grant: { select: { id: true, name: true } },
-      category: { select: { id: true, name: true } },
+    expenseRequests: {
+      where: {
+        archivedAt: null,
+        grant: { organizationId: viewingOrgId },
+      },
+      select: {
+        id: true,
+        description: true,
+        amount: true,
+        expenseType: true,
+        status: true,
+        riskClassification: true,
+        riskNotes: true,
+        rejectedReason: true,
+        createdAt: true,
+        grant: { select: { id: true, name: true } },
+        category: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: "desc" as const },
     },
-    orderBy: { createdAt: "desc" as const },
-  },
-};
+  } as const;
+}
 
 // GET /api/beneficiaries/[id] — full beneficiary profile with grants and expenses
 export async function GET(
@@ -99,13 +113,29 @@ export async function GET(
 
     const { id } = await params;
 
-    const beneficiary = await prisma.user.findFirst({
+    // Multi-org access control: the viewing admin's session.user.organizationId
+    // must have an active beneficiary membership for this user. Filtering by
+    // User.organizationId would be wrong: a beneficiary could be in our org
+    // via a membership while their User.organizationId still points at the
+    // org where they originally registered.
+    const membership = await prisma.organizationMembership.findFirst({
       where: {
-        id,
+        userId: id,
         organizationId,
         role: "beneficiary",
       },
-      select: profileSelect,
+      select: { id: true },
+    });
+    if (!membership) {
+      return NextResponse.json(
+        { error: "Beneficiary not found" },
+        { status: 404 },
+      );
+    }
+
+    const beneficiary = await prisma.user.findUnique({
+      where: { id },
+      select: buildProfileSelect(organizationId),
     });
 
     if (!beneficiary) {
@@ -187,12 +217,16 @@ export async function PATCH(
 
     const { id } = await params;
 
-    // Verify beneficiary belongs to this org
-    const existing = await prisma.user.findFirst({
-      where: { id, organizationId, role: "beneficiary" },
+    // Verify beneficiary belongs to this org via membership (multi-org safe).
+    // KNOWN LIMITATION: this PATCH still writes to the User row, so updates
+    // to phone/address/notes propagate to every other nonprofit that has
+    // this user as a beneficiary. Per-org overrides are out of scope for
+    // this PDR — see `notes` comment in buildProfileSelect.
+    const membership = await prisma.organizationMembership.findFirst({
+      where: { userId: id, organizationId, role: "beneficiary" },
       select: { id: true },
     });
-    if (!existing) {
+    if (!membership) {
       return NextResponse.json(
         { error: "Beneficiary not found" },
         { status: 404 },
