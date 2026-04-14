@@ -1,5 +1,8 @@
-// ORG-SCOPED: All queries filtered by session.user.organizationId
-// No cross-organization data leakage possible.
+// MULTI-ORG SCOPED: Access control runs through OrganizationMembership.
+// A team member visible in org A may belong to org B as well; the User
+// row is shared but every read/write here is gated by membership in the
+// caller's active org. Per-org role and status updates target the
+// membership row, never the global User row.
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
@@ -22,7 +25,7 @@ const updateSchema = z.object({
   phone: z.string().optional(),
 });
 
-// GET /api/users/[id] — View user profile (org-scoped)
+// GET /api/users/[id] — View user profile (per-org membership scoped)
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -40,15 +43,26 @@ export async function GET(
 
     const { id } = await params;
 
-    const user = await prisma.user.findFirst({
-      where: { id, organizationId },
+    // Multi-org access check: caller must have a membership row for this
+    // user in their currently active org. Filtering by User.organizationId
+    // would silently 404 multi-org team members whose User row points at
+    // a different nonprofit.
+    const membership = await prisma.organizationMembership.findFirst({
+      where: { userId: id, organizationId },
+      select: { id: true, role: true, status: true, memberCode: true },
+    });
+    if (!membership) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id },
       select: {
         id: true,
         firstName: true,
         lastName: true,
         email: true,
         phone: true,
-        role: true,
         isActive: true,
         avatarUrl: true,
         beneficiaryCode: true,
@@ -62,14 +76,28 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(user);
+    // Surface the per-org role + memberCode + membership status.
+    // We never include any other-org membership data.
+    return NextResponse.json({
+      ...user,
+      role: membership.role,
+      memberCode: membership.memberCode,
+      membershipStatus: membership.status,
+    });
   } catch (error) {
     console.error("GET /api/users/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-// PATCH /api/users/[id] — Update user fields
+// PATCH /api/users/[id] — Update team member.
+//
+// Role updates target the per-org OrganizationMembership row (so
+// promoting Maria to "cpa" at org B does not change her role at org A).
+// Other field updates (firstName, lastName, phone) write to the shared
+// User row, which means they propagate across every org she belongs
+// to — that's intentional for person-level attributes but worth knowing.
+// Per-org overrides for these fields are out of scope for this PDR.
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -87,12 +115,19 @@ export async function PATCH(
 
     const { id } = await params;
 
-    // Verify user belongs to same org
-    const existing = await prisma.user.findFirst({
-      where: { id, organizationId },
-      select: { id: true, firstName: true, lastName: true, role: true, phone: true },
+    // Verify the target user is a member of THIS org via membership.
+    const membership = await prisma.organizationMembership.findFirst({
+      where: { userId: id, organizationId },
+      select: { id: true, role: true, status: true },
     });
+    if (!membership) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
+    const existing = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, firstName: true, lastName: true, phone: true },
+    });
     if (!existing) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -107,21 +142,40 @@ export async function PATCH(
       );
     }
 
-    const updated = await prisma.user.update({
+    const data = parsed.data;
+
+    // Per-org role update: writes to the membership row, NOT User.role.
+    // User.role is the user's *most recently active* role and is mutated
+    // only by /api/memberships/switch.
+    if (data.role !== undefined && data.role !== membership.role) {
+      await prisma.organizationMembership.update({
+        where: { id: membership.id },
+        data: { role: data.role },
+      });
+    }
+
+    // Shared user-level fields. We only update what was provided.
+    const userUpdate: Record<string, unknown> = {};
+    if (data.firstName !== undefined) userUpdate.firstName = data.firstName;
+    if (data.lastName !== undefined) userUpdate.lastName = data.lastName;
+    if (data.phone !== undefined) userUpdate.phone = data.phone;
+    if (Object.keys(userUpdate).length > 0) {
+      await prisma.user.update({ where: { id }, data: userUpdate });
+    }
+
+    const updated = await prisma.user.findUnique({
       where: { id },
-      data: parsed.data as Record<string, unknown>,
       select: {
         id: true,
         firstName: true,
         lastName: true,
         email: true,
         phone: true,
-        role: true,
         isActive: true,
       },
     });
 
-    // Audit log
+    // Audit log scoped to this org. Includes per-org role if it changed.
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
@@ -129,19 +183,29 @@ export async function PATCH(
         action: "update",
         entityType: "user",
         entityId: id,
-        oldValue: JSON.parse(JSON.stringify(existing)),
-        newValue: JSON.parse(JSON.stringify(parsed.data)),
+        oldValue: JSON.parse(
+          JSON.stringify({ ...existing, role: membership.role }),
+        ),
+        newValue: JSON.parse(JSON.stringify(data)),
       },
     });
 
-    return NextResponse.json(updated);
+    return NextResponse.json({
+      ...updated,
+      role: data.role ?? membership.role,
+    });
   } catch (error) {
     console.error("PATCH /api/users/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-// DELETE /api/users/[id] — Soft-delete (deactivate) user
+// DELETE /api/users/[id] — Per-org soft-delete: revoke the user's
+// membership in THIS org. We deliberately do NOT flip User.isActive to
+// false: a multi-org user removed from one nonprofit must remain active
+// at every other nonprofit they belong to. The global user is only
+// deactivated as a side effect when their last active membership goes
+// away (cleanup at the bottom).
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -159,28 +223,41 @@ export async function DELETE(
 
     const { id } = await params;
 
-    // Prevent self-deletion
     if (id === session.user.id) {
       return NextResponse.json({ error: "Cannot deactivate your own account" }, { status: 400 });
     }
 
-    // Verify user belongs to same org
-    const existing = await prisma.user.findFirst({
-      where: { id, organizationId },
-      select: { id: true, firstName: true, lastName: true, email: true, isActive: true },
+    // Locate the membership at the caller's active org.
+    const membership = await prisma.organizationMembership.findFirst({
+      where: { userId: id, organizationId },
+      select: { id: true, status: true, role: true },
     });
-
-    if (!existing) {
+    if (!membership) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Soft-delete: set isActive = false
-    await prisma.user.update({
-      where: { id },
-      data: { isActive: false },
-    });
+    // Revoke this org's membership. Stay idempotent if already revoked.
+    if (membership.status !== "revoked") {
+      await prisma.organizationMembership.update({
+        where: { id: membership.id },
+        data: { status: "revoked" },
+      });
+    }
 
-    // Audit log
+    // Cleanup: if the user has zero remaining active memberships across
+    // the platform, also flip User.isActive=false so they can no longer
+    // log in. Otherwise leave User.isActive alone — the user is still a
+    // valid team member at another nonprofit.
+    const remainingActive = await prisma.organizationMembership.count({
+      where: { userId: id, status: "active" },
+    });
+    if (remainingActive === 0) {
+      await prisma.user.update({
+        where: { id },
+        data: { isActive: false },
+      });
+    }
+
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
@@ -188,12 +265,20 @@ export async function DELETE(
         action: "deactivate",
         entityType: "user",
         entityId: id,
-        oldValue: JSON.parse(JSON.stringify({ isActive: existing.isActive })),
-        newValue: JSON.parse(JSON.stringify({ isActive: false })),
+        oldValue: JSON.parse(JSON.stringify({ membershipStatus: membership.status })),
+        newValue: JSON.parse(
+          JSON.stringify({
+            membershipStatus: "revoked",
+            globallyDeactivated: remainingActive === 0,
+          }),
+        ),
       },
     });
 
-    return NextResponse.json({ message: "User deactivated" });
+    return NextResponse.json({
+      message: "User removed from organization",
+      globallyDeactivated: remainingActive === 0,
+    });
   } catch (error) {
     console.error("DELETE /api/users/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -209,9 +209,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // Plan limit gate: check org's current beneficiary count against tier limit
-    const currentBeneficiaryCount = await prisma.user.count({
-      where: { organizationId, role: "beneficiary", isActive: true },
+    // Plan limit gate: count active beneficiary *memberships* in this org.
+    // We count memberships (not User rows) because at multi-org scale a
+    // beneficiary's User.organizationId may point at a different nonprofit
+    // while their active beneficiary membership lives here. Counting Users
+    // would silently undercount and let an org exceed its beneficiary cap.
+    const currentBeneficiaryCount = await prisma.organizationMembership.count({
+      where: { organizationId, role: "beneficiary", status: "active" },
     });
     const limitCheck = await checkLimitAccess(
       organizationId,
