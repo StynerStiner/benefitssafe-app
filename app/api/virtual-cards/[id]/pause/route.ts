@@ -32,6 +32,13 @@ export async function POST(
     });
     if (!card) return NextResponse.json({ error: "Card not found" }, { status: 404 });
 
+    // Resolve the connected Stripe account — cards live on it, not on the
+    // platform account.
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { stripeAccountId: true },
+    });
+
     await prisma.virtualCard.update({
       where: { id },
       data: { status: "FROZEN" },
@@ -41,11 +48,13 @@ export async function POST(
     // subsequent issuing_authorization.request events are declined by
     // Stripe itself before they even reach our webhook. Dev-mode mock
     // cards (ic_mock_*) cannot be updated at Stripe; we log and continue.
-    if (card.stripeCardId && !card.stripeCardId.startsWith("ic_mock_")) {
+    if (card.stripeCardId && !card.stripeCardId.startsWith("ic_mock_") && org?.stripeAccountId) {
       try {
-        await stripe.issuing.cards.update(card.stripeCardId, {
-          status: "inactive",
-        });
+        await stripe.issuing.cards.update(
+          card.stripeCardId,
+          { status: "inactive" },
+          { stripeAccount: org.stripeAccountId },
+        );
       } catch (stripeErr) {
         // The DB row is already FROZEN; a transient Stripe failure should
         // not roll back the user's intent. Log for manual reconciliation.

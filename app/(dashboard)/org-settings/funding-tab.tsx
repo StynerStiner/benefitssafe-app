@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { LinkBankDialog } from "./link-bank-dialog";
 
 interface StripeAccountStatus {
   connected: boolean;
@@ -30,11 +31,20 @@ interface StripeAccountStatus {
   error?: string;
 }
 
+interface LinkedBankStatus {
+  linked: boolean;
+  bankName?: string | null;
+  last4?: string | null;
+  accountType?: string | null;
+}
+
 const FundingTab = () => {
   const [account, setAccount] = useState<StripeAccountStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [fundingMethod, setFundingMethod] = useState<"direct" | "treasury">("direct");
+  const [linkedBank, setLinkedBank] = useState<LinkedBankStatus>({ linked: false });
+  const [linkBankOpen, setLinkBankOpen] = useState(false);
 
   const fetchAccountStatus = useCallback(() => {
     setLoading(true);
@@ -47,8 +57,18 @@ const FundingTab = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  const fetchLinkedBank = useCallback(() => {
+    fetch("/api/org/link-bank")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) setLinkedBank(data);
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     fetchAccountStatus();
+    fetchLinkedBank();
 
     // Check for OAuth redirect success
     const params = new URLSearchParams(window.location.search);
@@ -56,7 +76,7 @@ const FundingTab = () => {
       toast.success("Bank account connected successfully");
       window.history.replaceState({}, "", "/org-settings");
     }
-  }, [fetchAccountStatus]);
+  }, [fetchAccountStatus, fetchLinkedBank]);
 
   const handleConnect = async () => {
     setConnecting(true);
@@ -263,6 +283,90 @@ const FundingTab = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* ── Section 2.5: Funding Source Bank Account ── */}
+      <div className="col-span-12">
+        <Card className="card rounded-lg border-0">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                <BanknoteIcon className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Funding Source Bank Account</CardTitle>
+                <CardDescription>
+                  The external bank account that sends ACH deposits into your
+                  Treasury balance. This is what virtual cards ultimately draw from.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {!account?.connected || !account.onboardingComplete ? (
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+                <Lock className="w-5 h-5 text-neutral-400 shrink-0" />
+                <p className="text-sm text-neutral-500">
+                  Complete Stripe onboarding above before linking a funding bank account.
+                </p>
+              </div>
+            ) : linkedBank.linked ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                  <CheckCircle className="w-5 h-5 text-green-600 shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-green-700 dark:text-green-400">
+                      Funding Bank Linked
+                    </p>
+                    <p className="text-xs text-green-600 dark:text-green-500">
+                      {linkedBank.bankName ? `${linkedBank.bankName} ` : ""}
+                      {linkedBank.last4 ? `•• ${linkedBank.last4}` : "Ready for ACH"}
+                      {linkedBank.accountType ? ` (${linkedBank.accountType})` : ""}
+                    </p>
+                  </div>
+                  <Badge variant="success">Active</Badge>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setLinkBankOpen(true)}
+                  className="cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  Relink Bank Account
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+                  <Unlink className="w-5 h-5 text-yellow-600 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-400">
+                      No Funding Bank Linked
+                    </p>
+                    <p className="text-xs text-yellow-600 dark:text-yellow-500">
+                      Link your nonprofit's external bank so you can deposit funds
+                      into your Treasury balance for card spending.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => setLinkBankOpen(true)}
+                  className="cursor-pointer"
+                >
+                  <Landmark className="w-4 h-4" />
+                  Link Bank Account
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <LinkBankDialog
+        open={linkBankOpen}
+        onOpenChange={setLinkBankOpen}
+        onLinked={fetchLinkedBank}
+      />
 
       {/* ── Section 3: How It Works ── */}
       <div className="col-span-12">

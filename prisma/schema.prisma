@@ -28,9 +28,10 @@ model Organization {
   address         String?
   phone           String?
   website         String?
-  stripeAccountId            String?  // Stripe Connect account
-  stripeFinancialAccountId   String?  // Stripe Treasury Financial Account
-  bankConnectedAt            DateTime? // When Stripe Connect onboarding was completed
+  stripeAccountId               String?  // Stripe Connect account
+  stripeFinancialAccountId      String?  // Stripe Treasury Financial Account
+  stripeOriginPaymentMethodId   String?  // Connected-account PaymentMethod used as ACH origin for Treasury inbound transfers
+  bankConnectedAt               DateTime? // When Stripe Connect onboarding was completed
   plaidItemId                String?  // Plaid connection
   logoUrl         String?  // Organization logo image URL
 

@@ -38,6 +38,14 @@ export async function GET(
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
 
+    // Look up the connected Stripe account — ephemeral keys for Issuing
+    // cards must be created on the same connected account that owns the
+    // card, otherwise Stripe returns "No such issuing_card".
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { stripeAccountId: true },
+    });
+
     // Only the beneficiary who owns this card or an admin can reveal it
     if (role === "beneficiary" && card.beneficiaryId !== userId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -82,9 +90,13 @@ export async function GET(
     // PCI-compliant: create an ephemeral key so the front-end can use
     // Stripe.js to display the card details in a secure Stripe-hosted element.
     // We never pass the full card number or CVC through our server.
+    // Must be scoped to the connected account that owns the card.
     const ephemeralKey = await stripe.ephemeralKeys.create(
       { issuing_card: card.stripeCardId },
-      { apiVersion: "2023-10-16" },
+      {
+        apiVersion: "2023-10-16",
+        ...(org?.stripeAccountId ? { stripeAccount: org.stripeAccountId } : {}),
+      },
     );
 
     return NextResponse.json({

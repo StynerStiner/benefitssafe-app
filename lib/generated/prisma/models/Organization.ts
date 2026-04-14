@@ -36,6 +36,7 @@ export type OrganizationMinAggregateOutputType = {
   website: string | null
   stripeAccountId: string | null
   stripeFinancialAccountId: string | null
+  stripeOriginPaymentMethodId: string | null
   bankConnectedAt: Date | null
   plaidItemId: string | null
   logoUrl: string | null
@@ -58,6 +59,7 @@ export type OrganizationMaxAggregateOutputType = {
   website: string | null
   stripeAccountId: string | null
   stripeFinancialAccountId: string | null
+  stripeOriginPaymentMethodId: string | null
   bankConnectedAt: Date | null
   plaidItemId: string | null
   logoUrl: string | null
@@ -80,6 +82,7 @@ export type OrganizationCountAggregateOutputType = {
   website: number
   stripeAccountId: number
   stripeFinancialAccountId: number
+  stripeOriginPaymentMethodId: number
   bankConnectedAt: number
   plaidItemId: number
   logoUrl: number
@@ -104,6 +107,7 @@ export type OrganizationMinAggregateInputType = {
   website?: true
   stripeAccountId?: true
   stripeFinancialAccountId?: true
+  stripeOriginPaymentMethodId?: true
   bankConnectedAt?: true
   plaidItemId?: true
   logoUrl?: true
@@ -126,6 +130,7 @@ export type OrganizationMaxAggregateInputType = {
   website?: true
   stripeAccountId?: true
   stripeFinancialAccountId?: true
+  stripeOriginPaymentMethodId?: true
   bankConnectedAt?: true
   plaidItemId?: true
   logoUrl?: true
@@ -148,6 +153,7 @@ export type OrganizationCountAggregateInputType = {
   website?: true
   stripeAccountId?: true
   stripeFinancialAccountId?: true
+  stripeOriginPaymentMethodId?: true
   bankConnectedAt?: true
   plaidItemId?: true
   logoUrl?: true
@@ -243,6 +249,7 @@ export type OrganizationGroupByOutputType = {
   website: string | null
   stripeAccountId: string | null
   stripeFinancialAccountId: string | null
+  stripeOriginPaymentMethodId: string | null
   bankConnectedAt: Date | null
   plaidItemId: string | null
   logoUrl: string | null
@@ -286,6 +293,7 @@ export type OrganizationWhereInput = {
   website?: Prisma.StringNullableFilter<"Organization"> | string | null
   stripeAccountId?: Prisma.StringNullableFilter<"Organization"> | string | null
   stripeFinancialAccountId?: Prisma.StringNullableFilter<"Organization"> | string | null
+  stripeOriginPaymentMethodId?: Prisma.StringNullableFilter<"Organization"> | string | null
   bankConnectedAt?: Prisma.DateTimeNullableFilter<"Organization"> | Date | string | null
   plaidItemId?: Prisma.StringNullableFilter<"Organization"> | string | null
   logoUrl?: Prisma.StringNullableFilter<"Organization"> | string | null
@@ -325,6 +333,7 @@ export type OrganizationOrderByWithRelationInput = {
   website?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeFinancialAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripeOriginPaymentMethodId?: Prisma.SortOrderInput | Prisma.SortOrder
   bankConnectedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   plaidItemId?: Prisma.SortOrderInput | Prisma.SortOrder
   logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -367,6 +376,7 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   website?: Prisma.StringNullableFilter<"Organization"> | string | null
   stripeAccountId?: Prisma.StringNullableFilter<"Organization"> | string | null
   stripeFinancialAccountId?: Prisma.StringNullableFilter<"Organization"> | string | null
+  stripeOriginPaymentMethodId?: Prisma.StringNullableFilter<"Organization"> | string | null
   bankConnectedAt?: Prisma.DateTimeNullableFilter<"Organization"> | Date | string | null
   plaidItemId?: Prisma.StringNullableFilter<"Organization"> | string | null
   logoUrl?: Prisma.StringNullableFilter<"Organization"> | string | null
@@ -406,6 +416,7 @@ export type OrganizationOrderByWithAggregationInput = {
   website?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeFinancialAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripeOriginPaymentMethodId?: Prisma.SortOrderInput | Prisma.SortOrder
   bankConnectedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   plaidItemId?: Prisma.SortOrderInput | Prisma.SortOrder
   logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -434,6 +445,7 @@ export type OrganizationScalarWhereWithAggregatesInput = {
   website?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   stripeAccountId?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   stripeFinancialAccountId?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
+  stripeOriginPaymentMethodId?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   bankConnectedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Organization"> | Date | string | null
   plaidItemId?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   logoUrl?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
@@ -456,6 +468,7 @@ export type OrganizationCreateInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -495,6 +508,7 @@ export type OrganizationUncheckedCreateInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -534,6 +548,7 @@ export type OrganizationUpdateInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -573,6 +588,7 @@ export type OrganizationUncheckedUpdateInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -612,6 +628,7 @@ export type OrganizationCreateManyInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -634,6 +651,7 @@ export type OrganizationUpdateManyMutationInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -656,6 +674,7 @@ export type OrganizationUncheckedUpdateManyInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -678,6 +697,7 @@ export type OrganizationCountOrderByAggregateInput = {
   website?: Prisma.SortOrder
   stripeAccountId?: Prisma.SortOrder
   stripeFinancialAccountId?: Prisma.SortOrder
+  stripeOriginPaymentMethodId?: Prisma.SortOrder
   bankConnectedAt?: Prisma.SortOrder
   plaidItemId?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
@@ -700,6 +720,7 @@ export type OrganizationMaxOrderByAggregateInput = {
   website?: Prisma.SortOrder
   stripeAccountId?: Prisma.SortOrder
   stripeFinancialAccountId?: Prisma.SortOrder
+  stripeOriginPaymentMethodId?: Prisma.SortOrder
   bankConnectedAt?: Prisma.SortOrder
   plaidItemId?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
@@ -722,6 +743,7 @@ export type OrganizationMinOrderByAggregateInput = {
   website?: Prisma.SortOrder
   stripeAccountId?: Prisma.SortOrder
   stripeFinancialAccountId?: Prisma.SortOrder
+  stripeOriginPaymentMethodId?: Prisma.SortOrder
   bankConnectedAt?: Prisma.SortOrder
   plaidItemId?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
@@ -1007,6 +1029,7 @@ export type OrganizationCreateWithoutUsersInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -1045,6 +1068,7 @@ export type OrganizationUncheckedCreateWithoutUsersInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -1099,6 +1123,7 @@ export type OrganizationUpdateWithoutUsersInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1137,6 +1162,7 @@ export type OrganizationUncheckedUpdateWithoutUsersInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1175,6 +1201,7 @@ export type OrganizationCreateWithoutGrantsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -1213,6 +1240,7 @@ export type OrganizationUncheckedCreateWithoutGrantsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -1267,6 +1295,7 @@ export type OrganizationUpdateWithoutGrantsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1305,6 +1334,7 @@ export type OrganizationUncheckedUpdateWithoutGrantsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1343,6 +1373,7 @@ export type OrganizationCreateWithoutBudgetCategoriesInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -1381,6 +1412,7 @@ export type OrganizationUncheckedCreateWithoutBudgetCategoriesInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -1435,6 +1467,7 @@ export type OrganizationUpdateWithoutBudgetCategoriesInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1473,6 +1506,7 @@ export type OrganizationUncheckedUpdateWithoutBudgetCategoriesInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1511,6 +1545,7 @@ export type OrganizationCreateWithoutVendorsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -1549,6 +1584,7 @@ export type OrganizationUncheckedCreateWithoutVendorsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -1603,6 +1639,7 @@ export type OrganizationUpdateWithoutVendorsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1641,6 +1678,7 @@ export type OrganizationUncheckedUpdateWithoutVendorsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1679,6 +1717,7 @@ export type OrganizationCreateWithoutSubscriptionsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -1717,6 +1756,7 @@ export type OrganizationUncheckedCreateWithoutSubscriptionsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -1771,6 +1811,7 @@ export type OrganizationUpdateWithoutSubscriptionsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1809,6 +1850,7 @@ export type OrganizationUncheckedUpdateWithoutSubscriptionsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1847,6 +1889,7 @@ export type OrganizationCreateWithoutCardsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -1885,6 +1928,7 @@ export type OrganizationUncheckedCreateWithoutCardsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -1939,6 +1983,7 @@ export type OrganizationUpdateWithoutCardsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1977,6 +2022,7 @@ export type OrganizationUncheckedUpdateWithoutCardsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2015,6 +2061,7 @@ export type OrganizationCreateWithoutCardholderEligibilitiesInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -2053,6 +2100,7 @@ export type OrganizationUncheckedCreateWithoutCardholderEligibilitiesInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -2107,6 +2155,7 @@ export type OrganizationUpdateWithoutCardholderEligibilitiesInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2145,6 +2194,7 @@ export type OrganizationUncheckedUpdateWithoutCardholderEligibilitiesInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2183,6 +2233,7 @@ export type OrganizationCreateWithoutApprovalsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -2221,6 +2272,7 @@ export type OrganizationUncheckedCreateWithoutApprovalsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -2275,6 +2327,7 @@ export type OrganizationUpdateWithoutApprovalsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2313,6 +2366,7 @@ export type OrganizationUncheckedUpdateWithoutApprovalsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2351,6 +2405,7 @@ export type OrganizationCreateWithoutPoliciesInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -2389,6 +2444,7 @@ export type OrganizationUncheckedCreateWithoutPoliciesInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -2443,6 +2499,7 @@ export type OrganizationUpdateWithoutPoliciesInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2481,6 +2538,7 @@ export type OrganizationUncheckedUpdateWithoutPoliciesInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2519,6 +2577,7 @@ export type OrganizationCreateWithoutPromoRedemptionsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -2557,6 +2616,7 @@ export type OrganizationUncheckedCreateWithoutPromoRedemptionsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -2611,6 +2671,7 @@ export type OrganizationUpdateWithoutPromoRedemptionsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2649,6 +2710,7 @@ export type OrganizationUncheckedUpdateWithoutPromoRedemptionsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2687,6 +2749,7 @@ export type OrganizationCreateWithoutCalendarEventsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -2725,6 +2788,7 @@ export type OrganizationUncheckedCreateWithoutCalendarEventsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -2779,6 +2843,7 @@ export type OrganizationUpdateWithoutCalendarEventsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2817,6 +2882,7 @@ export type OrganizationUncheckedUpdateWithoutCalendarEventsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2855,6 +2921,7 @@ export type OrganizationCreateWithoutMembershipsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -2893,6 +2960,7 @@ export type OrganizationUncheckedCreateWithoutMembershipsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -2947,6 +3015,7 @@ export type OrganizationUpdateWithoutMembershipsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2985,6 +3054,7 @@ export type OrganizationUncheckedUpdateWithoutMembershipsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3023,6 +3093,7 @@ export type OrganizationCreateWithoutIntegrationsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -3061,6 +3132,7 @@ export type OrganizationUncheckedCreateWithoutIntegrationsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -3115,6 +3187,7 @@ export type OrganizationUpdateWithoutIntegrationsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3153,6 +3226,7 @@ export type OrganizationUncheckedUpdateWithoutIntegrationsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3191,6 +3265,7 @@ export type OrganizationCreateWithoutWorkflowTriggersInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -3229,6 +3304,7 @@ export type OrganizationUncheckedCreateWithoutWorkflowTriggersInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -3283,6 +3359,7 @@ export type OrganizationUpdateWithoutWorkflowTriggersInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3321,6 +3398,7 @@ export type OrganizationUncheckedUpdateWithoutWorkflowTriggersInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3359,6 +3437,7 @@ export type OrganizationCreateWithoutWorkflowLogsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -3397,6 +3476,7 @@ export type OrganizationUncheckedCreateWithoutWorkflowLogsInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -3451,6 +3531,7 @@ export type OrganizationUpdateWithoutWorkflowLogsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3489,6 +3570,7 @@ export type OrganizationUncheckedUpdateWithoutWorkflowLogsInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3527,6 +3609,7 @@ export type OrganizationCreateWithoutBillingSubscriptionInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -3565,6 +3648,7 @@ export type OrganizationUncheckedCreateWithoutBillingSubscriptionInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -3619,6 +3703,7 @@ export type OrganizationUpdateWithoutBillingSubscriptionInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3657,6 +3742,7 @@ export type OrganizationUncheckedUpdateWithoutBillingSubscriptionInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3695,6 +3781,7 @@ export type OrganizationCreateWithoutUsageCountersInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -3733,6 +3820,7 @@ export type OrganizationUncheckedCreateWithoutUsageCountersInput = {
   website?: string | null
   stripeAccountId?: string | null
   stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
@@ -3787,6 +3875,7 @@ export type OrganizationUpdateWithoutUsageCountersInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3825,6 +3914,7 @@ export type OrganizationUncheckedUpdateWithoutUsageCountersInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4029,6 +4119,7 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   website?: boolean
   stripeAccountId?: boolean
   stripeFinancialAccountId?: boolean
+  stripeOriginPaymentMethodId?: boolean
   bankConnectedAt?: boolean
   plaidItemId?: boolean
   logoUrl?: boolean
@@ -4069,6 +4160,7 @@ export type OrganizationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   website?: boolean
   stripeAccountId?: boolean
   stripeFinancialAccountId?: boolean
+  stripeOriginPaymentMethodId?: boolean
   bankConnectedAt?: boolean
   plaidItemId?: boolean
   logoUrl?: boolean
@@ -4091,6 +4183,7 @@ export type OrganizationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   website?: boolean
   stripeAccountId?: boolean
   stripeFinancialAccountId?: boolean
+  stripeOriginPaymentMethodId?: boolean
   bankConnectedAt?: boolean
   plaidItemId?: boolean
   logoUrl?: boolean
@@ -4113,6 +4206,7 @@ export type OrganizationSelectScalar = {
   website?: boolean
   stripeAccountId?: boolean
   stripeFinancialAccountId?: boolean
+  stripeOriginPaymentMethodId?: boolean
   bankConnectedAt?: boolean
   plaidItemId?: boolean
   logoUrl?: boolean
@@ -4123,7 +4217,7 @@ export type OrganizationSelectScalar = {
   updatedAt?: boolean
 }
 
-export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "ein" | "orgCode" | "isPlatformOrg" | "einVerified" | "address" | "phone" | "website" | "stripeAccountId" | "stripeFinancialAccountId" | "bankConnectedAt" | "plaidItemId" | "logoUrl" | "trialStartDate" | "trialEndDate" | "subscriptionStatus" | "createdAt" | "updatedAt", ExtArgs["result"]["organization"]>
+export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "ein" | "orgCode" | "isPlatformOrg" | "einVerified" | "address" | "phone" | "website" | "stripeAccountId" | "stripeFinancialAccountId" | "stripeOriginPaymentMethodId" | "bankConnectedAt" | "plaidItemId" | "logoUrl" | "trialStartDate" | "trialEndDate" | "subscriptionStatus" | "createdAt" | "updatedAt", ExtArgs["result"]["organization"]>
 export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   users?: boolean | Prisma.Organization$usersArgs<ExtArgs>
   grants?: boolean | Prisma.Organization$grantsArgs<ExtArgs>
@@ -4180,6 +4274,7 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     website: string | null
     stripeAccountId: string | null
     stripeFinancialAccountId: string | null
+    stripeOriginPaymentMethodId: string | null
     bankConnectedAt: Date | null
     plaidItemId: string | null
     logoUrl: string | null
@@ -4639,6 +4734,7 @@ export interface OrganizationFieldRefs {
   readonly website: Prisma.FieldRef<"Organization", 'String'>
   readonly stripeAccountId: Prisma.FieldRef<"Organization", 'String'>
   readonly stripeFinancialAccountId: Prisma.FieldRef<"Organization", 'String'>
+  readonly stripeOriginPaymentMethodId: Prisma.FieldRef<"Organization", 'String'>
   readonly bankConnectedAt: Prisma.FieldRef<"Organization", 'DateTime'>
   readonly plaidItemId: Prisma.FieldRef<"Organization", 'String'>
   readonly logoUrl: Prisma.FieldRef<"Organization", 'String'>

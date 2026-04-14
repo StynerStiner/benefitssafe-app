@@ -154,18 +154,12 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const body = await request.json();
-    const { amount, bankPaymentMethodId } = body;
+    const { amount } = body;
+    const requestedPaymentMethodId = typeof body?.bankPaymentMethodId === "string" ? body.bankPaymentMethodId : null;
 
     if (!amount || typeof amount !== "number" || amount <= 0) {
       return NextResponse.json(
         { error: "Amount must be a positive number (in dollars)" },
-        { status: 400 },
-      );
-    }
-
-    if (!bankPaymentMethodId || typeof bankPaymentMethodId !== "string") {
-      return NextResponse.json(
-        { error: "Bank payment method ID is required" },
         { status: 400 },
       );
     }
@@ -176,12 +170,28 @@ export async function POST(request: Request): Promise<NextResponse> {
         id: true,
         stripeAccountId: true,
         stripeFinancialAccountId: true,
+        stripeOriginPaymentMethodId: true,
       },
     });
 
     if (!organization?.stripeAccountId || !organization?.stripeFinancialAccountId) {
       return NextResponse.json(
         { error: "Organization must complete Stripe onboarding first" },
+        { status: 400 },
+      );
+    }
+
+    // Default to the org's stored origin PaymentMethod (linked via
+    // /api/org/link-bank) so the admin doesn't have to re-enter bank
+    // details every time they fund. Still accept an explicit override
+    // from the request body for ad-hoc usage.
+    const bankPaymentMethodId = requestedPaymentMethodId || organization.stripeOriginPaymentMethodId;
+    if (!bankPaymentMethodId) {
+      return NextResponse.json(
+        {
+          error: "No funding bank account on file. Link a bank account in Organization Settings > Funding first.",
+          href: "/org-settings",
+        },
         { status: 400 },
       );
     }

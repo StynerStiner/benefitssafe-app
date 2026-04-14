@@ -61,13 +61,40 @@ export async function POST(
     // Gate: organization must have a connected bank account to issue cards
     const org = await prisma.organization.findUnique({
       where: { id: organizationId },
-      select: { stripeAccountId: true },
+      select: { stripeAccountId: true, stripeFinancialAccountId: true },
     });
     if (!org?.stripeAccountId) {
       return NextResponse.json(
         { error: "Connect your bank account before issuing cards. Go to Organization Settings > Funding to connect." },
         { status: 400 },
       );
+    }
+
+    // Balance precheck: nonprofit's Treasury Financial Account must have funds.
+    // Cards created on the connected account draw from this balance — Stripe
+    // will decline at authorization time if it's empty, but a clean 400 with
+    // guidance is a much better user experience than a silent merchant decline.
+    if (org.stripeFinancialAccountId && !org.stripeFinancialAccountId.startsWith("fa_mock_")) {
+      try {
+        const fa = await stripe.treasury.financialAccounts.retrieve(
+          org.stripeFinancialAccountId,
+          { stripeAccount: org.stripeAccountId },
+        );
+        const availableCash = fa.balance?.cash?.usd || 0;
+        if (availableCash <= 0) {
+          return NextResponse.json(
+            {
+              error: "Your organization's Treasury account has no funds. Add funds before issuing cards.",
+              href: "/org-settings",
+            },
+            { status: 400 },
+          );
+        }
+      } catch (balanceErr) {
+        // Don't block issuance on balance check failure — Stripe will decline
+        // at authorization if the balance is actually zero. Log for visibility.
+        console.error("[grants/issue-card] Balance precheck failed:", balanceErr);
+      }
     }
 
     // Plan limit gate: check this month's card issuance against tier limit
@@ -254,19 +281,26 @@ export async function POST(
     try {
       let cardholder;
 
-      // Check if beneficiary already has a cardholder stored
+      // Check if beneficiary already has a cardholder stored WITHIN THIS ORG.
+      // Scope by organizationId because cardholders live on the connected
+      // account — a cardholder from Org A does not exist on Org B's Stripe
+      // account, so we must KYC per-org.
       const existingCard = await prisma.virtualCard.findFirst({
         where: {
           beneficiaryId,
+          organizationId,
           stripeCardId: { not: { startsWith: "ic_mock_" } },
         },
         select: { stripeCardId: true },
       });
 
       if (existingCard) {
-        // Retrieve the cardholder from an existing card
+        // Retrieve the cardholder from an existing card on the connected account.
         try {
-          const existingStripeCard = await stripe.issuing.cards.retrieve(existingCard.stripeCardId);
+          const existingStripeCard = await stripe.issuing.cards.retrieve(
+            existingCard.stripeCardId,
+            { stripeAccount: org.stripeAccountId },
+          );
           cardholder = existingStripeCard.cardholder;
         } catch {
           // Fall through to create new cardholder
@@ -303,14 +337,16 @@ export async function POST(
             beneficiaryId,
             platform: "benefitssafe",
           },
-        });
+        }, { stripeAccount: org.stripeAccountId });
         cardholder = cardholderResult;
       }
 
       // Calculate spending limit from grant remaining amount
       const remainingCents = Math.round(parseFloat(grant.remainingAmount.toString()) * 100);
 
-      // Create a virtual card via Stripe Issuing
+      // Create a virtual card via Stripe Issuing on the nonprofit's connected
+      // account so the card draws from their own Treasury Financial Account,
+      // not the platform's.
       stripeCard = await stripe.issuing.cards.create({
         cardholder: typeof cardholder === "string" ? cardholder : cardholder.id,
         type: "virtual",
@@ -331,7 +367,7 @@ export async function POST(
           beneficiaryId,
           platform: "benefitssafe",
         },
-      });
+      }, { stripeAccount: org.stripeAccountId });
     } catch (stripeError) {
       console.error("Stripe card creation error:", stripeError);
       // Only allow mock cards in local development — NEVER in production

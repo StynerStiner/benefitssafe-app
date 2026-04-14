@@ -32,6 +32,12 @@ export async function POST(
     });
     if (!card) return NextResponse.json({ error: "Card not found" }, { status: 404 });
 
+    // Resolve the connected Stripe account — cards live on it.
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { stripeAccountId: true },
+    });
+
     await prisma.virtualCard.update({
       where: { id },
       data: { status: "CANCELLED" },
@@ -39,11 +45,13 @@ export async function POST(
 
     // Cancel the card at Stripe so it can no longer authorize anywhere.
     // Dev-mode mock cards (ic_mock_*) don't exist at Stripe; skip them.
-    if (card.stripeCardId && !card.stripeCardId.startsWith("ic_mock_")) {
+    if (card.stripeCardId && !card.stripeCardId.startsWith("ic_mock_") && org?.stripeAccountId) {
       try {
-        await stripe.issuing.cards.update(card.stripeCardId, {
-          status: "canceled",
-        });
+        await stripe.issuing.cards.update(
+          card.stripeCardId,
+          { status: "canceled" },
+          { stripeAccount: org.stripeAccountId },
+        );
       } catch (stripeErr) {
         console.error(
           "[close] Stripe card cancellation failed:",
