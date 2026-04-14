@@ -2697,6 +2697,7 @@ export const OrganizationScalarFieldEnum = {
   name: 'name',
   ein: 'ein',
   orgCode: 'orgCode',
+  isPlatformOrg: 'isPlatformOrg',
   einVerified: 'einVerified',
   address: 'address',
   phone: 'phone',

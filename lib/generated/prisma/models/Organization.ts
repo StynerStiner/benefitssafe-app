@@ -29,6 +29,7 @@ export type OrganizationMinAggregateOutputType = {
   name: string | null
   ein: string | null
   orgCode: string | null
+  isPlatformOrg: boolean | null
   einVerified: boolean | null
   address: string | null
   phone: string | null
@@ -50,6 +51,7 @@ export type OrganizationMaxAggregateOutputType = {
   name: string | null
   ein: string | null
   orgCode: string | null
+  isPlatformOrg: boolean | null
   einVerified: boolean | null
   address: string | null
   phone: string | null
@@ -71,6 +73,7 @@ export type OrganizationCountAggregateOutputType = {
   name: number
   ein: number
   orgCode: number
+  isPlatformOrg: number
   einVerified: number
   address: number
   phone: number
@@ -94,6 +97,7 @@ export type OrganizationMinAggregateInputType = {
   name?: true
   ein?: true
   orgCode?: true
+  isPlatformOrg?: true
   einVerified?: true
   address?: true
   phone?: true
@@ -115,6 +119,7 @@ export type OrganizationMaxAggregateInputType = {
   name?: true
   ein?: true
   orgCode?: true
+  isPlatformOrg?: true
   einVerified?: true
   address?: true
   phone?: true
@@ -136,6 +141,7 @@ export type OrganizationCountAggregateInputType = {
   name?: true
   ein?: true
   orgCode?: true
+  isPlatformOrg?: true
   einVerified?: true
   address?: true
   phone?: true
@@ -230,6 +236,7 @@ export type OrganizationGroupByOutputType = {
   name: string
   ein: string | null
   orgCode: string | null
+  isPlatformOrg: boolean
   einVerified: boolean
   address: string | null
   phone: string | null
@@ -272,6 +279,7 @@ export type OrganizationWhereInput = {
   name?: Prisma.StringFilter<"Organization"> | string
   ein?: Prisma.StringNullableFilter<"Organization"> | string | null
   orgCode?: Prisma.StringNullableFilter<"Organization"> | string | null
+  isPlatformOrg?: Prisma.BoolFilter<"Organization"> | boolean
   einVerified?: Prisma.BoolFilter<"Organization"> | boolean
   address?: Prisma.StringNullableFilter<"Organization"> | string | null
   phone?: Prisma.StringNullableFilter<"Organization"> | string | null
@@ -310,6 +318,7 @@ export type OrganizationOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   ein?: Prisma.SortOrderInput | Prisma.SortOrder
   orgCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  isPlatformOrg?: Prisma.SortOrder
   einVerified?: Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -351,6 +360,7 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.OrganizationWhereInput | Prisma.OrganizationWhereInput[]
   name?: Prisma.StringFilter<"Organization"> | string
   ein?: Prisma.StringNullableFilter<"Organization"> | string | null
+  isPlatformOrg?: Prisma.BoolFilter<"Organization"> | boolean
   einVerified?: Prisma.BoolFilter<"Organization"> | boolean
   address?: Prisma.StringNullableFilter<"Organization"> | string | null
   phone?: Prisma.StringNullableFilter<"Organization"> | string | null
@@ -389,6 +399,7 @@ export type OrganizationOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   ein?: Prisma.SortOrderInput | Prisma.SortOrder
   orgCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  isPlatformOrg?: Prisma.SortOrder
   einVerified?: Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -416,6 +427,7 @@ export type OrganizationScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"Organization"> | string
   ein?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   orgCode?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
+  isPlatformOrg?: Prisma.BoolWithAggregatesFilter<"Organization"> | boolean
   einVerified?: Prisma.BoolWithAggregatesFilter<"Organization"> | boolean
   address?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   phone?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
@@ -437,6 +449,7 @@ export type OrganizationCreateInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -475,6 +488,7 @@ export type OrganizationUncheckedCreateInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -513,6 +527,7 @@ export type OrganizationUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -551,6 +566,7 @@ export type OrganizationUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -589,6 +605,7 @@ export type OrganizationCreateManyInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -610,6 +627,7 @@ export type OrganizationUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -631,6 +649,7 @@ export type OrganizationUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -652,6 +671,7 @@ export type OrganizationCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   ein?: Prisma.SortOrder
   orgCode?: Prisma.SortOrder
+  isPlatformOrg?: Prisma.SortOrder
   einVerified?: Prisma.SortOrder
   address?: Prisma.SortOrder
   phone?: Prisma.SortOrder
@@ -673,6 +693,7 @@ export type OrganizationMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   ein?: Prisma.SortOrder
   orgCode?: Prisma.SortOrder
+  isPlatformOrg?: Prisma.SortOrder
   einVerified?: Prisma.SortOrder
   address?: Prisma.SortOrder
   phone?: Prisma.SortOrder
@@ -694,6 +715,7 @@ export type OrganizationMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   ein?: Prisma.SortOrder
   orgCode?: Prisma.SortOrder
+  isPlatformOrg?: Prisma.SortOrder
   einVerified?: Prisma.SortOrder
   address?: Prisma.SortOrder
   phone?: Prisma.SortOrder
@@ -978,6 +1000,7 @@ export type OrganizationCreateWithoutUsersInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -1015,6 +1038,7 @@ export type OrganizationUncheckedCreateWithoutUsersInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -1068,6 +1092,7 @@ export type OrganizationUpdateWithoutUsersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1105,6 +1130,7 @@ export type OrganizationUncheckedUpdateWithoutUsersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1142,6 +1168,7 @@ export type OrganizationCreateWithoutGrantsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -1179,6 +1206,7 @@ export type OrganizationUncheckedCreateWithoutGrantsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -1232,6 +1260,7 @@ export type OrganizationUpdateWithoutGrantsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1269,6 +1298,7 @@ export type OrganizationUncheckedUpdateWithoutGrantsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1306,6 +1336,7 @@ export type OrganizationCreateWithoutBudgetCategoriesInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -1343,6 +1374,7 @@ export type OrganizationUncheckedCreateWithoutBudgetCategoriesInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -1396,6 +1428,7 @@ export type OrganizationUpdateWithoutBudgetCategoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1433,6 +1466,7 @@ export type OrganizationUncheckedUpdateWithoutBudgetCategoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1470,6 +1504,7 @@ export type OrganizationCreateWithoutVendorsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -1507,6 +1542,7 @@ export type OrganizationUncheckedCreateWithoutVendorsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -1560,6 +1596,7 @@ export type OrganizationUpdateWithoutVendorsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1597,6 +1634,7 @@ export type OrganizationUncheckedUpdateWithoutVendorsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1634,6 +1672,7 @@ export type OrganizationCreateWithoutSubscriptionsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -1671,6 +1710,7 @@ export type OrganizationUncheckedCreateWithoutSubscriptionsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -1724,6 +1764,7 @@ export type OrganizationUpdateWithoutSubscriptionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1761,6 +1802,7 @@ export type OrganizationUncheckedUpdateWithoutSubscriptionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1798,6 +1840,7 @@ export type OrganizationCreateWithoutCardsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -1835,6 +1878,7 @@ export type OrganizationUncheckedCreateWithoutCardsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -1888,6 +1932,7 @@ export type OrganizationUpdateWithoutCardsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1925,6 +1970,7 @@ export type OrganizationUncheckedUpdateWithoutCardsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1962,6 +2008,7 @@ export type OrganizationCreateWithoutCardholderEligibilitiesInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -1999,6 +2046,7 @@ export type OrganizationUncheckedCreateWithoutCardholderEligibilitiesInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -2052,6 +2100,7 @@ export type OrganizationUpdateWithoutCardholderEligibilitiesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2089,6 +2138,7 @@ export type OrganizationUncheckedUpdateWithoutCardholderEligibilitiesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2126,6 +2176,7 @@ export type OrganizationCreateWithoutApprovalsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -2163,6 +2214,7 @@ export type OrganizationUncheckedCreateWithoutApprovalsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -2216,6 +2268,7 @@ export type OrganizationUpdateWithoutApprovalsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2253,6 +2306,7 @@ export type OrganizationUncheckedUpdateWithoutApprovalsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2290,6 +2344,7 @@ export type OrganizationCreateWithoutPoliciesInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -2327,6 +2382,7 @@ export type OrganizationUncheckedCreateWithoutPoliciesInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -2380,6 +2436,7 @@ export type OrganizationUpdateWithoutPoliciesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2417,6 +2474,7 @@ export type OrganizationUncheckedUpdateWithoutPoliciesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2454,6 +2512,7 @@ export type OrganizationCreateWithoutPromoRedemptionsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -2491,6 +2550,7 @@ export type OrganizationUncheckedCreateWithoutPromoRedemptionsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -2544,6 +2604,7 @@ export type OrganizationUpdateWithoutPromoRedemptionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2581,6 +2642,7 @@ export type OrganizationUncheckedUpdateWithoutPromoRedemptionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2618,6 +2680,7 @@ export type OrganizationCreateWithoutCalendarEventsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -2655,6 +2718,7 @@ export type OrganizationUncheckedCreateWithoutCalendarEventsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -2708,6 +2772,7 @@ export type OrganizationUpdateWithoutCalendarEventsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2745,6 +2810,7 @@ export type OrganizationUncheckedUpdateWithoutCalendarEventsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2782,6 +2848,7 @@ export type OrganizationCreateWithoutMembershipsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -2819,6 +2886,7 @@ export type OrganizationUncheckedCreateWithoutMembershipsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -2872,6 +2940,7 @@ export type OrganizationUpdateWithoutMembershipsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2909,6 +2978,7 @@ export type OrganizationUncheckedUpdateWithoutMembershipsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2946,6 +3016,7 @@ export type OrganizationCreateWithoutIntegrationsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -2983,6 +3054,7 @@ export type OrganizationUncheckedCreateWithoutIntegrationsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -3036,6 +3108,7 @@ export type OrganizationUpdateWithoutIntegrationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3073,6 +3146,7 @@ export type OrganizationUncheckedUpdateWithoutIntegrationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3110,6 +3184,7 @@ export type OrganizationCreateWithoutWorkflowTriggersInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -3147,6 +3222,7 @@ export type OrganizationUncheckedCreateWithoutWorkflowTriggersInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -3200,6 +3276,7 @@ export type OrganizationUpdateWithoutWorkflowTriggersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3237,6 +3314,7 @@ export type OrganizationUncheckedUpdateWithoutWorkflowTriggersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3274,6 +3352,7 @@ export type OrganizationCreateWithoutWorkflowLogsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -3311,6 +3390,7 @@ export type OrganizationUncheckedCreateWithoutWorkflowLogsInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -3364,6 +3444,7 @@ export type OrganizationUpdateWithoutWorkflowLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3401,6 +3482,7 @@ export type OrganizationUncheckedUpdateWithoutWorkflowLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3438,6 +3520,7 @@ export type OrganizationCreateWithoutBillingSubscriptionInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -3475,6 +3558,7 @@ export type OrganizationUncheckedCreateWithoutBillingSubscriptionInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -3528,6 +3612,7 @@ export type OrganizationUpdateWithoutBillingSubscriptionInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3565,6 +3650,7 @@ export type OrganizationUncheckedUpdateWithoutBillingSubscriptionInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3602,6 +3688,7 @@ export type OrganizationCreateWithoutUsageCountersInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -3639,6 +3726,7 @@ export type OrganizationUncheckedCreateWithoutUsageCountersInput = {
   name: string
   ein?: string | null
   orgCode?: string | null
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: string | null
   phone?: string | null
@@ -3692,6 +3780,7 @@ export type OrganizationUpdateWithoutUsageCountersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3729,6 +3818,7 @@ export type OrganizationUncheckedUpdateWithoutUsageCountersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
   einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3932,6 +4022,7 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   name?: boolean
   ein?: boolean
   orgCode?: boolean
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: boolean
   phone?: boolean
@@ -3971,6 +4062,7 @@ export type OrganizationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   name?: boolean
   ein?: boolean
   orgCode?: boolean
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: boolean
   phone?: boolean
@@ -3992,6 +4084,7 @@ export type OrganizationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   name?: boolean
   ein?: boolean
   orgCode?: boolean
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: boolean
   phone?: boolean
@@ -4013,6 +4106,7 @@ export type OrganizationSelectScalar = {
   name?: boolean
   ein?: boolean
   orgCode?: boolean
+  isPlatformOrg?: boolean
   einVerified?: boolean
   address?: boolean
   phone?: boolean
@@ -4029,7 +4123,7 @@ export type OrganizationSelectScalar = {
   updatedAt?: boolean
 }
 
-export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "ein" | "orgCode" | "einVerified" | "address" | "phone" | "website" | "stripeAccountId" | "stripeFinancialAccountId" | "bankConnectedAt" | "plaidItemId" | "logoUrl" | "trialStartDate" | "trialEndDate" | "subscriptionStatus" | "createdAt" | "updatedAt", ExtArgs["result"]["organization"]>
+export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "ein" | "orgCode" | "isPlatformOrg" | "einVerified" | "address" | "phone" | "website" | "stripeAccountId" | "stripeFinancialAccountId" | "bankConnectedAt" | "plaidItemId" | "logoUrl" | "trialStartDate" | "trialEndDate" | "subscriptionStatus" | "createdAt" | "updatedAt", ExtArgs["result"]["organization"]>
 export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   users?: boolean | Prisma.Organization$usersArgs<ExtArgs>
   grants?: boolean | Prisma.Organization$grantsArgs<ExtArgs>
@@ -4079,6 +4173,7 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     name: string
     ein: string | null
     orgCode: string | null
+    isPlatformOrg: boolean
     einVerified: boolean
     address: string | null
     phone: string | null
@@ -4537,6 +4632,7 @@ export interface OrganizationFieldRefs {
   readonly name: Prisma.FieldRef<"Organization", 'String'>
   readonly ein: Prisma.FieldRef<"Organization", 'String'>
   readonly orgCode: Prisma.FieldRef<"Organization", 'String'>
+  readonly isPlatformOrg: Prisma.FieldRef<"Organization", 'Boolean'>
   readonly einVerified: Prisma.FieldRef<"Organization", 'Boolean'>
   readonly address: Prisma.FieldRef<"Organization", 'String'>
   readonly phone: Prisma.FieldRef<"Organization", 'String'>

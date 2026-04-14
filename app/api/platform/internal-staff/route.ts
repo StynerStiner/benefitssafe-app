@@ -13,11 +13,13 @@
 // nonprofit_admin. Every other role (beneficiary, vendor, etc.) goes
 // through /api/invite or /api/beneficiaries — never this route.
 //
-// Org scoping note: the new staff member is assigned to the inviting
-// platform_admin's organizationId. The operational invariant is that all
-// platform_admin users live in the BenefitsSafe platform org, so all
-// internal staff end up in that same org. This invariant is documented
-// in CLAUDE.md and is the responsibility of platform_admin seeding.
+// Org scoping: the new staff member is assigned to the Organization row
+// flagged Organization.isPlatformOrg = true. The platform org is a
+// schema-enforced invariant — there is exactly one row, and internal staff
+// are always created under it regardless of which platform org the
+// inviting admin happens to sit in. If a platform_admin is found outside
+// the platform org we log a warning so it gets fixed, but we still create
+// the new staff member under the canonical platform org.
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
@@ -40,11 +42,21 @@ import { z } from "zod";
 
 const INVITE_EXPIRY_DAYS = 7;
 
+// Resolve the canonical platform Organization row. There is exactly one
+// (Organization.isPlatformOrg = true). Returns null if missing — callers
+// should treat that as a hard configuration error.
+async function getPlatformOrg(): Promise<{ id: string; name: string } | null> {
+  return prisma.organization.findFirst({
+    where: { isPlatformOrg: true },
+    select: { id: true, name: true },
+  });
+}
+
 // GET /api/platform/internal-staff
 //
-// Lists all internal staff platform-wide. Cross-org by design: a
-// platform_admin must be able to see and manage every other internal
-// staff member regardless of which platform org they sit in.
+// Lists internal staff that live in the platform org. We deliberately do
+// NOT show staff scattered across tenant orgs — those represent broken
+// state and should be surfaced separately (TODO: a "drift" report).
 export async function GET(request: Request) {
   try {
     const session = await auth();
@@ -53,6 +65,14 @@ export async function GET(request: Request) {
     }
     if (session.user.role !== "platform_admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const platformOrg = await getPlatformOrg();
+    if (!platformOrg) {
+      return NextResponse.json(
+        { error: "Platform organization not configured" },
+        { status: 500 },
+      );
     }
 
     const { searchParams } = new URL(request.url);
@@ -64,7 +84,10 @@ export async function GET(request: Request) {
     const roleFilter = searchParams.get("role");
     const search = searchParams.get("search")?.trim() || "";
 
+    // Scope strictly to the platform org so a stray platform_admin seeded
+    // into a tenant nonprofit never appears in this list.
     const where: Record<string, unknown> = {
+      organizationId: platformOrg.id,
       role: { in: PLATFORM_INVITABLE_ROLES as readonly UserRole[] },
     };
 
@@ -195,21 +218,32 @@ export async function POST(request: Request) {
       );
     }
 
-    // The new staff member inherits the inviting platform_admin's org.
-    // Per the platform-org invariant, this should be the BenefitsSafe
-    // platform organization.
-    const organizationId = session.user.organizationId;
-
-    const org = await prisma.organization.findUnique({
-      where: { id: organizationId },
-      select: { name: true },
+    // Resolve the canonical BenefitsSafe platform org. We deliberately do
+    // NOT trust the inviting admin's organizationId — a platform_admin
+    // accidentally seeded into a tenant nonprofit must never be allowed
+    // to manufacture more internal staff under that nonprofit.
+    const platformOrg = await prisma.organization.findFirst({
+      where: { isPlatformOrg: true },
+      select: { id: true, name: true },
     });
-    if (!org) {
+    if (!platformOrg) {
       return NextResponse.json(
-        { error: "Inviting admin's organization not found" },
+        { error: "Platform organization not configured" },
         { status: 500 },
       );
     }
+
+    // Invariant warning: log (don't block) when a platform_admin lives
+    // outside the canonical platform org. Surfaces drift without breaking
+    // the invite flow.
+    if (session.user.organizationId !== platformOrg.id) {
+      console.warn(
+        `[internal-staff] platform_admin ${session.user.id} is in org ${session.user.organizationId} but platform org is ${platformOrg.id}. Invite will still be created in the platform org.`,
+      );
+    }
+
+    const organizationId = platformOrg.id;
+    const org = { name: platformOrg.name };
 
     const tokenExpiresAt = new Date();
     tokenExpiresAt.setDate(tokenExpiresAt.getDate() + INVITE_EXPIRY_DAYS);
