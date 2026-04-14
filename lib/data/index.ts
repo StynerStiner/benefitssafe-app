@@ -314,9 +314,11 @@ async function fetchAuditLog(
   organizationId: string,
   role: string,
 ): Promise<DashboardAuditLog> {
-  const where = (role === "platform_admin" || role === "compliance_officer")
-    ? {}
-    : { organizationId };
+  // Only platform_admin (BenefitsSafe internal staff) sees cross-org audit
+  // logs. compliance_officer is an ORG-level role per prisma/schema.prisma —
+  // granting it cross-org visibility was a full-platform audit log leak
+  // identical in shape to the C1 fix in app/api/audit-logs/route.ts.
+  const where = role === "platform_admin" ? {} : { organizationId };
 
   const items = await prisma.auditLog.findMany({
     where,

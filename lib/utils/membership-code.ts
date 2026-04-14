@@ -3,19 +3,26 @@
 //   - orgSeq  = 4-digit sequence from Organization.orgCode ("ORG-0001" -> "0001")
 //   - memberSeq = 5-digit per-(org, prefix) sequence
 //
-// Prefix mapping (12 codebase roles -> 3 prefixes):
-//   - "beneficiary" / "family_member"   -> BS-
-//   - "vendor"                          -> VN-
-//   - everything else (platform_admin, nonprofit_admin, nonprofit_staff,
-//     compliance_officer, auditor, attorney, grant_officer, support_agent,
-//     billing_admin, cpa, member, ...) -> TM-
+// Prefix mapping (12 codebase roles -> 4 prefixes):
+//   - "beneficiary" / "family_member"   -> BS- (Beneficiary)
+//   - "vendor"                          -> VN- (Vendor)
+//   - "platform_admin" / "compliance_officer" / "support_agent" /
+//     "billing_admin"                   -> BF- (BenefitsSafe internal staff)
+//   - everything else (nonprofit_admin, nonprofit_staff, cpa, auditor,
+//     attorney, grant_officer, member, ...) -> TM- (nonprofit Team Member)
+//
+// The BF- prefix is the ONLY signal in the human-readable code that
+// distinguishes a BenefitsSafe employee from a nonprofit's own team.
+// Without it, TM-00001-00010 in the platform org and TM-00002-00010 in a
+// nonprofit org are indistinguishable in support tickets, exports, and
+// audit trails.
 //
 // This is the ONLY place membership codes are generated. Every API route
 // that creates an OrganizationMembership must call generateMembershipCode().
 
 import type { PrismaClient } from "@/lib/generated/prisma/client";
 
-export type MembershipCodePrefix = "BS-" | "VN-" | "TM-";
+export type MembershipCodePrefix = "BS-" | "VN-" | "TM-" | "BF-";
 
 export function getPrefixForRole(role: string): MembershipCodePrefix {
   switch (role) {
@@ -24,6 +31,11 @@ export function getPrefixForRole(role: string): MembershipCodePrefix {
       return "BS-";
     case "vendor":
       return "VN-";
+    case "platform_admin":
+    case "compliance_officer":
+    case "support_agent":
+    case "billing_admin":
+      return "BF-";
     default:
       return "TM-";
   }
