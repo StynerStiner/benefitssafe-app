@@ -50,37 +50,41 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Organization not found" }, { status: 404 });
     }
 
-    // Re-pin the platform admin's active org. Role stays platform_admin.
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { organizationId: org.id },
-    });
-
-    // Audit log the switch against the TARGET org so the tenant nonprofit's
-    // own audit trail records the platform-level access event. Using the
-    // target org (not the platform org) means a nonprofit auditor reviewing
-    // their own audit trail will see every time internal staff looked at
-    // their data — important for trust and SOC 2 access review.
+    // Re-pin the platform admin's active org AND record the audit event
+    // in a single transaction. Role stays platform_admin.
     //
-    // DDIA Ch7 Transaction Safety audit removed the previous
-    // `.catch(() => {})` that silently swallowed errors here. A
-    // cross-tenant access event that fails to persist its audit log is a
-    // SOC 2 finding; letting the error propagate to the outer 500 so the
-    // client retries is the correct behavior.
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        organizationId: org.id,
-        action: "platform_admin_switch_org",
-        entityType: "organization",
-        entityId: org.id,
-        newValue: {
-          orgName: org.name,
-          orgCode: org.orgCode,
-          isPlatformOrg: org.isPlatformOrg,
+    // DDIA Ch9 Consistency & Consensus audit — these two writes were
+    // previously sequential, so a DB error on the audit log would leave
+    // the platform admin already switched into the target org with no
+    // audit trail. That is a SOC 2 access-review finding (cross-tenant
+    // access with no log). Wrapping both in $transaction makes the switch
+    // all-or-nothing: either both land or the user sees a 500 and the
+    // session is untouched. We target the TARGET org for the audit log so
+    // the tenant nonprofit's own audit trail records every internal access.
+    //
+    // Supersedes the Ch7 fix that removed the previous `.catch(() => {})`;
+    // letting the error propagate was correct, but the write itself was
+    // still non-atomic until now.
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: session.user.id },
+        data: { organizationId: org.id },
+      }),
+      prisma.auditLog.create({
+        data: {
+          userId: session.user.id,
+          organizationId: org.id,
+          action: "platform_admin_switch_org",
+          entityType: "organization",
+          entityId: org.id,
+          newValue: {
+            orgName: org.name,
+            orgCode: org.orgCode,
+            isPlatformOrg: org.isPlatformOrg,
+          },
         },
-      },
-    });
+      }),
+    ]);
 
     return NextResponse.json({
       success: true,

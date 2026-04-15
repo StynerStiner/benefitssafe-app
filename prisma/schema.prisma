@@ -947,6 +947,16 @@ model BillingSubscription {
 
   status               String   @default("trialing") // trialing, active, past_due, canceled, unpaid
 
+  // Stripe event-ordering guard. Stripe delivers webhooks at-least-once and
+  // does not guarantee order across retries: a late `invoice.payment_failed`
+  // retry can arrive AFTER `invoice.payment_succeeded`, and without an
+  // ordering check the failed handler would overwrite the newer paid state.
+  // Every invoice/subscription handler writes `event.created` (Stripe's own
+  // clock, not our server's) into this column and guards its UPDATE with
+  // `WHERE lastBillingEventAt IS NULL OR lastBillingEventAt < :eventAt` so a
+  // stale retry becomes a no-op. DDIA Ch9 Consistency & Consensus audit.
+  lastBillingEventAt   DateTime?
+
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 

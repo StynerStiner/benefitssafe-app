@@ -156,20 +156,35 @@ export async function POST(request: Request) {
         affectedOrg = await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
         break;
       case "customer.subscription.created":
-        affectedOrg = await handleSubscriptionCreated(event.data.object as Stripe.Subscription);
+        affectedOrg = await handleSubscriptionCreated(
+          event.data.object as Stripe.Subscription,
+          new Date(event.created * 1000),
+        );
         break;
       case "customer.subscription.updated":
-        affectedOrg = await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+        affectedOrg = await handleSubscriptionUpdated(
+          event.data.object as Stripe.Subscription,
+          new Date(event.created * 1000),
+        );
         break;
       case "customer.subscription.deleted":
-        affectedOrg = await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+        affectedOrg = await handleSubscriptionDeleted(
+          event.data.object as Stripe.Subscription,
+          new Date(event.created * 1000),
+        );
         break;
       case "invoice.paid":
       case "invoice.payment_succeeded":
-        affectedOrg = await handleInvoicePaid(event.data.object as Stripe.Invoice);
+        affectedOrg = await handleInvoicePaid(
+          event.data.object as Stripe.Invoice,
+          new Date(event.created * 1000),
+        );
         break;
       case "invoice.payment_failed":
-        affectedOrg = await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
+        affectedOrg = await handleInvoicePaymentFailed(
+          event.data.object as Stripe.Invoice,
+          new Date(event.created * 1000),
+        );
         break;
       default:
         // Ignore unhandled events (no error — Stripe retries on non-2xx)
@@ -257,7 +272,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   return organizationId;
 }
 
-async function handleSubscriptionCreated(sub: Stripe.Subscription): Promise<string | null> {
+async function handleSubscriptionCreated(
+  sub: Stripe.Subscription,
+  eventAt: Date,
+): Promise<string | null> {
   const organizationId = sub.metadata?.organizationId;
   if (!organizationId) {
     console.error("customer.subscription.created missing organizationId in metadata");
@@ -268,7 +286,10 @@ async function handleSubscriptionCreated(sub: Stripe.Subscription): Promise<stri
   const tier = coerceTier(sub.metadata?.tier) === PricingTier.FREE ? tierFromPriceId(priceId) : coerceTier(sub.metadata?.tier);
   const stripeCustomerId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id || null;
 
-  await prisma.billingSubscription.upsert({
+  // Upsert-create is always safe (no prior row to overwrite). The update
+  // branch is only reached if a race has already inserted a BillingSub row
+  // for this org, in which case the ordering guard below handles staleness.
+  const created = await prisma.billingSubscription.upsert({
     where: { organizationId },
     create: {
       organizationId,
@@ -280,8 +301,23 @@ async function handleSubscriptionCreated(sub: Stripe.Subscription): Promise<stri
       currentPeriodEnd: new Date(sub.current_period_end * 1000),
       cancelAtPeriodEnd: sub.cancel_at_period_end,
       status: sub.status,
+      lastBillingEventAt: eventAt,
     },
-    update: {
+    // Only touch lastBillingEventAt here; real field updates happen below
+    // under the ordering guard so a stale create can't overwrite a newer
+    // update that has already landed.
+    update: {},
+    select: { id: true, lastBillingEventAt: true },
+  });
+  const result = await prisma.billingSubscription.updateMany({
+    where: {
+      id: created.id,
+      OR: [
+        { lastBillingEventAt: null },
+        { lastBillingEventAt: { lt: eventAt } },
+      ],
+    },
+    data: {
       tier,
       stripeCustomerId,
       stripeSubscriptionId: sub.id,
@@ -290,8 +326,15 @@ async function handleSubscriptionCreated(sub: Stripe.Subscription): Promise<stri
       currentPeriodEnd: new Date(sub.current_period_end * 1000),
       cancelAtPeriodEnd: sub.cancel_at_period_end,
       status: sub.status,
+      lastBillingEventAt: eventAt,
     },
   });
+  if (result.count === 0) {
+    console.warn("[stripe-billing] subscription.created arrived out-of-order, skipping update", {
+      subId: created.id,
+      eventAt: eventAt.toISOString(),
+    });
+  }
 
   // Reflect activity on Organization.subscriptionStatus
   if (sub.status === "active" || sub.status === "trialing") {
@@ -315,7 +358,10 @@ async function handleSubscriptionCreated(sub: Stripe.Subscription): Promise<stri
   return organizationId;
 }
 
-async function handleSubscriptionUpdated(sub: Stripe.Subscription): Promise<string | null> {
+async function handleSubscriptionUpdated(
+  sub: Stripe.Subscription,
+  eventAt: Date,
+): Promise<string | null> {
   // Find by subscription id (most reliable for updates)
   const existing = await prisma.billingSubscription.findFirst({
     where: { stripeSubscriptionId: sub.id },
@@ -323,7 +369,7 @@ async function handleSubscriptionUpdated(sub: Stripe.Subscription): Promise<stri
   });
   if (!existing) {
     // Fall back to metadata path to create it
-    return handleSubscriptionCreated(sub);
+    return handleSubscriptionCreated(sub, eventAt);
   }
 
   const priceId = sub.items.data[0]?.price.id || null;
@@ -331,8 +377,18 @@ async function handleSubscriptionUpdated(sub: Stripe.Subscription): Promise<stri
   const previousTier = existing.tier;
   const previousStatus = existing.status;
 
-  await prisma.billingSubscription.update({
-    where: { id: existing.id },
+  // Ordering guard — if a newer subscription.updated (or any later billing
+  // event) has already advanced lastBillingEventAt, this retry is stale
+  // and must not revert the newer tier/status. Returns count=0 which we
+  // treat as a logged no-op.
+  const updateResult = await prisma.billingSubscription.updateMany({
+    where: {
+      id: existing.id,
+      OR: [
+        { lastBillingEventAt: null },
+        { lastBillingEventAt: { lt: eventAt } },
+      ],
+    },
     data: {
       tier: newTier,
       stripePriceId: priceId,
@@ -340,8 +396,16 @@ async function handleSubscriptionUpdated(sub: Stripe.Subscription): Promise<stri
       currentPeriodEnd: new Date(sub.current_period_end * 1000),
       cancelAtPeriodEnd: sub.cancel_at_period_end,
       status: sub.status,
+      lastBillingEventAt: eventAt,
     },
   });
+  if (updateResult.count === 0) {
+    console.warn("[stripe-billing] subscription.updated arrived out-of-order, skipping", {
+      subId: existing.id,
+      eventAt: eventAt.toISOString(),
+    });
+    return existing.organizationId;
+  }
 
   // Sync Organization.subscriptionStatus based on Stripe sub status
   if (sub.status === "active" || sub.status === "trialing") {
@@ -414,7 +478,10 @@ async function handleSubscriptionUpdated(sub: Stripe.Subscription): Promise<stri
   return existing.organizationId;
 }
 
-async function handleSubscriptionDeleted(sub: Stripe.Subscription): Promise<string | null> {
+async function handleSubscriptionDeleted(
+  sub: Stripe.Subscription,
+  eventAt: Date,
+): Promise<string | null> {
   const existing = await prisma.billingSubscription.findFirst({
     where: { stripeSubscriptionId: sub.id },
     select: { id: true, organizationId: true, tier: true },
@@ -423,8 +490,16 @@ async function handleSubscriptionDeleted(sub: Stripe.Subscription): Promise<stri
 
   const previousTier = existing.tier;
 
-  await prisma.billingSubscription.update({
-    where: { id: existing.id },
+  // Ordering guard — a late subscription.deleted retry must not clobber a
+  // newer subscription.updated that has already re-activated the sub.
+  const result = await prisma.billingSubscription.updateMany({
+    where: {
+      id: existing.id,
+      OR: [
+        { lastBillingEventAt: null },
+        { lastBillingEventAt: { lt: eventAt } },
+      ],
+    },
     data: {
       tier: "free",
       status: "canceled",
@@ -433,8 +508,16 @@ async function handleSubscriptionDeleted(sub: Stripe.Subscription): Promise<stri
       currentPeriodStart: null,
       currentPeriodEnd: null,
       cancelAtPeriodEnd: false,
+      lastBillingEventAt: eventAt,
     },
   });
+  if (result.count === 0) {
+    console.warn("[stripe-billing] subscription.deleted arrived out-of-order, skipping", {
+      subId: existing.id,
+      eventAt: eventAt.toISOString(),
+    });
+    return existing.organizationId;
+  }
 
   await prisma.organization.update({
     where: { id: existing.organizationId },
@@ -465,7 +548,10 @@ async function handleSubscriptionDeleted(sub: Stripe.Subscription): Promise<stri
   return existing.organizationId;
 }
 
-async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<string | null> {
+async function handleInvoicePaid(
+  invoice: Stripe.Invoice,
+  eventAt: Date,
+): Promise<string | null> {
   const stripeSubscriptionId = typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription?.id || null;
   if (!stripeSubscriptionId) return null;
 
@@ -475,15 +561,47 @@ async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<string | null
   });
   if (!existing) return null;
 
-  // If we were past_due, return to active on successful payment
+  // If we were past_due, return to active on successful payment. The
+  // updateMany WHERE clause enforces DDIA Ch9 webhook ordering: if a newer
+  // Stripe event (e.g. a subsequent payment_failed retry that happened to
+  // land first) has already written a later lastBillingEventAt, skip the
+  // update so we don't resurrect stale state. Returns affected=0 when the
+  // guard rejects, which we log and treat as a no-op.
   if (existing.status === "past_due" || existing.status === "unpaid") {
-    await prisma.billingSubscription.update({
-      where: { id: existing.id },
-      data: { status: "active" },
+    const result = await prisma.billingSubscription.updateMany({
+      where: {
+        id: existing.id,
+        OR: [
+          { lastBillingEventAt: null },
+          { lastBillingEventAt: { lt: eventAt } },
+        ],
+      },
+      data: { status: "active", lastBillingEventAt: eventAt },
     });
-    await prisma.organization.update({
-      where: { id: existing.organizationId },
-      data: { subscriptionStatus: "active" },
+    if (result.count === 0) {
+      console.warn("[stripe-billing] invoice.paid arrived out-of-order, skipping status update", {
+        subId: existing.id,
+        eventAt: eventAt.toISOString(),
+      });
+    } else {
+      await prisma.organization.update({
+        where: { id: existing.organizationId },
+        data: { subscriptionStatus: "active" },
+      });
+    }
+  } else {
+    // Not a status transition, but still advance lastBillingEventAt so
+    // future ordering checks have the latest high-water mark. Guarded so
+    // we never move the mark backward on a late retry.
+    await prisma.billingSubscription.updateMany({
+      where: {
+        id: existing.id,
+        OR: [
+          { lastBillingEventAt: null },
+          { lastBillingEventAt: { lt: eventAt } },
+        ],
+      },
+      data: { lastBillingEventAt: eventAt },
     });
   }
 
@@ -505,7 +623,10 @@ async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<string | null
   return existing.organizationId;
 }
 
-async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<string | null> {
+async function handleInvoicePaymentFailed(
+  invoice: Stripe.Invoice,
+  eventAt: Date,
+): Promise<string | null> {
   const stripeSubscriptionId = typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription?.id || null;
   if (!stripeSubscriptionId) return null;
 
@@ -515,15 +636,31 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<stri
   });
   if (!existing) return null;
 
-  await prisma.billingSubscription.update({
-    where: { id: existing.id },
-    data: { status: "past_due" },
+  // Ordering guard — see handleInvoicePaid. A stale payment_failed retry
+  // must not clobber a newer payment_succeeded that already advanced
+  // lastBillingEventAt past `eventAt`.
+  const result = await prisma.billingSubscription.updateMany({
+    where: {
+      id: existing.id,
+      OR: [
+        { lastBillingEventAt: null },
+        { lastBillingEventAt: { lt: eventAt } },
+      ],
+    },
+    data: { status: "past_due", lastBillingEventAt: eventAt },
   });
-
-  await prisma.organization.update({
-    where: { id: existing.organizationId },
-    data: { subscriptionStatus: "suspended" },
-  });
+  if (result.count === 0) {
+    console.warn("[stripe-billing] invoice.payment_failed arrived out-of-order, skipping status update", {
+      subId: existing.id,
+      eventAt: eventAt.toISOString(),
+    });
+    // Still record the audit log below so the attempt is visible.
+  } else {
+    await prisma.organization.update({
+      where: { id: existing.organizationId },
+      data: { subscriptionStatus: "suspended" },
+    });
+  }
 
   await prisma.auditLog.create({
     data: {

@@ -184,11 +184,38 @@ export async function claimJobMessage(
   }
 }
 
+// Lua script for compare-and-delete — only releases the lock if the value
+// still matches our owner token. Prevents a handler whose lock has already
+// expired (and been re-acquired by a second instance) from deleting the
+// second instance's lock on its way out. Without this, a slow cron that
+// exceeded its TTL would unlock a fresh run that had JUST started, allowing
+// a third instance to grab the lock and overlap with the second.
+// (DDIA Ch9 Consistency & Consensus audit — locks without fencing.)
+const RELEASE_IF_OWNER_LUA = `
+if redis.call("get", KEYS[1]) == ARGV[1] then
+  return redis.call("del", KEYS[1])
+else
+  return 0
+end
+`;
+
 /**
  * Acquire a distributed lock for a cron handler so two overlapping
  * invocations (Vercel cron + EasyCron retry, platform failover, etc.)
  * don't run in parallel. Returns a release() function on success, or
  * null if the lock is already held.
+ *
+ * DDIA Ch9 fencing note: this lock uses a per-acquisition owner token so
+ * `release()` only deletes the key if it still belongs to us. That
+ * prevents the classic "slow worker releases someone else's lock" race
+ * where handler A exceeds its TTL, Redis expires the key, handler B
+ * acquires the lock, and handler A's belated `release()` silently
+ * unlocks handler B. It does NOT provide full fencing tokens (monotonic
+ * counters validated on every downstream write) — the cron jobs in this
+ * codebase all rely on DB-level entity idempotency (unique constraints,
+ * `claimJobMessage`, per-warning `entityId` dedup) as the real line of
+ * defense. The owner token is the minimum hardening that keeps the lock
+ * itself safe to release.
  *
  * @param name         Stable cron identifier, e.g. "cron:reconciliation".
  * @param ttlSeconds   Safety-net expiration in case the handler crashes
@@ -207,8 +234,11 @@ export async function acquireCronLock(
   // narrowing loss after the async boundary.
   const redisClient = redis;
   const key = `cron:lock:${name}`;
+  // Unique per-acquisition owner token. `globalThis.crypto` is present in
+  // Node 18+ and on Vercel's edge/serverless runtimes.
+  const owner = globalThis.crypto.randomUUID();
   try {
-    const res = await redisClient.set(key, Date.now().toString(), {
+    const res = await redisClient.set(key, owner, {
       nx: true,
       ex: ttlSeconds,
     });
@@ -219,7 +249,11 @@ export async function acquireCronLock(
   }
   return async () => {
     try {
-      await redisClient.del(key);
+      // Compare-and-delete via Lua. Only deletes if the stored value is
+      // still our owner token; otherwise the lock has already expired
+      // and been re-acquired, and deleting it would unlock the other
+      // instance mid-run.
+      await redisClient.eval(RELEASE_IF_OWNER_LUA, [key], [owner]);
     } catch (err) {
       console.error("[queue] cron lock release failed:", err);
     }

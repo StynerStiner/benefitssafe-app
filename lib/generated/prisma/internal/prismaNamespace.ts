@@ -3414,6 +3414,7 @@ export const BillingSubscriptionScalarFieldEnum = {
   currentPeriodEnd: 'currentPeriodEnd',
   cancelAtPeriodEnd: 'cancelAtPeriodEnd',
   status: 'status',
+  lastBillingEventAt: 'lastBillingEventAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
