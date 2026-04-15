@@ -125,6 +125,7 @@ export type UserCountAggregateOutputType = {
   lastLoginUserAgent: number
   lastLoginAt: number
   trustedDevices: number
+  alertPreferences: number
   beneficiaryCode: number
   dateOfBirth: number
   addressStreet: number
@@ -250,6 +251,7 @@ export type UserCountAggregateInputType = {
   lastLoginUserAgent?: true
   lastLoginAt?: true
   trustedDevices?: true
+  alertPreferences?: true
   beneficiaryCode?: true
   dateOfBirth?: true
   addressStreet?: true
@@ -366,6 +368,7 @@ export type UserGroupByOutputType = {
   lastLoginUserAgent: string | null
   lastLoginAt: Date | null
   trustedDevices: runtime.JsonValue | null
+  alertPreferences: runtime.JsonValue | null
   beneficiaryCode: string | null
   dateOfBirth: Date | null
   addressStreet: string | null
@@ -430,6 +433,7 @@ export type UserWhereInput = {
   lastLoginUserAgent?: Prisma.StringNullableFilter<"User"> | string | null
   lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   trustedDevices?: Prisma.JsonNullableFilter<"User">
+  alertPreferences?: Prisma.JsonNullableFilter<"User">
   beneficiaryCode?: Prisma.StringNullableFilter<"User"> | string | null
   dateOfBirth?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   addressStreet?: Prisma.StringNullableFilter<"User"> | string | null
@@ -482,6 +486,7 @@ export type UserOrderByWithRelationInput = {
   lastLoginUserAgent?: Prisma.SortOrderInput | Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
   trustedDevices?: Prisma.SortOrderInput | Prisma.SortOrder
+  alertPreferences?: Prisma.SortOrderInput | Prisma.SortOrder
   beneficiaryCode?: Prisma.SortOrderInput | Prisma.SortOrder
   dateOfBirth?: Prisma.SortOrderInput | Prisma.SortOrder
   addressStreet?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -538,6 +543,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   lastLoginUserAgent?: Prisma.StringNullableFilter<"User"> | string | null
   lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   trustedDevices?: Prisma.JsonNullableFilter<"User">
+  alertPreferences?: Prisma.JsonNullableFilter<"User">
   dateOfBirth?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   addressStreet?: Prisma.StringNullableFilter<"User"> | string | null
   addressCity?: Prisma.StringNullableFilter<"User"> | string | null
@@ -589,6 +595,7 @@ export type UserOrderByWithAggregationInput = {
   lastLoginUserAgent?: Prisma.SortOrderInput | Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
   trustedDevices?: Prisma.SortOrderInput | Prisma.SortOrder
+  alertPreferences?: Prisma.SortOrderInput | Prisma.SortOrder
   beneficiaryCode?: Prisma.SortOrderInput | Prisma.SortOrder
   dateOfBirth?: Prisma.SortOrderInput | Prisma.SortOrder
   addressStreet?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -638,6 +645,7 @@ export type UserScalarWhereWithAggregatesInput = {
   lastLoginUserAgent?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   lastLoginAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   trustedDevices?: Prisma.JsonNullableWithAggregatesFilter<"User">
+  alertPreferences?: Prisma.JsonNullableWithAggregatesFilter<"User">
   beneficiaryCode?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   dateOfBirth?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   addressStreet?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
@@ -680,6 +688,7 @@ export type UserCreateInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -732,6 +741,7 @@ export type UserUncheckedCreateInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -782,6 +792,7 @@ export type UserUpdateInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -834,6 +845,7 @@ export type UserUncheckedUpdateInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -885,6 +897,7 @@ export type UserCreateManyInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -927,6 +940,7 @@ export type UserUpdateManyMutationInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -970,6 +984,7 @@ export type UserUncheckedUpdateManyInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1031,6 +1046,7 @@ export type UserCountOrderByAggregateInput = {
   lastLoginUserAgent?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
   trustedDevices?: Prisma.SortOrder
+  alertPreferences?: Prisma.SortOrder
   beneficiaryCode?: Prisma.SortOrder
   dateOfBirth?: Prisma.SortOrder
   addressStreet?: Prisma.SortOrder
@@ -1336,6 +1352,7 @@ export type UserCreateWithoutOrganizationInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -1386,6 +1403,7 @@ export type UserUncheckedCreateWithoutOrganizationInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -1466,6 +1484,7 @@ export type UserScalarWhereInput = {
   lastLoginUserAgent?: Prisma.StringNullableFilter<"User"> | string | null
   lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   trustedDevices?: Prisma.JsonNullableFilter<"User">
+  alertPreferences?: Prisma.JsonNullableFilter<"User">
   beneficiaryCode?: Prisma.StringNullableFilter<"User"> | string | null
   dateOfBirth?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   addressStreet?: Prisma.StringNullableFilter<"User"> | string | null
@@ -1508,6 +1527,7 @@ export type UserCreateWithoutInviteTokensInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -1559,6 +1579,7 @@ export type UserUncheckedCreateWithoutInviteTokensInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -1624,6 +1645,7 @@ export type UserUpdateWithoutInviteTokensInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1675,6 +1697,7 @@ export type UserUncheckedUpdateWithoutInviteTokensInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1724,6 +1747,7 @@ export type UserCreateWithoutGrantsInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -1775,6 +1799,7 @@ export type UserUncheckedCreateWithoutGrantsInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -1840,6 +1865,7 @@ export type UserUpdateWithoutGrantsInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1891,6 +1917,7 @@ export type UserUncheckedUpdateWithoutGrantsInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1940,6 +1967,7 @@ export type UserCreateWithoutExpenseRequestsInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -1991,6 +2019,7 @@ export type UserUncheckedCreateWithoutExpenseRequestsInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -2056,6 +2085,7 @@ export type UserUpdateWithoutExpenseRequestsInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2107,6 +2137,7 @@ export type UserUncheckedUpdateWithoutExpenseRequestsInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2156,6 +2187,7 @@ export type UserCreateWithoutVendorsInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -2207,6 +2239,7 @@ export type UserUncheckedCreateWithoutVendorsInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -2272,6 +2305,7 @@ export type UserUpdateWithoutVendorsInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2323,6 +2357,7 @@ export type UserUncheckedUpdateWithoutVendorsInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2372,6 +2407,7 @@ export type UserCreateWithoutVirtualCardsInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -2423,6 +2459,7 @@ export type UserUncheckedCreateWithoutVirtualCardsInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -2488,6 +2525,7 @@ export type UserUpdateWithoutVirtualCardsInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2539,6 +2577,7 @@ export type UserUncheckedUpdateWithoutVirtualCardsInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2588,6 +2627,7 @@ export type UserCreateWithoutCardholderEligibilityInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -2639,6 +2679,7 @@ export type UserUncheckedCreateWithoutCardholderEligibilityInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -2704,6 +2745,7 @@ export type UserUpdateWithoutCardholderEligibilityInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2755,6 +2797,7 @@ export type UserUncheckedUpdateWithoutCardholderEligibilityInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2804,6 +2847,7 @@ export type UserCreateWithoutApprovalsInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -2855,6 +2899,7 @@ export type UserUncheckedCreateWithoutApprovalsInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -2920,6 +2965,7 @@ export type UserUpdateWithoutApprovalsInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2971,6 +3017,7 @@ export type UserUncheckedUpdateWithoutApprovalsInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3020,6 +3067,7 @@ export type UserCreateWithoutMembershipsInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -3071,6 +3119,7 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -3136,6 +3185,7 @@ export type UserUpdateWithoutMembershipsInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3187,6 +3237,7 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3236,6 +3287,7 @@ export type UserCreateManyOrganizationInput = {
   lastLoginUserAgent?: string | null
   lastLoginAt?: Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: string | null
   dateOfBirth?: Date | string | null
   addressStreet?: string | null
@@ -3278,6 +3330,7 @@ export type UserUpdateWithoutOrganizationInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3328,6 +3381,7 @@ export type UserUncheckedUpdateWithoutOrganizationInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3378,6 +3432,7 @@ export type UserUncheckedUpdateManyWithoutOrganizationInput = {
   lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3506,6 +3561,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   lastLoginUserAgent?: boolean
   lastLoginAt?: boolean
   trustedDevices?: boolean
+  alertPreferences?: boolean
   beneficiaryCode?: boolean
   dateOfBirth?: boolean
   addressStreet?: boolean
@@ -3559,6 +3615,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   lastLoginUserAgent?: boolean
   lastLoginAt?: boolean
   trustedDevices?: boolean
+  alertPreferences?: boolean
   beneficiaryCode?: boolean
   dateOfBirth?: boolean
   addressStreet?: boolean
@@ -3603,6 +3660,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   lastLoginUserAgent?: boolean
   lastLoginAt?: boolean
   trustedDevices?: boolean
+  alertPreferences?: boolean
   beneficiaryCode?: boolean
   dateOfBirth?: boolean
   addressStreet?: boolean
@@ -3647,6 +3705,7 @@ export type UserSelectScalar = {
   lastLoginUserAgent?: boolean
   lastLoginAt?: boolean
   trustedDevices?: boolean
+  alertPreferences?: boolean
   beneficiaryCode?: boolean
   dateOfBirth?: boolean
   addressStreet?: boolean
@@ -3669,7 +3728,7 @@ export type UserSelectScalar = {
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "firstName" | "lastName" | "phone" | "passwordHash" | "avatarUrl" | "role" | "organizationId" | "isActive" | "emailVerified" | "emailVerifyToken" | "emailVerifyExpiry" | "mfaEnabled" | "mfaSecret" | "mfaBackupCodes" | "lastLoginIp" | "lastLoginUserAgent" | "lastLoginAt" | "trustedDevices" | "beneficiaryCode" | "dateOfBirth" | "addressStreet" | "addressCity" | "addressState" | "addressZip" | "ssnLast4" | "benefitPrograms" | "emergencyContactName" | "emergencyContactPhone" | "notes" | "title" | "companyName" | "businessAddress" | "firmName" | "licenseNumber" | "barNumber" | "organizationName" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "firstName" | "lastName" | "phone" | "passwordHash" | "avatarUrl" | "role" | "organizationId" | "isActive" | "emailVerified" | "emailVerifyToken" | "emailVerifyExpiry" | "mfaEnabled" | "mfaSecret" | "mfaBackupCodes" | "lastLoginIp" | "lastLoginUserAgent" | "lastLoginAt" | "trustedDevices" | "alertPreferences" | "beneficiaryCode" | "dateOfBirth" | "addressStreet" | "addressCity" | "addressState" | "addressZip" | "ssnLast4" | "benefitPrograms" | "emergencyContactName" | "emergencyContactPhone" | "notes" | "title" | "companyName" | "businessAddress" | "firmName" | "licenseNumber" | "barNumber" | "organizationName" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   expenseRequests?: boolean | Prisma.User$expenseRequestsArgs<ExtArgs>
@@ -3723,6 +3782,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     lastLoginUserAgent: string | null
     lastLoginAt: Date | null
     trustedDevices: runtime.JsonValue | null
+    alertPreferences: runtime.JsonValue | null
     beneficiaryCode: string | null
     dateOfBirth: Date | null
     addressStreet: string | null
@@ -4195,6 +4255,7 @@ export interface UserFieldRefs {
   readonly lastLoginUserAgent: Prisma.FieldRef<"User", 'String'>
   readonly lastLoginAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly trustedDevices: Prisma.FieldRef<"User", 'Json'>
+  readonly alertPreferences: Prisma.FieldRef<"User", 'Json'>
   readonly beneficiaryCode: Prisma.FieldRef<"User", 'String'>
   readonly dateOfBirth: Prisma.FieldRef<"User", 'DateTime'>
   readonly addressStreet: Prisma.FieldRef<"User", 'String'>

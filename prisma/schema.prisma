@@ -91,6 +91,11 @@ model User {
   lastLoginAt       DateTime?
   trustedDevices    Json?     // Array of { ip, userAgent, firstSeen, lastSeen }
 
+  // Per-channel notification preferences. Shape is intentionally flexible
+  // so the /alert-preferences UI can evolve without another migration.
+  // Current shape: { mail:{enabled,message}, sms:{...}, push:{...} }
+  alertPreferences  Json?     @map("alert_preferences")
+
   // Beneficiary ID — human-readable, collision-safe across orgs (e.g., BS-0001-00042)
   beneficiaryCode       String?   @unique
 

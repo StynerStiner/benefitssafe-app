@@ -3,6 +3,8 @@
 import TicketPriorityChart from "@/components/charts/ticket-priority-chart";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import EmptyState from "@/components/shared/empty-state";
+import { LifeBuoy } from "lucide-react";
 import { Suspense, useState, useEffect, useMemo } from "react";
 import PendingSolvedTicketsCard from "./components/pending-solved-tickets-card";
 import PerformanceAgentsCard from "./components/performance-agents-card";
@@ -97,6 +99,28 @@ const HelpPage = () => {
                 <DashboardBreadcrumb title="Support" text="Support" />
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
                     <div className="col-span-12"><LoadingSkeleton /></div>
+                </div>
+            </>
+        );
+    }
+
+    // Support dashboard derives all its charts from notifications + audit
+    // activity. When a brand-new org has neither, every card renders as a
+    // zero-height ApexCharts shell that looks broken. Render a single
+    // empty state instead until there's something to chart.
+    const hasActivity = notifications.length > 0 || auditLogs.length > 0;
+    if (!hasActivity) {
+        return (
+            <>
+                <DashboardBreadcrumb title="Support" text="Support" />
+                <div className="card rounded-xl border border-border bg-background shadow-sm">
+                    <EmptyState
+                        icon={LifeBuoy}
+                        title="No support activity yet"
+                        message="This page surfaces notifications, tickets, and audit events across your team. Charts will populate automatically once your nonprofit starts processing grants, expenses, and beneficiary workflows."
+                        ctaLabel="Go to Dashboard"
+                        ctaHref="/dashboard"
+                    />
                 </div>
             </>
         );

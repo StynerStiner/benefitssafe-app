@@ -15,10 +15,8 @@ import {
   LayoutDashboard,
   LifeBuoy,
   MessageSquare,
-  Palette,
   Receipt,
   Repeat,
-  Settings,
   Shield,
   ShieldCheck,
   Store,
@@ -124,20 +122,7 @@ const nonprofitAdminNav: NavItem[] = [
       { title: "Profile", url: "/profile", circleColor: "bg-red-600", icon: UserCircle },
     ],
   },
-  // ── Settings & Support ──────────────────────
-  {
-    title: "Billing & Plans",
-    url: "/settings/billing",
-    icon: CreditCard,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
-    items: [
-      { title: "Theme", url: "#", circleColor: "bg-purple-500", icon: Palette },
-    ],
-  },
+  // ── Support ──────────────────────────────────
   {
     title: "Support",
     url: "/support",

@@ -1,20 +1,9 @@
-import type { Metadata } from 'next';
-import DashboardBreadcrumb from '@/components/layout/dashboard-breadcrumb';
-import ClientFirebaseWrapper from './client-wrapper';
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-    title: 'Notification Settings & Preferences | BenefitsSafe Admin Dashboard',
-    description:
-        'Configure and customize notification settings and preferences in the BenefitsSafe Admin Dashboard built with Next.js and Tailwind CSS.',
-};
-
-export default function NotificationPage() {
-    return (
-        <>
-            <DashboardBreadcrumb title="Notification" text="Notification" />
-            <div className="rounded-xl border border-border bg-white dark:bg-[#273142] p-6 shadow-sm">
-                <ClientFirebaseWrapper />
-            </div>
-        </>
-    );
+// Dead WowDash template route — the original was a Firebase-based
+// notification settings stub that never persisted anything. Redirect
+// to the real preferences page so anyone with a stale link or a
+// cached bookmark lands on something that works.
+export default function SettingsNotificationPage() {
+  redirect("/alert-preferences");
 }

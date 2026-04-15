@@ -8,6 +8,8 @@ import EmailList from "@/app/(dashboard)/notifications/components/email-list";
 import EmailSidebarToggleButton from "@/app/(dashboard)/notifications/components/email-sidebar-toggle-button";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import EmptyState from "@/components/shared/empty-state";
+import { Bell } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface Notification {
@@ -181,6 +183,24 @@ const EmailPage = () => {
                         <div className="card-body p-0">
                             {loading ? (
                                 <LoadingSkeleton />
+                            ) : filteredNotifications.length === 0 ? (
+                                <EmptyState
+                                    icon={Bell}
+                                    title={
+                                        filter === "all"
+                                            ? "No notifications yet"
+                                            : filter === "unread"
+                                                ? "No unread notifications"
+                                                : filter === "read"
+                                                    ? "No read notifications"
+                                                    : "No important notifications"
+                                    }
+                                    message={
+                                        filter === "all"
+                                            ? "You'll see alerts here when grants need attention, cards are issued, or compliance checks flag something."
+                                            : "Switch to All to see everything in your inbox."
+                                    }
+                                />
                             ) : (
                                 <EmailList
                                     notifications={filteredNotifications}

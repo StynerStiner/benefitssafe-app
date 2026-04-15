@@ -2,8 +2,10 @@
 
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import EmptyState from "@/components/shared/empty-state";
 import OnboardingChecklist from "@/components/shared/onboarding-checklist";
 import PageDateFilter from "@/components/shared/page-date-filter";
+import { HandCoins } from "lucide-react";
 import { useEffect, useState } from "react";
 import BalanceStatistic from "./components/balance-statistic";
 import EarningCategories from "./components/earning-categories";
@@ -79,6 +81,36 @@ const FinancePage = () => {
             <>
                 <DashboardBreadcrumb title="Dashboard" text="Admin Overview" />
                 <LoadingSkeleton />
+            </>
+        );
+    }
+
+    // "Nothing to show yet" state — brand-new org with no grants, no
+    // expenses, no audit activity. Instead of rendering a dashboard full
+    // of empty charts, surface the onboarding checklist + a prominent
+    // welcome with a direct CTA to create the first grant.
+    const isEmpty =
+        grants.length === 0 && expenses.length === 0 && auditLogs.length === 0;
+
+    if (isEmpty) {
+        return (
+            <>
+                <DashboardBreadcrumb title="Dashboard" text="Admin Overview" />
+                {error && (
+                    <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                    </div>
+                )}
+                <OnboardingChecklist />
+                <div className="card rounded-xl border border-border bg-background shadow-sm mt-6">
+                    <EmptyState
+                        icon={HandCoins}
+                        title="Welcome to BenefitsSafe"
+                        message="Your dashboard will light up once you've created your first grant and issued funds to beneficiaries. Start by adding a grant — you can onboard beneficiaries and issue cards from there."
+                        ctaLabel="Create your first grant"
+                        ctaHref="/grants"
+                    />
+                </div>
             </>
         );
     }

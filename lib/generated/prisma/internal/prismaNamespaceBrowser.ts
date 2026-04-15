@@ -148,6 +148,7 @@ export const UserScalarFieldEnum = {
   lastLoginUserAgent: 'lastLoginUserAgent',
   lastLoginAt: 'lastLoginAt',
   trustedDevices: 'trustedDevices',
+  alertPreferences: 'alertPreferences',
   beneficiaryCode: 'beneficiaryCode',
   dateOfBirth: 'dateOfBirth',
   addressStreet: 'addressStreet',

@@ -5,6 +5,7 @@ import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import BasicFullCalendar from "./components/basic-full-calendar";
 import CalendarSidebar from "./components/calendar-sidebar";
+import { CalendarDays } from "lucide-react";
 import toast from "react-hot-toast";
 
 export interface CalendarEventData {
@@ -120,6 +121,22 @@ const CalendarPage = () => {
     return (
         <>
             <DashboardBreadcrumb title="Calendar" text="Calendar" />
+
+            {events.length === 0 && (
+                <div className="mb-4 flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 dark:bg-primary/10 p-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                        <CalendarDays className="w-5 h-5 text-primary" aria-hidden="true" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                            No events yet
+                        </p>
+                        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                            Grant start and end dates will appear here automatically. Click any day on the calendar below to create your first event manually.
+                        </p>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 

@@ -2,7 +2,9 @@
 
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import EmptyState from "@/components/shared/empty-state";
 import PageDateFilter from "@/components/shared/page-date-filter";
+import { HandCoins } from "lucide-react";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import AverageEarningCard from "./components/average-earning-card";
 import MyTasksCard from "./components/my-tasks-card";
@@ -104,6 +106,15 @@ const ProjectManagement = () => {
                 </div>
             )}
 
+            {grants.length === 0 ? (
+                <div className="card rounded-xl border border-border bg-background shadow-sm">
+                    <EmptyState
+                        icon={HandCoins}
+                        title="No grants yet"
+                        message="Grants are the starting point for everything on BenefitsSafe — once you create one, you can add beneficiaries, issue virtual cards, and track restricted-fund spending. Click Add Grant in the header to get started."
+                    />
+                </div>
+            ) : (
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
 
                 <div className="col-span-12 2xl:col-span-8">
@@ -140,6 +151,7 @@ const ProjectManagement = () => {
                     <ProjectsStatusCard grants={grants} onRefresh={fetchGrants} />
                 </div>
             </div>
+            )}
         </>
     );
 };

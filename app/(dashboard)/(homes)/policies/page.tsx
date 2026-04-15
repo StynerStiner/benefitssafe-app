@@ -3,6 +3,8 @@
 import StatisticBarChart from "@/components/charts/statistic-bar-chart";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import EmptyState from "@/components/shared/empty-state";
+import { FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import AvailableRoom from "./components/available-room";
 import BookingCountriesStatus from "./components/booking-countries-status";
@@ -69,6 +71,28 @@ const PoliciesPage = () => {
             <>
                 <DashboardBreadcrumb title="Disbursement Policies" text="Disbursement Policies" />
                 <LoadingSkeleton />
+            </>
+        );
+    }
+
+    // Null guard: the downstream dashboard components (StatisticsCards,
+    // AvailableRoom, BookingCountriesStatus, SpendOverview) assume a
+    // configured policy and crash if passed null. Every brand-new org
+    // starts without a policy row, so we render a dedicated empty state
+    // pointing them at the place to configure one.
+    if (!policy) {
+        return (
+            <>
+                <DashboardBreadcrumb title="Disbursement Policies" text="Disbursement Policies" />
+                <div className="card rounded-xl border border-border bg-background shadow-sm">
+                    <EmptyState
+                        icon={FileText}
+                        title="No disbursement policy yet"
+                        message="Before you can track compliance and spending rules, set up your organization's disbursement policy — the rules for what grant funds can and can't be used for (categories, caps, SSI/Medi-Cal safety, etc.)."
+                        ctaLabel="Configure in Organization Settings"
+                        ctaHref="/org-settings"
+                    />
+                </div>
             </>
         );
     }
