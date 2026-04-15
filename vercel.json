@@ -17,6 +17,10 @@
     {
       "path": "/api/cron/reports",
       "schedule": "0 7 * * 1"
+    },
+    {
+      "path": "/api/cron/reconcile-orphan-stripe-cards",
+      "schedule": "0 * * * *"
     }
   ]
 }

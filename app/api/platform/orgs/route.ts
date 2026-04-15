@@ -3,10 +3,22 @@
 // itself (flagged via isPlatformOrg) so the client can show a "back to
 // platform view" option and keep a single source of truth for org state.
 //
-// Pagination note: capped at 500 rows. Client-side filters the list by name
-// and orgCode. At the 1.9M-tenant scale in the PRD we will want a real
-// paginated/search endpoint, but the platform-admin team is small enough
-// today that a single list load is fine and avoids premature complexity.
+// TODO(scale): this endpoint is hard-capped at 500 rows (MAX_ORGS below)
+// and the client does an in-memory substring filter on the full list.
+// That's fine for the pre-launch platform-admin team (<<100 orgs in the
+// DB), but it MUST be replaced with real cursor-based pagination +
+// server-side search BEFORE we cross ~10K tenant orgs. Two concrete
+// failure modes at that scale:
+//   1. The 500-row cap silently truncates results — an admin searching
+//      for a specific nonprofit may get "not found" on a real org.
+//   2. Unbounded SELECT * over the Organization table competes with
+//      write traffic on the writer endpoint (this route uses the writer
+//      intentionally so platform admins see their own recent writes).
+// Fix shape when triggered: add `?cursor=<orgCode>&search=<q>&limit=50`,
+// use `WHERE (orgCode, id) > (cursorOrgCode, cursorId) ORDER BY (orgCode,
+// id)` with a covering index, and push `search` down as an ILIKE against
+// the already-indexed `name` column. Do NOT implement now — YAGNI until
+// we actually cross the 500-org threshold.
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";

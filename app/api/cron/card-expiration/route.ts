@@ -51,8 +51,11 @@ export async function GET(request: Request) {
   }
 
   try {
+    // `now` is the Lambda clock; still used for Pass 1 (expire cards whose
+    // expiresAt is already past) and for computing daysUntilExpiry in the
+    // notification body. Pass 2's window was moved to DB-clock (NOW()) as
+    // part of the DDIA Ch11 audit — see the note inside Pass 2 below.
     const now = new Date();
-    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
     // Cursor-paginated scans + per-run budget. The previous implementation
     // loaded EVERY expired/expiring card across all 1.8M nonprofits into
@@ -231,28 +234,44 @@ export async function GET(request: Request) {
     let cardsNotifiedTotal = 0;
     let notifyReachedEnd = false;
     while (processedNotify < MAX_NOTIFY_PER_RUN) {
+      // DDIA Ch11 Stream Processing audit — event-time windowing via DB
+      // clock. The previous implementation used `new Date()` on the
+      // Lambda (variable `now` above) as both bounds of the 7-day window,
+      // which is processing-time semantics: if the cron ran late for any
+      // reason (platform outage, bad deploy, pause) a card whose expiry
+      // fell inside the lag window would silently miss its "expires
+      // soon" notification. Switching to `NOW()` inside a raw query
+      // anchors the comparison to the database's monotonic clock — same
+      // clock that wrote `expiresAt` in the first place, so there is no
+      // cross-clock drift. Dedup remains per-card via the
+      // `card_expiring_soon` Notification row check below, so a run that
+      // re-scans an already-notified card is a no-op.
       const cardsExpiring7Days: Array<{
         id: string;
         stripeCardId: string;
         organizationId: string;
         beneficiaryId: string | null;
         expiresAt: Date | null;
-      }> = await prisma.virtualCard.findMany({
-        where: {
-          expiresAt: { gt: now, lte: sevenDaysFromNow },
-          status: { in: ["ACTIVE", "FROZEN"] },
-        },
-        select: {
-          id: true,
-          stripeCardId: true,
-          organizationId: true,
-          beneficiaryId: true,
-          expiresAt: true,
-        },
-        take: BATCH_SIZE,
-        ...(notifyCursor ? { skip: 1, cursor: { id: notifyCursor } } : {}),
-        orderBy: { id: "asc" },
-      });
+      }> = notifyCursor
+        ? await prisma.$queryRaw`
+            SELECT id, "stripeCardId", "organizationId", "beneficiaryId", "expiresAt"
+            FROM "VirtualCard"
+            WHERE "expiresAt" > NOW()
+              AND "expiresAt" <= NOW() + INTERVAL '7 days'
+              AND status IN ('ACTIVE', 'FROZEN')
+              AND id > ${notifyCursor}
+            ORDER BY id ASC
+            LIMIT ${BATCH_SIZE}
+          `
+        : await prisma.$queryRaw`
+            SELECT id, "stripeCardId", "organizationId", "beneficiaryId", "expiresAt"
+            FROM "VirtualCard"
+            WHERE "expiresAt" > NOW()
+              AND "expiresAt" <= NOW() + INTERVAL '7 days'
+              AND status IN ('ACTIVE', 'FROZEN')
+            ORDER BY id ASC
+            LIMIT ${BATCH_SIZE}
+          `;
 
       if (cardsExpiring7Days.length === 0) {
         notifyReachedEnd = true;

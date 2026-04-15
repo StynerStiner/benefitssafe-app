@@ -162,7 +162,7 @@ export async function middleware(request: NextRequest) {
       vendor: "/vendor-dashboard",
       attorney: "/compliance",
       grant_officer: "/grants",
-      platform_admin: "/customers",
+      platform_admin: "/platform",
       support_agent: "/support",
       compliance_officer: "/compliance",
       billing_admin: "/billing",

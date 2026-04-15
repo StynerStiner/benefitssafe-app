@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { ChevronDown, Check } from "lucide-react";
 import OrgBranding from "@/components/shared/org-branding";
 
@@ -23,6 +24,7 @@ export default function OrgPicker() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { update } = useSession();
 
   useEffect(() => {
     fetch("/api/memberships")
@@ -73,6 +75,14 @@ export default function OrgPicker() {
       if (res.ok) {
         setActiveOrgId(orgId);
         setIsOpen(false);
+        // Force the JWT to re-read User.organizationId from the DB so
+        // every server component sees the new tenant on the next render.
+        // Mirrors the platform-admin org switcher in
+        // components/shared/platform-admin-banner.tsx — auth.ts honors
+        // `refreshOrg: true` by re-fetching org + billing state. Without
+        // this call, the client navigates but the JWT still carries the
+        // old organizationId until the next login.
+        await update({ refreshOrg: true });
         router.refresh();
       }
     } catch (error) {
