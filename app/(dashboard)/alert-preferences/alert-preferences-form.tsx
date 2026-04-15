@@ -6,7 +6,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import React, { useState, useTransition } from "react";
 import toast from "react-hot-toast";
-import { handleNotificationForm, type AlertPreferences } from "./actions";
+import { handleNotificationForm } from "./actions";
+import type { AlertPreferences } from "./types";
 
 interface Props {
   initialPrefs: AlertPreferences;

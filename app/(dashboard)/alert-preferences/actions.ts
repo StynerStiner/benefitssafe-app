@@ -1,23 +1,14 @@
 "use server";
 
+// IMPORTANT: Files marked "use server" may ONLY export async functions.
+// All types and constants for this feature live in ./types.ts — do not
+// move them back into this file or the Next.js build will fail with
+// "A 'use server' file can only export async functions, found object."
+
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-
-// Shape persisted on User.alertPreferences. Kept intentionally open so
-// the UI can add channels or per-event toggles later without another
-// migration. Current channels: mail, sms, push.
-export interface AlertPreferences {
-  mail: { enabled: boolean; message: string };
-  sms: { enabled: boolean; message: string };
-  push: { enabled: boolean; message: string };
-}
-
-export const DEFAULT_ALERT_PREFERENCES: AlertPreferences = {
-  mail: { enabled: true, message: "" },
-  sms: { enabled: false, message: "" },
-  push: { enabled: false, message: "" },
-};
+import { DEFAULT_ALERT_PREFERENCES, type AlertPreferences } from "./types";
 
 function coerceChannel(
   enabledRaw: FormDataEntryValue | null,
