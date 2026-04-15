@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { readCheckpoint, writeCheckpoint } from "@/lib/cron-checkpoint";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
-import { enqueueJob, JobTypes } from "@/lib/queue";
+import { enqueueJob, JobTypes, acquireCronLock } from "@/lib/queue";
 
 const CRON_NAME = "reports-dispatcher";
 
@@ -15,6 +15,13 @@ export async function GET(request: Request) {
 
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // DDIA Ch8 — prevent concurrent runs (Vercel cron retry + manual
+  // trigger races) from double-enqueueing the same orgs.
+  const release = await acquireCronLock(CRON_NAME, 600);
+  if (!release) {
+    return NextResponse.json({ skipped: "already_running" });
   }
 
   logger.info("Weekly grant report generation started — enqueuing per-org jobs");
@@ -95,5 +102,7 @@ export async function GET(request: Request) {
       error: error instanceof Error ? error.message : "Unknown error",
     });
     return NextResponse.json({ error: "Cron job failed" }, { status: 500 });
+  } finally {
+    await release();
   }
 }

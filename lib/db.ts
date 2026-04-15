@@ -51,3 +51,66 @@ function createPrismaClient(): PrismaClient {
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+// DDIA Ch8 Distributed Systems audit — transient-error retry wrapper.
+//
+// The Ch7 Transaction Safety audit introduced `Prisma.TransactionIsolationLevel.Serializable`
+// on several financial operations (expense approve, grant PATCH, issue-card,
+// process-charge, etc). Under real concurrency Postgres will occasionally
+// raise 40001 (serialization_failure) or 40P01 (deadlock_detected), which
+// Prisma surfaces as:
+//   - code "P2034" (transaction failed due to a write conflict)
+//   - or a Postgres error with `meta.code === '40001' / '40P01'`
+//
+// These are RETRYABLE: the transaction was safely aborted and re-running
+// it with the same inputs is correct. Without a retry wrapper, every
+// contended approval returns 500 to the user, which is exactly when we
+// should be handling contention silently.
+//
+// Usage:
+//   const result = await retryOnSerializationFailure(() =>
+//     prisma.$transaction(async (tx) => { ... }, { isolationLevel: Serializable })
+//   );
+//
+// Retries:
+//   3 attempts (1 + 2 retries), exponential backoff 50ms → 100ms → 200ms
+//   with ±25% jitter. Non-retryable errors propagate immediately.
+export async function retryOnSerializationFailure<T>(
+  fn: () => Promise<T>,
+  opts: { maxAttempts?: number; baseDelayMs?: number } = {},
+): Promise<T> {
+  const maxAttempts = opts.maxAttempts ?? 3;
+  const baseDelay = opts.baseDelayMs ?? 50;
+
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      if (!isRetryablePrismaError(err)) throw err;
+      if (attempt === maxAttempts) break;
+      const delay = baseDelay * Math.pow(2, attempt - 1);
+      const jitter = delay * (0.75 + Math.random() * 0.5);
+      await new Promise((r) => setTimeout(r, jitter));
+    }
+  }
+  throw lastErr;
+}
+
+function isRetryablePrismaError(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const anyErr = err as {
+    code?: string;
+    message?: string;
+    meta?: { code?: string };
+  };
+  // Prisma's write-conflict code (raised by Serializable/Snapshot tx aborts).
+  if (anyErr.code === "P2034") return true;
+  // Raw Postgres SQLSTATEs surfaced through Prisma's meta or message.
+  if (anyErr.meta?.code === "40001" || anyErr.meta?.code === "40P01") return true;
+  const msg = anyErr.message || "";
+  if (msg.includes("could not serialize access")) return true;
+  if (msg.includes("deadlock detected")) return true;
+  return false;
+}

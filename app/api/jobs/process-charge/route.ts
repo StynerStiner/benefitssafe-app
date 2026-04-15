@@ -5,12 +5,19 @@
 import { prisma } from "@/lib/db";
 import { classifyExpense } from "@/utils/compliance-rules";
 import { shouldAutoApprove } from "@/lib/auto-approve";
-import { verifyJobAuth } from "@/lib/queue";
+import { verifyJobAuth, claimJobMessage } from "@/lib/queue";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  if (!verifyJobAuth(request)) {
+  const auth = await verifyJobAuth(request);
+  if (!auth.valid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  // Ch8 messageId-level dedup as a belt-and-braces with the existing
+  // Ch7 txRecord.expenseId + ledger reference guards below.
+  const first = await claimJobMessage(auth.messageId);
+  if (!first) {
+    return NextResponse.json({ deduped: "message_id", messageId: auth.messageId });
   }
 
   try {

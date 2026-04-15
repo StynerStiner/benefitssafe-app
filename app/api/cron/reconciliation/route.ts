@@ -7,28 +7,47 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { acquireCronLock } from "@/lib/queue";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
 
 const APP_BASE_URL =
   process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
 
+const CRON_NAME = "reconciliation";
+
+// DDIA Ch8 — ledger→Stripe retrieval budget. Without a bound the loop
+// below will run transactions.retrieve() once per ledger entry in the
+// reconciliation window. At 1.8M orgs × 200M ledger entries/year the
+// monthly window is ~17M retrieves, guaranteed to timeout or OOM. Cap
+// per run and pick up where we left off next month (platform_admin
+// receives a PARTIAL flag if the budget was exhausted).
+const LEDGER_RETRIEVE_BUDGET = 500;
+
 export async function GET(request: Request) {
+  // Verify cron secret via Authorization header (not query params, to avoid logging)
+  // Supports both: ?secret=X (legacy) and Authorization: Bearer X
+  const authHeader = request.headers.get("authorization");
+  const { searchParams } = new URL(request.url);
+  const querySecret = searchParams.get("secret");
+  const secret = authHeader?.replace("Bearer ", "") || querySecret;
+
+  if (!secret || secret !== process.env.CRON_SECRET) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 },
+    );
+  }
+
+  // DDIA Ch8 — distributed lock. Reconciliation is monthly but Vercel
+  // cron retries a failed tick, and this handler is slow enough that
+  // the retry could overlap an in-flight run, doubling admin alerts.
+  const release = await acquireCronLock(CRON_NAME, 1800);
+  if (!release) {
+    return NextResponse.json({ skipped: "already_running" });
+  }
+
   try {
-    // Verify cron secret via Authorization header (not query params, to avoid logging)
-    // Supports both: ?secret=X (legacy) and Authorization: Bearer X
-    const authHeader = request.headers.get("authorization");
-    const { searchParams } = new URL(request.url);
-    const querySecret = searchParams.get("secret");
-    const secret = authHeader?.replace("Bearer ", "") || querySecret;
-
-    if (!secret || secret !== process.env.CRON_SECRET) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
-
     const now = new Date();
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -208,10 +227,21 @@ export async function GET(request: Request) {
     }
 
     let ledgerTotal = 0;
+    let retrievesUsed = 0;
+    let budgetExhausted = false;
     for (const entry of ledgerEntries) {
       ledgerTotal += parseFloat(entry.amount.toString());
 
       if (!entry.reference) continue;
+
+      // Budget cap on Stripe retrieves. Ledger totals still accumulate
+      // above (fast DB query) but we stop the per-entry Stripe hits so
+      // we don't blow through the function timeout.
+      if (retrievesUsed >= LEDGER_RETRIEVE_BUDGET) {
+        budgetExhausted = true;
+        continue;
+      }
+      retrievesUsed++;
 
       // Resolve which Stripe account this reference should resolve on.
       // If the ledger entry references a txn we have no Transaction row
@@ -344,12 +374,18 @@ export async function GET(request: Request) {
       },
     });
 
-    return NextResponse.json(reconciliationResults);
+    return NextResponse.json({
+      ...reconciliationResults,
+      ledgerRetrievesUsed: retrievesUsed,
+      budgetExhausted,
+    });
   } catch (error) {
     console.error("Monthly reconciliation cron job failed:", error);
     return NextResponse.json(
       { error: "Reconciliation job failed" },
       { status: 500 },
     );
+  } finally {
+    await release();
   }
 }

@@ -3,12 +3,19 @@
 // Called by QStash queue from the reports cron job.
 
 import { prisma } from "@/lib/db";
-import { verifyJobAuth } from "@/lib/queue";
+import { verifyJobAuth, claimJobMessage } from "@/lib/queue";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  if (!verifyJobAuth(request)) {
+  const auth = await verifyJobAuth(request);
+  if (!auth.valid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  // DDIA Ch8 — dedupe on QStash messageId so at-least-once delivery
+  // doesn't produce duplicate weekly reports.
+  const first = await claimJobMessage(auth.messageId);
+  if (!first) {
+    return NextResponse.json({ deduped: true, messageId: auth.messageId });
   }
 
   try {

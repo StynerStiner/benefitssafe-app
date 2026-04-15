@@ -1,11 +1,30 @@
 // Job queue backed by Upstash QStash for serverless async processing.
 // Falls back to synchronous fetch() if QStash is not configured.
 
-import { Client } from "@upstash/qstash";
+import { Client, Receiver } from "@upstash/qstash";
 
 const qstash =
   process.env.QSTASH_TOKEN
     ? new Client({ token: process.env.QSTASH_TOKEN })
+    : null;
+
+// DDIA Ch8 Distributed Systems audit — real QStash HMAC verification.
+//
+// Previously `verifyJobAuth` treated the mere presence of the
+// upstash-signature header as proof of trust. That meant anyone who
+// could guess a /api/jobs/* URL could forge a signature header and
+// execute the job with arbitrary payload — a security vulnerability as
+// well as a reliability one, because genuine QStash retries were being
+// "verified" without checking anything about the actual request.
+//
+// Receiver.verify() performs EdDSA signature verification over the raw
+// body + URL using the current + next signing keys.
+const qstashReceiver =
+  process.env.QSTASH_CURRENT_SIGNING_KEY && process.env.QSTASH_NEXT_SIGNING_KEY
+    ? new Receiver({
+        currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY,
+        nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY,
+      })
     : null;
 
 export interface JobPayload {
@@ -72,28 +91,139 @@ export async function enqueueJob(
   }
 }
 
-/** Verify a request is from QStash or has a valid internal API key. */
-export function verifyJobAuth(request: Request): boolean {
-  // Check QStash signature header
-  const upstashSignature = request.headers.get("upstash-signature");
-  if (upstashSignature && process.env.QSTASH_CURRENT_SIGNING_KEY) {
-    // QStash signature verification is handled by the @upstash/qstash receiver
-    // For simplicity, presence of the header + configured key = trusted
-    return true;
-  }
-
-  // Check internal API key
+/**
+ * Verify a request is from QStash (via real EdDSA HMAC) or has a valid
+ * internal API key. Async because real HMAC verification must read the
+ * raw request body.
+ *
+ * Returns:
+ *   { valid: true, messageId?: string } — caller can proceed
+ *   { valid: false }                    — caller must return 401
+ *
+ * messageId is the QStash `Upstash-Message-Id` header when present; use
+ * it as a dedup key in downstream processing (ProcessedJob table pattern).
+ */
+export async function verifyJobAuth(
+  request: Request,
+): Promise<{ valid: boolean; messageId?: string }> {
+  // Internal API key path (used by cron routes that call us directly).
   const internalKey = request.headers.get("x-internal-key");
   if (internalKey && process.env.INTERNAL_API_KEY && internalKey === process.env.INTERNAL_API_KEY) {
-    return true;
+    return { valid: true };
   }
 
-  // In development without QStash, allow if no keys configured
-  if (!process.env.QSTASH_TOKEN && !process.env.INTERNAL_API_KEY) {
-    return true;
+  // Real QStash HMAC verification.
+  const upstashSignature = request.headers.get("upstash-signature");
+  if (upstashSignature && qstashReceiver) {
+    try {
+      const bodyText = await request.clone().text();
+      const isValid = await qstashReceiver.verify({
+        signature: upstashSignature,
+        body: bodyText,
+        // url is optional but recommended — QStash signs the full URL.
+        url: request.url,
+      });
+      if (isValid) {
+        const messageId = request.headers.get("upstash-message-id") || undefined;
+        return { valid: true, messageId };
+      }
+      console.warn("[queue] QStash signature verification returned false");
+      return { valid: false };
+    } catch (err) {
+      console.error("[queue] QStash signature verification threw:", err);
+      return { valid: false };
+    }
   }
 
-  return false;
+  // Dev fallback: if NEITHER QStash keys NOR internal key are configured,
+  // allow (local dev without any auth wiring). Production always has at
+  // least INTERNAL_API_KEY set, so this branch never fires in prod.
+  if (
+    !process.env.QSTASH_CURRENT_SIGNING_KEY &&
+    !process.env.QSTASH_NEXT_SIGNING_KEY &&
+    !process.env.INTERNAL_API_KEY
+  ) {
+    return { valid: true };
+  }
+
+  return { valid: false };
+}
+
+// DDIA Ch8 — Redis-backed dedup for QStash messageId + distributed
+// lock for cron. Both use @upstash/redis SET NX EX semantics. Both are
+// best-effort: if Redis is unavailable, they return "allow" so cron
+// and jobs still run — the underlying operations should be as
+// idempotent as possible regardless.
+import { redis } from "@/lib/cache";
+
+/**
+ * Return true if this QStash messageId has not been processed before.
+ * Return false if it has (caller should early-return 200 as a no-op).
+ *
+ * @param messageId  QStash Upstash-Message-Id header value. If undefined
+ *                   (e.g. internal-key request), always returns true.
+ * @param ttlSeconds How long to remember the messageId. Pick > the
+ *                   QStash retry window (~24h) so a late retry still
+ *                   hits the dedup window.
+ */
+export async function claimJobMessage(
+  messageId: string | undefined,
+  ttlSeconds = 48 * 3600,
+): Promise<boolean> {
+  if (!messageId || !redis) return true;
+  try {
+    const res = await redis.set(`qstash:msg:${messageId}`, "1", {
+      nx: true,
+      ex: ttlSeconds,
+    });
+    // @upstash/redis returns "OK" on SET NX success, null if key existed.
+    return res === "OK";
+  } catch (err) {
+    console.error("[queue] claimJobMessage Redis error:", err);
+    return true;
+  }
+}
+
+/**
+ * Acquire a distributed lock for a cron handler so two overlapping
+ * invocations (Vercel cron + EasyCron retry, platform failover, etc.)
+ * don't run in parallel. Returns a release() function on success, or
+ * null if the lock is already held.
+ *
+ * @param name         Stable cron identifier, e.g. "cron:reconciliation".
+ * @param ttlSeconds   Safety-net expiration in case the handler crashes
+ *                     without releasing. Set longer than the expected
+ *                     max runtime.
+ */
+export async function acquireCronLock(
+  name: string,
+  ttlSeconds: number,
+): Promise<(() => Promise<void>) | null> {
+  if (!redis) {
+    // No Redis — no lock available; allow run.
+    return async () => {};
+  }
+  // Capture the non-null handle so the closure below isn't subject to
+  // narrowing loss after the async boundary.
+  const redisClient = redis;
+  const key = `cron:lock:${name}`;
+  try {
+    const res = await redisClient.set(key, Date.now().toString(), {
+      nx: true,
+      ex: ttlSeconds,
+    });
+    if (res !== "OK") return null;
+  } catch (err) {
+    console.error("[queue] acquireCronLock Redis error:", err);
+    return async () => {};
+  }
+  return async () => {
+    try {
+      await redisClient.del(key);
+    } catch (err) {
+      console.error("[queue] cron lock release failed:", err);
+    }
+  };
 }
 
 export const JobTypes = {

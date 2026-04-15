@@ -37,10 +37,16 @@ export async function POST() {
     }
 
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3001";
-    const portalSession = await stripe.billingPortal.sessions.create({
-      customer: sub.stripeCustomerId,
-      return_url: `${baseUrl}/settings/billing`,
-    });
+    // DDIA Ch8 — 5-minute bucket prevents duplicate portal sessions from
+    // quick double-clicks while still allowing legitimate later attempts.
+    const portalBucket = Math.floor(Date.now() / (5 * 60 * 1000));
+    const portalSession = await stripe.billingPortal.sessions.create(
+      {
+        customer: sub.stripeCustomerId,
+        return_url: `${baseUrl}/settings/billing`,
+      },
+      { idempotencyKey: `billing-portal-${organizationId}-${portalBucket}` },
+    );
 
     await prisma.auditLog.create({
       data: {

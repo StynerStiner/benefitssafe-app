@@ -4,7 +4,7 @@
 
 import { prisma } from "@/lib/db";
 import { classifyExpense } from "@/utils/compliance-rules";
-import { verifyJobAuth } from "@/lib/queue";
+import { verifyJobAuth, claimJobMessage } from "@/lib/queue";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
 import { NextResponse } from "next/server";
@@ -13,8 +13,16 @@ const APP_BASE_URL =
   process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
 
 export async function POST(request: Request) {
-  if (!verifyJobAuth(request)) {
+  // DDIA Ch8 — verify real QStash HMAC + dedupe on messageId so
+  // QStash's at-least-once retry doesn't duplicate reclassifications,
+  // audit logs, notifications, and compliance alert emails.
+  const auth = await verifyJobAuth(request);
+  if (!auth.valid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const first = await claimJobMessage(auth.messageId);
+  if (!first) {
+    return NextResponse.json({ deduped: true, messageId: auth.messageId });
   }
 
   try {

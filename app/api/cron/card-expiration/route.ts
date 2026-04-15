@@ -14,6 +14,7 @@ import { readCheckpoint, writeCheckpoint } from "@/lib/cron-checkpoint";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { stripeOptsForCard } from "@/lib/stripe-helpers";
+import { acquireCronLock } from "@/lib/queue";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
 
@@ -21,26 +22,35 @@ import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
 // cron firings even when one pass exhausts its budget before the other.
 const CRON_NAME_EXPIRE = "card-expiration-expire";
 const CRON_NAME_NOTIFY = "card-expiration-notify";
+const CRON_LOCK_NAME = "card-expiration";
 
 const APP_BASE_URL =
   process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
 
 export async function GET(request: Request) {
+  // Verify cron secret via Authorization header (not query params, to avoid logging)
+  // Supports both: ?secret=X (legacy) and Authorization: Bearer X
+  const authHeader = request.headers.get("authorization");
+  const { searchParams } = new URL(request.url);
+  const querySecret = searchParams.get("secret");
+  const secret = authHeader?.replace("Bearer ", "") || querySecret;
+
+  if (!secret || secret !== process.env.CRON_SECRET) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 },
+    );
+  }
+
+  // DDIA Ch8 — prevent concurrent runs; each audit log / notification
+  // from a duplicate run would be indistinguishable from a real second
+  // expiration.
+  const release = await acquireCronLock(CRON_LOCK_NAME, 900);
+  if (!release) {
+    return NextResponse.json({ skipped: "already_running" });
+  }
+
   try {
-    // Verify cron secret via Authorization header (not query params, to avoid logging)
-    // Supports both: ?secret=X (legacy) and Authorization: Bearer X
-    const authHeader = request.headers.get("authorization");
-    const { searchParams } = new URL(request.url);
-    const querySecret = searchParams.get("secret");
-    const secret = authHeader?.replace("Bearer ", "") || querySecret;
-
-    if (!secret || secret !== process.env.CRON_SECRET) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
-
     const now = new Date();
     const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
@@ -359,5 +369,7 @@ export async function GET(request: Request) {
       { error: "Cron job failed" },
       { status: 500 },
     );
+  } finally {
+    await release();
   }
 }

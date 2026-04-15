@@ -4,12 +4,21 @@
 // can be extended to send push/email/Slack in the future.
 
 import { prisma } from "@/lib/db";
-import { verifyJobAuth } from "@/lib/queue";
+import { verifyJobAuth, claimJobMessage } from "@/lib/queue";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  if (!verifyJobAuth(request)) {
+  // DDIA Ch8 — real QStash HMAC + messageId dedup. Without dedup, a
+  // QStash retry silently creates a second notification row with no
+  // way to distinguish it from a legitimate second notification on
+  // the same entity.
+  const auth = await verifyJobAuth(request);
+  if (!auth.valid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const first = await claimJobMessage(auth.messageId);
+  if (!first) {
+    return NextResponse.json({ deduped: true, messageId: auth.messageId });
   }
 
   try {

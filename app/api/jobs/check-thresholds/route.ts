@@ -4,7 +4,7 @@
 // Each org gets its own job instead of sequential processing.
 
 import { prisma } from "@/lib/db";
-import { verifyJobAuth } from "@/lib/queue";
+import { verifyJobAuth, claimJobMessage } from "@/lib/queue";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
 import { NextResponse } from "next/server";
@@ -13,8 +13,18 @@ const APP_BASE_URL =
   process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
 
 export async function POST(request: Request) {
-  if (!verifyJobAuth(request)) {
+  // DDIA Ch8 — real HMAC + messageId dedup. The existing per-warning
+  // entityId dedup at :96 protects the in-app notification list, but
+  // email fan-out and the cross-product createMany would both re-fire
+  // if QStash delivers the same job twice. messageId dedup short-circuits
+  // the whole handler on retry.
+  const jobAuth = await verifyJobAuth(request);
+  if (!jobAuth.valid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const first = await claimJobMessage(jobAuth.messageId);
+  if (!first) {
+    return NextResponse.json({ deduped: true, messageId: jobAuth.messageId });
   }
 
   try {

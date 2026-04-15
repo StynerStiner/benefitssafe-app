@@ -86,34 +86,18 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
         // Sandbox may not support these
       }
 
+      // DDIA Ch8 — idempotency keys on both variants. The "full capabilities"
+      // attempt and the "transfers only" retry use distinct keys so
+      // Stripe doesn't 409 on the retry when it's semantically a different
+      // request.
       let account;
       try {
-        account = await stripe.accounts.create({
-          type: "custom",
-          country: "US",
-          email: session.user.email || undefined,
-          capabilities,
-          business_profile: {
-            name: organization.name,
-            product_description: "Nonprofit grant disbursement platform for restricted fund management",
-            url: organization.website || undefined,
-          },
-          business_type: "non_profit",
-          tos_acceptance: {
-            service_agreement: "full",
-          },
-        });
-      } catch (createError: unknown) {
-        // If treasury/card_issuing fails, retry with just transfers
-        const errMsg = createError instanceof Error ? createError.message : "";
-        if (errMsg.includes("treasury") || errMsg.includes("card_issuing")) {
-          account = await stripe.accounts.create({
+        account = await stripe.accounts.create(
+          {
             type: "custom",
             country: "US",
             email: session.user.email || undefined,
-            capabilities: {
-              transfers: { requested: true },
-            },
+            capabilities,
             business_profile: {
               name: organization.name,
               product_description: "Nonprofit grant disbursement platform for restricted fund management",
@@ -123,7 +107,32 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
             tos_acceptance: {
               service_agreement: "full",
             },
-          });
+          },
+          { idempotencyKey: `onboarding-acct-full-${organization.id}` },
+        );
+      } catch (createError: unknown) {
+        const errMsg = createError instanceof Error ? createError.message : "";
+        if (errMsg.includes("treasury") || errMsg.includes("card_issuing")) {
+          account = await stripe.accounts.create(
+            {
+              type: "custom",
+              country: "US",
+              email: session.user.email || undefined,
+              capabilities: {
+                transfers: { requested: true },
+              },
+              business_profile: {
+                name: organization.name,
+                product_description: "Nonprofit grant disbursement platform for restricted fund management",
+                url: organization.website || undefined,
+              },
+              business_type: "non_profit",
+              tos_acceptance: {
+                service_agreement: "full",
+              },
+            },
+            { idempotencyKey: `onboarding-acct-transfers-${organization.id}` },
+          );
         } else {
           throw createError;
         }
@@ -133,24 +142,30 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
       // Create a Treasury Financial Account for this connected account
       let financialAccountId: string | null = null;
       try {
-        const financialAccount = await stripe.treasury.financialAccounts.create({
-          supported_currencies: ["usd"],
-          features: {
-            card_issuing: { requested: true },
-            deposit_insurance: { requested: true },
-            financial_addresses: { aba: { requested: true } },
-            inbound_transfers: { ach: { requested: true } },
-            intra_stripe_flows: { requested: true },
-            outbound_payments: {
-              ach: { requested: true },
-              us_domestic_wire: { requested: true },
-            },
-            outbound_transfers: {
-              ach: { requested: true },
-              us_domestic_wire: { requested: true },
+        const financialAccount = await stripe.treasury.financialAccounts.create(
+          {
+            supported_currencies: ["usd"],
+            features: {
+              card_issuing: { requested: true },
+              deposit_insurance: { requested: true },
+              financial_addresses: { aba: { requested: true } },
+              inbound_transfers: { ach: { requested: true } },
+              intra_stripe_flows: { requested: true },
+              outbound_payments: {
+                ach: { requested: true },
+                us_domestic_wire: { requested: true },
+              },
+              outbound_transfers: {
+                ach: { requested: true },
+                us_domestic_wire: { requested: true },
+              },
             },
           },
-        }, { stripeAccount: account.id });
+          {
+            stripeAccount: account.id,
+            idempotencyKey: `onboarding-fa-${organization.id}`,
+          },
+        );
         financialAccountId = financialAccount.id;
       } catch (treasuryError) {
         console.warn("Treasury Financial Account creation failed:", treasuryError);
@@ -168,15 +183,19 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
       });
     }
 
-    // Create onboarding link
-    const onboardingLink = await stripe.accountLinks.create({
-      account: accountId,
-      type: "account_onboarding",
-      // When user completes onboarding, redirect to dashboard
-      success_url: `${process.env.NEXTAUTH_URL || "http://localhost:3002"}/org-settings?stripe_connect_success=true`,
-      // If user closes onboarding without completing, redirect to retry
-      failure_url: `${process.env.NEXTAUTH_URL || "http://localhost:3002"}/org-settings?stripe_connect_success=false`,
-    });
+    // Create onboarding link. 5-minute bucket dedupes quick retries.
+    const linkBucket = Math.floor(Date.now() / (5 * 60 * 1000));
+    const onboardingLink = await stripe.accountLinks.create(
+      {
+        account: accountId,
+        type: "account_onboarding",
+        // When user completes onboarding, redirect to dashboard
+        success_url: `${process.env.NEXTAUTH_URL || "http://localhost:3002"}/org-settings?stripe_connect_success=true`,
+        // If user closes onboarding without completing, redirect to retry
+        failure_url: `${process.env.NEXTAUTH_URL || "http://localhost:3002"}/org-settings?stripe_connect_success=false`,
+      },
+      { idempotencyKey: `onboarding-link-${accountId}-${linkBucket}` },
+    );
 
     // Create audit log
     await prisma.auditLog.create({

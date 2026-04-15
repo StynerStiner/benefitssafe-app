@@ -62,11 +62,16 @@ export async function POST(request: Request) {
         where: { id: organizationId },
         select: { name: true },
       });
-      const customer = await stripe.customers.create({
-        email: email || undefined,
-        name: org?.name || undefined,
-        metadata: { organizationId, platform: "benefitssafe" },
-      });
+      // DDIA Ch8 — idempotency key. A retried checkout create against
+      // Stripe without a key will spawn a second customer row per retry.
+      const customer = await stripe.customers.create(
+        {
+          email: email || undefined,
+          name: org?.name || undefined,
+          metadata: { organizationId, platform: "benefitssafe" },
+        },
+        { idempotencyKey: `billing-customer-${organizationId}` },
+      );
       customerId = customer.id;
 
       // Persist customer id immediately so a replay/retry finds it
@@ -83,27 +88,34 @@ export async function POST(request: Request) {
     }
 
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3001";
-    const checkoutSession = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      customer: customerId,
-      line_items: [{ price: config.stripePriceId, quantity: 1 }],
-      success_url: `${baseUrl}/settings/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/settings/billing?checkout=canceled`,
-      client_reference_id: organizationId,
-      metadata: {
-        organizationId,
-        tier: tierEnum,
-        initiatedBy: userId,
-      },
-      subscription_data: {
+    // DDIA Ch8 — idempotency key bucketed per 5 minutes so the same
+    // org clicking checkout twice in quick succession reuses the same
+    // session, but legitimate later attempts get a fresh one.
+    const sessionBucket = Math.floor(Date.now() / (5 * 60 * 1000));
+    const checkoutSession = await stripe.checkout.sessions.create(
+      {
+        mode: "subscription",
+        customer: customerId,
+        line_items: [{ price: config.stripePriceId, quantity: 1 }],
+        success_url: `${baseUrl}/settings/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/settings/billing?checkout=canceled`,
+        client_reference_id: organizationId,
         metadata: {
           organizationId,
           tier: tierEnum,
+          initiatedBy: userId,
         },
+        subscription_data: {
+          metadata: {
+            organizationId,
+            tier: tierEnum,
+          },
+        },
+        allow_promotion_codes: true,
+        billing_address_collection: "required",
       },
-      allow_promotion_codes: true,
-      billing_address_collection: "required",
-    });
+      { idempotencyKey: `checkout-${organizationId}-${tierEnum}-${sessionBucket}` },
+    );
 
     await prisma.auditLog.create({
       data: {

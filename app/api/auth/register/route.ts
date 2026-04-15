@@ -231,15 +231,22 @@ export async function POST(request: Request) {
     let stripeAccountId: string | null = null;
 
     try {
-      const stripeAccount = await stripe.accounts.create({
-        type: "express",
-        country: "US",
-        email: email.toLowerCase().trim(),
-        business_profile: {
-          name: organizationName.trim(),
-          product_category: "non_profit",
+      // DDIA Ch8 — idempotency key on signup-time account create. A
+      // network retry without a key creates a second Stripe Connect
+      // account. Key on email (normalized) because the org row
+      // doesn't exist yet at this point.
+      const stripeAccount = await stripe.accounts.create(
+        {
+          type: "express",
+          country: "US",
+          email: email.toLowerCase().trim(),
+          business_profile: {
+            name: organizationName.trim(),
+            product_category: "non_profit",
+          },
         },
-      });
+        { idempotencyKey: `signup-acct-${email.toLowerCase().trim()}` },
+      );
       stripeAccountId = stripeAccount.id;
     } catch (stripeError) {
       console.error("Stripe account creation failed:", stripeError);

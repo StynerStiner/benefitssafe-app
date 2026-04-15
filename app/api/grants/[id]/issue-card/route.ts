@@ -8,7 +8,7 @@ import { stripe } from "@/lib/stripe";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { checkLimitAccess, buildLimitReachedResponse, getCurrentPeriod } from "@/lib/feature-gates";
 import { incrementUsage } from "@/lib/usage-tracker";
-import { screenAgainstOFAC } from "@/lib/ofac-screening";
+import { screenAgainstOFAC, OFACScreeningError } from "@/lib/ofac-screening";
 import { BLOCKED_MCC_CODES } from "@/lib/mcc-controls";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildCardIssuedEmail } from "@/lib/services/email-templates";
@@ -267,8 +267,19 @@ export async function POST(
       );
     }
 
-    // OFAC sanctions screening
-    const ofacResult = await screenAgainstOFAC(beneficiary.firstName, beneficiary.lastName);
+    // OFAC sanctions screening — DDIA Ch8 fail-CLOSED on network error.
+    let ofacResult;
+    try {
+      ofacResult = await screenAgainstOFAC(beneficiary.firstName, beneficiary.lastName);
+    } catch (err) {
+      if (err instanceof OFACScreeningError) {
+        return NextResponse.json(
+          { error: "OFAC screening service temporarily unavailable. Please try again in a few minutes." },
+          { status: 503 },
+        );
+      }
+      throw err;
+    }
 
     if (ofacResult.matchFound) {
       // Update eligibility record

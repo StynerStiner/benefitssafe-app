@@ -10,6 +10,7 @@
 
 import { readCheckpoint, writeCheckpoint } from "@/lib/cron-checkpoint";
 import { prisma } from "@/lib/db";
+import { acquireCronLock } from "@/lib/queue";
 import { NextResponse } from "next/server";
 
 const FIRST_ESCALATION_HOURS = 24;
@@ -17,13 +18,22 @@ const URGENT_ESCALATION_HOURS = 48;
 const CRON_NAME = "check-unanswered";
 
 export async function GET(request: Request) {
-  try {
-    // Verify cron secret (in production, use a secret to prevent abuse)
-    const authHeader = request.headers.get("authorization");
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  // Verify cron secret (in production, use a secret to prevent abuse)
+  const authHeader = request.headers.get("authorization");
+  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
+  // DDIA Ch8 — distributed lock. The findMany→createMany pattern at
+  // :114/:176 has a TOCTOU window where a concurrent run can insert
+  // duplicate escalation notifications between the existence check and
+  // the insert. The lock short-circuits the whole handler.
+  const release = await acquireCronLock(CRON_NAME, 600);
+  if (!release) {
+    return NextResponse.json({ skipped: "already_running" });
+  }
+
+  try {
     const now = new Date();
     const twentyFourHoursAgo = new Date(now.getTime() - FIRST_ESCALATION_HOURS * 60 * 60 * 1000);
     const seventyTwoHoursAgo = new Date(now.getTime() - 72 * 60 * 60 * 1000);
@@ -221,5 +231,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Cron check-unanswered error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  } finally {
+    await release();
   }
 }

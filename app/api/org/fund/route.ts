@@ -231,6 +231,17 @@ export async function POST(request: Request): Promise<NextResponse> {
       });
     }
 
+    // DDIA Ch8 Distributed Systems audit — idempotency key on ACH pull.
+    //
+    // Without a key, a network drop between "Stripe accepted the transfer"
+    // and "we received the response" silently costs the nonprofit a second
+    // ACH pull (real money from their bank). 5-minute bucket dedupes
+    // retries of the same request while allowing a legitimate second
+    // transfer of the same amount after the bucket rolls over.
+    const bucketMs = 5 * 60 * 1000;
+    const timeBucket = Math.floor(Date.now() / bucketMs);
+    const idempotencyKey = `ibt-${organization.id}-${amountInCents}-${bankPaymentMethodId}-${timeBucket}`;
+
     try {
       const transfer = await stripe.treasury.inboundTransfers.create({
         financial_account: financialAccountId,
@@ -238,7 +249,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         currency: "usd",
         origin_payment_method: bankPaymentMethodId,
         description: "Grant fund deposit",
-      }, { stripeAccount: stripeAccountId });
+      }, { stripeAccount: stripeAccountId, idempotencyKey });
 
       // Create audit log
       await prisma.auditLog.create({

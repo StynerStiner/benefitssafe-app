@@ -224,12 +224,23 @@ async function handleAuthorizationRequest(authorization: Record<string, unknown>
       });
     }
 
-    // OFAC staleness — if ever screened, require the screen to be fresh.
-    // A beneficiary who has never been screened passes this check but
-    // the absent eligibility row above will have let them through only
-    // if the app treats "not verified" as allowed. Flag as a soft
-    // check — tighten to fail-closed if SOC 2 requires.
-    if (eligibility?.ofacScreened === true && eligibility.ofacScreenedAt) {
+    // DDIA Ch8 — OFAC JIT check is now fail-CLOSED.
+    //
+    // Previous behavior: if a beneficiary had `ofacScreened === false`
+    // (e.g. because the OFAC API was unreachable at initial screening
+    // and the old lib/ofac-screening.ts swallowed the error), they
+    // passed this check silently. Combined with the old fail-open lib,
+    // a beneficiary whose only "screening" was a network flake could
+    // transact indefinitely.
+    //
+    // New behavior: beneficiaryId present + no valid recent screen =>
+    // decline. Callers can re-screen by forcing a re-issuance flow.
+    if (!eligibility || eligibility.ofacScreened !== true || !eligibility.ofacScreenedAt) {
+      checks.push({
+        pass: false,
+        reason: "OFAC screen missing — decline and re-screen required before further transactions",
+      });
+    } else {
       const age = Date.now() - eligibility.ofacScreenedAt.getTime();
       checks.push({
         pass: age <= ofacStalenessMs,

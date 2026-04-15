@@ -15,7 +15,7 @@
 //     when the approval actually commits.
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma, retryOnSerializationFailure } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { captureApiError } from "@/lib/error-handler";
 import { invalidateDashboardCache } from "@/lib/data";
@@ -91,9 +91,15 @@ export async function PATCH(
     // Serializable is the strongest isolation — rare conflicts retry,
     // the contention set is bounded to rows in the same grant, and the
     // correctness gain (no write skew, no lost update) is worth it.
+    //
+    // DDIA Ch8 — wrapped in retryOnSerializationFailure so Postgres
+    // 40001 / P2034 write-conflict aborts retry up to 3 times with
+    // exponential backoff. Without this, every contended approval
+    // returns 500 to the user, which defeats the point of Serializable.
     let result;
     try {
-      result = await prisma.$transaction(
+      result = await retryOnSerializationFailure(() =>
+        prisma.$transaction(
         async (tx) => {
           // 1. Atomic status guard — reject if already approved/rejected by
           //    a concurrent request. updateMany returns count; we throw on
@@ -230,6 +236,7 @@ export async function PATCH(
           maxWait: 5_000,
           timeout: 15_000,
         },
+        ),
       );
     } catch (err) {
       if (err instanceof ApprovalConflictError) {

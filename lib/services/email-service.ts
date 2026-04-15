@@ -118,6 +118,9 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
     };
     if (replyTo) body.ReplyTo = replyTo;
 
+    // DDIA Ch8 — explicit 5-second timeout. Default fetch() hangs until
+    // the underlying TCP timeout (~minutes) when Postmark is unreachable,
+    // which can freeze a Vercel function holding other resources.
     const res = await fetch("https://api.postmarkapp.com/email", {
       method: "POST",
       headers: {
@@ -126,6 +129,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
         "X-Postmark-Server-Token": token,
       },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!res.ok) {
