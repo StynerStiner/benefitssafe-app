@@ -14,6 +14,13 @@
 //     run, so each drop is independent.
 //   - IF NOT EXISTS / IF EXISTS — every statement is idempotent. Re-running
 //     the script on a partially-applied state is safe.
+//   - Partitioned tables (Transaction, LedgerEntry, AuditLog, Notification
+//     per scripts/partition-tables-fixed.sql) do NOT support CONCURRENTLY
+//     on partitioned indexes. Postgres returns SQLSTATE 0A000
+//     ("feature not supported") for these. On that specific error the
+//     script automatically retries the same statement without CONCURRENTLY,
+//     which takes a brief AccessExclusiveLock on the parent but is
+//     metadata-only for drops and very fast at pre-launch row counts.
 //
 // Caveats:
 //   - CREATE INDEX CONCURRENTLY takes minutes to hours on 100M+ row tables.
@@ -131,6 +138,41 @@ const DROP_INDEXES: Array<{ label: string; names: string[] }> = [
   },
 ];
 
+// Postgres rejects CREATE/DROP INDEX CONCURRENTLY on partitioned indexes
+// with SQLSTATE 0A000. On that specific error we retry the same statement
+// with the CONCURRENTLY keyword stripped — takes a brief lock but is the
+// only path Postgres gives us for partitioned tables.
+function isPartitionedConcurrentlyError(err: unknown): boolean {
+  const message = err instanceof Error ? err.message : String(err);
+  return /0A000/.test(message) && /concurrently/i.test(message);
+}
+
+function stripConcurrently(sql: string): string {
+  return sql.replace(/\bCONCURRENTLY\s+/i, "");
+}
+
+async function runDdl(sql: string): Promise<"ok" | "ok-fallback" | "error"> {
+  try {
+    await prisma.$executeRawUnsafe(sql);
+    return "ok";
+  } catch (err) {
+    if (isPartitionedConcurrentlyError(err)) {
+      const fallback = stripConcurrently(sql);
+      try {
+        await prisma.$executeRawUnsafe(fallback);
+        return "ok-fallback";
+      } catch (retryErr) {
+        const message = retryErr instanceof Error ? retryErr.message : String(retryErr);
+        console.error(`    ✗ fallback also failed: ${message}`);
+        return "error";
+      }
+    }
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`    ✗ FAILED: ${message}`);
+    return "error";
+  }
+}
+
 async function dumpIndexes(label: string): Promise<void> {
   const rows = await prisma.$queryRawUnsafe<IndexRow[]>(`
     SELECT tablename, indexname, indexdef
@@ -160,14 +202,15 @@ async function main() {
   console.log(`\n=== Creating ${NEW_INDEXES.length} new indexes ===`);
   for (const idx of NEW_INDEXES) {
     const start = Date.now();
-    try {
-      console.log(`  CREATE ${idx.name}`);
-      console.log(`    → ${idx.rationale}`);
-      await prisma.$executeRawUnsafe(idx.sql);
+    console.log(`  CREATE ${idx.name}`);
+    console.log(`    → ${idx.rationale}`);
+    const result = await runDdl(idx.sql);
+    if (result === "ok") {
       console.log(`    ✓ done in ${Math.round((Date.now() - start) / 1000)}s`);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error(`    ✗ FAILED: ${message}`);
+    } else if (result === "ok-fallback") {
+      console.log(
+        `    ✓ done in ${Math.round((Date.now() - start) / 1000)}s (fallback — partitioned table, CONCURRENTLY not supported)`,
+      );
     }
   }
 
@@ -175,14 +218,13 @@ async function main() {
   for (const drop of DROP_INDEXES) {
     console.log(`  DROP ${drop.label}`);
     for (const name of drop.names) {
-      try {
-        await prisma.$executeRawUnsafe(
-          `DROP INDEX CONCURRENTLY IF EXISTS "${name}"`,
-        );
+      const result = await runDdl(
+        `DROP INDEX CONCURRENTLY IF EXISTS "${name}"`,
+      );
+      if (result === "ok") {
         console.log(`    ✓ ${name}`);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        console.error(`    ✗ ${name}: ${message}`);
+      } else if (result === "ok-fallback") {
+        console.log(`    ✓ ${name} (fallback — partitioned index)`);
       }
     }
   }
