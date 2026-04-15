@@ -172,3 +172,8 @@ export type BillingSubscription = Prisma.BillingSubscriptionModel
  * 
  */
 export type UsageCounter = Prisma.UsageCounterModel
+/**
+ * Model ProcessedWebhookEvent
+ * 
+ */
+export type ProcessedWebhookEvent = Prisma.ProcessedWebhookEventModel

@@ -17,6 +17,7 @@ import { stripe } from "@/lib/stripe";
 import { coerceTier, TIER_CONFIG, PricingTier } from "@/lib/pricing";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
+import { markWebhookProcessed } from "@/lib/webhook-idempotency";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
@@ -123,6 +124,15 @@ export async function POST(request: Request) {
         console.error("Stripe billing webhook signature verification failed:", err);
         return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
       }
+    }
+
+    // --- Idempotency guard ---
+    // Dedupe by event.id so Stripe retries (up to 3 days) don't re-run
+    // side effects like double tier upgrades, duplicate invoice emails,
+    // or duplicate billing audit entries.
+    const { firstTime } = await markWebhookProcessed(event.id, "stripe-billing");
+    if (!firstTime) {
+      return NextResponse.json({ received: true, deduped: true });
     }
 
     // --- Dispatch ---

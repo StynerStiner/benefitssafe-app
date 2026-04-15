@@ -8,6 +8,7 @@ import { stripe } from "@/lib/stripe";
 import { enqueueJob, JobTypes } from "@/lib/queue";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildPaymentReceivedEmail } from "@/lib/services/email-templates";
+import { markWebhookProcessed } from "@/lib/webhook-idempotency";
 import { NextResponse } from "next/server";
 import type StripeType from "stripe";
 
@@ -36,6 +37,16 @@ export async function POST(request: Request) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("Stripe charges webhook signature verification failed:", message);
     return NextResponse.json({ error: `Webhook Error: ${message}` }, { status: 400 });
+  }
+
+  // Idempotency guard: duplicate deliveries (Stripe retries, or two
+  // Lambdas racing on the same retry) return 200 immediately without
+  // re-processing. The Transaction table also has a unique index on
+  // stripeTransactionId as a second line of defense, but that kicks in
+  // later in the flow and is row-level rather than event-level.
+  const { firstTime } = await markWebhookProcessed(event.id, "stripe-charges");
+  if (!firstTime) {
+    return NextResponse.json({ received: true, deduped: true });
   }
 
   // Handle declined authorizations

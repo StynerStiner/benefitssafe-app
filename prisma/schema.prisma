@@ -973,3 +973,16 @@ model UsageCounter {
   @@unique([organizationId, period])
   @@index([organizationId])
 }
+
+// Webhook idempotency ledger. Every inbound Stripe webhook (Issuing,
+// Charges, Billing) inserts its event.id here before processing. A
+// unique-constraint violation means the event was already processed
+// (by a prior delivery or a concurrent Lambda handling the same retry)
+// and the handler returns 200 immediately without re-running.
+model ProcessedWebhookEvent {
+  id          String   @id  // Stripe event.id, e.g. "evt_1N..."
+  webhookType String            // "stripe" | "stripe-charges" | "stripe-billing"
+  processedAt DateTime @default(now())
+
+  @@index([webhookType, processedAt])
+}

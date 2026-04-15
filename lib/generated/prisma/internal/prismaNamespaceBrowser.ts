@@ -81,7 +81,8 @@ export const ModelName = {
   WorkflowLog: 'WorkflowLog',
   GrantReport: 'GrantReport',
   BillingSubscription: 'BillingSubscription',
-  UsageCounter: 'UsageCounter'
+  UsageCounter: 'UsageCounter',
+  ProcessedWebhookEvent: 'ProcessedWebhookEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -693,6 +694,15 @@ export const UsageCounterScalarFieldEnum = {
 } as const
 
 export type UsageCounterScalarFieldEnum = (typeof UsageCounterScalarFieldEnum)[keyof typeof UsageCounterScalarFieldEnum]
+
+
+export const ProcessedWebhookEventScalarFieldEnum = {
+  id: 'id',
+  webhookType: 'webhookType',
+  processedAt: 'processedAt'
+} as const
+
+export type ProcessedWebhookEventScalarFieldEnum = (typeof ProcessedWebhookEventScalarFieldEnum)[keyof typeof ProcessedWebhookEventScalarFieldEnum]
 
 
 export const SortOrder = {

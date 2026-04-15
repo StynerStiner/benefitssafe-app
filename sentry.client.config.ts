@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
+import { scrubPii } from "@/lib/sentry-scrub";
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -8,10 +9,6 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
   enabled: !!process.env.NEXT_PUBLIC_SENTRY_DSN,
   beforeSend(event) {
-    if (event.request?.headers) {
-      delete event.request.headers["authorization"];
-      delete event.request.headers["cookie"];
-    }
-    return event;
+    return scrubPii(event);
   },
 });

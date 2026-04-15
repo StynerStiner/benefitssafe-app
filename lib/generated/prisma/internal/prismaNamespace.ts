@@ -414,7 +414,8 @@ export const ModelName = {
   WorkflowLog: 'WorkflowLog',
   GrantReport: 'GrantReport',
   BillingSubscription: 'BillingSubscription',
-  UsageCounter: 'UsageCounter'
+  UsageCounter: 'UsageCounter',
+  ProcessedWebhookEvent: 'ProcessedWebhookEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -430,7 +431,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organization" | "user" | "inviteToken" | "grant" | "budgetCategory" | "expenseRequest" | "vendor" | "subscription" | "virtualCard" | "cardholderEligibility" | "transaction" | "ledgerEntry" | "approval" | "auditLog" | "conversation" | "conversationParticipant" | "message" | "notification" | "document" | "disbursementPolicy" | "promoCode" | "promoRedemption" | "calendarEvent" | "organizationMembership" | "cronCheckpoint" | "integration" | "workflowTrigger" | "workflowLog" | "grantReport" | "billingSubscription" | "usageCounter"
+    modelProps: "organization" | "user" | "inviteToken" | "grant" | "budgetCategory" | "expenseRequest" | "vendor" | "subscription" | "virtualCard" | "cardholderEligibility" | "transaction" | "ledgerEntry" | "approval" | "auditLog" | "conversation" | "conversationParticipant" | "message" | "notification" | "document" | "disbursementPolicy" | "promoCode" | "promoRedemption" | "calendarEvent" | "organizationMembership" | "cronCheckpoint" | "integration" | "workflowTrigger" | "workflowLog" | "grantReport" | "billingSubscription" | "usageCounter" | "processedWebhookEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2728,6 +2729,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ProcessedWebhookEvent: {
+      payload: Prisma.$ProcessedWebhookEventPayload<ExtArgs>
+      fields: Prisma.ProcessedWebhookEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ProcessedWebhookEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProcessedWebhookEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ProcessedWebhookEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProcessedWebhookEventPayload>
+        }
+        findFirst: {
+          args: Prisma.ProcessedWebhookEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProcessedWebhookEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ProcessedWebhookEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProcessedWebhookEventPayload>
+        }
+        findMany: {
+          args: Prisma.ProcessedWebhookEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProcessedWebhookEventPayload>[]
+        }
+        create: {
+          args: Prisma.ProcessedWebhookEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProcessedWebhookEventPayload>
+        }
+        createMany: {
+          args: Prisma.ProcessedWebhookEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ProcessedWebhookEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProcessedWebhookEventPayload>[]
+        }
+        delete: {
+          args: Prisma.ProcessedWebhookEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProcessedWebhookEventPayload>
+        }
+        update: {
+          args: Prisma.ProcessedWebhookEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProcessedWebhookEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.ProcessedWebhookEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ProcessedWebhookEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ProcessedWebhookEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProcessedWebhookEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.ProcessedWebhookEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProcessedWebhookEventPayload>
+        }
+        aggregate: {
+          args: Prisma.ProcessedWebhookEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProcessedWebhookEvent>
+        }
+        groupBy: {
+          args: Prisma.ProcessedWebhookEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProcessedWebhookEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ProcessedWebhookEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProcessedWebhookEventCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3362,6 +3437,15 @@ export const UsageCounterScalarFieldEnum = {
 export type UsageCounterScalarFieldEnum = (typeof UsageCounterScalarFieldEnum)[keyof typeof UsageCounterScalarFieldEnum]
 
 
+export const ProcessedWebhookEventScalarFieldEnum = {
+  id: 'id',
+  webhookType: 'webhookType',
+  processedAt: 'processedAt'
+} as const
+
+export type ProcessedWebhookEventScalarFieldEnum = (typeof ProcessedWebhookEventScalarFieldEnum)[keyof typeof ProcessedWebhookEventScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -3842,6 +3926,7 @@ export type GlobalOmitConfig = {
   grantReport?: Prisma.GrantReportOmit
   billingSubscription?: Prisma.BillingSubscriptionOmit
   usageCounter?: Prisma.UsageCounterOmit
+  processedWebhookEvent?: Prisma.ProcessedWebhookEventOmit
 }
 
 /* Types for Logging */

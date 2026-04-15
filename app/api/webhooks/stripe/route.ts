@@ -16,6 +16,7 @@
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { validateMCC } from "@/lib/mcc-controls";
+import { markWebhookProcessed } from "@/lib/webhook-idempotency";
 import { NextResponse } from "next/server";
 
 const MCC_NAMES: Record<string, string> = {
@@ -64,6 +65,19 @@ export async function POST(request: Request) {
       } catch {
         console.error("Stripe webhook signature verification failed");
         return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+      }
+    }
+
+    // Idempotency: reject duplicate deliveries of the same Stripe event.
+    // NOTE: issuing_authorization.request is NOT deduped here — Stripe
+    // needs a fresh approve/decline decision within 2s every time it
+    // retries, and the JIT handler itself is already idempotent at the
+    // DB level (it re-reads the card + grant balance on every call).
+    // All other event types get the full dedupe guard.
+    if (event.type !== "issuing_authorization.request") {
+      const { firstTime } = await markWebhookProcessed(event.id, "stripe");
+      if (!firstTime) {
+        return NextResponse.json({ received: true, deduped: true });
       }
     }
 

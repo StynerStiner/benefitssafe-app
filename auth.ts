@@ -54,6 +54,76 @@ declare module "@auth/core/jwt" {
   }
 }
 
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+
+// Explicit cookie configuration. NextAuth defaults would mostly do the
+// right thing here, but "mostly" is not acceptable for a fintech auth
+// cookie — be loud about every flag so a future library upgrade cannot
+// silently weaken session security.
+//
+//   - httpOnly      : true  — never readable by client JS, so XSS cannot
+//                              exfiltrate the session token
+//   - secure        : true in prod — only ever sent over HTTPS
+//   - sameSite: lax : blocks cross-site POST CSRF but still lets the
+//                     cookie ride along on normal top-level navigations
+//                     (needed for OAuth provider redirects to work)
+//   - __Secure-     : prefixed cookie name in prod, which browsers refuse
+//                     to set from a non-HTTPS origin (belt + suspenders)
+//
+// The three secondary cookies (callbackUrl, csrfToken, pkceCodeVerifier)
+// are locked down with the same flag set so NextAuth's built-in CSRF
+// protection cannot be downgraded by an older browser or a proxy that
+// strips the default cookie prefix.
+const AUTH_COOKIES = {
+  sessionToken: {
+    name: IS_PRODUCTION ? "__Secure-authjs.session-token" : "authjs.session-token",
+    options: {
+      httpOnly: true,
+      sameSite: "lax" as const,
+      path: "/",
+      secure: IS_PRODUCTION,
+    },
+  },
+  callbackUrl: {
+    name: IS_PRODUCTION ? "__Secure-authjs.callback-url" : "authjs.callback-url",
+    options: {
+      httpOnly: true,
+      sameSite: "lax" as const,
+      path: "/",
+      secure: IS_PRODUCTION,
+    },
+  },
+  csrfToken: {
+    name: IS_PRODUCTION ? "__Host-authjs.csrf-token" : "authjs.csrf-token",
+    options: {
+      httpOnly: true,
+      sameSite: "lax" as const,
+      path: "/",
+      secure: IS_PRODUCTION,
+    },
+  },
+  pkceCodeVerifier: {
+    name: IS_PRODUCTION ? "__Secure-authjs.pkce.code_verifier" : "authjs.pkce.code_verifier",
+    options: {
+      httpOnly: true,
+      sameSite: "lax" as const,
+      path: "/",
+      secure: IS_PRODUCTION,
+      maxAge: 60 * 15,
+    },
+  },
+  state: {
+    name: IS_PRODUCTION ? "__Secure-authjs.state" : "authjs.state",
+    options: {
+      httpOnly: true,
+      sameSite: "lax" as const,
+      path: "/",
+      secure: IS_PRODUCTION,
+      maxAge: 60 * 15,
+    },
+  },
+};
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: "/auth/login",
@@ -63,6 +133,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     maxAge: 3600, // 1 hour — sessions expire after 60 minutes of inactivity
     updateAge: 900, // Refresh token every 15 minutes of active use
   },
+  cookies: AUTH_COOKIES,
+  // Trust the X-Forwarded-Host header set by Vercel. Required for the
+  // __Host- / __Secure- cookie prefixes to work behind Vercel's proxy.
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {
