@@ -10,15 +10,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { organizationId } = session.user;
+    const { organizationId, role, id: userId } = session.user;
     const params = request.nextUrl.searchParams;
 
     const limit = Math.min(parseInt(params.get("limit") || "25", 10) || 25, 100);
     const offset = Math.max(parseInt(params.get("offset") || "0", 10) || 0, 0);
 
-    const where = {
-      organizationId,
-    };
+    // Beneficiaries only see subscriptions tied to grants they are the
+    // named beneficiary on. Org-scope alone would leak every other
+    // beneficiary's SaaS subscriptions in the same nonprofit.
+    const where =
+      role === "beneficiary"
+        ? { organizationId, grant: { is: { beneficiaryId: userId } } }
+        : { organizationId };
 
     const [subscriptions, total] = await Promise.all([
       prisma.subscription.findMany({

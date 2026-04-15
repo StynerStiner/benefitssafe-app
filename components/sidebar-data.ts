@@ -271,11 +271,6 @@ const supportNav: NavItem[] = [
     url: "/support",
     icon: LifeBuoy,
   },
-  {
-    title: "All Users",
-    url: "/vendors",
-    icon: Users,
-  },
   { label: "Communication" },
   {
     title: "Messages",
@@ -319,6 +314,10 @@ const billingAdminNav: NavItem[] = [
   },
 ];
 
+// TODO: Platform admin portal is architecturally broken — all nonprofit
+// pages filter by session.user.organizationId but platform_admin has no org.
+// Needs either an org-selection UI or a separate /admin cross-org namespace.
+// Tracked as a separate PDR. Do not add more pages to this nav until fixed.
 const platformAdminNav: NavItem[] = [
   {
     title: "Platform",
