@@ -3233,7 +3233,8 @@ export const DocumentScalarFieldEnum = {
   fileUrl: 'fileUrl',
   fileType: 'fileType',
   uploadedById: 'uploadedById',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  archivedAt: 'archivedAt'
 } as const
 
 export type DocumentScalarFieldEnum = (typeof DocumentScalarFieldEnum)[keyof typeof DocumentScalarFieldEnum]

@@ -34,6 +34,7 @@ export type DocumentMinAggregateOutputType = {
   fileType: string | null
   uploadedById: string | null
   createdAt: Date | null
+  archivedAt: Date | null
 }
 
 export type DocumentMaxAggregateOutputType = {
@@ -46,6 +47,7 @@ export type DocumentMaxAggregateOutputType = {
   fileType: string | null
   uploadedById: string | null
   createdAt: Date | null
+  archivedAt: Date | null
 }
 
 export type DocumentCountAggregateOutputType = {
@@ -58,6 +60,7 @@ export type DocumentCountAggregateOutputType = {
   fileType: number
   uploadedById: number
   createdAt: number
+  archivedAt: number
   _all: number
 }
 
@@ -72,6 +75,7 @@ export type DocumentMinAggregateInputType = {
   fileType?: true
   uploadedById?: true
   createdAt?: true
+  archivedAt?: true
 }
 
 export type DocumentMaxAggregateInputType = {
@@ -84,6 +88,7 @@ export type DocumentMaxAggregateInputType = {
   fileType?: true
   uploadedById?: true
   createdAt?: true
+  archivedAt?: true
 }
 
 export type DocumentCountAggregateInputType = {
@@ -96,6 +101,7 @@ export type DocumentCountAggregateInputType = {
   fileType?: true
   uploadedById?: true
   createdAt?: true
+  archivedAt?: true
   _all?: true
 }
 
@@ -181,6 +187,7 @@ export type DocumentGroupByOutputType = {
   fileType: string
   uploadedById: string
   createdAt: Date
+  archivedAt: Date | null
   _count: DocumentCountAggregateOutputType | null
   _min: DocumentMinAggregateOutputType | null
   _max: DocumentMaxAggregateOutputType | null
@@ -214,6 +221,7 @@ export type DocumentWhereInput = {
   fileType?: Prisma.StringFilter<"Document"> | string
   uploadedById?: Prisma.StringFilter<"Document"> | string
   createdAt?: Prisma.DateTimeFilter<"Document"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableFilter<"Document"> | Date | string | null
 }
 
 export type DocumentOrderByWithRelationInput = {
@@ -226,6 +234,7 @@ export type DocumentOrderByWithRelationInput = {
   fileType?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
 }
 
 export type DocumentWhereUniqueInput = Prisma.AtLeast<{
@@ -241,6 +250,7 @@ export type DocumentWhereUniqueInput = Prisma.AtLeast<{
   fileType?: Prisma.StringFilter<"Document"> | string
   uploadedById?: Prisma.StringFilter<"Document"> | string
   createdAt?: Prisma.DateTimeFilter<"Document"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableFilter<"Document"> | Date | string | null
 }, "id">
 
 export type DocumentOrderByWithAggregationInput = {
@@ -253,6 +263,7 @@ export type DocumentOrderByWithAggregationInput = {
   fileType?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.DocumentCountOrderByAggregateInput
   _max?: Prisma.DocumentMaxOrderByAggregateInput
   _min?: Prisma.DocumentMinOrderByAggregateInput
@@ -271,6 +282,7 @@ export type DocumentScalarWhereWithAggregatesInput = {
   fileType?: Prisma.StringWithAggregatesFilter<"Document"> | string
   uploadedById?: Prisma.StringWithAggregatesFilter<"Document"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Document"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Document"> | Date | string | null
 }
 
 export type DocumentCreateInput = {
@@ -283,6 +295,7 @@ export type DocumentCreateInput = {
   fileType: string
   uploadedById: string
   createdAt?: Date | string
+  archivedAt?: Date | string | null
 }
 
 export type DocumentUncheckedCreateInput = {
@@ -295,6 +308,7 @@ export type DocumentUncheckedCreateInput = {
   fileType: string
   uploadedById: string
   createdAt?: Date | string
+  archivedAt?: Date | string | null
 }
 
 export type DocumentUpdateInput = {
@@ -307,6 +321,7 @@ export type DocumentUpdateInput = {
   fileType?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type DocumentUncheckedUpdateInput = {
@@ -319,6 +334,7 @@ export type DocumentUncheckedUpdateInput = {
   fileType?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type DocumentCreateManyInput = {
@@ -331,6 +347,7 @@ export type DocumentCreateManyInput = {
   fileType: string
   uploadedById: string
   createdAt?: Date | string
+  archivedAt?: Date | string | null
 }
 
 export type DocumentUpdateManyMutationInput = {
@@ -343,6 +360,7 @@ export type DocumentUpdateManyMutationInput = {
   fileType?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type DocumentUncheckedUpdateManyInput = {
@@ -355,6 +373,7 @@ export type DocumentUncheckedUpdateManyInput = {
   fileType?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type DocumentCountOrderByAggregateInput = {
@@ -367,6 +386,7 @@ export type DocumentCountOrderByAggregateInput = {
   fileType?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type DocumentMaxOrderByAggregateInput = {
@@ -379,6 +399,7 @@ export type DocumentMaxOrderByAggregateInput = {
   fileType?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type DocumentMinOrderByAggregateInput = {
@@ -391,6 +412,7 @@ export type DocumentMinOrderByAggregateInput = {
   fileType?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 
@@ -405,6 +427,7 @@ export type DocumentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   fileType?: boolean
   uploadedById?: boolean
   createdAt?: boolean
+  archivedAt?: boolean
 }, ExtArgs["result"]["document"]>
 
 export type DocumentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -417,6 +440,7 @@ export type DocumentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   fileType?: boolean
   uploadedById?: boolean
   createdAt?: boolean
+  archivedAt?: boolean
 }, ExtArgs["result"]["document"]>
 
 export type DocumentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -429,6 +453,7 @@ export type DocumentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   fileType?: boolean
   uploadedById?: boolean
   createdAt?: boolean
+  archivedAt?: boolean
 }, ExtArgs["result"]["document"]>
 
 export type DocumentSelectScalar = {
@@ -441,9 +466,10 @@ export type DocumentSelectScalar = {
   fileType?: boolean
   uploadedById?: boolean
   createdAt?: boolean
+  archivedAt?: boolean
 }
 
-export type DocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "entityType" | "entityId" | "fileName" | "fileUrl" | "fileType" | "uploadedById" | "createdAt", ExtArgs["result"]["document"]>
+export type DocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "entityType" | "entityId" | "fileName" | "fileUrl" | "fileType" | "uploadedById" | "createdAt" | "archivedAt", ExtArgs["result"]["document"]>
 
 export type $DocumentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Document"
@@ -458,6 +484,7 @@ export type $DocumentPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     fileType: string
     uploadedById: string
     createdAt: Date
+    archivedAt: Date | null
   }, ExtArgs["result"]["document"]>
   composites: {}
 }
@@ -890,6 +917,7 @@ export interface DocumentFieldRefs {
   readonly fileType: Prisma.FieldRef<"Document", 'String'>
   readonly uploadedById: Prisma.FieldRef<"Document", 'String'>
   readonly createdAt: Prisma.FieldRef<"Document", 'DateTime'>
+  readonly archivedAt: Prisma.FieldRef<"Document", 'DateTime'>
 }
     
 

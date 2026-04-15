@@ -706,6 +706,13 @@ model Document {
   uploadedById   String
   createdAt      DateTime @default(now())
 
+  // Soft-delete marker. Used by the admin CCPA data-deletion route
+  // (/api/admin/data-deletion) to retire documents uploaded by a
+  // user whose PII has been scrubbed — we keep the row for audit
+  // continuity but hide it from active queries. Nullable; live
+  // documents have archivedAt = NULL.
+  archivedAt     DateTime?
+
   @@index([organizationId])
   @@index([entityType, entityId])
 }
