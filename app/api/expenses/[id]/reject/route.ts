@@ -55,51 +55,73 @@ export async function PATCH(
       );
     }
 
-    // All mutations in a single transaction for consistency
-    const updatedExpense = await prisma.$transaction(async (tx) => {
-      // Update expense status
-      const expense = await tx.expenseRequest.update({
-        where: { id },
-        data: {
-          status: "REJECTED",
-          rejectedReason: parsed.data.reason,
-        },
-        include: {
-          grant: { select: { id: true, name: true } },
-          category: { select: { id: true, name: true } },
-          requestedBy: { select: { id: true, firstName: true, lastName: true, email: true } },
-        },
-      });
-
-      // Create approval record (tracks rejections too)
-      await tx.approval.create({
-        data: {
-          organizationId,
-          expenseId: id,
-          approverId: userId,
-          action: "REJECTED",
-          notes: parsed.data.notes ?? parsed.data.reason,
-        },
-      });
-
-      // Create audit log
-      await tx.auditLog.create({
-        data: {
-          userId,
-          organizationId,
-          action: "reject",
-          entityType: "expense",
-          entityId: id,
-          oldValue: { status: "PENDING" },
-          newValue: {
+    // All mutations in a single transaction for consistency. The status
+    // transition uses updateMany WHERE status='PENDING' + rowCount
+    // check so an approve/reject race (or a retried reject after a
+    // concurrent approve committed) fails loudly instead of silently
+    // flipping an already-approved expense to REJECTED.
+    // (DDIA Ch7 Transaction Safety audit — lost update prevention.)
+    let updatedExpense;
+    try {
+      updatedExpense = await prisma.$transaction(async (tx) => {
+        const statusFlip = await tx.expenseRequest.updateMany({
+          where: { id, status: "PENDING" },
+          data: {
             status: "REJECTED",
             rejectedReason: parsed.data.reason,
           },
-        },
-      });
+        });
+        if (statusFlip.count === 0) {
+          throw new Error("expense_not_pending_at_commit");
+        }
 
-      return expense;
-    });
+        const fresh = await tx.expenseRequest.findUniqueOrThrow({
+          where: { id },
+          include: {
+            grant: { select: { id: true, name: true } },
+            category: { select: { id: true, name: true } },
+            requestedBy: { select: { id: true, firstName: true, lastName: true, email: true } },
+          },
+        });
+
+        // Create approval record (tracks rejections too)
+        await tx.approval.create({
+          data: {
+            organizationId,
+            expenseId: id,
+            approverId: userId,
+            action: "REJECTED",
+            notes: parsed.data.notes ?? parsed.data.reason,
+          },
+        });
+
+        // Create audit log inside the tx so it rolls back on conflict.
+        await tx.auditLog.create({
+          data: {
+            userId,
+            organizationId,
+            action: "reject",
+            entityType: "expense",
+            entityId: id,
+            oldValue: { status: "PENDING" },
+            newValue: {
+              status: "REJECTED",
+              rejectedReason: parsed.data.reason,
+            },
+          },
+        });
+
+        return fresh;
+      });
+    } catch (err) {
+      if ((err as Error)?.message === "expense_not_pending_at_commit") {
+        return NextResponse.json(
+          { error: "Expense is no longer pending" },
+          { status: 409 },
+        );
+      }
+      throw err;
+    }
 
     // Notify the beneficiary who submitted the expense (in-app + email)
     if (updatedExpense.requestedBy) {

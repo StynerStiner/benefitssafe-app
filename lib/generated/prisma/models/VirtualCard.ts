@@ -387,6 +387,7 @@ export type VirtualCardOrderByWithRelationInput = {
 
 export type VirtualCardWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  expenseId?: string
   stripeCardId?: string
   AND?: Prisma.VirtualCardWhereInput | Prisma.VirtualCardWhereInput[]
   OR?: Prisma.VirtualCardWhereInput[]
@@ -394,7 +395,6 @@ export type VirtualCardWhereUniqueInput = Prisma.AtLeast<{
   organizationId?: Prisma.StringFilter<"VirtualCard"> | string
   categoryId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   grantId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
-  expenseId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   vendorId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   beneficiaryId?: Prisma.StringNullableFilter<"VirtualCard"> | string | null
   issuingMode?: Prisma.StringFilter<"VirtualCard"> | string
@@ -417,7 +417,7 @@ export type VirtualCardWhereUniqueInput = Prisma.AtLeast<{
   beneficiary?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   subscriptions?: Prisma.SubscriptionListRelationFilter
   transactions?: Prisma.TransactionListRelationFilter
-}, "id" | "stripeCardId">
+}, "id" | "stripeCardId" | "expenseId">
 
 export type VirtualCardOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

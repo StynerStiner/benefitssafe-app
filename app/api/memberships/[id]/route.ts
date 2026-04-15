@@ -37,60 +37,87 @@ export async function DELETE(
       return NextResponse.json({ error: "Cannot revoke your own membership" }, { status: 400 });
     }
 
-    // Revoke the membership
-    await prisma.organizationMembership.update({
-      where: { id: membershipId },
-      data: { status: "revoked" },
-    });
+    // Wrap revoke + card freeze + remaining-membership count + optional
+    // user deactivation + audit log in a single tx. Without this, a
+    // concurrent membership create could register between the count and
+    // the user deactivation, leaving us globally deactivating a user
+    // who is legitimately still active elsewhere.
+    //
+    // Status guard on the revoke prevents a second revoke-retry from
+    // producing spurious audit entries + card-freeze fan-out.
+    // (DDIA Ch7 Transaction Safety audit.)
+    let result;
+    try {
+      result = await prisma.$transaction(async (tx) => {
+        const revokeUpdate = await tx.organizationMembership.updateMany({
+          where: { id: membershipId, organizationId, status: "active" },
+          data: { status: "revoked" },
+        });
+        if (revokeUpdate.count === 0) {
+          throw new Error("membership_not_active");
+        }
 
-    // Freeze/cancel any active virtual cards for this user in this org
-    const frozenCards = await prisma.virtualCard.updateMany({
-      where: {
-        organizationId,
-        beneficiaryId: membership.userId,
-        status: "ACTIVE",
-      },
-      data: { status: "FROZEN" },
-    });
+        // Freeze any active virtual cards for this user in this org.
+        const frozenCards = await tx.virtualCard.updateMany({
+          where: {
+            organizationId,
+            beneficiaryId: membership.userId,
+            status: "ACTIVE",
+          },
+          data: { status: "FROZEN" },
+        });
 
-    // Check if user has any remaining active memberships
-    const remainingActive = await prisma.organizationMembership.count({
-      where: {
-        userId: membership.userId,
-        status: "active",
-        id: { not: membershipId },
-      },
-    });
+        // Remaining active memberships (counted inside the tx so the
+        // snapshot is consistent with the revoke above).
+        const remainingActive = await tx.organizationMembership.count({
+          where: {
+            userId: membership.userId,
+            status: "active",
+            id: { not: membershipId },
+          },
+        });
 
-    // If no remaining active memberships, deactivate user globally
-    if (remainingActive === 0) {
-      await prisma.user.update({
-        where: { id: membership.userId },
-        data: { isActive: false },
-      });
-    }
+        if (remainingActive === 0) {
+          await tx.user.update({
+            where: { id: membership.userId },
+            data: { isActive: false },
+          });
+        }
 
-    // Audit log
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        organizationId,
-        action: "revoke_membership",
-        entityType: "organization_membership",
-        entityId: membershipId,
-        newValue: {
-          revokedUserId: membership.userId,
-          revokedRole: membership.role,
+        await tx.auditLog.create({
+          data: {
+            userId: session.user.id,
+            organizationId,
+            action: "revoke_membership",
+            entityType: "organization_membership",
+            entityId: membershipId,
+            newValue: {
+              revokedUserId: membership.userId,
+              revokedRole: membership.role,
+              cardsFrozen: frozenCards.count,
+              globallyDeactivated: remainingActive === 0,
+            },
+          },
+        });
+
+        return {
           cardsFrozen: frozenCards.count,
           globallyDeactivated: remainingActive === 0,
-        },
-      },
-    });
+        };
+      });
+    } catch (err) {
+      if ((err as Error)?.message === "membership_not_active") {
+        return NextResponse.json(
+          { error: "Membership is not active" },
+          { status: 409 },
+        );
+      }
+      throw err;
+    }
 
     return NextResponse.json({
       message: "Membership revoked",
-      cardsFrozen: frozenCards.count,
-      globallyDeactivated: remainingActive === 0,
+      ...result,
     });
   } catch (error) {
     console.error("DELETE /api/memberships/[id] error:", error);

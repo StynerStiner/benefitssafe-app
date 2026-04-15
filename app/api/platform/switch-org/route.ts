@@ -61,6 +61,12 @@ export async function POST(request: Request) {
     // target org (not the platform org) means a nonprofit auditor reviewing
     // their own audit trail will see every time internal staff looked at
     // their data — important for trust and SOC 2 access review.
+    //
+    // DDIA Ch7 Transaction Safety audit removed the previous
+    // `.catch(() => {})` that silently swallowed errors here. A
+    // cross-tenant access event that fails to persist its audit log is a
+    // SOC 2 finding; letting the error propagate to the outer 500 so the
+    // client retries is the correct behavior.
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
@@ -74,7 +80,7 @@ export async function POST(request: Request) {
           isPlatformOrg: org.isPlatformOrg,
         },
       },
-    }).catch(() => {});
+    });
 
     return NextResponse.json({
       success: true,

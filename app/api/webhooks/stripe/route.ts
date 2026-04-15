@@ -180,17 +180,65 @@ async function handleAuthorizationRequest(authorization: Record<string, unknown>
   // CHECKS — every one must pass
   const checks: { pass: boolean; reason: string }[] = [];
 
-  // Check cardholder eligibility
+  // OFAC staleness + match enforcement at authorization time.
+  //
+  // DDIA Ch7 Transaction Safety audit flagged that the original code
+  // only read `eligibilityStatus` and never validated when the
+  // beneficiary was last screened. A person added to the SDN list after
+  // their last screen would authorize fine — a real OFAC violation with
+  // regulatory penalties.
+  //
+  // Policy: re-screens older than OFAC_STALENESS_DAYS fail closed. Any
+  // previously detected OFAC match also fails closed regardless of
+  // `eligibilityStatus`, so a stale "ELIGIBLE" status cannot shadow a
+  // fresh match.
+  const OFAC_STALENESS_DAYS = 30;
+  const ofacStalenessMs = OFAC_STALENESS_DAYS * 24 * 60 * 60 * 1000;
+
   if (virtualCard.beneficiaryId) {
     const eligibility = await prisma.cardholderEligibility.findUnique({
       where: { beneficiaryId: virtualCard.beneficiaryId },
-      select: { eligibilityStatus: true },
+      select: {
+        eligibilityStatus: true,
+        ofacScreened: true,
+        ofacMatchFound: true,
+        ofacScreenedAt: true,
+      },
     });
 
     checks.push({
-      pass: !eligibility || eligibility.eligibilityStatus === "ELIGIBLE" || eligibility.eligibilityStatus === "RESTRICTED_CALFRESH_ONLY",
-      reason: eligibility ? `Eligibility: ${eligibility.eligibilityStatus}` : "Eligibility: not verified (allowed)",
+      pass:
+        !eligibility ||
+        eligibility.eligibilityStatus === "ELIGIBLE" ||
+        eligibility.eligibilityStatus === "RESTRICTED_CALFRESH_ONLY",
+      reason: eligibility
+        ? `Eligibility: ${eligibility.eligibilityStatus}`
+        : "Eligibility: not verified (allowed)",
     });
+
+    // OFAC match — fails closed regardless of eligibility status.
+    if (eligibility?.ofacMatchFound === true) {
+      checks.push({
+        pass: false,
+        reason: "OFAC match recorded on beneficiary — declined per compliance policy",
+      });
+    }
+
+    // OFAC staleness — if ever screened, require the screen to be fresh.
+    // A beneficiary who has never been screened passes this check but
+    // the absent eligibility row above will have let them through only
+    // if the app treats "not verified" as allowed. Flag as a soft
+    // check — tighten to fail-closed if SOC 2 requires.
+    if (eligibility?.ofacScreened === true && eligibility.ofacScreenedAt) {
+      const age = Date.now() - eligibility.ofacScreenedAt.getTime();
+      checks.push({
+        pass: age <= ofacStalenessMs,
+        reason:
+          age > ofacStalenessMs
+            ? `OFAC screen stale (${Math.floor(age / (24 * 60 * 60 * 1000))} days > ${OFAC_STALENESS_DAYS} days) — decline and re-screen required`
+            : "OFAC screen fresh",
+      });
+    }
 
     // For RESTRICTED_CALFRESH_ONLY, block food merchant categories
     if (eligibility?.eligibilityStatus === "RESTRICTED_CALFRESH_ONLY") {
@@ -413,8 +461,20 @@ async function handleTransactionCreated(transaction: Record<string, unknown>) {
       const grantIdForUpdate = virtualCard.expense.grantId;
       const categoryIdForUpdate = virtualCard.expense.categoryId;
 
-      // Use a transaction with row-level lock to prevent race conditions
-      // Two concurrent charges against the same grant cannot both pass the balance check
+      // Use a transaction with row-level lock to prevent race conditions.
+      // Two concurrent charges against the same grant cannot both pass
+      // the balance check (Stripe has already authorized the charge at
+      // this point — we just record the settlement).
+      //
+      // OVERSPEND SEMANTICS (DDIA Ch7 Transaction Safety audit): unlike
+      // the approve path which can refuse the debit, this is a post-
+      // authorization settlement. Stripe already moved the money. We
+      // MUST record the debit; refusing it would leave the ledger out
+      // of sync with Stripe. When `remaining < chargeAmount` we commit
+      // the debit anyway but mark `overspent: true` on the ledger entry
+      // and fire an immediate critical notification to org admins so
+      // they can act within the Stripe dispute window.
+      let overspent = false;
       await prisma.$transaction(async (tx) => {
         // Lock the grant row for update (prevents concurrent reads)
         const lockedGrant = await tx.$queryRaw`
@@ -424,9 +484,11 @@ async function handleTransactionCreated(transaction: Record<string, unknown>) {
         ` as { remainingAmount: number }[];
 
         const remaining = parseFloat(String(lockedGrant[0]?.remainingAmount ?? 0));
-        if (remaining < chargeAmount) {
-          console.error(`[handleTransactionCreated] Insufficient grant balance: ${remaining} < ${chargeAmount}`);
-          // Still create the ledger entry to record the overspend, but log the issue
+        overspent = remaining < chargeAmount;
+        if (overspent) {
+          console.error(
+            `[handleTransactionCreated] OVERSPEND: grant ${grantIdForUpdate} has ${remaining}, charge is ${chargeAmount}. Committing debit + alerting admins.`,
+          );
         }
 
         // Update grant spent/remaining amounts
@@ -462,11 +524,64 @@ async function handleTransactionCreated(transaction: Record<string, unknown>) {
             type: "DEBIT",
             amount: chargeAmount,
             balanceAfter: updatedGrant?.remainingAmount ?? 0,
-            description: `Card charge: ${merchantData?.name || "Unknown merchant"}`,
+            description: overspent
+              ? `OVERSPEND: Card charge: ${merchantData?.name || "Unknown merchant"} (grant went negative by $${Math.abs(Number(updatedGrant?.remainingAmount ?? 0)).toFixed(2)})`
+              : `Card charge: ${merchantData?.name || "Unknown merchant"}`,
             reference: transaction.id as string,
           },
         });
       });
+
+      // Overspend alert fan-out (outside the money tx so it never
+      // blocks the settlement). Fires a critical notification to every
+      // org admin so they can investigate the charge while the Stripe
+      // dispute window is still open.
+      if (overspent) {
+        const admins = await prisma.user.findMany({
+          where: {
+            organizationId: virtualCard.organizationId,
+            role: { in: ["nonprofit_admin", "platform_admin"] },
+            isActive: true,
+          },
+          select: { id: true },
+          take: 200,
+        });
+        const notificationRows = admins.map((admin) => ({
+          userId: admin.id,
+          organizationId: virtualCard.organizationId,
+          type: "grant_overspent",
+          title: "Grant overspent — review immediately",
+          message: `A card charge of $${chargeAmount.toFixed(2)} at ${merchantData?.name || "unknown merchant"} exceeded the remaining grant balance. The charge was already authorized by Stripe and has been committed to the ledger; dispute within 7 days if it should be reversed.`,
+          entityType: "transaction",
+          entityId: transaction.id as string,
+          href: `/audit-trail?filter=overspend&id=${transaction.id as string}`,
+        }));
+        if (notificationRows.length > 0) {
+          await prisma.notification
+            .createMany({ data: notificationRows })
+            .catch((err) =>
+              console.error("[overspend alert] notify failed:", err),
+            );
+        }
+        await prisma.auditLog
+          .create({
+            data: {
+              userId: "system_webhook",
+              organizationId: virtualCard.organizationId,
+              action: "grant_overspent",
+              entityType: "grant",
+              entityId: grantIdForUpdate,
+              newValue: {
+                chargeAmount,
+                merchantName: (merchantData?.name as string) || "Unknown",
+                stripeTransactionId: transaction.id as string,
+              },
+            },
+          })
+          .catch((err) =>
+            console.error("[overspend alert] audit failed:", err),
+          );
+      }
 
       // Fire workflow: card_transaction_completed (non-blocking)
       const grantInfo = await prisma.grant.findUnique({

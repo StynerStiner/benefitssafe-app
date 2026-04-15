@@ -475,8 +475,16 @@ model VirtualCard {
   subscriptions Subscription[]
   transactions  Transaction[]
 
+  // One virtual card per ExpenseRequest. expenseId is nullable for
+  // direct-grant cards (see /api/grants/[id]/issue-card); Postgres
+  // treats multiple NULLs as distinct so nullable uniqueness is exactly
+  // the semantics we want — at most one card per expense, unlimited
+  // cards per grant-direct path. The grant-direct uniqueness is enforced
+  // by a partial unique index applied via scripts/add-virtual-card-unique-constraints.ts
+  // because Prisma's schema language cannot express partial unique indexes.
+  // (DDIA Ch7 Transaction Safety audit — prevents double card issuance.)
+  @@unique([expenseId])
   @@index([grantId])                     // Grant → cards join
-  @@index([expenseId])                   // Expense → cards join
   @@index([vendorId])                    // Vendor → cards join
   @@index([beneficiaryId])               // Beneficiary's own cards
   @@index([organizationId, status])      // Card listing filtered by org and status

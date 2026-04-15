@@ -190,6 +190,30 @@ export async function POST(
       );
     }
 
+    // Existence check for double-issue prevention. The partial unique
+    // index `uniq_active_card_per_grant_beneficiary` applied via
+    // scripts/add-virtual-card-unique-constraints.ts enforces this at
+    // the DB level, but we check first so the happy path returns a
+    // clean 409 instead of relying on P2002 at INSERT time. (DDIA Ch7
+    // Transaction Safety audit.)
+    const existingActiveCard = await prisma.virtualCard.findFirst({
+      where: {
+        grantId,
+        beneficiaryId,
+        status: "ACTIVE",
+      },
+      select: { id: true, last4: true },
+    });
+    if (existingActiveCard) {
+      return NextResponse.json(
+        {
+          error: "An active card already exists for this beneficiary on this grant",
+          existingCardId: existingActiveCard.id,
+        },
+        { status: 409 },
+      );
+    }
+
     // Check beneficiary eligibility
     const eligibility = await prisma.cardholderEligibility.findUnique({
       where: { beneficiaryId },
@@ -337,7 +361,10 @@ export async function POST(
       }
 
       if (!cardholder) {
-        // Create a new cardholder with full KYC identity verification
+        // Create a new cardholder with full KYC identity verification.
+        // Idempotency key ties the cardholder to (beneficiary, org, mode)
+        // so retries and races converge on a single KYC record.
+        // (DDIA Ch7 Transaction Safety audit.)
         const cardholderResult = await stripe.issuing.cardholders.create({
           type: "individual",
           name: `${beneficiary.firstName} ${beneficiary.lastName}`,
@@ -367,7 +394,10 @@ export async function POST(
             platform: "benefitssafe",
             issuingMode: issuing.mode,
           },
-        }, stripeOpts);
+        }, {
+          ...stripeOpts,
+          idempotencyKey: `cardholder-${beneficiaryId}-${issuing.mode}-${organizationId}`,
+        });
         cardholder = cardholderResult;
       }
 
@@ -378,6 +408,13 @@ export async function POST(
       // getIssuingAccount chose. Always tag metadata with organizationId
       // so platform-mode cards can still be attributed to a tenant from
       // the Stripe side (reports, webhooks, reconciliation).
+      //
+      // Deterministic idempotency key: (grant, beneficiary, mode). Same
+      // double-click → same Stripe card, not two. Combined with the
+      // partial unique index `uniq_active_card_per_grant_beneficiary`
+      // applied via scripts/add-virtual-card-unique-constraints.ts this
+      // guarantees exactly-once issuance per (grant, beneficiary). (DDIA
+      // Ch7 Transaction Safety audit.)
       stripeCard = await stripe.issuing.cards.create({
         cardholder: typeof cardholder === "string" ? cardholder : cardholder.id,
         type: "virtual",
@@ -399,7 +436,10 @@ export async function POST(
           platform: "benefitssafe",
           issuingMode: issuing.mode,
         },
-      }, stripeOpts);
+      }, {
+        ...stripeOpts,
+        idempotencyKey: `card-grant-${grantId}-${beneficiaryId}-${issuing.mode}`,
+      });
     } catch (stripeError) {
       console.error("Stripe card creation error:", stripeError);
       // Only allow mock cards in local development — NEVER in production
@@ -418,57 +458,92 @@ export async function POST(
       }
     }
 
-    // Store card in database — record which account it lives on so
-    // lifecycle operations (reveal/pause/close/expiration) can route
-    // Stripe calls to the correct account later.
-    const virtualCard = await prisma.virtualCard.create({
-      data: {
-        organizationId,
-        grantId,
-        beneficiaryId,
-        stripeCardId: stripeCard.id,
-        issuingMode: issuing.mode,
-        last4: stripeCard.last4 || "0000",
-        expirationMonth: stripeCard.exp_month || 12,
-        expirationYear: stripeCard.exp_year || 2027,
-        spendingCap: parseFloat(grant.remainingAmount.toString()),
-        cardType,
-        cardLabel: cardLabel || null,
-      },
-      select: {
-        id: true,
-        last4: true,
-        expirationMonth: true,
-        expirationYear: true,
-        spendingCap: true,
-        cardType: true,
-        cardLabel: true,
-        status: true,
-      },
-    });
+    // Persist the card + audit log in a single $transaction. If the
+    // partial unique index `uniq_active_card_per_grant_beneficiary`
+    // rejects the insert because a concurrent request already issued an
+    // ACTIVE card for this (grant, beneficiary), we compensate by
+    // canceling the Stripe card we just created so no orphan remains.
+    // (DDIA Ch7 Transaction Safety audit.)
+    let virtualCard;
+    try {
+      virtualCard = await prisma.$transaction(async (tx) => {
+        const card = await tx.virtualCard.create({
+          data: {
+            organizationId,
+            grantId,
+            beneficiaryId,
+            stripeCardId: stripeCard.id,
+            issuingMode: issuing.mode,
+            last4: stripeCard.last4 || "0000",
+            expirationMonth: stripeCard.exp_month || 12,
+            expirationYear: stripeCard.exp_year || 2027,
+            spendingCap: parseFloat(grant.remainingAmount.toString()),
+            cardType,
+            cardLabel: cardLabel || null,
+          },
+          select: {
+            id: true,
+            last4: true,
+            expirationMonth: true,
+            expirationYear: true,
+            spendingCap: true,
+            cardType: true,
+            cardLabel: true,
+            status: true,
+          },
+        });
 
-    // Audit log
-    await prisma.auditLog.create({
-      data: {
-        userId,
-        organizationId,
-        action: "issue_card",
-        entityType: "virtual_card",
-        entityId: virtualCard.id,
-        newValue: JSON.parse(JSON.stringify({
-          grantId: grant.id,
-          grantName: grant.name,
-          beneficiary: `${beneficiary.firstName} ${beneficiary.lastName}`,
-          beneficiaryId,
-          last4: virtualCard.last4,
-          spendingCap: virtualCard.spendingCap,
-          cardType,
-          cardLabel: cardLabel || null,
-        })),
-      },
-    });
+        await tx.auditLog.create({
+          data: {
+            userId,
+            organizationId,
+            action: "issue_card",
+            entityType: "virtual_card",
+            entityId: card.id,
+            newValue: JSON.parse(JSON.stringify({
+              grantId: grant.id,
+              grantName: grant.name,
+              beneficiary: `${beneficiary.firstName} ${beneficiary.lastName}`,
+              beneficiaryId,
+              last4: card.last4,
+              spendingCap: card.spendingCap,
+              cardType,
+              cardLabel: cardLabel || null,
+              stripeCardId: stripeCard.id,
+            })),
+          },
+        });
 
-    // Increment usage counter for this month
+        return card;
+      });
+    } catch (txErr) {
+      // Compensate: cancel the Stripe card to avoid orphan on Stripe.
+      if (stripeCard.id && !stripeCard.id.startsWith("ic_mock_")) {
+        try {
+          await stripe.issuing.cards.update(
+            stripeCard.id,
+            { status: "canceled" },
+            stripeOpts,
+          );
+        } catch (cancelErr) {
+          console.error(
+            "[grants/issue-card] compensation failed — orphan Stripe card:",
+            stripeCard.id,
+            cancelErr,
+          );
+        }
+      }
+      const prismaErr = txErr as { code?: string; message?: string };
+      if (prismaErr.code === "P2002" || /unique/i.test(prismaErr.message || "")) {
+        return NextResponse.json(
+          { error: "An active card already exists for this beneficiary on this grant" },
+          { status: 409 },
+        );
+      }
+      throw txErr;
+    }
+
+    // Increment usage counter for this month (cosmetic; outside tx is OK)
     await incrementUsage(organizationId, "cardsIssued");
 
     // Fire workflow automation (non-blocking)

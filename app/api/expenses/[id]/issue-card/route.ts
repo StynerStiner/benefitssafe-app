@@ -345,7 +345,11 @@ export async function POST(
       }
 
       if (!cardholder) {
-        // Create a new cardholder with full KYC identity verification
+        // Create a new cardholder with full KYC identity verification.
+        //
+        // Idempotency key ties the cardholder to (beneficiary, org, mode).
+        // On retry Stripe returns the same cardholder instead of creating
+        // a duplicate KYC record. (DDIA Ch7 Transaction Safety audit.)
         const cardholderResult = await stripe.issuing.cardholders.create({
           type: "individual",
           name: `${beneficiary.firstName} ${beneficiary.lastName}`,
@@ -375,13 +379,22 @@ export async function POST(
             platform: "benefitssafe",
             issuingMode: issuing.mode,
           },
-        }, stripeOpts);
+        }, {
+          ...stripeOpts,
+          idempotencyKey: `cardholder-${expense.requestedById}-${issuing.mode}-${organizationId}`,
+        });
         cardholder = cardholderResult;
       }
 
       // Create the virtual card via Stripe Issuing on whichever account
       // getIssuingAccount chose — connected if capability is granted,
       // platform otherwise.
+      //
+      // Deterministic idempotency key: same expense → same card, even on
+      // retry. Combined with the @@unique([expenseId]) DB constraint on
+      // VirtualCard (DDIA Ch7 audit fix), this guarantees exactly-once
+      // card issuance per expense regardless of double-clicks, 504
+      // retries, or two nodes racing the same request.
       stripeCard = await stripe.issuing.cards.create({
         cardholder: typeof cardholder === "string" ? cardholder : cardholder.id,
         type: "virtual",
@@ -405,7 +418,10 @@ export async function POST(
           platform: "benefitssafe",
           issuingMode: issuing.mode,
         },
-      }, stripeOpts);
+      }, {
+        ...stripeOpts,
+        idempotencyKey: `card-exp-${expense.id}-${issuing.mode}`,
+      });
     } catch (stripeError) {
       console.error("Stripe card creation error:", stripeError);
       // Only allow mock cards in local development — NEVER in production
@@ -424,64 +440,121 @@ export async function POST(
       }
     }
 
-    // Store card in database — persist issuingMode so lifecycle ops
-    // route Stripe calls to the correct account later.
-    const virtualCard = await prisma.virtualCard.create({
-      data: {
-        organizationId,
-        grantId: expense.grantId,
-        expenseId: expense.id,
-        vendorId: expense.vendorId,
-        beneficiaryId: expense.requestedById,
-        categoryId: expense.categoryId,
-        stripeCardId: stripeCard.id,
-        issuingMode: issuing.mode,
-        last4: stripeCard.last4 || "0000",
-        expirationMonth: stripeCard.exp_month || 12,
-        expirationYear: stripeCard.exp_year || 2027,
-        spendingCap: parseFloat(expense.amount.toString()),
-        merchantLock: expense.vendor?.name || null,
-        cardType,
-        expiresAt: expiresAt ? new Date(expiresAt) : null,
-      },
-      select: {
-        id: true,
-        last4: true,
-        expirationMonth: true,
-        expirationYear: true,
-        spendingCap: true,
-        cardType: true,
-        status: true,
-        merchantLock: true,
-      },
-    });
+    // Persist the card + flip expense status in a single $transaction so
+    // either both succeed or neither does. The expense status transition
+    // uses updateMany WHERE status='APPROVED' as a guard — a retried
+    // request against an already-PAID expense fails loudly instead of
+    // silently issuing a second card. If the tx fails (e.g. P2002 on
+    // @@unique([expenseId]) because another request already inserted a
+    // card for this expense), we compensate by canceling the Stripe card
+    // we just created so no orphan remains on Stripe's side.
+    // (DDIA Ch7 Transaction Safety audit.)
+    let virtualCard;
+    try {
+      virtualCard = await prisma.$transaction(async (tx) => {
+        // 1. Insert VirtualCard. The @@unique([expenseId]) constraint
+        //    added to schema.prisma (DDIA Ch7 fix) means a concurrent
+        //    double-click throws P2002 here — the second caller's tx
+        //    rolls back and we compensate on Stripe.
+        const card = await tx.virtualCard.create({
+          data: {
+            organizationId,
+            grantId: expense.grantId,
+            expenseId: expense.id,
+            vendorId: expense.vendorId,
+            beneficiaryId: expense.requestedById,
+            categoryId: expense.categoryId,
+            stripeCardId: stripeCard.id,
+            issuingMode: issuing.mode,
+            last4: stripeCard.last4 || "0000",
+            expirationMonth: stripeCard.exp_month || 12,
+            expirationYear: stripeCard.exp_year || 2027,
+            spendingCap: parseFloat(expense.amount.toString()),
+            merchantLock: expense.vendor?.name || null,
+            cardType,
+            expiresAt: expiresAt ? new Date(expiresAt) : null,
+          },
+          select: {
+            id: true,
+            last4: true,
+            expirationMonth: true,
+            expirationYear: true,
+            spendingCap: true,
+            cardType: true,
+            status: true,
+            merchantLock: true,
+            cardLabel: true,
+          },
+        });
 
-    // Update expense status to PAID
-    await prisma.expenseRequest.update({
-      where: { id: expense.id },
-      data: { status: "PAID" },
-    });
+        // 2. Status-guarded expense transition. If the expense is not in
+        //    APPROVED (e.g. was already PAID by a concurrent request),
+        //    count=0 triggers rollback.
+        const statusFlip = await tx.expenseRequest.updateMany({
+          where: { id: expense.id, status: "APPROVED" },
+          data: { status: "PAID" },
+        });
+        if (statusFlip.count === 0) {
+          throw new Error("expense_not_approved_at_commit");
+        }
 
-    // Audit log
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        organizationId,
-        action: "issue_card",
-        entityType: "virtual_card",
-        entityId: virtualCard.id,
-        newValue: JSON.parse(JSON.stringify({
-          expenseId: expense.id,
-          vendorName: expense.vendor?.name,
-          beneficiary: `${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`,
-          last4: virtualCard.last4,
-          spendingCap: virtualCard.spendingCap,
-          cardType,
-        })),
-      },
-    });
+        // 3. Audit log inside the tx so it rolls back with the business op.
+        await tx.auditLog.create({
+          data: {
+            userId: session.user.id,
+            organizationId,
+            action: "issue_card",
+            entityType: "virtual_card",
+            entityId: card.id,
+            newValue: JSON.parse(JSON.stringify({
+              expenseId: expense.id,
+              vendorName: expense.vendor?.name,
+              beneficiary: `${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`,
+              last4: card.last4,
+              spendingCap: card.spendingCap,
+              cardType,
+              stripeCardId: stripeCard.id,
+            })),
+          },
+        });
 
-    // Increment usage counter for this month
+        return card;
+      });
+    } catch (txErr) {
+      // Compensate: cancel the Stripe card we created so no orphan
+      // lingers on the Stripe account. Mock cards (dev) are skipped.
+      if (stripeCard.id && !stripeCard.id.startsWith("ic_mock_")) {
+        try {
+          await stripe.issuing.cards.update(
+            stripeCard.id,
+            { status: "canceled" },
+            stripeOpts,
+          );
+        } catch (cancelErr) {
+          console.error(
+            "[expenses/issue-card] compensation failed — orphan Stripe card:",
+            stripeCard.id,
+            cancelErr,
+          );
+        }
+      }
+      const prismaErr = txErr as { code?: string; message?: string };
+      if (prismaErr.code === "P2002") {
+        return NextResponse.json(
+          { error: "A card already exists for this expense" },
+          { status: 409 },
+        );
+      }
+      if (prismaErr.message === "expense_not_approved_at_commit") {
+        return NextResponse.json(
+          { error: "Expense is no longer in APPROVED state" },
+          { status: 409 },
+        );
+      }
+      throw txErr;
+    }
+
+    // Increment usage counter for this month (cosmetic; outside tx is OK)
     await incrementUsage(organizationId, "cardsIssued");
 
     // Fire workflow automation (non-blocking)

@@ -41,15 +41,53 @@ export async function POST(
       select: { stripeAccountId: true },
     });
 
-    await prisma.virtualCard.update({
-      where: { id },
-      data: { status: "FROZEN" },
-    });
+    // Atomic DB update + audit log. Status guard prevents a pause-vs-close
+    // race from reviving a cancelled card. updateMany + count check gives
+    // us the guard without pre-reading the row. (DDIA Ch7 audit.)
+    let previousStatus: string;
+    try {
+      previousStatus = await prisma.$transaction(async (tx) => {
+        const updated = await tx.virtualCard.updateMany({
+          where: {
+            id,
+            organizationId,
+            status: { in: ["ACTIVE", "FROZEN"] },
+          },
+          data: { status: "FROZEN" },
+        });
+        if (updated.count === 0) {
+          throw new Error("card_not_pausable");
+        }
 
-    // Sync to Stripe — actually freeze the card at the network level so
-    // subsequent issuing_authorization.request events are declined by
-    // Stripe itself before they even reach our webhook. Dev-mode mock
-    // cards (ic_mock_*) cannot be updated at Stripe; we log and continue.
+        await tx.auditLog.create({
+          data: {
+            userId: session.user.id,
+            organizationId,
+            action: "pause_card",
+            entityType: "virtual_card",
+            entityId: id,
+            oldValue: JSON.parse(JSON.stringify({ status: card.status })),
+            newValue: JSON.parse(JSON.stringify({ status: "FROZEN" })),
+          },
+        });
+
+        return card.status;
+      });
+    } catch (err) {
+      if ((err as Error)?.message === "card_not_pausable") {
+        return NextResponse.json(
+          { error: "Card is not in a state that can be paused" },
+          { status: 409 },
+        );
+      }
+      throw err;
+    }
+
+    // Sync to Stripe AFTER the DB tx commits. Stripe sync happens outside
+    // the tx because (a) Stripe calls can't be rolled back, and (b) a
+    // transient Stripe failure should not undo the user's intent. Log
+    // for manual reconciliation. Dev-mode mock cards (ic_mock_*) cannot
+    // be updated at Stripe; skip them.
     if (card.stripeCardId && !card.stripeCardId.startsWith("ic_mock_")) {
       try {
         await stripe.issuing.cards.update(
@@ -58,8 +96,6 @@ export async function POST(
           stripeOptsForCard(card, org?.stripeAccountId ?? null),
         );
       } catch (stripeErr) {
-        // The DB row is already FROZEN; a transient Stripe failure should
-        // not roll back the user's intent. Log for manual reconciliation.
         console.error(
           "[pause] Stripe card update failed:",
           stripeErr instanceof Error ? stripeErr.message : stripeErr,
@@ -67,19 +103,11 @@ export async function POST(
       }
     }
 
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        organizationId,
-        action: "pause_card",
-        entityType: "virtual_card",
-        entityId: id,
-        oldValue: JSON.parse(JSON.stringify({ status: card.status })),
-        newValue: JSON.parse(JSON.stringify({ status: "FROZEN" })),
-      },
+    return NextResponse.json({
+      message: "Card paused",
+      status: "FROZEN",
+      previousStatus,
     });
-
-    return NextResponse.json({ message: "Card paused", status: "FROZEN" });
   } catch (error) {
     console.error("POST /api/virtual-cards/[id]/pause error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -39,13 +39,50 @@ export async function POST(
       select: { stripeAccountId: true },
     });
 
-    await prisma.virtualCard.update({
-      where: { id },
-      data: { status: "CANCELLED" },
-    });
+    // Atomic DB update + audit log. Status guard prevents re-closing an
+    // already-cancelled card (which would produce phantom audit entries).
+    // (DDIA Ch7 audit.)
+    let previousStatus: string;
+    try {
+      previousStatus = await prisma.$transaction(async (tx) => {
+        const updated = await tx.virtualCard.updateMany({
+          where: {
+            id,
+            organizationId,
+            status: { not: "CANCELLED" },
+          },
+          data: { status: "CANCELLED" },
+        });
+        if (updated.count === 0) {
+          throw new Error("card_already_cancelled");
+        }
 
-    // Cancel the card at Stripe so it can no longer authorize anywhere.
-    // Dev-mode mock cards (ic_mock_*) don't exist at Stripe; skip them.
+        await tx.auditLog.create({
+          data: {
+            userId: session.user.id,
+            organizationId,
+            action: "close_card",
+            entityType: "virtual_card",
+            entityId: id,
+            oldValue: JSON.parse(JSON.stringify({ status: card.status })),
+            newValue: JSON.parse(JSON.stringify({ status: "CANCELLED" })),
+          },
+        });
+
+        return card.status;
+      });
+    } catch (err) {
+      if ((err as Error)?.message === "card_already_cancelled") {
+        return NextResponse.json(
+          { error: "Card is already cancelled" },
+          { status: 409 },
+        );
+      }
+      throw err;
+    }
+
+    // Cancel the card at Stripe after the DB tx commits. Dev-mode mock
+    // cards (ic_mock_*) don't exist at Stripe; skip them.
     if (card.stripeCardId && !card.stripeCardId.startsWith("ic_mock_")) {
       try {
         await stripe.issuing.cards.update(
@@ -61,19 +98,11 @@ export async function POST(
       }
     }
 
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        organizationId,
-        action: "close_card",
-        entityType: "virtual_card",
-        entityId: id,
-        oldValue: JSON.parse(JSON.stringify({ status: card.status })),
-        newValue: JSON.parse(JSON.stringify({ status: "CANCELLED" })),
-      },
+    return NextResponse.json({
+      message: "Card closed",
+      status: "CANCELLED",
+      previousStatus,
     });
-
-    return NextResponse.json({ message: "Card closed", status: "CANCELLED" });
   } catch (error) {
     console.error("POST /api/virtual-cards/[id]/close error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

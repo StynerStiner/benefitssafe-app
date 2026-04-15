@@ -72,6 +72,31 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Grant not found or org mismatch" }, { status: 422 });
     }
 
+    // 3a. Retry idempotency guard. QStash delivers-at-least-once, so a
+    //     retried job (or a concurrent delivery) must not double-create
+    //     the expense or double-debit the grant. If any LedgerEntry
+    //     already references this stripeTransactionId OR the Transaction
+    //     already has an expenseId set, this job already ran — return 200
+    //     so QStash stops retrying. (DDIA Ch7 Transaction Safety audit.)
+    if (txRecord.expenseId) {
+      return NextResponse.json({
+        success: true,
+        expenseId: txRecord.expenseId,
+        deduped: "already_linked",
+      });
+    }
+    const existingLedger = await prisma.ledgerEntry.findFirst({
+      where: { reference: stripeTransactionId },
+      select: { id: true, expenseId: true },
+    });
+    if (existingLedger) {
+      return NextResponse.json({
+        success: true,
+        expenseId: existingLedger.expenseId,
+        deduped: "ledger_exists",
+      });
+    }
+
     // 4. Find admin user
     const adminUser = await prisma.user.findFirst({
       where: { organizationId, role: "nonprofit_admin" },
@@ -79,33 +104,45 @@ export async function POST(request: Request) {
     });
     const systemUserId = adminUser?.id ?? "system";
 
-    // 5. Create ExpenseRequest
+    // 5. Create ExpenseRequest + link Transaction atomically.
+    //    The create + transaction-link must be in one tx so a crash
+    //    between them cannot orphan the Transaction from its expense.
     const categoryId = subscription?.categoryId ?? virtualCard.categoryId;
     const expenseDescription = subscription
       ? `Auto-generated: ${subscription.vendor?.name ?? merchantName} subscription charge`
       : `Auto-generated: ${merchantName} card charge`;
 
-    const expense = await prisma.expenseRequest.create({
-      data: {
-        organizationId,
-        grantId,
-        categoryId: categoryId ?? null,
-        requestedById: grant.beneficiaryId ?? systemUserId,
-        vendorId: subscription?.vendorId ?? virtualCard.vendorId ?? null,
-        description: expenseDescription,
-        amount: Number(amount),
-        frequency: subscription ? "MONTHLY" : "ONE_TIME",
-        expenseType: subscription ? "subscription" : "purchase",
-        vendorName: subscription?.vendor?.name ?? merchantName,
-        riskClassification: "PENDING",
-        status: "PENDING",
-      },
-    });
+    const expense = await prisma.$transaction(async (tx) => {
+      const created = await tx.expenseRequest.create({
+        data: {
+          organizationId,
+          grantId,
+          categoryId: categoryId ?? null,
+          requestedById: grant.beneficiaryId ?? systemUserId,
+          vendorId: subscription?.vendorId ?? virtualCard.vendorId ?? null,
+          description: expenseDescription,
+          amount: Number(amount),
+          frequency: subscription ? "MONTHLY" : "ONE_TIME",
+          expenseType: subscription ? "subscription" : "purchase",
+          vendorName: subscription?.vendor?.name ?? merchantName,
+          riskClassification: "PENDING",
+          status: "PENDING",
+        },
+      });
 
-    // Link transaction to expense
-    await prisma.transaction.update({
-      where: { id: transactionId },
-      data: { expenseId: expense.id },
+      // Status-guarded link so a concurrent retry that already linked
+      // the transaction to another expense short-circuits cleanly.
+      const linked = await tx.transaction.updateMany({
+        where: { id: transactionId, expenseId: null },
+        data: { expenseId: created.id },
+      });
+      if (linked.count === 0) {
+        // Another delivery already linked this transaction — roll back
+        // our expense and let the outer handler retry-read the canonical row.
+        throw new Error("transaction_already_linked");
+      }
+
+      return created;
     });
 
     // 6. Compliance classification
@@ -246,6 +283,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, expenseId: expense.id });
   } catch (error) {
+    // transaction_already_linked is the idempotency guard: a concurrent
+    // retry won the race. Treat as success so QStash stops retrying.
+    if ((error as Error)?.message === "transaction_already_linked") {
+      console.log("[process-charge] dedupe: transaction already linked");
+      return NextResponse.json({ success: true, deduped: "race_loser" });
+    }
     console.error("[process-charge] Error:", error);
     return NextResponse.json({ error: "Processing failed" }, { status: 500 });
   }

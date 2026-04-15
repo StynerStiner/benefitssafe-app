@@ -1,13 +1,37 @@
 // ORG-SCOPED: All queries filtered by session.user.organizationId
 // No cross-organization data leakage possible.
+//
+// TRANSACTION SAFETY (DDIA Ch7 audit):
+//   - Grant + BudgetCategory decrements use atomic conditional UPDATEs
+//     (WHERE remainingAmount >= amount) instead of read-modify-write,
+//     so two concurrent approvals on the same grant cannot both pass a
+//     JS balance check and end up overspending.
+//   - Expense status transition uses updateMany WHERE status = 'PENDING'
+//     with a rowCount check so a retried approval can't run twice.
+//   - balanceAfter on the ledger entry is read from the post-update grant
+//     row inside the same tx, not computed from a stale pre-tx read.
+//   - $transaction runs at Serializable isolation as belt-and-suspenders.
+//   - Audit log insert lives INSIDE the $transaction so it only persists
+//     when the approval actually commits.
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { captureApiError } from "@/lib/error-handler";
+import { invalidateDashboardCache } from "@/lib/data";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildExpenseApprovedEmail } from "@/lib/services/email-templates";
 import { approveExpenseSchema } from "@/lib/validations/expense";
 import { NextResponse } from "next/server";
+
+// Sentinel error classes so the $transaction body can reject with
+// structured reasons and the outer handler can map them to HTTP codes
+// without leaking internals.
+class ApprovalConflictError extends Error {
+  constructor(public readonly code: string, public readonly detail: string) {
+    super(detail);
+  }
+}
 
 // PATCH /api/expenses/[id]/approve — approve an expense request
 export async function PATCH(
@@ -39,7 +63,9 @@ export async function PATCH(
       );
     }
 
-    // Find the expense and verify org scope
+    // Pre-fetch expense for org-scope check and to surface the current
+    // amount/category before opening the transaction. Any race-sensitive
+    // invariants are re-verified inside the tx via conditional UPDATEs.
     const expense = await prisma.expenseRequest.findFirst({
       where: {
         id,
@@ -61,109 +87,169 @@ export async function PATCH(
 
     const amount = Number(expense.amount);
 
-    // Check if grant has sufficient remaining funds
-    const grantRemaining = Number(expense.grant.remainingAmount);
-    if (amount > grantRemaining) {
-      return NextResponse.json(
-        { error: "Insufficient grant funds. Remaining: $" + grantRemaining.toFixed(2) },
-        { status: 400 },
-      );
-    }
+    // Perform all money-mutating writes in a Serializable transaction.
+    // Serializable is the strongest isolation — rare conflicts retry,
+    // the contention set is bounded to rows in the same grant, and the
+    // correctness gain (no write skew, no lost update) is worth it.
+    let result;
+    try {
+      result = await prisma.$transaction(
+        async (tx) => {
+          // 1. Atomic status guard — reject if already approved/rejected by
+          //    a concurrent request. updateMany returns count; we throw on
+          //    count=0 so the tx rolls back and the retried request sees
+          //    the terminal state.
+          const statusUpdate = await tx.expenseRequest.updateMany({
+            where: { id, status: "PENDING" },
+            data: {
+              status: "APPROVED",
+              approvedById: userId,
+              approvedAt: new Date(),
+            },
+          });
+          if (statusUpdate.count === 0) {
+            throw new ApprovalConflictError(
+              "already_processed",
+              "Expense is no longer pending",
+            );
+          }
 
-    // Check if budget category has sufficient funds
-    const categoryRemaining =
-      Number(expense.category.allocatedAmount) - Number(expense.category.spentAmount);
-    if (amount > categoryRemaining) {
-      return NextResponse.json(
+          // 2. Atomic conditional decrement on Grant.
+          //    Prisma's `{ decrement: amount }` alone is safe from
+          //    lost-updates on the column value (it compiles to
+          //    `SET remainingAmount = remainingAmount - $1`) but it is
+          //    NOT conditional — it will happily go negative. The raw
+          //    SQL UPDATE below adds `WHERE remainingAmount >= $amount`
+          //    so two concurrent approvals cannot both succeed against a
+          //    grant that can only cover one.
+          const grantUpdated = await tx.$executeRaw`
+            UPDATE "Grant"
+            SET "spentAmount"     = "spentAmount"     + ${amount}::numeric,
+                "remainingAmount" = "remainingAmount" - ${amount}::numeric,
+                "updatedAt"       = NOW()
+            WHERE id = ${expense.grantId}
+              AND "remainingAmount" >= ${amount}::numeric
+          `;
+          if (grantUpdated === 0) {
+            throw new ApprovalConflictError(
+              "insufficient_grant_funds",
+              "Insufficient grant funds at approval time",
+            );
+          }
+
+          // 3. Atomic conditional decrement on BudgetCategory. Same
+          //    invariant: allocated - spent must stay >= amount.
+          const categoryUpdated = await tx.$executeRaw`
+            UPDATE "BudgetCategory"
+            SET "spentAmount" = "spentAmount" + ${amount}::numeric,
+                "updatedAt"   = NOW()
+            WHERE id = ${expense.categoryId}
+              AND ("allocatedAmount" - "spentAmount") >= ${amount}::numeric
+          `;
+          if (categoryUpdated === 0) {
+            throw new ApprovalConflictError(
+              "insufficient_category_funds",
+              "Insufficient budget category funds at approval time",
+            );
+          }
+
+          // 4. Re-read the post-update grant balance for the ledger entry
+          //    so balanceAfter matches what's actually in the grant row
+          //    right now (not a stale pre-tx snapshot).
+          const updatedGrant = await tx.grant.findUnique({
+            where: { id: expense.grantId },
+            select: { remainingAmount: true },
+          });
+
+          // 5. Create immutable ledger entry (DEBIT)
+          await tx.ledgerEntry.create({
+            data: {
+              organizationId: expense.grant.organizationId,
+              grantId: expense.grantId,
+              categoryId: expense.categoryId,
+              expenseId: expense.id,
+              type: "DEBIT",
+              amount: amount,
+              balanceAfter: updatedGrant?.remainingAmount ?? 0,
+              description: `Approved: ${expense.description}`,
+              reference: expense.id,
+            },
+          });
+
+          // 6. Approval record
+          await tx.approval.create({
+            data: {
+              organizationId,
+              expenseId: expense.id,
+              approverId: userId,
+              action: "APPROVED",
+              notes: parsed.data.notes ?? null,
+            },
+          });
+
+          // 7. Audit log INSIDE the tx so it only commits when the
+          //    approval actually commits. A forensic record of a
+          //    *failed* attempt has no value here — the attempt never
+          //    mutated state.
+          await tx.auditLog.create({
+            data: {
+              userId,
+              organizationId,
+              action: "approve",
+              entityType: "expense",
+              entityId: id,
+              oldValue: { status: "PENDING" },
+              newValue: {
+                status: "APPROVED",
+                approvedById: userId,
+                amount: amount.toString(),
+              },
+            },
+          });
+
+          // 8. Re-read the updated expense for the response payload.
+          //    We can't return the row from updateMany, so fetch it.
+          return tx.expenseRequest.findUniqueOrThrow({
+            where: { id },
+            include: {
+              grant: { select: { id: true, name: true, organizationId: true } },
+              category: { select: { id: true, name: true } },
+              requestedBy: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                },
+              },
+            },
+          });
+        },
         {
-          error:
-            "Insufficient budget category funds. Remaining: $" +
-            categoryRemaining.toFixed(2),
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+          maxWait: 5_000,
+          timeout: 15_000,
         },
-        { status: 400 },
       );
+    } catch (err) {
+      if (err instanceof ApprovalConflictError) {
+        const status =
+          err.code === "already_processed"
+            ? 409
+            : err.code === "insufficient_grant_funds" ||
+                err.code === "insufficient_category_funds"
+              ? 400
+              : 500;
+        return NextResponse.json(
+          { error: err.detail, code: err.code },
+          { status },
+        );
+      }
+      throw err;
     }
 
-    // Perform all updates in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // 1. Update expense status
-      const updatedExpense = await tx.expenseRequest.update({
-        where: { id },
-        data: {
-          status: "APPROVED",
-          approvedById: userId,
-          approvedAt: new Date(),
-        },
-        include: {
-          grant: { select: { id: true, name: true } },
-          category: { select: { id: true, name: true } },
-          requestedBy: { select: { id: true, firstName: true, lastName: true, email: true } },
-        },
-      });
-
-      // 2. Update grant spent/remaining amounts
-      await tx.grant.update({
-        where: { id: expense.grantId },
-        data: {
-          spentAmount: { increment: amount },
-          remainingAmount: { decrement: amount },
-        },
-      });
-
-      // 3. Update budget category spent amount
-      await tx.budgetCategory.update({
-        where: { id: expense.categoryId },
-        data: {
-          spentAmount: { increment: amount },
-        },
-      });
-
-      // 4. Create ledger entry (IMMUTABLE — append only)
-      const newGrantRemaining = grantRemaining - amount;
-      await tx.ledgerEntry.create({
-        data: {
-          organizationId: expense.grant.organizationId,
-          grantId: expense.grantId,
-          categoryId: expense.categoryId,
-          expenseId: expense.id,
-          type: "DEBIT",
-          amount: amount,
-          balanceAfter: newGrantRemaining,
-          description: `Approved: ${expense.description}`,
-          reference: expense.id,
-        },
-      });
-
-      // 5. Create approval record
-      await tx.approval.create({
-        data: {
-          organizationId,
-          expenseId: expense.id,
-          approverId: userId,
-          action: "APPROVED",
-          notes: parsed.data.notes ?? null,
-        },
-      });
-
-      return updatedExpense;
-    });
-
-    // Create audit log (outside transaction — non-critical)
-    await prisma.auditLog.create({
-      data: {
-        userId,
-        organizationId,
-        action: "approve",
-        entityType: "expense",
-        entityId: id,
-        oldValue: { status: "PENDING" },
-        newValue: {
-          status: "APPROVED",
-          approvedById: userId,
-          amount: amount.toString(),
-        },
-      },
-    });
+    // Invalidate dashboard roll-up (same pattern as expense create)
+    await invalidateDashboardCache(organizationId);
 
     // Fire workflow automation (non-blocking)
     import("@/lib/workflow-engine").then(({ getWorkflowEngine }) => {

@@ -94,12 +94,15 @@ export async function PATCH(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Verify grant belongs to org
-    const existing = await prisma.grant.findFirst({
+    // Pre-check org scope before opening the tx. The canonical spentAmount
+    // is re-read INSIDE the tx below with SELECT FOR UPDATE so a
+    // concurrent auto-approve charge cannot clobber remainingAmount.
+    // (DDIA Ch7 Transaction Safety audit.)
+    const exists = await prisma.grant.findFirst({
       where: { id, organizationId },
+      select: { id: true },
     });
-
-    if (!existing) {
+    if (!exists) {
       return NextResponse.json({ error: "Grant not found" }, { status: 404 });
     }
 
@@ -115,42 +118,63 @@ export async function PATCH(
 
     const data = parsed.data;
 
-    // If totalAmount changed, recalculate remaining
-    const updateData: Record<string, unknown> = { ...data };
-    if (data.totalAmount !== undefined) {
-      const spent = Number(existing.spentAmount);
-      updateData.remainingAmount = data.totalAmount - spent;
-    }
+    // Wrap the read + recompute + update in a single tx with FOR UPDATE
+    // on the grant row. Without the lock, a concurrent card-charge or
+    // auto-approve tx could increment spentAmount between our read and
+    // our update, causing the re-computed remainingAmount to be wrong.
+    const grant = await prisma.$transaction(async (tx) => {
+      const locked = await tx.$queryRaw<
+        Array<{ spentAmount: number; name: string; status: string }>
+      >`
+        SELECT "spentAmount", "name", "status"
+        FROM "Grant"
+        WHERE id = ${id}
+        FOR UPDATE
+      `;
+      if (locked.length === 0) {
+        throw new Error("grant_not_found");
+      }
+      const currentSpent = Number(locked[0].spentAmount);
 
-    // Handle soft delete via ARCHIVED status
-    if (data.status === "ARCHIVED") {
-      updateData.archivedAt = new Date();
-    }
+      const updateData: Record<string, unknown> = { ...data };
+      if (data.totalAmount !== undefined) {
+        // Recompute remaining from the locked snapshot so a concurrent
+        // spent-amount increment can't produce an inconsistent result.
+        updateData.remainingAmount = data.totalAmount - currentSpent;
+      }
+      if (data.status === "ARCHIVED") {
+        updateData.archivedAt = new Date();
+      }
 
-    const grant = await prisma.grant.update({
-      where: { id },
-      data: updateData,
-      include: {
-        beneficiary: { select: { id: true, firstName: true, lastName: true, email: true } },
-        categories: true,
-      },
-    });
+      const updated = await tx.grant.update({
+        where: { id },
+        data: updateData,
+        include: {
+          beneficiary: { select: { id: true, firstName: true, lastName: true, email: true } },
+          categories: true,
+        },
+      });
 
-    // Audit log
-    await prisma.auditLog.create({
-      data: {
-        userId,
-        organizationId,
-        action: "update",
-        entityType: "grant",
-        entityId: grant.id,
-        oldValue: { name: existing.name, status: existing.status },
-        newValue: { name: grant.name, status: grant.status },
-      },
+      await tx.auditLog.create({
+        data: {
+          userId,
+          organizationId,
+          action: "update",
+          entityType: "grant",
+          entityId: updated.id,
+          oldValue: { name: locked[0].name, status: locked[0].status },
+          newValue: { name: updated.name, status: updated.status },
+        },
+      });
+
+      return updated;
     });
 
     return NextResponse.json(grant);
   } catch (error) {
+    if ((error as Error)?.message === "grant_not_found") {
+      return NextResponse.json({ error: "Grant not found" }, { status: 404 });
+    }
     console.error("PATCH /api/grants/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
