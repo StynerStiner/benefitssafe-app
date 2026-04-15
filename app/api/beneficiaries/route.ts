@@ -2,6 +2,7 @@
 // No cross-organization data leakage possible.
 
 import { auth } from "@/auth";
+import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { validateRecipientEmail } from "@/lib/email-security";
 import { captureApiError } from "@/lib/error-handler";
@@ -322,6 +323,10 @@ export async function POST(request: Request) {
 
       await incrementUsage(organizationId, "beneficiariesAdded");
 
+      // Invalidate dashboard roll-up so the new membership appears on
+      // the admin dashboard immediately. (DDIA Ch5 Replication audit.)
+      await invalidateDashboardCache(organizationId);
+
       return NextResponse.json(
         {
           id: existing.id,
@@ -486,6 +491,10 @@ export async function POST(request: Request) {
         caseManagerEmail: session.user?.email || "",
       });
     }).catch(() => {});
+
+    // Invalidate dashboard roll-up so the new beneficiary shows up on
+    // the admin dashboard immediately. (DDIA Ch5 Replication audit.)
+    await invalidateDashboardCache(organizationId);
 
     return NextResponse.json({
       ...beneficiary,

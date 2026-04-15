@@ -154,11 +154,13 @@ async function fetchGrants(
   role: string,
   limit: number,
 ): Promise<DashboardGrants> {
+  // Post org-switcher: platform_admin always has a valid organizationId
+  // (the tenant selected via /api/platform/switch-org). The legacy
+  // cross-org branch leaked data and was a SOC 2 incident. Every role
+  // scopes to the currently-active org. (DDIA Ch5 Replication audit.)
   const where = role === "beneficiary"
     ? { organizationId, beneficiaryId: userId, archivedAt: null }
-    : role === "platform_admin"
-      ? { archivedAt: null }
-      : { organizationId, archivedAt: null };
+    : { organizationId, archivedAt: null };
 
   const items = await prisma.grant.findMany({
     where,
@@ -214,11 +216,13 @@ async function fetchExpenses(
   // covering index @@index([organizationId, status, createdAt]) is used.
   // The old shape `grant: { is: { organizationId } }` pushed this into a
   // Grant subquery and bypassed the index entirely. (DDIA Ch3 audit.)
+  //
+  // Post org-switcher: platform_admin gets the same org scoping as every
+  // other role — the `platform_admin ? {} : { organizationId }` legacy
+  // ternary leaked cross-tenant data. (DDIA Ch5 Replication audit.)
   const where = role === "beneficiary"
     ? { requestedById: userId, organizationId }
-    : role === "platform_admin"
-      ? {}
-      : { organizationId };
+    : { organizationId };
 
   const items = await prisma.expenseRequest.findMany({
     where,
@@ -316,13 +320,16 @@ async function fetchCards(
 
 async function fetchAuditLog(
   organizationId: string,
-  role: string,
+  _role: string,
 ): Promise<DashboardAuditLog> {
-  // Only platform_admin (BenefitsSafe internal staff) sees cross-org audit
-  // logs. compliance_officer is an ORG-level role per prisma/schema.prisma —
-  // granting it cross-org visibility was a full-platform audit log leak
-  // identical in shape to the C1 fix in app/api/audit-logs/route.ts.
-  const where = role === "platform_admin" ? {} : { organizationId };
+  // Every role — including platform_admin — is scoped to the currently
+  // active organizationId. Post org-switcher, the legacy
+  // `platform_admin ? {} : { organizationId }` branch was a cross-tenant
+  // audit-log leak: a platform admin who switched into Tenant A still saw
+  // every other tenant's audit logs through this dashboard fetcher. If a
+  // platform admin needs to review a different tenant, they switch orgs
+  // via the banner. (DDIA Ch5 Replication audit.)
+  const where = { organizationId };
 
   const items = await prisma.auditLog.findMany({
     where,
@@ -383,14 +390,17 @@ async function fetchSubscriptions(
 
 async function fetchCompliance(
   organizationId: string,
-  role: string,
+  _role: string,
 ): Promise<DashboardCompliance> {
   // Uses the denormalized ExpenseRequest.organizationId + the new
   // @@index([organizationId, riskClassification]) composite so each
   // bucket count is an indexed range read instead of a full scan.
   // groupBy is one round-trip instead of four, and with this index it's
   // a HashAggregate over an index range rather than a seq scan.
-  const where = role === "platform_admin" ? {} : { organizationId };
+  //
+  // Post org-switcher: every role (including platform_admin) scopes to
+  // the currently-active organizationId. (DDIA Ch5 Replication audit.)
+  const where = { organizationId };
 
   const groups = await prisma.expenseRequest.groupBy({
     by: ["riskClassification"],

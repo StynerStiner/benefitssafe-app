@@ -3,6 +3,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { auth } from "@/auth";
+import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { createExpenseSchema } from "@/lib/validations/expense";
@@ -40,15 +41,21 @@ export async function GET(request: Request) {
     // column was always there — we just weren't using it. (DDIA Ch3 audit.)
     const where: Record<string, unknown> = {};
 
+    // Post org-switcher: platform_admin always has a valid
+    // session.user.organizationId (the tenant they selected via
+    // /api/platform/switch-org). The legacy
+    // `role === "platform_admin" ? {} : { organizationId }` ternary leaked
+    // cross-org data and was a SOC 2 incident. Every role — including
+    // platform_admin — now scopes to their currently-active organizationId.
+    // (DDIA Ch5 Replication audit.)
     if (role === "beneficiary") {
       // Beneficiaries only see their own expenses
       where.requestedById = userId;
       where.organizationId = organizationId;
-    } else if (role === "platform_admin") {
-      // Platform admins see everything
     } else if (
       role === "nonprofit_admin" ||
       role === "nonprofit_staff" ||
+      role === "platform_admin" ||
       role === "cpa" ||
       role === "auditor" ||
       role === "attorney" ||
@@ -348,6 +355,10 @@ export async function POST(request: Request) {
     if (notificationRows.length > 0) {
       await prisma.notification.createMany({ data: notificationRows });
     }
+
+    // Invalidate dashboard roll-up so the new expense shows up on the
+    // admin dashboard immediately. (DDIA Ch5 Replication audit.)
+    await invalidateDashboardCache(organizationId);
 
     return NextResponse.json(
       {

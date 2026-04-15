@@ -4,6 +4,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { auth } from "@/auth";
 import { cached, invalidateCacheByPrefix, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
+import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { captureApiError } from "@/lib/error-handler";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
@@ -172,6 +173,9 @@ export async function POST(request: Request) {
 
     // Invalidate all cached grant listings for this org (covers all pagination variants)
     await invalidateCacheByPrefix(CACHE_KEYS.orgGrants(organizationId));
+    // Also invalidate the dashboard roll-up so the new grant shows up
+    // immediately instead of waiting for the Redis TTL. (DDIA Ch5 audit.)
+    await invalidateDashboardCache(organizationId);
 
     return NextResponse.json(grant, { status: 201 });
   } catch (error) {

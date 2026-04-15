@@ -12,12 +12,13 @@
 // replaying the same event yields the same end state. AuditLogs may occasionally
 // duplicate — they are immutable and duplicates are harmless.
 
+import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { coerceTier, TIER_CONFIG, PricingTier } from "@/lib/pricing";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
-import { markWebhookProcessed } from "@/lib/webhook-idempotency";
+import { markWebhookProcessed, releaseWebhookEvent } from "@/lib/webhook-idempotency";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
@@ -101,6 +102,14 @@ async function notifyAdmins(
 // Entrypoint
 // ----------------------------------------------------------------------------
 export async function POST(request: Request) {
+  // Track whether we committed the idempotency row before the failure.
+  // If we did and processing then threw, we MUST release the row before
+  // returning 500 so Stripe's retry can re-enter processing — otherwise
+  // the retry lands, sees the row, and returns deduped:true without ever
+  // running the handler again. (DDIA Ch5 Replication audit — this route
+  // was silently dropping billing state changes during any DB hiccup.)
+  let processedEventId: string | null = null;
+
   try {
     const body = await request.text();
     const signature = request.headers.get("stripe-signature");
@@ -134,36 +143,53 @@ export async function POST(request: Request) {
     if (!firstTime) {
       return NextResponse.json({ received: true, deduped: true });
     }
+    processedEventId = event.id;
 
     // --- Dispatch ---
+    // Each handler returns the affected organizationId (or null when the
+    // event doesn't map to a known org — e.g. a subscription.updated for
+    // a Stripe sub we never recorded). We use that to invalidate the
+    // dashboard roll-up once after successful processing.
+    let affectedOrg: string | null = null;
     switch (event.type) {
       case "checkout.session.completed":
-        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
+        affectedOrg = await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
         break;
       case "customer.subscription.created":
-        await handleSubscriptionCreated(event.data.object as Stripe.Subscription);
+        affectedOrg = await handleSubscriptionCreated(event.data.object as Stripe.Subscription);
         break;
       case "customer.subscription.updated":
-        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+        affectedOrg = await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
         break;
       case "customer.subscription.deleted":
-        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+        affectedOrg = await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
         break;
       case "invoice.paid":
       case "invoice.payment_succeeded":
-        await handleInvoicePaid(event.data.object as Stripe.Invoice);
+        affectedOrg = await handleInvoicePaid(event.data.object as Stripe.Invoice);
         break;
       case "invoice.payment_failed":
-        await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
+        affectedOrg = await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
         break;
       default:
         // Ignore unhandled events (no error — Stripe retries on non-2xx)
         break;
     }
 
+    // Invalidate dashboard cache once per webhook, if we know the affected
+    // org. Billing events mutate Organization.subscriptionStatus and the
+    // trial banner reads session.user.subscriptionStatus, so users need
+    // to see the state flip immediately on next page load. (DDIA Ch5 audit.)
+    if (affectedOrg) {
+      await invalidateDashboardCache(affectedOrg);
+    }
+
     return NextResponse.json({ received: true });
   } catch (err) {
     console.error("stripe-billing webhook handler error:", err);
+    if (processedEventId) {
+      await releaseWebhookEvent(processedEventId);
+    }
     return NextResponse.json({ error: "Handler error" }, { status: 500 });
   }
 }
@@ -172,12 +198,12 @@ export async function POST(request: Request) {
 // Event handlers
 // ----------------------------------------------------------------------------
 
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<string | null> {
   const organizationId = session.metadata?.organizationId;
   const tierMeta = session.metadata?.tier;
   if (!organizationId) {
     console.error("checkout.session.completed missing organizationId in metadata");
-    return;
+    return null;
   }
 
   const tier = coerceTier(tierMeta);
@@ -227,13 +253,15 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     "Subscription activated",
     `Your ${tierName} plan is now active. Welcome!`,
   );
+
+  return organizationId;
 }
 
-async function handleSubscriptionCreated(sub: Stripe.Subscription) {
+async function handleSubscriptionCreated(sub: Stripe.Subscription): Promise<string | null> {
   const organizationId = sub.metadata?.organizationId;
   if (!organizationId) {
     console.error("customer.subscription.created missing organizationId in metadata");
-    return;
+    return null;
   }
 
   const priceId = sub.items.data[0]?.price.id || null;
@@ -283,9 +311,11 @@ async function handleSubscriptionCreated(sub: Stripe.Subscription) {
       newValue: { tier, status: sub.status, priceId },
     },
   });
+
+  return organizationId;
 }
 
-async function handleSubscriptionUpdated(sub: Stripe.Subscription) {
+async function handleSubscriptionUpdated(sub: Stripe.Subscription): Promise<string | null> {
   // Find by subscription id (most reliable for updates)
   const existing = await prisma.billingSubscription.findFirst({
     where: { stripeSubscriptionId: sub.id },
@@ -380,14 +410,16 @@ async function handleSubscriptionUpdated(sub: Stripe.Subscription) {
       "Your subscription will cancel at the end of the current billing period.",
     );
   }
+
+  return existing.organizationId;
 }
 
-async function handleSubscriptionDeleted(sub: Stripe.Subscription) {
+async function handleSubscriptionDeleted(sub: Stripe.Subscription): Promise<string | null> {
   const existing = await prisma.billingSubscription.findFirst({
     where: { stripeSubscriptionId: sub.id },
     select: { id: true, organizationId: true, tier: true },
   });
-  if (!existing) return;
+  if (!existing) return null;
 
   const previousTier = existing.tier;
 
@@ -429,17 +461,19 @@ async function handleSubscriptionDeleted(sub: Stripe.Subscription) {
     "/settings/billing",
     "high",
   );
+
+  return existing.organizationId;
 }
 
-async function handleInvoicePaid(invoice: Stripe.Invoice) {
+async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<string | null> {
   const stripeSubscriptionId = typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription?.id || null;
-  if (!stripeSubscriptionId) return;
+  if (!stripeSubscriptionId) return null;
 
   const existing = await prisma.billingSubscription.findFirst({
     where: { stripeSubscriptionId },
     select: { id: true, organizationId: true, status: true },
   });
-  if (!existing) return;
+  if (!existing) return null;
 
   // If we were past_due, return to active on successful payment
   if (existing.status === "past_due" || existing.status === "unpaid") {
@@ -467,17 +501,19 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
       },
     },
   });
+
+  return existing.organizationId;
 }
 
-async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
+async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<string | null> {
   const stripeSubscriptionId = typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription?.id || null;
-  if (!stripeSubscriptionId) return;
+  if (!stripeSubscriptionId) return null;
 
   const existing = await prisma.billingSubscription.findFirst({
     where: { stripeSubscriptionId },
     select: { id: true, organizationId: true },
   });
-  if (!existing) return;
+  if (!existing) return null;
 
   await prisma.billingSubscription.update({
     where: { id: existing.id },
@@ -512,4 +548,6 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     "/settings/billing",
     "critical",
   );
+
+  return existing.organizationId;
 }

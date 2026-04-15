@@ -4,6 +4,7 @@
 
 import { auth } from "@/auth";
 import { cached, invalidateCacheByPrefix, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
+import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { validateRecipientEmail, sanitizeEmailForLog, buildSecureLink } from "@/lib/email-security";
 import { createVendorSchema } from "@/lib/validations/vendor";
@@ -331,6 +332,8 @@ export async function POST(request: Request) {
 
     // Invalidate all cached vendor listings for this org
     await invalidateCacheByPrefix(CACHE_KEYS.orgVendors(organizationId));
+    // And the dashboard roll-up — see DDIA Ch5 Replication audit.
+    await invalidateDashboardCache(organizationId);
 
     return NextResponse.json(vendor, { status: 201 });
   } catch (error) {

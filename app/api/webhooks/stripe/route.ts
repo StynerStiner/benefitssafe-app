@@ -13,10 +13,11 @@
 // CRITICAL: BenefitsSafe NEVER holds funds. Money flows directly from
 // nonprofit bank -> Stripe -> vendor. We only make the approve/decline decision.
 
+import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { validateMCC } from "@/lib/mcc-controls";
-import { markWebhookProcessed } from "@/lib/webhook-idempotency";
+import { markWebhookProcessed, releaseWebhookEvent } from "@/lib/webhook-idempotency";
 import { NextResponse } from "next/server";
 
 const MCC_NAMES: Record<string, string> = {
@@ -40,6 +41,13 @@ function categorizeDecline(failed: { reason: string }[]): string {
 }
 
 export async function POST(request: Request) {
+  // Track whether we committed the idempotency row so the outer catch
+  // can release it and let Stripe retry. issuing_authorization.request
+  // is intentionally NOT deduped (see comment below) — for that path,
+  // processedEventId stays null and no release happens. (DDIA Ch5
+  // Replication audit.)
+  let processedEventId: string | null = null;
+
   try {
     const body = await request.text();
     const signature = request.headers.get("stripe-signature");
@@ -79,6 +87,7 @@ export async function POST(request: Request) {
       if (!firstTime) {
         return NextResponse.json({ received: true, deduped: true });
       }
+      processedEventId = event.id;
     }
 
     switch (event.type) {
@@ -108,6 +117,9 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error("Stripe webhook error:", error);
+    if (processedEventId) {
+      await releaseWebhookEvent(processedEventId);
+    }
     return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
 }
@@ -356,6 +368,10 @@ async function handleAuthorizationCreated(authorization: Record<string, unknown>
           grantId: virtualCard.expense?.grantId || null,
         },
       });
+      // Invalidate dashboard roll-up for the affected org so the new
+      // pending transaction appears on the admin dashboard immediately.
+      // (DDIA Ch5 Replication audit.)
+      await invalidateDashboardCache(virtualCard.organizationId);
     }
   }
 
@@ -651,8 +667,11 @@ async function handleDisputeCreated(dispute: Record<string, unknown>) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
+    // Rethrow so the outer POST handler releases the idempotency row and
+    // returns 500 — Stripe will retry. Silently returning 200 on error
+    // permanently dropped the dispute event. (DDIA Ch5 Replication audit.)
     console.error("Failed to process dispute creation:", error);
-    return NextResponse.json({ received: true }); // Don't fail webhook
+    throw error;
   }
 }
 
@@ -703,8 +722,10 @@ async function handleDisputeUpdated(dispute: Record<string, unknown>) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
+    // Rethrow so the outer POST handler returns 500 + releases idempotency.
+    // (DDIA Ch5 Replication audit.)
     console.error("Failed to process dispute update:", error);
-    return NextResponse.json({ received: true });
+    throw error;
   }
 }
 
@@ -740,7 +761,9 @@ async function handleDisputeSubmitted(dispute: Record<string, unknown>) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
+    // Rethrow so the outer POST handler returns 500 + releases idempotency.
+    // (DDIA Ch5 Replication audit.)
     console.error("Failed to process dispute submission:", error);
-    return NextResponse.json({ received: true });
+    throw error;
   }
 }

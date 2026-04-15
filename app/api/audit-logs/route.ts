@@ -54,15 +54,14 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: Record<string, unknown> = {};
 
-    // Only platform_admin (BenefitsSafe internal staff) can see cross-org
-    // audit logs. Every other role — including compliance_officer, which
-    // is an ORG-level role per prisma/schema.prisma:155 (User.organizationId
-    // is a required field) — is strictly scoped to their own organization.
-    // Granting compliance_officer cross-org visibility was a full-platform
-    // audit log leak.
-    if (role !== "platform_admin") {
-      where.organizationId = organizationId;
-    }
+    // Every role — INCLUDING platform_admin — is scoped to the currently
+    // active organizationId. Post org-switcher, platform_admin's session
+    // carries the tenant they selected via /api/platform/switch-org, so
+    // dropping the legacy `role !== "platform_admin"` check closes a live
+    // cross-tenant audit-log leak. If a platform_admin wants to oversee a
+    // different tenant, they switch orgs in the banner. There is no path
+    // to "all orgs at once" here by design. (DDIA Ch5 Replication audit.)
+    where.organizationId = organizationId;
 
     if (action && action !== "all") {
       where.action = action;

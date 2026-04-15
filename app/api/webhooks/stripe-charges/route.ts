@@ -3,12 +3,13 @@
 // This is SEPARATE from /api/webhooks/stripe-billing which handles subscription billing.
 // ASYNC: Creates Transaction record fast, enqueues heavy processing via QStash.
 
+import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { enqueueJob, JobTypes } from "@/lib/queue";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildPaymentReceivedEmail } from "@/lib/services/email-templates";
-import { markWebhookProcessed } from "@/lib/webhook-idempotency";
+import { markWebhookProcessed, releaseWebhookEvent } from "@/lib/webhook-idempotency";
 import { NextResponse } from "next/server";
 import type StripeType from "stripe";
 
@@ -241,10 +242,23 @@ export async function POST(request: Request) {
       data: { transactionId: txRecord.id },
     });
 
+    // Invalidate the dashboard roll-up so the new transaction appears on
+    // the admin dashboard immediately. (DDIA Ch5 Replication audit.)
+    await invalidateDashboardCache(organizationId);
+
     return NextResponse.json({ received: true });
   } catch (error) {
-    // Always return 200 to Stripe to prevent retries
+    // CRITICAL: return 500 and release the idempotency row so Stripe
+    // retries the event. The old behavior ("always return 200") combined
+    // with markWebhookProcessed above silently dropped card charges during
+    // any transient DB failure — Stripe would see success, never retry,
+    // and the Transaction/Ledger writes would never happen. (DDIA Ch5
+    // Replication audit — fintech data-loss path.)
     console.error("Error processing card charge webhook:", error);
-    return NextResponse.json({ received: true });
+    await releaseWebhookEvent(event.id);
+    return NextResponse.json(
+      { error: "Processing failed" },
+      { status: 500 },
+    );
   }
 }
