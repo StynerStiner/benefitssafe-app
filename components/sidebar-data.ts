@@ -314,10 +314,14 @@ const billingAdminNav: NavItem[] = [
   },
 ];
 
-// TODO: Platform admin portal is architecturally broken — all nonprofit
-// pages filter by session.user.organizationId but platform_admin has no org.
-// Needs either an org-selection UI or a separate /admin cross-org namespace.
-// Tracked as a separate PDR. Do not add more pages to this nav until fixed.
+// Platform admin nav. Spreads the nonprofit nav because the platform admin
+// is expected to oversee tenant nonprofits page-by-page — but every
+// tenant-scoped API filters by session.user.organizationId, so a platform
+// admin must first pick an active org via the PlatformAdminBanner at the
+// top of every page (see components/shared/platform-admin-banner.tsx).
+// The banner POSTs /api/platform/switch-org, which re-pins the platform
+// admin's User.organizationId to the selected tenant; the JWT is then
+// refreshed via useSession().update({refreshOrg: true}).
 const platformAdminNav: NavItem[] = [
   {
     title: "Platform",

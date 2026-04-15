@@ -329,6 +329,42 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // Keep existing values on DB error
         }
       }
+      // Refresh the active org on session update. Used by the platform-admin
+      // org picker: after POST /api/platform/switch-org mutates
+      // User.organizationId on the DB row, the client calls
+      // useSession().update({ refreshOrg: true }) so the JWT re-reads the new
+      // org + its display name. Role is intentionally NOT re-read — a platform
+      // admin stays platform_admin regardless of which tenant they are viewing.
+      if (trigger === "update" && updateSession?.refreshOrg === true) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: {
+              organizationId: true,
+              organization: {
+                select: {
+                  name: true,
+                  subscriptionStatus: true,
+                  trialEndDate: true,
+                  billingSubscription: { select: { tier: true, status: true } },
+                },
+              },
+            },
+          });
+          if (dbUser) {
+            token.organizationId = dbUser.organizationId;
+            token.organizationName = dbUser.organization?.name || "";
+            token.subscriptionStatus = dbUser.organization?.subscriptionStatus || "trial";
+            token.trialEndDate = dbUser.organization?.trialEndDate
+              ? dbUser.organization.trialEndDate.toISOString()
+              : null;
+            token.billingTier = dbUser.organization?.billingSubscription?.tier || "free";
+            token.billingStatus = dbUser.organization?.billingSubscription?.status ?? null;
+          }
+        } catch (error) {
+          console.error("JWT callback: refreshOrg failed", error);
+        }
+      }
       // Refresh billing fields on session update (e.g. after upgrade/downgrade)
       if (trigger === "update" && updateSession?.refreshBilling === true) {
         try {
