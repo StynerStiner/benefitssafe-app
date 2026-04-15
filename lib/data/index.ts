@@ -210,11 +210,15 @@ async function fetchExpenses(
   role: string,
   limit: number,
 ): Promise<DashboardExpenses> {
+  // Filter by the denormalized ExpenseRequest.organizationId column so the
+  // covering index @@index([organizationId, status, createdAt]) is used.
+  // The old shape `grant: { is: { organizationId } }` pushed this into a
+  // Grant subquery and bypassed the index entirely. (DDIA Ch3 audit.)
   const where = role === "beneficiary"
-    ? { requestedById: userId, grant: { is: { organizationId } } }
+    ? { requestedById: userId, organizationId }
     : role === "platform_admin"
       ? {}
-      : { grant: { is: { organizationId } } };
+      : { organizationId };
 
   const items = await prisma.expenseRequest.findMany({
     where,
@@ -345,7 +349,11 @@ async function fetchSubscriptions(
   role: string,
   limit: number,
 ): Promise<DashboardSubscriptions> {
-  const where = { vendor: { organizationId } };
+  // Filter by the denormalized Subscription.organizationId so the existing
+  // @@index([organizationId]) is used. The old shape
+  // `vendor: { organizationId }` forced a subquery on Vendor and bypassed
+  // the direct Subscription index. (DDIA Ch3 audit.)
+  const where = { organizationId };
 
   const items = await prisma.subscription.findMany({
     where,
@@ -377,21 +385,44 @@ async function fetchCompliance(
   organizationId: string,
   role: string,
 ): Promise<DashboardCompliance> {
-  const where = role === "platform_admin"
-    ? {}
-    : { grant: { is: { organizationId } } };
+  // Uses the denormalized ExpenseRequest.organizationId + the new
+  // @@index([organizationId, riskClassification]) composite so each
+  // bucket count is an indexed range read instead of a full scan.
+  // groupBy is one round-trip instead of four, and with this index it's
+  // a HashAggregate over an index range rather than a seq scan.
+  const where = role === "platform_admin" ? {} : { organizationId };
 
-  const expenses = await prisma.expenseRequest.findMany({
+  const groups = await prisma.expenseRequest.groupBy({
+    by: ["riskClassification"],
     where,
-    select: { riskClassification: true },
+    _count: { _all: true },
   });
 
-  return {
-    likelySafe: expenses.filter((e) => e.riskClassification === "LIKELY_SAFE").length,
-    needsReview: expenses.filter((e) => e.riskClassification === "NEEDS_REVIEW").length,
-    likelyRisky: expenses.filter((e) => e.riskClassification === "LIKELY_RISKY").length,
-    blocked: expenses.filter((e) => e.riskClassification === "BLOCKED").length,
+  const counts = {
+    likelySafe: 0,
+    needsReview: 0,
+    likelyRisky: 0,
+    blocked: 0,
   };
+
+  for (const g of groups) {
+    switch (g.riskClassification) {
+      case "LIKELY_SAFE":
+        counts.likelySafe = g._count._all;
+        break;
+      case "NEEDS_REVIEW":
+        counts.needsReview = g._count._all;
+        break;
+      case "LIKELY_RISKY":
+        counts.likelyRisky = g._count._all;
+        break;
+      case "BLOCKED":
+        counts.blocked = g._count._all;
+        break;
+    }
+  }
+
+  return counts;
 }
 
 async function fetchNotifications(

@@ -348,12 +348,22 @@ export async function POST(request: Request) {
       where: { organizationId, role: "beneficiary" },
     });
 
-    // Get org sequence from creation order
-    const orgCount = await prisma.organization.count({
-      where: { createdAt: { lte: new Date() } },
+    // Get the org-sequence portion from the org's existing orgCode
+    // ("ORG-00042" → "0042"). This used to be a full-table scan
+    // `organization.count({ createdAt <= now })` which hit 1.8M rows at
+    // steady state on every beneficiary create. A PK-by-id lookup is
+    // O(1) and returns the same 4-digit sequence. If the org is missing
+    // an orgCode (legacy rows), fall back to "0000" so code generation
+    // never blocks a signup. (DDIA Ch3 audit.)
+    const orgRow = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { orgCode: true },
     });
+    const orgSeq = (orgRow?.orgCode?.match(/\d+/)?.[0] ?? "0")
+      .padStart(4, "0")
+      .slice(-4);
 
-    const beneficiaryCode = `BS-${String(orgCount).padStart(4, "0")}-${String(beneficiaryCount + 1).padStart(5, "0")}`;
+    const beneficiaryCode = `BS-${orgSeq}-${String(beneficiaryCount + 1).padStart(5, "0")}`;
 
     const createData = {
       email: data.email,

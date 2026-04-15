@@ -148,7 +148,6 @@ model InviteToken {
   usedAt    DateTime?
   createdAt DateTime  @default(now())
 
-  @@index([token])
   @@index([userId])
 }
 
@@ -211,9 +210,9 @@ model Grant {
   expenses    ExpenseRequest[]
   virtualCards VirtualCard[]
 
-  @@index([organizationId])
   @@index([beneficiaryId])
-  @@index([organizationId, status]) // Grant listing filtered by org and status
+  @@index([organizationId, status])          // Grant listing filtered by org and status
+  @@index([organizationId, createdAt])       // Paginated org list sorted by recency
 }
 
 enum GrantStatus {
@@ -300,15 +299,14 @@ model ExpenseRequest {
   ledgerEntries LedgerEntry[]
   virtualCards  VirtualCard[]
 
-  @@index([organizationId])
-  @@index([organizationId, status])
-  @@index([organizationId, status, createdAt])
-  @@index([grantId])
-  @@index([requestedById])
-  @@index([status])
-  @@index([grantId, status])             // Expense queries by grant and status
-  @@index([requestedById, status])       // Expense queries by requester and status
-  @@index([grantId, status, createdAt]) // Expense filtering by grant, status, and date range
+  // Hot-path covering indexes only — shorter composites that are subsumed
+  // by leftmost-prefix of these longer ones were dropped in the DDIA Ch3
+  // index audit (see references/engineering/designing-data-intensive-applications/AUDIT-TRACKER.md).
+  @@index([organizationId, status, createdAt])      // List queries: where org+status order by createdAt
+  @@index([organizationId, riskClassification])     // Compliance page count-per-risk-tier
+  @@index([grantId])                                // Join back from Grant.expenses
+  @@index([requestedById, status])                  // Beneficiary's own expenses filtered by status
+  @@index([grantId, status, createdAt])             // Per-grant expense list with date range
 }
 
 enum ExpenseFrequency {
@@ -370,8 +368,8 @@ model Vendor {
   subscriptions Subscription[]
   virtualCards  VirtualCard[]
 
-  @@index([organizationId])
-  @@index([organizationId, status]) // Vendor approval workflow queries
+  @@index([organizationId, status])          // Vendor approval workflow queries
+  @@index([organizationId, createdAt])       // Paginated vendor list sorted by recency
 }
 
 enum VendorType {
@@ -417,11 +415,9 @@ model Subscription {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([vendorId])
-  @@index([grantId])
-  @@index([organizationId])
+  @@index([organizationId])              // Org-scoped list (kept; no composite subsumes)
   @@index([grantId, status])             // Subscription queries by grant and status
-  @@index([vendorId, status]) // Subscription queries by vendor and status
+  @@index([vendorId, status])            // Subscription queries by vendor and status
 }
 
 enum BillingUpdateStatus {
@@ -479,13 +475,12 @@ model VirtualCard {
   subscriptions Subscription[]
   transactions  Transaction[]
 
-  @@index([organizationId])
-  @@index([grantId])
-  @@index([expenseId])
-  @@index([vendorId])
-  @@index([beneficiaryId])
-  @@index([stripeCardId])
+  @@index([grantId])                     // Grant → cards join
+  @@index([expenseId])                   // Expense → cards join
+  @@index([vendorId])                    // Vendor → cards join
+  @@index([beneficiaryId])               // Beneficiary's own cards
   @@index([organizationId, status])      // Card listing filtered by org and status
+  @@index([organizationId, createdAt])   // Paginated card list sorted by recency
 }
 
 enum CardStatus {
@@ -529,7 +524,6 @@ model CardholderEligibility {
   updatedAt                   DateTime @updatedAt
 
   @@index([organizationId])
-  @@index([beneficiaryId])
 }
 
 model Transaction {
@@ -549,10 +543,8 @@ model Transaction {
 
   createdAt DateTime @default(now())
 
-  @@index([cardId])
-  @@index([organizationId])
   @@index([cardId, createdAt])           // Transaction history by card
-  @@index([organizationId, createdAt]) // Transaction history time-series queries
+  @@index([organizationId, createdAt])   // Transaction history time-series queries
 }
 
 // ============================================
@@ -576,11 +568,9 @@ model LedgerEntry {
   createdAt DateTime @default(now())
   // IMMUTABLE — no updatedAt. Ledger entries are NEVER modified.
 
-  @@index([organizationId])
-  @@index([organizationId, createdAt])
-  @@index([grantId])
-  @@index([expenseId])
-  @@index([grantId, createdAt]) // Monthly reconciliation queries at scale
+  @@index([organizationId, createdAt])   // Ledger time-series queries per org
+  @@index([expenseId])                   // Join back from ExpenseRequest.ledgerEntries
+  @@index([grantId, createdAt])          // Monthly reconciliation queries at scale
 }
 
 enum LedgerType {
@@ -624,10 +614,9 @@ model AuditLog {
   createdAt      DateTime @default(now())
   // IMMUTABLE — no updatedAt. Audit logs are NEVER modified or deleted.
 
-  @@index([organizationId])
   @@index([entityType, entityId])
-  @@index([userId, organizationId])     // Audit queries by user within an org
-  @@index([organizationId, createdAt]) // Audit trail time-series queries
+  @@index([userId, organizationId])      // Audit queries by user within an org
+  @@index([organizationId, createdAt])   // Audit trail time-series queries
 }
 
 // ============================================
@@ -689,8 +678,9 @@ model Notification {
   read           Boolean  @default(false)
   createdAt      DateTime @default(now())
 
-  @@index([userId, read])
-  @@index([organizationId, createdAt])   // Notification queries by org and date
+  @@index([userId, read])                         // Unread-count badge
+  @@index([organizationId, createdAt])            // Org-level notification feeds
+  @@index([userId, organizationId, createdAt])    // Per-user dashboard list (hot path)
 }
 
 // ============================================
@@ -765,7 +755,6 @@ model PromoCode {
 
   redemptions PromoRedemption[]
 
-  @@index([code])
   @@index([isActive])
 }
 
@@ -800,8 +789,9 @@ model CalendarEvent {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  @@index([organizationId])
-  @@index([startDate])
+  @@index([organizationId])              // Kept for org-scoped lookups without date filter
+  @@index([startDate])                   // Cross-org admin/jobs view
+  @@index([organizationId, startDate])   // Calendar page query: where org, range over startDate
 }
 
 // ============================================
@@ -833,13 +823,14 @@ model OrganizationMembership {
   notes            String?
 
   @@unique([userId, organizationId])
-  @@index([userId])
-  @@index([organizationId])
   @@index([userId, status])
   // Hot path for multi-org list endpoints: filters by
-  // (organizationId, role, status) on every beneficiary/team list call.
-  // Keeps the query an indexed range read at 900M+ rows.
-  @@index([organizationId, role, status])
+  // (organizationId, status) always, role only sometimes. Column order is
+  // (org, status, role) — not (org, role, status) — because the leftmost
+  // prefix must match the required columns so the query plan picks this
+  // index even when the caller omits role. Keeps the query an indexed
+  // range read at 900M+ rows. See DDIA Ch3 audit.
+  @@index([organizationId, status, role])
 }
 
 model CronCheckpoint {
@@ -854,8 +845,6 @@ model CronCheckpoint {
   lastRunAt      DateTime @default(now())
   processedCount Int      @default(0)
   updatedAt      DateTime @updatedAt
-
-  @@index([cronName])
 }
 
 // ── Composio Workflow Automation ────────────────────
@@ -873,7 +862,6 @@ model Integration {
   updatedAt            DateTime  @updatedAt
 
   @@unique([organizationId, provider])
-  @@index([organizationId])
 }
 
 model WorkflowTrigger {
@@ -954,7 +942,6 @@ model BillingSubscription {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
-  @@index([organizationId])
   @@index([stripeCustomerId])
   @@index([stripeSubscriptionId])
 }
@@ -976,7 +963,6 @@ model UsageCounter {
   updatedAt          DateTime @updatedAt
 
   @@unique([organizationId, period])
-  @@index([organizationId])
 }
 
 // Webhook idempotency ledger. Every inbound Stripe webhook (Issuing,

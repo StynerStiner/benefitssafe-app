@@ -18,14 +18,15 @@ export async function GET(request: Request) {
     const limit = Math.min(Math.max(Number.isNaN(rawLimit) ? 25 : rawLimit, 1), 100);
     const offset = Math.max(Number.isNaN(rawOffset) ? 0 : rawOffset, 0);
 
-    // Get org's grant IDs for scoping
-    const orgGrants = await prisma.grant.findMany({
-      where: { organizationId, archivedAt: null },
-      select: { id: true },
-    });
-    const grantIds = orgGrants.map((g) => g.id);
-
-    const ledgerWhere = { organizationId, grantId: { in: grantIds } };
+    // LedgerEntry.organizationId is denormalized from Grant (see
+    // prisma/schema.prisma) and already covered by
+    // @@index([organizationId, createdAt]). The old code loaded every
+    // non-archived grant for the org and passed their ids to a
+    // `grantId IN (...)` subquery — an unbounded prefetch that forced
+    // a scan over every grant for the org on every ledger page load.
+    // The org filter alone is strictly more correct and uses the index.
+    // (DDIA Ch3 audit.)
+    const ledgerWhere = { organizationId };
     const transactionWhere = { organizationId };
 
     const [ledgerEntries, ledgerTotal, transactions, transactionTotal] = await Promise.all([

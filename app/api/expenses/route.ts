@@ -30,13 +30,20 @@ export async function GET(request: Request) {
     const limit = Math.min(Math.max(Number.isNaN(rawLimit) ? 25 : rawLimit, 1), 100);
     const offset = Math.max(Number.isNaN(rawOffset) ? 0 : rawOffset, 0);
 
-    // Build where clause based on role
+    // Build where clause based on role.
+    //
+    // CRITICAL: filter by the denormalized `ExpenseRequest.organizationId`
+    // column, NOT `grant: { is: { organizationId } }`. Prisma turns relation
+    // filters into subqueries on Grant, which completely bypasses the
+    // covering index `@@index([organizationId, status, createdAt])` on
+    // ExpenseRequest. At 200M rows/yr this was a full scan. The denormalized
+    // column was always there — we just weren't using it. (DDIA Ch3 audit.)
     const where: Record<string, unknown> = {};
 
     if (role === "beneficiary") {
       // Beneficiaries only see their own expenses
       where.requestedById = userId;
-      where.grant = { is: { organizationId } };
+      where.organizationId = organizationId;
     } else if (role === "platform_admin") {
       // Platform admins see everything
     } else if (
@@ -49,7 +56,7 @@ export async function GET(request: Request) {
       role === "grant_officer"
     ) {
       // Scoped to their organization (read-only for non-admin roles)
-      where.grant = { is: { organizationId } };
+      where.organizationId = organizationId;
     } else {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
