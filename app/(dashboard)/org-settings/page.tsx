@@ -161,6 +161,16 @@ const OrgSettingsPage = () => {
     const [uploadingLogo, setUploadingLogo] = useState(false);
     const logoInputRef = useRef<HTMLInputElement>(null);
 
+    // Fund transfer polling refs — imperative state that should not trigger re-renders.
+    const isMountedRef = useRef(true);
+    const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const pollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pollAbortRef = useRef<AbortController | null>(null);
+    const pollErrorCountRef = useRef(0);
+    const pollAttemptCountRef = useRef(0);
+    const pollTransferIdRef = useRef<string | null>(null);
+    const boundTickRef = useRef<(() => void) | null>(null);
+
     // Form state
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -311,9 +321,181 @@ const OrgSettingsPage = () => {
             .finally(() => setLoading(false));
     }, [fetchFundBalance]);
 
+    // --- Fund transfer status polling ---
+    // Single polling tick — fetches the transfer status and handles the response.
+    const pollTick = async (transferId: string) => {
+        if (!isMountedRef.current) return;
+        if (pollAbortRef.current?.signal.aborted) return;
+
+        const toastId = `fund-transfer-${transferId}`;
+
+        try {
+            const res = await fetch(`/api/org/fund/${transferId}/status`, {
+                signal: pollAbortRef.current?.signal,
+            });
+            const data = await res.json().catch(() => ({}));
+
+            if (!isMountedRef.current) return;
+
+            if (res.status === 200) {
+                pollErrorCountRef.current = 0;
+
+                if (data.status === "SUCCEEDED") {
+                    stopPolling();
+                    toast.success("Transfer completed successfully", { id: toastId });
+                    if (isMountedRef.current) fetchFundBalance();
+                    return;
+                }
+
+                if (data.status === "FAILED") {
+                    stopPolling();
+                    const reason = data.failureReason || "Unknown reason";
+                    toast.error(`Transfer failed: ${reason}`, { id: toastId });
+                    return;
+                }
+
+                // PENDING — continue polling
+                return;
+            }
+
+            if (res.status === 429) {
+                // Rate-limited — skip this tick, wait for next interval.
+                return;
+            }
+
+            if (res.status === 404) {
+                stopPolling();
+                toast.error("Transfer not found", { id: toastId });
+                return;
+            }
+
+            if (res.status === 401) {
+                stopPolling();
+                toast.error("Session expired. Please sign in again.", { id: toastId });
+                return;
+            }
+
+            if (res.status === 403) {
+                stopPolling();
+                toast.error("You do not have permission to view this transfer.", { id: toastId });
+                return;
+            }
+
+            // Other error — count toward consecutive error limit.
+            pollErrorCountRef.current++;
+            if (pollErrorCountRef.current >= 3) {
+                stopPolling();
+                toast.error("Unable to check transfer status. Please refresh the page.", { id: toastId });
+            }
+        } catch (err) {
+            // Network error or abort.
+            if (err instanceof DOMException && err.name === "AbortError") return;
+            if (!isMountedRef.current) return;
+
+            pollErrorCountRef.current++;
+            if (pollErrorCountRef.current >= 3) {
+                stopPolling();
+                toast.error("Unable to check transfer status. Please refresh the page.", {
+                    id: `fund-transfer-${transferId}`,
+                });
+            }
+        }
+    };
+
+    // Stop all polling — abort in-flight fetch, clear timers, reset refs.
+    const stopPolling = () => {
+        if (pollAbortRef.current) {
+            pollAbortRef.current.abort();
+            pollAbortRef.current = null;
+        }
+        if (pollTimeoutRef.current !== null) {
+            clearTimeout(pollTimeoutRef.current);
+            pollTimeoutRef.current = null;
+        }
+        if (pollIntervalRef.current !== null) {
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+        }
+        pollTransferIdRef.current = null;
+        boundTickRef.current = null;
+    };
+
+    // Start polling for a given transferId. Cleans up any previous session first.
+    const startPolling = (transferId: string) => {
+        stopPolling();
+
+        // Fresh state for the new session.
+        pollAbortRef.current = new AbortController();
+        pollErrorCountRef.current = 0;
+        pollAttemptCountRef.current = 0;
+        pollTransferIdRef.current = transferId;
+
+        const toastId = `fund-transfer-${transferId}`;
+        toast.loading("Checking transfer status...", { id: toastId });
+
+        // Tick wrapper that enforces the 18-attempt / 90-second hard ceiling.
+        // Reads from refs (not closures) so concurrent-submit cleanup works.
+        const boundTick = () => {
+            const activeTransferId = pollTransferIdRef.current;
+            if (!activeTransferId) return;
+            if (pollAbortRef.current?.signal.aborted) return;
+            pollAttemptCountRef.current++;
+            if (pollAttemptCountRef.current > 18) {
+                const tid = `fund-transfer-${activeTransferId}`;
+                stopPolling();
+                toast("Transfer is still processing. Please check back later.", {
+                    id: tid,
+                    icon: "⏳",
+                });
+                return;
+            }
+            pollTick(activeTransferId);
+        };
+        boundTickRef.current = boundTick;
+
+        // First tick after a short delay (give the server a moment).
+        pollTimeoutRef.current = setTimeout(boundTick, 2000);
+        pollIntervalRef.current = setInterval(boundTick, 5000);
+    };
+
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    // Visibility-aware polling: pause when tab goes to background, resume on foreground.
+    // Also handles component unmount cleanup for any active polling session.
+    useEffect(() => {
+        isMountedRef.current = true;
+
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                // Tab went to background — pause polling interval but keep abort controller.
+                if (pollIntervalRef.current !== null) {
+                    clearInterval(pollIntervalRef.current);
+                    pollIntervalRef.current = null;
+                }
+            } else {
+                // Tab returned to foreground — if polling was active, restart.
+                // Uses boundTickRef so the 18-attempt ceiling is enforced.
+                if (pollTransferIdRef.current && pollAbortRef.current && !pollAbortRef.current.signal.aborted && boundTickRef.current) {
+                    boundTickRef.current();
+                    pollIntervalRef.current = setInterval(() => boundTickRef.current?.(), 5000);
+                }
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            isMountedRef.current = false;
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+            stopPolling();
+        };
+    // Deps intentionally empty: all polling state lives in refs which do not
+    // require re-subscription. pollTick/stopPolling are stable function
+    // references that access refs directly.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -418,11 +600,14 @@ const OrgSettingsPage = () => {
     };
 
     const handleAddFunds = async () => {
+        // Abort any active polling from a previous submit before starting a new one.
+        stopPolling();
         const amount = parseFloat(fundAmount);
         if (!amount || amount <= 0) {
             toast.error("Please enter a valid amount");
             return;
         }
+        const requestId = crypto.randomUUID();
         setFundSubmitting(true);
         try {
             const res = await fetch("/api/org/fund", {
@@ -431,21 +616,57 @@ const OrgSettingsPage = () => {
                 body: JSON.stringify({
                     amount,
                     bankPaymentMethodId: "pm_bank_placeholder",
+                    requestId,
                 }),
             });
-            const data = await res.json();
-            if (!res.ok) {
-                toast.error(data?.error || "Failed to initiate transfer");
-                return;
+            const data = await res.json().catch(() => ({}));
+
+            switch (res.status) {
+                case 200: {
+                    if (data.transfer?.previouslyInitiated) {
+                        toast.success("Transfer was already initiated successfully");
+                    } else {
+                        toast.success(
+                            data.dev
+                                ? "Transfer initiated (dev mode)"
+                                : "Transfer initiated successfully"
+                        );
+                    }
+                    setAddFundsOpen(false);
+                    setFundAmount("");
+                    fetchFundBalance();
+                    break;
+                }
+                case 409: {
+                    setAddFundsOpen(false);
+                    setFundAmount("");
+                    startPolling(data.transferId);
+                    break;
+                }
+                case 422: {
+                    const tid = data.transferId ? ` (ref: ${data.transferId})` : "";
+                    toast.error(
+                        `Previous transfer attempt failed. Please try a new transfer or contact support.${tid}`
+                    );
+                    break;
+                }
+                case 400: {
+                    console.error("[org-settings] Fund validation error — possible frontend bug:", data);
+                    toast.error(data?.error || "Invalid request. Please check your input.");
+                    break;
+                }
+                // In a future iteration this should redirect to /sign-in via
+                // a unified auth-failure handler — currently no such pattern
+                // exists in this codebase.
+                case 401: {
+                    toast.error("Session expired. Please sign in again.");
+                    break;
+                }
+                default: {
+                    toast.error(data?.error || "Failed to initiate transfer");
+                    break;
+                }
             }
-            toast.success(
-                data.dev
-                    ? "Transfer initiated (dev mode)"
-                    : "Transfer initiated successfully"
-            );
-            setAddFundsOpen(false);
-            setFundAmount("");
-            fetchFundBalance();
         } catch {
             toast.error("Something went wrong");
         } finally {

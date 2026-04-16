@@ -165,6 +165,7 @@ export async function POST(request: Request) {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
       const velocityCount = await prisma.expenseRequest.count({
         where: {
+          organizationId: orgId,
           requestedById: expense.requestedById,
           createdAt: { gte: oneHourAgo },
         },

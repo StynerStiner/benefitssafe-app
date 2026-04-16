@@ -7,6 +7,16 @@ import { classifyExpense } from "@/utils/compliance-rules";
 import { shouldAutoApprove } from "@/lib/auto-approve";
 import { verifyJobAuth, claimJobMessage } from "@/lib/queue";
 import { NextResponse } from "next/server";
+import { Prisma } from "@/lib/generated/prisma/client";
+
+// Structured error for grant-balance failures inside the auto-approve
+// $transaction. The outer catch maps this to a terminal 200 (not 500)
+// so QStash does not retry a charge that will never succeed.
+class InsufficientFundsError extends Error {
+  constructor(public readonly code: string, public readonly detail: string) {
+    super(detail);
+  }
+}
 
 export async function POST(request: Request) {
   const auth = await verifyJobAuth(request);
@@ -186,22 +196,37 @@ export async function POST(request: Request) {
     });
 
     if (autoApproveResult.approved) {
-      // Use transaction with row-level lock to prevent concurrent overspend
+      // Atomic conditional approve with Serializable isolation.
+      // The FOR UPDATE lock serializes concurrent access; the WHERE
+      // remainingAmount >= amount guard prevents the balance from going
+      // negative. Without the WHERE, Prisma's { decrement } happily
+      // drives the balance below zero. (DDIA Ch12 audit — C-2 fix.)
       await prisma.$transaction(async (tx) => {
-        // Lock grant row
+        // Lock grant row (belt-and-suspenders with Serializable)
         await tx.$queryRaw`
           SELECT id FROM "Grant"
           WHERE id = ${grantId}
           FOR UPDATE
         `;
 
-        const updatedGrant = await tx.grant.update({
-          where: { id: grantId },
-          data: {
-            spentAmount: { increment: Number(amount) },
-            remainingAmount: { decrement: Number(amount) },
-          },
-        });
+        // Atomic conditional decrement with RETURNING so the UPDATE
+        // and the balance read are a single round-trip. Zero rows
+        // returned means the grant cannot cover this charge.
+        const result = await tx.$queryRaw<{ remainingAmount: Prisma.Decimal }[]>`
+          UPDATE "Grant"
+          SET "spentAmount"     = "spentAmount"     + ${Number(amount)}::numeric,
+              "remainingAmount" = "remainingAmount" - ${Number(amount)}::numeric,
+              "updatedAt"       = NOW()
+          WHERE id = ${grantId}
+            AND "remainingAmount" >= ${Number(amount)}::numeric
+          RETURNING "remainingAmount"
+        `;
+        if (result.length === 0) {
+          throw new InsufficientFundsError(
+            "insufficient_grant_funds",
+            `Grant ${grantId} has insufficient funds for auto-approve of $${Number(amount).toFixed(2)}`,
+          );
+        }
 
         await tx.expenseRequest.update({
           where: { id: expense.id },
@@ -216,7 +241,7 @@ export async function POST(request: Request) {
             expenseId: expense.id,
             type: "DEBIT",
             amount: Number(amount),
-            balanceAfter: updatedGrant.remainingAmount,
+            balanceAfter: result[0].remainingAmount,
             description: `Auto-approved: ${merchantName} ($${Number(amount).toFixed(2)})`,
             reference: stripeTransactionId,
           },
@@ -238,6 +263,10 @@ export async function POST(request: Request) {
             },
           },
         });
+      }, {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        maxWait: 5_000,
+        timeout: 15_000,
       });
 
       if (adminUser) {
@@ -290,12 +319,46 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, expenseId: expense.id });
   } catch (error) {
+    // Insufficient grant funds — terminal failure, not transient. Mark
+    // the charge as declined and the expense as rejected so the admin
+    // dashboard shows what happened. Return 200 so QStash stops retrying.
+    if (error instanceof InsufficientFundsError) {
+      console.warn(`[process-charge] ${error.detail}`);
+      try {
+        await prisma.transaction.updateMany({
+          where: { id: transactionId, status: { not: "declined" } },
+          data: { status: "declined", declinedReason: "Insufficient grant funds" },
+        });
+        await prisma.expenseRequest.update({
+          where: { id: expense.id },
+          data: { status: "REJECTED", rejectedReason: "Insufficient grant funds (auto-rejected)" },
+        });
+        await prisma.auditLog.create({
+          data: {
+            userId: systemUserId,
+            organizationId,
+            action: "auto_reject",
+            entityType: "expense",
+            entityId: expense.id,
+            newValue: {
+              reason: error.detail,
+              stripeTransactionId,
+            },
+          },
+        });
+      } catch (cleanupErr) {
+        console.error("[process-charge] cleanup after insufficient funds failed:", cleanupErr);
+      }
+      return NextResponse.json({ success: false, code: error.code, detail: error.detail });
+    }
+
     // transaction_already_linked is the idempotency guard: a concurrent
     // retry won the race. Treat as success so QStash stops retrying.
     if ((error as Error)?.message === "transaction_already_linked") {
       console.log("[process-charge] dedupe: transaction already linked");
       return NextResponse.json({ success: true, deduped: "race_loser" });
     }
+
     console.error("[process-charge] Error:", error);
     return NextResponse.json({ error: "Processing failed" }, { status: 500 });
   }

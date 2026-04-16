@@ -60,6 +60,7 @@ model Organization {
   budgetCategories BudgetCategory[]
   subscriptions    Subscription[]
   approvals        Approval[]
+  fundTransfers    FundTransfer[]
 }
 
 model User {
@@ -131,6 +132,7 @@ model User {
   cardholderEligibility CardholderEligibility?
   memberships     OrganizationMembership[]
   virtualCards    VirtualCard[] @relation("CardBeneficiary")
+  fundTransfers   FundTransfer[]
 
   @@index([organizationId])
   @@index([email])
@@ -1001,4 +1003,27 @@ model ProcessedWebhookEvent {
   processedAt DateTime @default(now())
 
   @@index([webhookType, processedAt])
+}
+
+model FundTransfer {
+  id                    String   @id @default(cuid())
+  organizationId        String
+  organization          Organization @relation(fields: [organizationId], references: [id])
+  requestId             String   // Client-supplied UUID — the idempotency key
+  amountCents           Int      // Integer cents to avoid float issues
+  currency              String   @default("usd")
+  bankPaymentMethodId   String   // Stripe payment method id (token, not PII)
+  stripeTransferId      String?  // null until Stripe call succeeds
+  stripeAccountId       String   // Connect account the transfer is against
+  financialAccountId    String   // Treasury financial account
+  status                String   // "PENDING" | "SUCCEEDED" | "FAILED"
+  failureReason         String?
+  initiatedByUserId     String
+  initiatedBy           User     @relation(fields: [initiatedByUserId], references: [id])
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@unique([organizationId, requestId])
+  @@index([organizationId, createdAt])
+  @@index([status])
 }

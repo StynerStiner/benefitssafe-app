@@ -415,7 +415,8 @@ export const ModelName = {
   GrantReport: 'GrantReport',
   BillingSubscription: 'BillingSubscription',
   UsageCounter: 'UsageCounter',
-  ProcessedWebhookEvent: 'ProcessedWebhookEvent'
+  ProcessedWebhookEvent: 'ProcessedWebhookEvent',
+  FundTransfer: 'FundTransfer'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -431,7 +432,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organization" | "user" | "inviteToken" | "grant" | "budgetCategory" | "expenseRequest" | "vendor" | "subscription" | "virtualCard" | "cardholderEligibility" | "transaction" | "ledgerEntry" | "approval" | "auditLog" | "conversation" | "conversationParticipant" | "message" | "notification" | "document" | "disbursementPolicy" | "promoCode" | "promoRedemption" | "calendarEvent" | "organizationMembership" | "cronCheckpoint" | "integration" | "workflowTrigger" | "workflowLog" | "grantReport" | "billingSubscription" | "usageCounter" | "processedWebhookEvent"
+    modelProps: "organization" | "user" | "inviteToken" | "grant" | "budgetCategory" | "expenseRequest" | "vendor" | "subscription" | "virtualCard" | "cardholderEligibility" | "transaction" | "ledgerEntry" | "approval" | "auditLog" | "conversation" | "conversationParticipant" | "message" | "notification" | "document" | "disbursementPolicy" | "promoCode" | "promoRedemption" | "calendarEvent" | "organizationMembership" | "cronCheckpoint" | "integration" | "workflowTrigger" | "workflowLog" | "grantReport" | "billingSubscription" | "usageCounter" | "processedWebhookEvent" | "fundTransfer"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2803,6 +2804,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    FundTransfer: {
+      payload: Prisma.$FundTransferPayload<ExtArgs>
+      fields: Prisma.FundTransferFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FundTransferFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FundTransferPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FundTransferFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FundTransferPayload>
+        }
+        findFirst: {
+          args: Prisma.FundTransferFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FundTransferPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FundTransferFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FundTransferPayload>
+        }
+        findMany: {
+          args: Prisma.FundTransferFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FundTransferPayload>[]
+        }
+        create: {
+          args: Prisma.FundTransferCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FundTransferPayload>
+        }
+        createMany: {
+          args: Prisma.FundTransferCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FundTransferCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FundTransferPayload>[]
+        }
+        delete: {
+          args: Prisma.FundTransferDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FundTransferPayload>
+        }
+        update: {
+          args: Prisma.FundTransferUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FundTransferPayload>
+        }
+        deleteMany: {
+          args: Prisma.FundTransferDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FundTransferUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FundTransferUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FundTransferPayload>[]
+        }
+        upsert: {
+          args: Prisma.FundTransferUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FundTransferPayload>
+        }
+        aggregate: {
+          args: Prisma.FundTransferAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFundTransfer>
+        }
+        groupBy: {
+          args: Prisma.FundTransferGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FundTransferGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FundTransferCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FundTransferCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3449,6 +3524,26 @@ export const ProcessedWebhookEventScalarFieldEnum = {
 export type ProcessedWebhookEventScalarFieldEnum = (typeof ProcessedWebhookEventScalarFieldEnum)[keyof typeof ProcessedWebhookEventScalarFieldEnum]
 
 
+export const FundTransferScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  requestId: 'requestId',
+  amountCents: 'amountCents',
+  currency: 'currency',
+  bankPaymentMethodId: 'bankPaymentMethodId',
+  stripeTransferId: 'stripeTransferId',
+  stripeAccountId: 'stripeAccountId',
+  financialAccountId: 'financialAccountId',
+  status: 'status',
+  failureReason: 'failureReason',
+  initiatedByUserId: 'initiatedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FundTransferScalarFieldEnum = (typeof FundTransferScalarFieldEnum)[keyof typeof FundTransferScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -3930,6 +4025,7 @@ export type GlobalOmitConfig = {
   billingSubscription?: Prisma.BillingSubscriptionOmit
   usageCounter?: Prisma.UsageCounterOmit
   processedWebhookEvent?: Prisma.ProcessedWebhookEventOmit
+  fundTransfer?: Prisma.FundTransferOmit
 }
 
 /* Types for Logging */

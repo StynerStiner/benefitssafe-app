@@ -78,7 +78,7 @@ export async function GET(
     for (const m of conversation.messages) allUserIds.add(m.senderId);
 
     const users = await prisma.user.findMany({
-      where: { id: { in: Array.from(allUserIds) } },
+      where: { id: { in: Array.from(allUserIds) }, organizationId },
       select: {
         id: true,
         firstName: true,

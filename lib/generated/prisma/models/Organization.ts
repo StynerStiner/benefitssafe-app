@@ -319,6 +319,7 @@ export type OrganizationWhereInput = {
   budgetCategories?: Prisma.BudgetCategoryListRelationFilter
   subscriptions?: Prisma.SubscriptionListRelationFilter
   approvals?: Prisma.ApprovalListRelationFilter
+  fundTransfers?: Prisma.FundTransferListRelationFilter
 }
 
 export type OrganizationOrderByWithRelationInput = {
@@ -359,6 +360,7 @@ export type OrganizationOrderByWithRelationInput = {
   budgetCategories?: Prisma.BudgetCategoryOrderByRelationAggregateInput
   subscriptions?: Prisma.SubscriptionOrderByRelationAggregateInput
   approvals?: Prisma.ApprovalOrderByRelationAggregateInput
+  fundTransfers?: Prisma.FundTransferOrderByRelationAggregateInput
 }
 
 export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
@@ -402,6 +404,7 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   budgetCategories?: Prisma.BudgetCategoryListRelationFilter
   subscriptions?: Prisma.SubscriptionListRelationFilter
   approvals?: Prisma.ApprovalListRelationFilter
+  fundTransfers?: Prisma.FundTransferListRelationFilter
 }, "id" | "orgCode">
 
 export type OrganizationOrderByWithAggregationInput = {
@@ -494,6 +497,7 @@ export type OrganizationCreateInput = {
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateInput = {
@@ -534,6 +538,7 @@ export type OrganizationUncheckedCreateInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUpdateInput = {
@@ -574,6 +579,7 @@ export type OrganizationUpdateInput = {
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateInput = {
@@ -614,6 +620,7 @@ export type OrganizationUncheckedUpdateInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateManyInput = {
@@ -1017,6 +1024,20 @@ export type OrganizationUpdateOneRequiredWithoutUsageCountersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutUsageCountersInput, Prisma.OrganizationUpdateWithoutUsageCountersInput>, Prisma.OrganizationUncheckedUpdateWithoutUsageCountersInput>
 }
 
+export type OrganizationCreateNestedOneWithoutFundTransfersInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutFundTransfersInput, Prisma.OrganizationUncheckedCreateWithoutFundTransfersInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutFundTransfersInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutFundTransfersNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutFundTransfersInput, Prisma.OrganizationUncheckedCreateWithoutFundTransfersInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutFundTransfersInput
+  upsert?: Prisma.OrganizationUpsertWithoutFundTransfersInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutFundTransfersInput, Prisma.OrganizationUpdateWithoutFundTransfersInput>, Prisma.OrganizationUncheckedUpdateWithoutFundTransfersInput>
+}
+
 export type OrganizationCreateWithoutUsersInput = {
   id?: string
   name: string
@@ -1054,6 +1075,7 @@ export type OrganizationCreateWithoutUsersInput = {
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutUsersInput = {
@@ -1093,6 +1115,7 @@ export type OrganizationUncheckedCreateWithoutUsersInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutUsersInput = {
@@ -1148,6 +1171,7 @@ export type OrganizationUpdateWithoutUsersInput = {
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutUsersInput = {
@@ -1187,6 +1211,7 @@ export type OrganizationUncheckedUpdateWithoutUsersInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutGrantsInput = {
@@ -1226,6 +1251,7 @@ export type OrganizationCreateWithoutGrantsInput = {
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutGrantsInput = {
@@ -1265,6 +1291,7 @@ export type OrganizationUncheckedCreateWithoutGrantsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutGrantsInput = {
@@ -1320,6 +1347,7 @@ export type OrganizationUpdateWithoutGrantsInput = {
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutGrantsInput = {
@@ -1359,6 +1387,7 @@ export type OrganizationUncheckedUpdateWithoutGrantsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutBudgetCategoriesInput = {
@@ -1398,6 +1427,7 @@ export type OrganizationCreateWithoutBudgetCategoriesInput = {
   usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutBudgetCategoriesInput = {
@@ -1437,6 +1467,7 @@ export type OrganizationUncheckedCreateWithoutBudgetCategoriesInput = {
   usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutBudgetCategoriesInput = {
@@ -1492,6 +1523,7 @@ export type OrganizationUpdateWithoutBudgetCategoriesInput = {
   usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutBudgetCategoriesInput = {
@@ -1531,6 +1563,7 @@ export type OrganizationUncheckedUpdateWithoutBudgetCategoriesInput = {
   usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutVendorsInput = {
@@ -1570,6 +1603,7 @@ export type OrganizationCreateWithoutVendorsInput = {
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutVendorsInput = {
@@ -1609,6 +1643,7 @@ export type OrganizationUncheckedCreateWithoutVendorsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutVendorsInput = {
@@ -1664,6 +1699,7 @@ export type OrganizationUpdateWithoutVendorsInput = {
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutVendorsInput = {
@@ -1703,6 +1739,7 @@ export type OrganizationUncheckedUpdateWithoutVendorsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutSubscriptionsInput = {
@@ -1742,6 +1779,7 @@ export type OrganizationCreateWithoutSubscriptionsInput = {
   usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutSubscriptionsInput = {
@@ -1781,6 +1819,7 @@ export type OrganizationUncheckedCreateWithoutSubscriptionsInput = {
   usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutSubscriptionsInput = {
@@ -1836,6 +1875,7 @@ export type OrganizationUpdateWithoutSubscriptionsInput = {
   usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutSubscriptionsInput = {
@@ -1875,6 +1915,7 @@ export type OrganizationUncheckedUpdateWithoutSubscriptionsInput = {
   usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutCardsInput = {
@@ -1914,6 +1955,7 @@ export type OrganizationCreateWithoutCardsInput = {
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutCardsInput = {
@@ -1953,6 +1995,7 @@ export type OrganizationUncheckedCreateWithoutCardsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutCardsInput = {
@@ -2008,6 +2051,7 @@ export type OrganizationUpdateWithoutCardsInput = {
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutCardsInput = {
@@ -2047,6 +2091,7 @@ export type OrganizationUncheckedUpdateWithoutCardsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutCardholderEligibilitiesInput = {
@@ -2086,6 +2131,7 @@ export type OrganizationCreateWithoutCardholderEligibilitiesInput = {
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutCardholderEligibilitiesInput = {
@@ -2125,6 +2171,7 @@ export type OrganizationUncheckedCreateWithoutCardholderEligibilitiesInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutCardholderEligibilitiesInput = {
@@ -2180,6 +2227,7 @@ export type OrganizationUpdateWithoutCardholderEligibilitiesInput = {
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutCardholderEligibilitiesInput = {
@@ -2219,6 +2267,7 @@ export type OrganizationUncheckedUpdateWithoutCardholderEligibilitiesInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutApprovalsInput = {
@@ -2258,6 +2307,7 @@ export type OrganizationCreateWithoutApprovalsInput = {
   usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutApprovalsInput = {
@@ -2297,6 +2347,7 @@ export type OrganizationUncheckedCreateWithoutApprovalsInput = {
   usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutApprovalsInput = {
@@ -2352,6 +2403,7 @@ export type OrganizationUpdateWithoutApprovalsInput = {
   usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutApprovalsInput = {
@@ -2391,6 +2443,7 @@ export type OrganizationUncheckedUpdateWithoutApprovalsInput = {
   usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutPoliciesInput = {
@@ -2430,6 +2483,7 @@ export type OrganizationCreateWithoutPoliciesInput = {
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutPoliciesInput = {
@@ -2469,6 +2523,7 @@ export type OrganizationUncheckedCreateWithoutPoliciesInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutPoliciesInput = {
@@ -2524,6 +2579,7 @@ export type OrganizationUpdateWithoutPoliciesInput = {
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutPoliciesInput = {
@@ -2563,6 +2619,7 @@ export type OrganizationUncheckedUpdateWithoutPoliciesInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutPromoRedemptionsInput = {
@@ -2602,6 +2659,7 @@ export type OrganizationCreateWithoutPromoRedemptionsInput = {
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutPromoRedemptionsInput = {
@@ -2641,6 +2699,7 @@ export type OrganizationUncheckedCreateWithoutPromoRedemptionsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutPromoRedemptionsInput = {
@@ -2696,6 +2755,7 @@ export type OrganizationUpdateWithoutPromoRedemptionsInput = {
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutPromoRedemptionsInput = {
@@ -2735,6 +2795,7 @@ export type OrganizationUncheckedUpdateWithoutPromoRedemptionsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutCalendarEventsInput = {
@@ -2774,6 +2835,7 @@ export type OrganizationCreateWithoutCalendarEventsInput = {
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutCalendarEventsInput = {
@@ -2813,6 +2875,7 @@ export type OrganizationUncheckedCreateWithoutCalendarEventsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutCalendarEventsInput = {
@@ -2868,6 +2931,7 @@ export type OrganizationUpdateWithoutCalendarEventsInput = {
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutCalendarEventsInput = {
@@ -2907,6 +2971,7 @@ export type OrganizationUncheckedUpdateWithoutCalendarEventsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutMembershipsInput = {
@@ -2946,6 +3011,7 @@ export type OrganizationCreateWithoutMembershipsInput = {
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutMembershipsInput = {
@@ -2985,6 +3051,7 @@ export type OrganizationUncheckedCreateWithoutMembershipsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutMembershipsInput = {
@@ -3040,6 +3107,7 @@ export type OrganizationUpdateWithoutMembershipsInput = {
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutMembershipsInput = {
@@ -3079,6 +3147,7 @@ export type OrganizationUncheckedUpdateWithoutMembershipsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutIntegrationsInput = {
@@ -3118,6 +3187,7 @@ export type OrganizationCreateWithoutIntegrationsInput = {
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutIntegrationsInput = {
@@ -3157,6 +3227,7 @@ export type OrganizationUncheckedCreateWithoutIntegrationsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutIntegrationsInput = {
@@ -3212,6 +3283,7 @@ export type OrganizationUpdateWithoutIntegrationsInput = {
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutIntegrationsInput = {
@@ -3251,6 +3323,7 @@ export type OrganizationUncheckedUpdateWithoutIntegrationsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutWorkflowTriggersInput = {
@@ -3290,6 +3363,7 @@ export type OrganizationCreateWithoutWorkflowTriggersInput = {
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutWorkflowTriggersInput = {
@@ -3329,6 +3403,7 @@ export type OrganizationUncheckedCreateWithoutWorkflowTriggersInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutWorkflowTriggersInput = {
@@ -3384,6 +3459,7 @@ export type OrganizationUpdateWithoutWorkflowTriggersInput = {
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutWorkflowTriggersInput = {
@@ -3423,6 +3499,7 @@ export type OrganizationUncheckedUpdateWithoutWorkflowTriggersInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutWorkflowLogsInput = {
@@ -3462,6 +3539,7 @@ export type OrganizationCreateWithoutWorkflowLogsInput = {
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutWorkflowLogsInput = {
@@ -3501,6 +3579,7 @@ export type OrganizationUncheckedCreateWithoutWorkflowLogsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutWorkflowLogsInput = {
@@ -3556,6 +3635,7 @@ export type OrganizationUpdateWithoutWorkflowLogsInput = {
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutWorkflowLogsInput = {
@@ -3595,6 +3675,7 @@ export type OrganizationUncheckedUpdateWithoutWorkflowLogsInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutBillingSubscriptionInput = {
@@ -3634,6 +3715,7 @@ export type OrganizationCreateWithoutBillingSubscriptionInput = {
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutBillingSubscriptionInput = {
@@ -3673,6 +3755,7 @@ export type OrganizationUncheckedCreateWithoutBillingSubscriptionInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutBillingSubscriptionInput = {
@@ -3728,6 +3811,7 @@ export type OrganizationUpdateWithoutBillingSubscriptionInput = {
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutBillingSubscriptionInput = {
@@ -3767,6 +3851,7 @@ export type OrganizationUncheckedUpdateWithoutBillingSubscriptionInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutUsageCountersInput = {
@@ -3806,6 +3891,7 @@ export type OrganizationCreateWithoutUsageCountersInput = {
   budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutUsageCountersInput = {
@@ -3845,6 +3931,7 @@ export type OrganizationUncheckedCreateWithoutUsageCountersInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
   approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutUsageCountersInput = {
@@ -3900,6 +3987,7 @@ export type OrganizationUpdateWithoutUsageCountersInput = {
   budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutUsageCountersInput = {
@@ -3939,6 +4027,183 @@ export type OrganizationUncheckedUpdateWithoutUsageCountersInput = {
   budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
   approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutFundTransfersInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  orgCode?: string | null
+  isPlatformOrg?: boolean
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
+  bankConnectedAt?: Date | string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutOrganizationInput
+  budgetCategories?: Prisma.BudgetCategoryCreateNestedManyWithoutOrganizationInput
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutOrganizationInput
+  approvals?: Prisma.ApprovalCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutFundTransfersInput = {
+  id?: string
+  name: string
+  ein?: string | null
+  orgCode?: string | null
+  isPlatformOrg?: boolean
+  einVerified?: boolean
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  stripeAccountId?: string | null
+  stripeFinancialAccountId?: string | null
+  stripeOriginPaymentMethodId?: string | null
+  bankConnectedAt?: Date | string | null
+  plaidItemId?: string | null
+  logoUrl?: string | null
+  trialStartDate?: Date | string | null
+  trialEndDate?: Date | string | null
+  subscriptionStatus?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
+  grants?: Prisma.GrantUncheckedCreateNestedManyWithoutOrganizationInput
+  vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutOrganizationInput
+  cards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutOrganizationInput
+  policies?: Prisma.DisbursementPolicyUncheckedCreateNestedManyWithoutOrganizationInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedCreateNestedManyWithoutOrganizationInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedCreateNestedManyWithoutOrganizationInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutOrganizationInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedCreateNestedManyWithoutOrganizationInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedCreateNestedManyWithoutOrganizationInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedCreateNestedOneWithoutOrganizationInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutOrganizationInput
+  budgetCategories?: Prisma.BudgetCategoryUncheckedCreateNestedManyWithoutOrganizationInput
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutOrganizationInput
+  approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutFundTransfersInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutFundTransfersInput, Prisma.OrganizationUncheckedCreateWithoutFundTransfersInput>
+}
+
+export type OrganizationUpsertWithoutFundTransfersInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutFundTransfersInput, Prisma.OrganizationUncheckedUpdateWithoutFundTransfersInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutFundTransfersInput, Prisma.OrganizationUncheckedCreateWithoutFundTransfersInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutFundTransfersInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutFundTransfersInput, Prisma.OrganizationUncheckedUpdateWithoutFundTransfersInput>
+}
+
+export type OrganizationUpdateWithoutFundTransfersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutOrganizationNestedInput
+  budgetCategories?: Prisma.BudgetCategoryUpdateManyWithoutOrganizationNestedInput
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutOrganizationNestedInput
+  approvals?: Prisma.ApprovalUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutFundTransfersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ein?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orgCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformOrg?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  einVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeFinancialAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeOriginPaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
+  grants?: Prisma.GrantUncheckedUpdateManyWithoutOrganizationNestedInput
+  vendors?: Prisma.VendorUncheckedUpdateManyWithoutOrganizationNestedInput
+  cards?: Prisma.VirtualCardUncheckedUpdateManyWithoutOrganizationNestedInput
+  policies?: Prisma.DisbursementPolicyUncheckedUpdateManyWithoutOrganizationNestedInput
+  promoRedemptions?: Prisma.PromoRedemptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  cardholderEligibilities?: Prisma.CardholderEligibilityUncheckedUpdateManyWithoutOrganizationNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutOrganizationNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowTriggers?: Prisma.WorkflowTriggerUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflowLogs?: Prisma.WorkflowLogUncheckedUpdateManyWithoutOrganizationNestedInput
+  billingSubscription?: Prisma.BillingSubscriptionUncheckedUpdateOneWithoutOrganizationNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutOrganizationNestedInput
+  budgetCategories?: Prisma.BudgetCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutOrganizationNestedInput
+  approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 
@@ -3963,6 +4228,7 @@ export type OrganizationCountOutputType = {
   budgetCategories: number
   subscriptions: number
   approvals: number
+  fundTransfers: number
 }
 
 export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3982,6 +4248,7 @@ export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Exte
   budgetCategories?: boolean | OrganizationCountOutputTypeCountBudgetCategoriesArgs
   subscriptions?: boolean | OrganizationCountOutputTypeCountSubscriptionsArgs
   approvals?: boolean | OrganizationCountOutputTypeCountApprovalsArgs
+  fundTransfers?: boolean | OrganizationCountOutputTypeCountFundTransfersArgs
 }
 
 /**
@@ -4106,6 +4373,13 @@ export type OrganizationCountOutputTypeCountApprovalsArgs<ExtArgs extends runtim
   where?: Prisma.ApprovalWhereInput
 }
 
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountFundTransfersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FundTransferWhereInput
+}
+
 
 export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -4145,6 +4419,7 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   budgetCategories?: boolean | Prisma.Organization$budgetCategoriesArgs<ExtArgs>
   subscriptions?: boolean | Prisma.Organization$subscriptionsArgs<ExtArgs>
   approvals?: boolean | Prisma.Organization$approvalsArgs<ExtArgs>
+  fundTransfers?: boolean | Prisma.Organization$fundTransfersArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["organization"]>
 
@@ -4236,6 +4511,7 @@ export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.Interna
   budgetCategories?: boolean | Prisma.Organization$budgetCategoriesArgs<ExtArgs>
   subscriptions?: boolean | Prisma.Organization$subscriptionsArgs<ExtArgs>
   approvals?: boolean | Prisma.Organization$approvalsArgs<ExtArgs>
+  fundTransfers?: boolean | Prisma.Organization$fundTransfersArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -4261,6 +4537,7 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     budgetCategories: Prisma.$BudgetCategoryPayload<ExtArgs>[]
     subscriptions: Prisma.$SubscriptionPayload<ExtArgs>[]
     approvals: Prisma.$ApprovalPayload<ExtArgs>[]
+    fundTransfers: Prisma.$FundTransferPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -4694,6 +4971,7 @@ export interface Prisma__OrganizationClient<T, Null = never, ExtArgs extends run
   budgetCategories<T extends Prisma.Organization$budgetCategoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$budgetCategoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BudgetCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   subscriptions<T extends Prisma.Organization$subscriptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$subscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   approvals<T extends Prisma.Organization$approvalsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$approvalsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApprovalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  fundTransfers<T extends Prisma.Organization$fundTransfersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$fundTransfersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FundTransferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5536,6 +5814,30 @@ export type Organization$approvalsArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.ApprovalScalarFieldEnum | Prisma.ApprovalScalarFieldEnum[]
+}
+
+/**
+ * Organization.fundTransfers
+ */
+export type Organization$fundTransfersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FundTransfer
+   */
+  select?: Prisma.FundTransferSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FundTransfer
+   */
+  omit?: Prisma.FundTransferOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FundTransferInclude<ExtArgs> | null
+  where?: Prisma.FundTransferWhereInput
+  orderBy?: Prisma.FundTransferOrderByWithRelationInput | Prisma.FundTransferOrderByWithRelationInput[]
+  cursor?: Prisma.FundTransferWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FundTransferScalarFieldEnum | Prisma.FundTransferScalarFieldEnum[]
 }
 
 /**

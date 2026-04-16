@@ -201,3 +201,8 @@ export type UsageCounter = Prisma.UsageCounterModel
  * 
  */
 export type ProcessedWebhookEvent = Prisma.ProcessedWebhookEventModel
+/**
+ * Model FundTransfer
+ * 
+ */
+export type FundTransfer = Prisma.FundTransferModel

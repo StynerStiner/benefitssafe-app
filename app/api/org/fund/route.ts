@@ -6,6 +6,13 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { z } from "zod";
+
+const fundTransferSchema = z.object({
+  amount: z.number().positive("Amount must be a positive number"),
+  bankPaymentMethodId: z.string().optional(),
+  requestId: z.string().uuid("requestId must be a valid UUID v4"),
+});
 
 // GET — Retrieve Financial Account balance
 export async function GET(): Promise<NextResponse> {
@@ -154,15 +161,17 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const body = await request.json();
-    const { amount } = body;
-    const requestedPaymentMethodId = typeof body?.bankPaymentMethodId === "string" ? body.bankPaymentMethodId : null;
-
-    if (!amount || typeof amount !== "number" || amount <= 0) {
+    const parsed = fundTransferSchema.safeParse(body);
+    if (!parsed.success) {
+      const fieldErrors = parsed.error.flatten().fieldErrors;
+      const fields = Object.keys(fieldErrors);
       return NextResponse.json(
-        { error: "Amount must be a positive number (in dollars)" },
+        { error: "Validation failed", invalidFields: fields },
         { status: 400 },
       );
     }
+
+    const { amount, bankPaymentMethodId: requestedPaymentMethodId, requestId } = parsed.data;
 
     const organization = await prisma.organization.findUnique({
       where: { id: user.organizationId },
@@ -200,18 +209,21 @@ export async function POST(request: Request): Promise<NextResponse> {
     const stripeAccountId = organization.stripeAccountId;
     const amountInCents = Math.round(amount * 100);
 
-    // Dev fallback
+    // Dev mock path — no real Stripe call, so no FundTransfer row needed.
+    // This means dev double-clicks produce duplicate audit logs, which is
+    // acceptable because dev is not a production environment.
     if (financialAccountId.startsWith("fa_mock_")) {
-      // Create audit log for mock transfer
+      const mockId = crypto.randomUUID();
       await prisma.auditLog.create({
         data: {
           userId: session.user.id,
           organizationId: user.organizationId,
           action: "create",
           entityType: "fund_transfer",
-          entityId: `mock_transfer_${Date.now()}`,
+          entityId: `mock_transfer_${mockId}`,
           newValue: {
             action: "inbound_transfer_initiated",
+            requestId,
             amount: amountInCents,
             currency: "usd",
             dev: true,
@@ -221,7 +233,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
       return NextResponse.json({
         transfer: {
-          id: `ibt_mock_${Date.now()}`,
+          id: `ibt_mock_${mockId}`,
           amount: amountInCents,
           currency: "usd",
           status: "processing",
@@ -231,16 +243,105 @@ export async function POST(request: Request): Promise<NextResponse> {
       });
     }
 
-    // DDIA Ch8 Distributed Systems audit — idempotency key on ACH pull.
+    // DDIA Ch12 — end-to-end request ID pattern for ACH pull dedup.
     //
-    // Without a key, a network drop between "Stripe accepted the transfer"
-    // and "we received the response" silently costs the nonprofit a second
-    // ACH pull (real money from their bank). 5-minute bucket dedupes
-    // retries of the same request while allowing a legitimate second
-    // transfer of the same amount after the bucket rolls over.
-    const bucketMs = 5 * 60 * 1000;
-    const timeBucket = Math.floor(Date.now() / bucketMs);
-    const idempotencyKey = `ibt-${organization.id}-${amountInCents}-${bankPaymentMethodId}-${timeBucket}`;
+    // INSERT a FundTransfer row BEFORE calling Stripe. The compound
+    // unique constraint @@unique([organizationId, requestId]) is the
+    // dedup gate: a retry with the same requestId hits a P2002 unique
+    // violation, and we return the existing row's state instead of
+    // calling Stripe again. This survives any retry window — there is
+    // no time bucket to roll over.
+    let fundTransfer;
+    try {
+      fundTransfer = await prisma.fundTransfer.create({
+        data: {
+          organizationId: user.organizationId,
+          requestId,
+          amountCents: amountInCents,
+          currency: "usd",
+          bankPaymentMethodId,
+          stripeAccountId,
+          financialAccountId,
+          status: "PENDING",
+          initiatedByUserId: session.user.id,
+        },
+      });
+    } catch (err) {
+      // P2002: unique constraint violation — this requestId was already
+      // used. Fetch the existing row and return its state.
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "code" in err &&
+        (err as { code: string }).code === "P2002"
+      ) {
+        const existing = await prisma.fundTransfer.findUnique({
+          where: {
+            organizationId_requestId: {
+              organizationId: user.organizationId,
+              requestId,
+            },
+          },
+        });
+
+        if (!existing) {
+          // Should not happen — P2002 implies the row exists. Defensive.
+          return NextResponse.json(
+            { error: "Fund transfer conflict — please retry with a new requestId" },
+            { status: 500 },
+          );
+        }
+
+        if (existing.status === "SUCCEEDED") {
+          // Idempotency guarantee: return the stored state plainly.
+          // The frontend can poll a separate status endpoint if it
+          // needs the live Stripe status (future work).
+          return NextResponse.json({
+            transfer: {
+              id: existing.stripeTransferId,
+              amount: existing.amountCents,
+              currency: existing.currency,
+              status: "accepted",
+              description: "Grant fund deposit",
+              previouslyInitiated: true,
+              initiatedAt: existing.createdAt,
+            },
+          });
+        }
+
+        if (existing.status === "PENDING") {
+          return NextResponse.json(
+            {
+              error: "A fund transfer with this requestId is already in progress",
+              code: "transfer_in_progress",
+              transferId: existing.id,
+              requestId: existing.requestId,
+              retryable: true,
+            },
+            { status: 409 },
+          );
+        }
+
+        // FAILED
+        return NextResponse.json(
+          {
+            error: "This transfer previously failed. Please contact support or initiate a new transfer.",
+            code: "transfer_failed",
+            transferId: existing.id,
+            requestId: existing.requestId,
+            retryable: false,
+          },
+          { status: 422 },
+        );
+      }
+
+      // Non-P2002 DB error — real problem.
+      throw err;
+    }
+
+    // Deterministic Stripe idempotency key tied to the client-supplied
+    // requestId. Survives any retry window.
+    const idempotencyKey = `ibt-${user.organizationId}-${requestId}`;
 
     try {
       const transfer = await stripe.treasury.inboundTransfers.create({
@@ -251,19 +352,30 @@ export async function POST(request: Request): Promise<NextResponse> {
         description: "Grant fund deposit",
       }, { stripeAccount: stripeAccountId, idempotencyKey });
 
-      // Create audit log
+      // Mark the FundTransfer as SUCCEEDED with the Stripe transfer ID.
+      await prisma.fundTransfer.update({
+        where: { id: fundTransfer.id },
+        data: {
+          status: "SUCCEEDED",
+          stripeTransferId: transfer.id,
+        },
+      });
+
+      // Audit log with full traceability.
       await prisma.auditLog.create({
         data: {
           userId: session.user.id,
           organizationId: user.organizationId,
           action: "create",
           entityType: "fund_transfer",
-          entityId: transfer.id,
+          entityId: fundTransfer.id,
           newValue: {
-            action: "inbound_transfer_initiated",
-            transferId: transfer.id,
-            amount: amountInCents,
+            action: "inbound_transfer_succeeded",
+            requestId,
+            stripeTransferId: transfer.id,
+            amountCents: amountInCents,
             currency: "usd",
+            status: "SUCCEEDED",
           },
         },
       });
@@ -278,17 +390,43 @@ export async function POST(request: Request): Promise<NextResponse> {
         },
       });
     } catch (stripeError) {
-      console.warn("Treasury inbound transfer failed (dev mode?):", stripeError);
-      return NextResponse.json({
-        transfer: {
-          id: `ibt_mock_${Date.now()}`,
-          amount: amountInCents,
-          currency: "usd",
-          status: "processing",
-          description: "Grant fund deposit (dev fallback)",
-        },
-        dev: true,
-      });
+      // Stripe call failed — mark the FundTransfer as FAILED.
+      const failureReason = (stripeError instanceof Error ? stripeError.message : "Unknown Stripe error").slice(0, 500);
+      console.error("[org/fund] Stripe inbound transfer failed:", failureReason);
+
+      try {
+        await prisma.fundTransfer.update({
+          where: { id: fundTransfer.id },
+          data: {
+            status: "FAILED",
+            failureReason,
+          },
+        });
+
+        await prisma.auditLog.create({
+          data: {
+            userId: session.user.id,
+            organizationId: user.organizationId,
+            action: "create",
+            entityType: "fund_transfer",
+            entityId: fundTransfer.id,
+            newValue: {
+              action: "inbound_transfer_failed",
+              requestId,
+              amountCents: amountInCents,
+              currency: "usd",
+              status: "FAILED",
+            },
+          },
+        });
+      } catch (cleanupErr) {
+        console.error("[org/fund] cleanup after Stripe failure failed:", cleanupErr);
+      }
+
+      return NextResponse.json(
+        { error: "Fund transfer failed. Please try again or contact support." },
+        { status: 502 },
+      );
     }
   } catch (error) {
     console.error("POST /api/org/fund error:", error);

@@ -167,4 +167,9 @@ export const RATE_LIMIT_CONFIGS = {
     maxRequests: 5,
     windowMs: 15 * 60 * 1000,
   },
+  // Fund transfer status polling: 1 per 2 seconds per (user, transferId)
+  fundStatusPoll: {
+    maxRequests: 1,
+    windowMs: 2000,
+  },
 };

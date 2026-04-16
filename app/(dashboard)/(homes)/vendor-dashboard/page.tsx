@@ -42,7 +42,7 @@ export default async function VendorDashboardPage() {
   }
 
   const vendor = await prisma.vendor.findFirst({
-    where: { userId: session.user.id, archivedAt: null },
+    where: { userId: session.user.id, organizationId: session.user.organizationId, archivedAt: null },
     select: {
       id: true,
       name: true,

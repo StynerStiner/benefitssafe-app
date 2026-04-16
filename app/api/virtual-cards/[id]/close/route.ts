@@ -27,6 +27,16 @@ import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { stripeOptsForCard } from "@/lib/stripe-helpers";
 import { NextResponse } from "next/server";
+import { Prisma } from "@/lib/generated/prisma/client";
+
+// Structured error for credit-back failures inside the card-close
+// $transaction. The outer catch maps this to a 400 (terminal, not
+// transient) so the card is not half-closed.
+class InvalidCreditBackError extends Error {
+  constructor(public readonly code: string, public readonly detail: string) {
+    super(detail);
+  }
+}
 
 export async function POST(
   _request: Request,
@@ -99,49 +109,58 @@ export async function POST(
           if (unspent > 0) {
             creditAmount = unspent;
 
-            // Reverse the approve-time reservation on Grant. We do NOT
-            // use a conditional WHERE here — the expense approve path
-            // already guaranteed `spentAmount >= unspent` when it
-            // committed the debit (spentAmount was incremented by cap),
-            // and the ledger is immutable, so the invariant cannot have
-            // drifted. If it somehow has, the DB-level CHECK constraint
-            // on Grant.remainingAmount (added in Ch3) will reject the
-            // UPDATE and the whole close will abort.
-            await tx.$executeRaw`
+            // Reverse the approve-time reservation on Grant. Atomic
+            // conditional UPDATE with RETURNING so the credit-back and
+            // the balance read are a single round-trip. The WHERE guard
+            // ensures spentAmount cannot go negative even if the ledger
+            // has drifted from the expected state. (DDIA Ch12 audit —
+            // C-2 fix. Replaces a phantom CHECK constraint reference
+            // that was never applied to the database.)
+            const grantResult = await tx.$queryRaw<{ remainingAmount: Prisma.Decimal }[]>`
               UPDATE "Grant"
               SET "spentAmount"     = "spentAmount"     - ${unspent}::numeric,
                   "remainingAmount" = "remainingAmount" + ${unspent}::numeric,
                   "updatedAt"       = NOW()
               WHERE id = ${card.grantId}
+                AND "organizationId" = ${organizationId}
+                AND "spentAmount" >= ${unspent}::numeric
+              RETURNING "remainingAmount"
             `;
+            if (grantResult.length === 0) {
+              throw new InvalidCreditBackError(
+                "credit_back_failed",
+                `Grant ${card.grantId} cannot absorb credit-back of $${unspent.toFixed(2)} (spentAmount too low or org mismatch)`,
+              );
+            }
 
             // Mirror the reversal on BudgetCategory.spentAmount so the
             // budget drill-down stays consistent with the grant top-
             // line. Expense approve incremented this by `cap`, we
-            // subtract the unspent portion back out.
+            // subtract the unspent portion back out. Same atomic guard.
             if (card.categoryId) {
-              await tx.$executeRaw`
+              const catResult = await tx.$queryRaw<{ spentAmount: Prisma.Decimal }[]>`
                 UPDATE "BudgetCategory"
                 SET "spentAmount" = "spentAmount" - ${unspent}::numeric,
                     "updatedAt"   = NOW()
                 WHERE id = ${card.categoryId}
+                  AND "organizationId" = ${organizationId}
+                  AND "spentAmount" >= ${unspent}::numeric
+                RETURNING "spentAmount"
               `;
+              if (catResult.length === 0) {
+                throw new InvalidCreditBackError(
+                  "category_credit_back_failed",
+                  `BudgetCategory ${card.categoryId} cannot absorb credit-back of $${unspent.toFixed(2)} (spentAmount too low or org mismatch)`,
+                );
+              }
             }
-
-            // Re-read the post-update grant balance for the ledger
-            // entry so balanceAfter matches what's actually in the
-            // grant row at this moment — mirrors the pattern in
-            // /api/expenses/[id]/approve.
-            const updatedGrant = await tx.grant.findUnique({
-              where: { id: card.grantId },
-              select: { remainingAmount: true },
-            });
 
             // Immutable ledger entry: the credit-back is recorded as a
             // CREDIT so the grant's debit/credit history stays fully
             // reconstructable. `reference` is the card id because that
             // is the durable join key between this credit and the
             // original DEBIT written at expense approve time.
+            // balanceAfter comes from the RETURNING clause above.
             await tx.ledgerEntry.create({
               data: {
                 organizationId,
@@ -150,7 +169,7 @@ export async function POST(
                 expenseId: card.expenseId,
                 type: "CREDIT",
                 amount: unspent,
-                balanceAfter: updatedGrant?.remainingAmount ?? 0,
+                balanceAfter: grantResult[0].remainingAmount,
                 description: "Unspent card reservation returned on card close",
                 reference: id,
               },
@@ -176,10 +195,23 @@ export async function POST(
         });
 
         return { previousStatus: card.status, creditAmount };
+      }, {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        maxWait: 5_000,
+        timeout: 15_000,
       });
       previousStatus = txResult.previousStatus;
       creditBackAmount = txResult.creditAmount;
     } catch (err) {
+      // Credit-back failed — terminal state error. Do not close the
+      // card, do not retry. Return 400 so the admin can investigate.
+      if (err instanceof InvalidCreditBackError) {
+        console.error(`[close] ${err.detail}`);
+        return NextResponse.json(
+          { error: err.detail, code: err.code },
+          { status: 400 },
+        );
+      }
       if ((err as Error)?.message === "card_already_cancelled") {
         return NextResponse.json(
           { error: "Card is already cancelled" },

@@ -38,7 +38,7 @@ export async function GET() {
         },
       }),
       prisma.grant.findMany({
-        where: { beneficiaryId: userId },
+        where: { beneficiaryId: userId, organizationId: orgId },
         select: {
           id: true,
           name: true,
@@ -50,7 +50,7 @@ export async function GET() {
         },
       }),
       prisma.expenseRequest.findMany({
-        where: { requestedById: userId },
+        where: { requestedById: userId, organizationId: orgId },
         select: {
           id: true,
           description: true,
@@ -61,6 +61,7 @@ export async function GET() {
       }),
       prisma.document.findMany({
         where: {
+          organizationId: orgId,
           OR: [
             { uploadedById: userId },
             { entityType: "beneficiary", entityId: userId },
@@ -74,7 +75,7 @@ export async function GET() {
         },
       }),
       prisma.virtualCard.findMany({
-        where: { beneficiaryId: userId },
+        where: { beneficiaryId: userId, organizationId: orgId },
         select: {
           id: true,
           last4: true,

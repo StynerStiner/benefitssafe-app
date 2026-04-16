@@ -463,6 +463,7 @@ export type UserWhereInput = {
   cardholderEligibility?: Prisma.XOR<Prisma.CardholderEligibilityNullableScalarRelationFilter, Prisma.CardholderEligibilityWhereInput> | null
   memberships?: Prisma.OrganizationMembershipListRelationFilter
   virtualCards?: Prisma.VirtualCardListRelationFilter
+  fundTransfers?: Prisma.FundTransferListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -516,6 +517,7 @@ export type UserOrderByWithRelationInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityOrderByWithRelationInput
   memberships?: Prisma.OrganizationMembershipOrderByRelationAggregateInput
   virtualCards?: Prisma.VirtualCardOrderByRelationAggregateInput
+  fundTransfers?: Prisma.FundTransferOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -572,6 +574,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   cardholderEligibility?: Prisma.XOR<Prisma.CardholderEligibilityNullableScalarRelationFilter, Prisma.CardholderEligibilityWhereInput> | null
   memberships?: Prisma.OrganizationMembershipListRelationFilter
   virtualCards?: Prisma.VirtualCardListRelationFilter
+  fundTransfers?: Prisma.FundTransferListRelationFilter
 }, "id" | "email" | "emailVerifyToken" | "beneficiaryCode">
 
 export type UserOrderByWithAggregationInput = {
@@ -718,6 +721,7 @@ export type UserCreateInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -770,6 +774,7 @@ export type UserUncheckedCreateInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserUpdateInput = {
@@ -822,6 +827,7 @@ export type UserUpdateInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -874,6 +880,7 @@ export type UserUncheckedUpdateInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -1332,6 +1339,20 @@ export type UserUpdateOneRequiredWithoutMembershipsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutMembershipsInput, Prisma.UserUpdateWithoutMembershipsInput>, Prisma.UserUncheckedUpdateWithoutMembershipsInput>
 }
 
+export type UserCreateNestedOneWithoutFundTransfersInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutFundTransfersInput, Prisma.UserUncheckedCreateWithoutFundTransfersInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutFundTransfersInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutFundTransfersNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutFundTransfersInput, Prisma.UserUncheckedCreateWithoutFundTransfersInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutFundTransfersInput
+  upsert?: Prisma.UserUpsertWithoutFundTransfersInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutFundTransfersInput, Prisma.UserUpdateWithoutFundTransfersInput>, Prisma.UserUncheckedUpdateWithoutFundTransfersInput>
+}
+
 export type UserCreateWithoutOrganizationInput = {
   id?: string
   email: string
@@ -1381,6 +1402,7 @@ export type UserCreateWithoutOrganizationInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserUncheckedCreateWithoutOrganizationInput = {
@@ -1432,6 +1454,7 @@ export type UserUncheckedCreateWithoutOrganizationInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserCreateOrConnectWithoutOrganizationInput = {
@@ -1556,6 +1579,7 @@ export type UserCreateWithoutInviteTokensInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserUncheckedCreateWithoutInviteTokensInput = {
@@ -1607,6 +1631,7 @@ export type UserUncheckedCreateWithoutInviteTokensInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserCreateOrConnectWithoutInviteTokensInput = {
@@ -1674,6 +1699,7 @@ export type UserUpdateWithoutInviteTokensInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInviteTokensInput = {
@@ -1725,6 +1751,7 @@ export type UserUncheckedUpdateWithoutInviteTokensInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserCreateWithoutGrantsInput = {
@@ -1776,6 +1803,7 @@ export type UserCreateWithoutGrantsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserUncheckedCreateWithoutGrantsInput = {
@@ -1827,6 +1855,7 @@ export type UserUncheckedCreateWithoutGrantsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserCreateOrConnectWithoutGrantsInput = {
@@ -1894,6 +1923,7 @@ export type UserUpdateWithoutGrantsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGrantsInput = {
@@ -1945,6 +1975,7 @@ export type UserUncheckedUpdateWithoutGrantsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserCreateWithoutExpenseRequestsInput = {
@@ -1996,6 +2027,7 @@ export type UserCreateWithoutExpenseRequestsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserUncheckedCreateWithoutExpenseRequestsInput = {
@@ -2047,6 +2079,7 @@ export type UserUncheckedCreateWithoutExpenseRequestsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserCreateOrConnectWithoutExpenseRequestsInput = {
@@ -2114,6 +2147,7 @@ export type UserUpdateWithoutExpenseRequestsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutExpenseRequestsInput = {
@@ -2165,6 +2199,7 @@ export type UserUncheckedUpdateWithoutExpenseRequestsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserCreateWithoutVendorsInput = {
@@ -2216,6 +2251,7 @@ export type UserCreateWithoutVendorsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserUncheckedCreateWithoutVendorsInput = {
@@ -2267,6 +2303,7 @@ export type UserUncheckedCreateWithoutVendorsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserCreateOrConnectWithoutVendorsInput = {
@@ -2334,6 +2371,7 @@ export type UserUpdateWithoutVendorsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVendorsInput = {
@@ -2385,6 +2423,7 @@ export type UserUncheckedUpdateWithoutVendorsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserCreateWithoutVirtualCardsInput = {
@@ -2436,6 +2475,7 @@ export type UserCreateWithoutVirtualCardsInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
   cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserUncheckedCreateWithoutVirtualCardsInput = {
@@ -2487,6 +2527,7 @@ export type UserUncheckedCreateWithoutVirtualCardsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserCreateOrConnectWithoutVirtualCardsInput = {
@@ -2554,6 +2595,7 @@ export type UserUpdateWithoutVirtualCardsInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
   cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVirtualCardsInput = {
@@ -2605,6 +2647,7 @@ export type UserUncheckedUpdateWithoutVirtualCardsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserCreateWithoutCardholderEligibilityInput = {
@@ -2656,6 +2699,7 @@ export type UserCreateWithoutCardholderEligibilityInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserUncheckedCreateWithoutCardholderEligibilityInput = {
@@ -2707,6 +2751,7 @@ export type UserUncheckedCreateWithoutCardholderEligibilityInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserCreateOrConnectWithoutCardholderEligibilityInput = {
@@ -2774,6 +2819,7 @@ export type UserUpdateWithoutCardholderEligibilityInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCardholderEligibilityInput = {
@@ -2825,6 +2871,7 @@ export type UserUncheckedUpdateWithoutCardholderEligibilityInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserCreateWithoutApprovalsInput = {
@@ -2876,6 +2923,7 @@ export type UserCreateWithoutApprovalsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserUncheckedCreateWithoutApprovalsInput = {
@@ -2927,6 +2975,7 @@ export type UserUncheckedCreateWithoutApprovalsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
   memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
   virtualCards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserCreateOrConnectWithoutApprovalsInput = {
@@ -2994,6 +3043,7 @@ export type UserUpdateWithoutApprovalsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovalsInput = {
@@ -3045,6 +3095,7 @@ export type UserUncheckedUpdateWithoutApprovalsInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserCreateWithoutMembershipsInput = {
@@ -3096,6 +3147,7 @@ export type UserCreateWithoutMembershipsInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
   cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
   virtualCards?: Prisma.VirtualCardCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserUncheckedCreateWithoutMembershipsInput = {
@@ -3147,6 +3199,7 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
   virtualCards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutBeneficiaryInput
+  fundTransfers?: Prisma.FundTransferUncheckedCreateNestedManyWithoutInitiatedByInput
 }
 
 export type UserCreateOrConnectWithoutMembershipsInput = {
@@ -3214,6 +3267,7 @@ export type UserUpdateWithoutMembershipsInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
   cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
   virtualCards?: Prisma.VirtualCardUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMembershipsInput = {
@@ -3264,6 +3318,231 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutUserNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
+  virtualCards?: Prisma.VirtualCardUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutInitiatedByNestedInput
+}
+
+export type UserCreateWithoutFundTransfersInput = {
+  id?: string
+  email: string
+  firstName: string
+  lastName: string
+  phone?: string | null
+  passwordHash?: string | null
+  avatarUrl?: string | null
+  role: $Enums.UserRole
+  isActive?: boolean
+  emailVerified?: boolean
+  emailVerifyToken?: string | null
+  emailVerifyExpiry?: Date | string | null
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
+  dateOfBirth?: Date | string | null
+  addressStreet?: string | null
+  addressCity?: string | null
+  addressState?: string | null
+  addressZip?: string | null
+  ssnLast4?: string | null
+  benefitPrograms?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  emergencyContactName?: string | null
+  emergencyContactPhone?: string | null
+  notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutUsersInput
+  expenseRequests?: Prisma.ExpenseRequestCreateNestedManyWithoutRequestedByInput
+  approvals?: Prisma.ApprovalCreateNestedManyWithoutApproverInput
+  grants?: Prisma.GrantCreateNestedManyWithoutBeneficiaryInput
+  vendors?: Prisma.VendorCreateNestedManyWithoutUserInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipCreateNestedManyWithoutUserInput
+  virtualCards?: Prisma.VirtualCardCreateNestedManyWithoutBeneficiaryInput
+}
+
+export type UserUncheckedCreateWithoutFundTransfersInput = {
+  id?: string
+  email: string
+  firstName: string
+  lastName: string
+  phone?: string | null
+  passwordHash?: string | null
+  avatarUrl?: string | null
+  role: $Enums.UserRole
+  organizationId: string
+  isActive?: boolean
+  emailVerified?: boolean
+  emailVerifyToken?: string | null
+  emailVerifyExpiry?: Date | string | null
+  mfaEnabled?: boolean
+  mfaSecret?: string | null
+  mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
+  lastLoginIp?: string | null
+  lastLoginUserAgent?: string | null
+  lastLoginAt?: Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: string | null
+  dateOfBirth?: Date | string | null
+  addressStreet?: string | null
+  addressCity?: string | null
+  addressState?: string | null
+  addressZip?: string | null
+  ssnLast4?: string | null
+  benefitPrograms?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  emergencyContactName?: string | null
+  emergencyContactPhone?: string | null
+  notes?: string | null
+  title?: string | null
+  companyName?: string | null
+  businessAddress?: string | null
+  firmName?: string | null
+  licenseNumber?: string | null
+  barNumber?: string | null
+  organizationName?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  expenseRequests?: Prisma.ExpenseRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  approvals?: Prisma.ApprovalUncheckedCreateNestedManyWithoutApproverInput
+  grants?: Prisma.GrantUncheckedCreateNestedManyWithoutBeneficiaryInput
+  vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutUserInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedCreateNestedOneWithoutBeneficiaryInput
+  memberships?: Prisma.OrganizationMembershipUncheckedCreateNestedManyWithoutUserInput
+  virtualCards?: Prisma.VirtualCardUncheckedCreateNestedManyWithoutBeneficiaryInput
+}
+
+export type UserCreateOrConnectWithoutFundTransfersInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutFundTransfersInput, Prisma.UserUncheckedCreateWithoutFundTransfersInput>
+}
+
+export type UserUpsertWithoutFundTransfersInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutFundTransfersInput, Prisma.UserUncheckedUpdateWithoutFundTransfersInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutFundTransfersInput, Prisma.UserUncheckedCreateWithoutFundTransfersInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutFundTransfersInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutFundTransfersInput, Prisma.UserUncheckedUpdateWithoutFundTransfersInput>
+}
+
+export type UserUpdateWithoutFundTransfersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressZip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  benefitPrograms?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutUsersNestedInput
+  expenseRequests?: Prisma.ExpenseRequestUpdateManyWithoutRequestedByNestedInput
+  approvals?: Prisma.ApprovalUpdateManyWithoutApproverNestedInput
+  grants?: Prisma.GrantUpdateManyWithoutBeneficiaryNestedInput
+  vendors?: Prisma.VendorUpdateManyWithoutUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
+  virtualCards?: Prisma.VirtualCardUpdateManyWithoutBeneficiaryNestedInput
+}
+
+export type UserUncheckedUpdateWithoutFundTransfersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginUserAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trustedDevices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  alertPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  beneficiaryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  addressStreet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressZip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ssnLast4?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  benefitPrograms?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  emergencyContactName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emergencyContactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firmName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  licenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organizationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expenseRequests?: Prisma.ExpenseRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  approvals?: Prisma.ApprovalUncheckedUpdateManyWithoutApproverNestedInput
+  grants?: Prisma.GrantUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  vendors?: Prisma.VendorUncheckedUpdateManyWithoutUserNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
+  cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
+  memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUncheckedUpdateManyWithoutBeneficiaryNestedInput
 }
 
@@ -3359,6 +3638,7 @@ export type UserUpdateWithoutOrganizationInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrganizationInput = {
@@ -3410,6 +3690,7 @@ export type UserUncheckedUpdateWithoutOrganizationInput = {
   cardholderEligibility?: Prisma.CardholderEligibilityUncheckedUpdateOneWithoutBeneficiaryNestedInput
   memberships?: Prisma.OrganizationMembershipUncheckedUpdateManyWithoutUserNestedInput
   virtualCards?: Prisma.VirtualCardUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  fundTransfers?: Prisma.FundTransferUncheckedUpdateManyWithoutInitiatedByNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutOrganizationInput = {
@@ -3468,6 +3749,7 @@ export type UserCountOutputType = {
   inviteTokens: number
   memberships: number
   virtualCards: number
+  fundTransfers: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3478,6 +3760,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   inviteTokens?: boolean | UserCountOutputTypeCountInviteTokensArgs
   memberships?: boolean | UserCountOutputTypeCountMembershipsArgs
   virtualCards?: boolean | UserCountOutputTypeCountVirtualCardsArgs
+  fundTransfers?: boolean | UserCountOutputTypeCountFundTransfersArgs
 }
 
 /**
@@ -3539,6 +3822,13 @@ export type UserCountOutputTypeCountVirtualCardsArgs<ExtArgs extends runtime.Typ
   where?: Prisma.VirtualCardWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountFundTransfersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FundTransferWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -3591,6 +3881,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   cardholderEligibility?: boolean | Prisma.User$cardholderEligibilityArgs<ExtArgs>
   memberships?: boolean | Prisma.User$membershipsArgs<ExtArgs>
   virtualCards?: boolean | Prisma.User$virtualCardsArgs<ExtArgs>
+  fundTransfers?: boolean | Prisma.User$fundTransfersArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -3739,6 +4030,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   cardholderEligibility?: boolean | Prisma.User$cardholderEligibilityArgs<ExtArgs>
   memberships?: boolean | Prisma.User$membershipsArgs<ExtArgs>
   virtualCards?: boolean | Prisma.User$virtualCardsArgs<ExtArgs>
+  fundTransfers?: boolean | Prisma.User$fundTransfersArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3760,6 +4052,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     cardholderEligibility: Prisma.$CardholderEligibilityPayload<ExtArgs> | null
     memberships: Prisma.$OrganizationMembershipPayload<ExtArgs>[]
     virtualCards: Prisma.$VirtualCardPayload<ExtArgs>[]
+    fundTransfers: Prisma.$FundTransferPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -4206,6 +4499,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   cardholderEligibility<T extends Prisma.User$cardholderEligibilityArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$cardholderEligibilityArgs<ExtArgs>>): Prisma.Prisma__CardholderEligibilityClient<runtime.Types.Result.GetResult<Prisma.$CardholderEligibilityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   memberships<T extends Prisma.User$membershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$membershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrganizationMembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   virtualCards<T extends Prisma.User$virtualCardsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$virtualCardsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VirtualCardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  fundTransfers<T extends Prisma.User$fundTransfersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$fundTransfersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FundTransferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4861,6 +5155,30 @@ export type User$virtualCardsArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.VirtualCardScalarFieldEnum | Prisma.VirtualCardScalarFieldEnum[]
+}
+
+/**
+ * User.fundTransfers
+ */
+export type User$fundTransfersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FundTransfer
+   */
+  select?: Prisma.FundTransferSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FundTransfer
+   */
+  omit?: Prisma.FundTransferOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FundTransferInclude<ExtArgs> | null
+  where?: Prisma.FundTransferWhereInput
+  orderBy?: Prisma.FundTransferOrderByWithRelationInput | Prisma.FundTransferOrderByWithRelationInput[]
+  cursor?: Prisma.FundTransferWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FundTransferScalarFieldEnum | Prisma.FundTransferScalarFieldEnum[]
 }
 
 /**

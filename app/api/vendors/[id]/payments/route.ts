@@ -109,7 +109,7 @@ export async function GET(
 
     const beneficiaries = beneficiaryIds.length > 0
       ? await prisma.user.findMany({
-          where: { id: { in: beneficiaryIds } },
+          where: { id: { in: beneficiaryIds }, organizationId },
           select: { id: true, firstName: true },
         })
       : [];

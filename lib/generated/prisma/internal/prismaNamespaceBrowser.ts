@@ -82,7 +82,8 @@ export const ModelName = {
   GrantReport: 'GrantReport',
   BillingSubscription: 'BillingSubscription',
   UsageCounter: 'UsageCounter',
-  ProcessedWebhookEvent: 'ProcessedWebhookEvent'
+  ProcessedWebhookEvent: 'ProcessedWebhookEvent',
+  FundTransfer: 'FundTransfer'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -706,6 +707,26 @@ export const ProcessedWebhookEventScalarFieldEnum = {
 } as const
 
 export type ProcessedWebhookEventScalarFieldEnum = (typeof ProcessedWebhookEventScalarFieldEnum)[keyof typeof ProcessedWebhookEventScalarFieldEnum]
+
+
+export const FundTransferScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  requestId: 'requestId',
+  amountCents: 'amountCents',
+  currency: 'currency',
+  bankPaymentMethodId: 'bankPaymentMethodId',
+  stripeTransferId: 'stripeTransferId',
+  stripeAccountId: 'stripeAccountId',
+  financialAccountId: 'financialAccountId',
+  status: 'status',
+  failureReason: 'failureReason',
+  initiatedByUserId: 'initiatedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FundTransferScalarFieldEnum = (typeof FundTransferScalarFieldEnum)[keyof typeof FundTransferScalarFieldEnum]
 
 
 export const SortOrder = {
