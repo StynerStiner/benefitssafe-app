@@ -1,48 +1,12 @@
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+import { Logger } from '@logtail/next';
 
-interface LogEntry {
-  timestamp: string;
-  level: LogLevel;
-  message: string;
-  service: string;
-  [key: string]: unknown;
+// Singleton logger for BenefitsSafe.
+// Reads NEXT_PUBLIC_BETTER_STACK_SOURCE_TOKEN + NEXT_PUBLIC_BETTER_STACK_INGESTING_URL
+// from environment automatically. When not set (local dev), falls back to console output.
+export const logger = new Logger({ source: 'benefitssafe' });
+
+// Must be called in server contexts (API routes, cron jobs) before the response
+// is returned, or buffered log events will be silently dropped.
+export async function flushLogs(): Promise<void> {
+  await logger.flush();
 }
-
-class Logger {
-  private service = 'benefitssafe';
-
-  private log(level: LogLevel, message: string,
-    meta?: Record<string, unknown>) {
-    const entry: LogEntry = {
-      timestamp: new Date().toISOString(),
-      level,
-      message,
-      service: this.service,
-      ...meta,
-    };
-    if (level === 'error') {
-      console.error(JSON.stringify(entry));
-    } else if (level === 'warn') {
-      console.warn(JSON.stringify(entry));
-    } else {
-      console.log(JSON.stringify(entry));
-    }
-  }
-
-  debug(msg: string, meta?: Record<string, unknown>) {
-    if (process.env.NODE_ENV !== 'production') {
-      this.log('debug', msg, meta);
-    }
-  }
-  info(msg: string, meta?: Record<string, unknown>) {
-    this.log('info', msg, meta);
-  }
-  warn(msg: string, meta?: Record<string, unknown>) {
-    this.log('warn', msg, meta);
-  }
-  error(msg: string, meta?: Record<string, unknown>) {
-    this.log('error', msg, meta);
-  }
-}
-
-export const logger = new Logger();

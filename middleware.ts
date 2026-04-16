@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { Logger } from "@logtail/next";
 
 // Public routes that do not require authentication
 const PUBLIC_PATHS = [
@@ -13,6 +14,7 @@ const PUBLIC_PATHS = [
   "/api/billing/checkout-direct",
   "/api/jobs",
   "/_next",
+  "/_betterstack",
   "/public",
   "/favicon.ico",
   "/icon",
@@ -45,6 +47,10 @@ export async function middleware(request: NextRequest) {
   if (isPublicPath(pathname)) {
     return NextResponse.next();
   }
+
+  // Log every authenticated request to Better Stack
+  const betterStackLogger = new Logger({ source: "middleware" });
+  betterStackLogger.middleware(request);
 
   // Check for valid session token
   // NextAuth v5 uses AUTH_SECRET, try both env var names

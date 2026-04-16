@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { redis } from "@/lib/cache";
 import { NextResponse } from "next/server";
+import { logger, flushLogs } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,14 @@ export async function GET() {
     : Object.values(checks).some((c) => c.status === "degraded")
       ? "degraded"
       : "ok";
+
+  logger.info("Health check", {
+    overall,
+    dbStatus: checks.database?.status,
+    dbLatencyMs: checks.database?.latencyMs,
+    redisStatus: checks.redis?.status,
+  });
+  await flushLogs();
 
   return NextResponse.json(
     {

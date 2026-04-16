@@ -1,4 +1,5 @@
 import { withSentryConfig } from "@sentry/nextjs";
+import { withBetterStackNextConfig } from "@logtail/next";
 import type { NextConfig } from "next";
 
 const securityHeaders = [
@@ -28,7 +29,7 @@ const securityHeaders = [
   },
   {
     key: "Content-Security-Policy",
-    value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline' https://js.stripe.com; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://api.stripe.com https://checkout.stripe.com https://*.upstash.io https://*.sentry.io; frame-src https://js.stripe.com https://hooks.stripe.com;",
+    value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline' https://js.stripe.com; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://api.stripe.com https://checkout.stripe.com https://*.upstash.io https://*.sentry.io https://*.betterstackdata.com; frame-src https://js.stripe.com https://hooks.stripe.com;",
   },
 ];
 
@@ -101,7 +102,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
+export default withSentryConfig(withBetterStackNextConfig(nextConfig), {
   // Suppress source map upload warnings when SENTRY_AUTH_TOKEN is not set
   silent: !process.env.SENTRY_AUTH_TOKEN,
 
