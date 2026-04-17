@@ -378,7 +378,7 @@ export async function POST(request: Request) {
       role: "beneficiary" as const,
       organizationId,
       beneficiaryCode,
-      avatarUrl: (data as any).avatarUrl || null,
+      avatarUrl: data.avatarUrl || null,
       dateOfBirth: data.dateOfBirth && data.dateOfBirth.trim() ? new Date(data.dateOfBirth) : null,
       addressStreet: clean(data.addressStreet),
       addressCity: clean(data.addressCity),

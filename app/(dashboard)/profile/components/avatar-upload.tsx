@@ -42,9 +42,10 @@ const AvatarUpload = () => {
 
     const hasExistingImage = Boolean(currentImageUrl);
 
-    // Load current avatar from /api/users/profile (authoritative — reads DB directly).
-    // Session JWT is stale across reloads because the jwt callback doesn't re-read the DB,
-    // so we fetch from the profile API which the view sidebar also uses.
+    // Load current avatar from /api/users/profile — the JWT refreshes
+    // on same-tab updates (via updateSession), but cross-device changes
+    // don't propagate until next sign-in, so we fetch authoritative
+    // state on mount.
     useEffect(() => {
         let cancelled = false;
         fetch("/api/users/profile")

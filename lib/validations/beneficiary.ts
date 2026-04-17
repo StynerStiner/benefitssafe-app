@@ -29,6 +29,7 @@ export const createBeneficiarySchema = z.object({
   emergencyContactName: z.string().max(100).optional().or(z.literal("")),
   emergencyContactPhone: z.string().max(20).optional().or(z.literal("")),
   notes: z.string().max(2000).optional().or(z.literal("")),
+  avatarUrl: z.string().max(2048).optional().or(z.literal("")),
 });
 
 export type CreateBeneficiaryInput = z.infer<typeof createBeneficiarySchema>;
