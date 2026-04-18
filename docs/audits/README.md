@@ -71,11 +71,10 @@ protected.
 - Priority 1 — Prisma middleware to reject queries missing
   `organizationId` on org-scoped models (defense in depth —
   separate PDR). Must whitelist the EXEMPT_CRON / EXEMPT_PLATFORM
-  / AUTH_FLOW paths.
-- Priority 2 — Release-on-error cleanup for the declined-auth
-  branch in `app/api/webhooks/stripe-charges/route.ts` (lines
-  54-119). LOW — impacts log/notification loss only, no money
-  movement.
+  / AUTH_FLOW paths. Phase 1 shadow mode shipped in commit
+  `9428032` (log-only, no block); Phase 2 (mutations in dev, log
+  in prod) and Phase 3 (full enforcement) pending shadow-mode
+  telemetry.
 - [DDIA Ch7 P4 follow-up] Design conversation on
   `allowNegativeBalance` lifecycle — once set on a Grant the flag
   stays true. Decide reset policy: manual reconciliation, auto on
@@ -83,6 +82,21 @@ protected.
   current behavior is defensible.
 
 **Action items (closed):**
+- 2026-04-17: Cross-org isolation P2 (declined-auth
+  release-on-error cleanup) — `releaseWebhookEvent(event.id)`
+  now fires on downstream write failure in the declined-auth
+  branch of `app/api/webhooks/stripe-charges/route.ts` (commit
+  `6c34379`), matching the pattern already present in the
+  success branch of the same file (L258) and the fraud handler
+  (`1fb4df5`). Silent-drop path → proper 500 with retry.
+- 2026-04-17: Cross-org isolation P1 (Prisma middleware Phase 1
+  shadow mode) — `$extends` client extension + ALS-backed
+  OrgContext now log-classify every org-scoped-model query
+  (commit `9428032`). 4 representative handlers wrapped
+  (expenses/[id], cron/reconciliation, webhooks/stripe,
+  platform/stats). Double try/catch guarantees a bug in the
+  extension cannot break real traffic. Phase 2+ awaits 48h of
+  production telemetry.
 - 2026-04-17: Cross-org isolation P1 (HANDLER_HAS_ORG money-flow
   files) — 10/10 queries verified safe on adversarial per-query
   review across `app/api/ledger/route.ts`,
