@@ -14,6 +14,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { ReasonModal } from "@/components/ui/reason-modal";
 import { Pencil, UserX, UserCheck } from "lucide-react";
 import Link from "next/link";
 import EditBeneficiaryForm from "./edit-beneficiary-form";
@@ -56,6 +57,7 @@ const TodoListRecentCard = ({ beneficiaries, onRefresh }: TodoListRecentCardProp
     const [editingBeneficiary, setEditingBeneficiary] = useState<Beneficiary | null>(null);
     const [editOpen, setEditOpen] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deactivateOpen, setDeactivateOpen] = useState(false);
     const [toggleTarget, setToggleTarget] = useState<Beneficiary | null>(null);
     const [toggling, setToggling] = useState(false);
 
@@ -80,34 +82,55 @@ const TodoListRecentCard = ({ beneficiaries, onRefresh }: TodoListRecentCardProp
 
     const handleToggleActive = (b: Beneficiary) => {
         setToggleTarget(b);
-        setConfirmOpen(true);
+        // BSRS Ch 5 §5.3: deactivation is an irreversible state change on a
+        // human subject and must capture a justification. Reactivation is
+        // reversible — plain confirm is enough.
+        if (b.isActive) {
+            setDeactivateOpen(true);
+        } else {
+            setConfirmOpen(true);
+        }
     };
 
-    const confirmToggle = async () => {
+    const sendToggle = async (payload: Record<string, unknown>): Promise<boolean> => {
+        if (!toggleTarget) return false;
+        const res = await fetch(`/api/beneficiaries/${toggleTarget.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+            const data = await res.json().catch(() => null);
+            toast.error(data?.error || "Failed to update status");
+            return false;
+        }
+        return true;
+    };
+
+    const confirmReactivate = async () => {
         if (!toggleTarget) return;
         setToggling(true);
         try {
-            const res = await fetch(`/api/beneficiaries/${toggleTarget.id}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ isActive: !toggleTarget.isActive }),
-            });
-            if (!res.ok) {
-                const data = await res.json().catch(() => null);
-                toast.error(data?.error || "Failed to update status");
-                return;
+            const ok = await sendToggle({ isActive: true });
+            if (ok) {
+                toast.success("Beneficiary activated");
+                onRefresh();
             }
-            toast.success(
-                toggleTarget.isActive
-                    ? "Beneficiary deactivated"
-                    : "Beneficiary activated"
-            );
-            onRefresh();
         } catch {
             toast.error("Something went wrong. Please try again.");
         } finally {
             setToggling(false);
             setConfirmOpen(false);
+            setToggleTarget(null);
+        }
+    };
+
+    const confirmDeactivate = async (reason: string) => {
+        const ok = await sendToggle({ isActive: false, reason });
+        if (ok) {
+            toast.success("Beneficiary deactivated");
+            onRefresh();
+            setDeactivateOpen(false);
             setToggleTarget(null);
         }
     };
@@ -214,17 +237,13 @@ const TodoListRecentCard = ({ beneficiaries, onRefresh }: TodoListRecentCardProp
                 />
             )}
 
-            {/* Deactivate / Activate Confirmation Dialog */}
+            {/* Reactivation Confirmation (reversible — plain confirm) */}
             <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>
-                            {toggleTarget?.isActive ? "Deactivate" : "Activate"} Beneficiary
-                        </DialogTitle>
+                        <DialogTitle>Activate Beneficiary</DialogTitle>
                         <DialogDescription>
-                            {toggleTarget?.isActive
-                                ? `Are you sure you want to deactivate ${toggleTarget?.firstName} ${toggleTarget?.lastName}? They will no longer appear in active beneficiary lists.`
-                                : `Are you sure you want to reactivate ${toggleTarget?.firstName} ${toggleTarget?.lastName}? They will appear in active beneficiary lists again.`}
+                            {`Are you sure you want to reactivate ${toggleTarget?.firstName ?? ""} ${toggleTarget?.lastName ?? ""}? They will appear in active beneficiary lists again.`}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
@@ -238,20 +257,28 @@ const TodoListRecentCard = ({ beneficiaries, onRefresh }: TodoListRecentCardProp
                         >
                             Cancel
                         </Button>
-                        <Button
-                            variant={toggleTarget?.isActive ? "destructive" : "default"}
-                            onClick={confirmToggle}
-                            disabled={toggling}
-                        >
-                            {toggling
-                                ? "Processing..."
-                                : toggleTarget?.isActive
-                                    ? "Deactivate"
-                                    : "Activate"}
+                        <Button variant="default" onClick={confirmReactivate} disabled={toggling}>
+                            {toggling ? "Processing..." : "Activate"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Deactivation Confirmation (irreversible state change — reason required) */}
+            <ReasonModal
+                open={deactivateOpen}
+                onOpenChange={(next) => {
+                    setDeactivateOpen(next);
+                    if (!next) setToggleTarget(null);
+                }}
+                title="Deactivate Beneficiary"
+                description={`Deactivating ${toggleTarget?.firstName ?? ""} ${toggleTarget?.lastName ?? ""} is logged in the audit trail. Provide a reason (minimum 10 characters) for compliance review.`}
+                reasonLabel="Reason for deactivation"
+                reasonPlaceholder="e.g. Beneficiary moved out of state, contact lost"
+                confirmButtonText="Deactivate"
+                confirmButtonVariant="destructive"
+                onConfirm={confirmDeactivate}
+            />
         </>
     );
 };

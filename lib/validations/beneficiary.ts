@@ -34,10 +34,36 @@ export const createBeneficiarySchema = z.object({
 
 export type CreateBeneficiaryInput = z.infer<typeof createBeneficiarySchema>;
 
-export const updateBeneficiarySchema = createBeneficiarySchema.partial().omit({
-  email: true,
-}).extend({
-  isActive: z.boolean().optional(),
-});
+export const DEACTIVATION_REASON_MIN = 10;
+export const DEACTIVATION_REASON_MAX = 500;
+
+// BSRS Ch 5 §5.3: irreversible state changes on human subjects require a
+// justification string. Only applies to deactivation (isActive === false) —
+// reactivation and profile-only edits pass through untouched.
+export const updateBeneficiarySchema = createBeneficiarySchema
+  .partial()
+  .omit({ email: true })
+  .extend({
+    isActive: z.boolean().optional(),
+    reason: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.isActive !== false) return;
+    const trimmed = data.reason?.trim() ?? "";
+    if (trimmed.length < DEACTIVATION_REASON_MIN) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["reason"],
+        message: `Reason must be at least ${DEACTIVATION_REASON_MIN} characters when deactivating`,
+      });
+    }
+    if (trimmed.length > DEACTIVATION_REASON_MAX) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["reason"],
+        message: `Reason must be at most ${DEACTIVATION_REASON_MAX} characters`,
+      });
+    }
+  });
 
 export type UpdateBeneficiaryInput = z.infer<typeof updateBeneficiarySchema>;

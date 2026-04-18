@@ -298,7 +298,10 @@ export async function PATCH(
       });
     }
 
-    const data = parsed.data;
+    // `reason` is a write-only justification used for the AuditLog on
+    // deactivation (BSRS Ch 5 §5.3). It is NOT a User column — strip it
+    // out before any Prisma write touches it.
+    const { reason, ...data } = parsed.data;
     const clean = (val: string | undefined): string | null | undefined =>
       val === undefined ? undefined : val && val.trim() ? val.trim() : null;
 
@@ -333,9 +336,13 @@ export async function PATCH(
       select: { id: true, firstName: true, lastName: true, email: true },
     });
 
-    // Audit log — never log ssnLast4
-    const auditData = { ...data };
-    delete (auditData as Record<string, unknown>).ssnLast4;
+    // Audit log — never log ssnLast4. Extend newValue with the deactivation
+    // justification so reviewers see the reason alongside the state change.
+    const auditData: Record<string, unknown> = { ...data };
+    delete auditData.ssnLast4;
+    if (data.isActive === false && reason) {
+      auditData.reason = reason.trim();
+    }
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
