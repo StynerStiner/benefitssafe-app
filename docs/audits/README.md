@@ -84,9 +84,6 @@ protected.
   branch in `app/api/webhooks/stripe-charges/route.ts` (lines
   54-119). LOW — impacts log/notification loss only, no money
   movement.
-- [DDIA Ch7 P1] Wire `retryOnSerializationFailure` on 2 missing
-  Serializable tx sites (`virtual-cards/[id]/close`,
-  `jobs/process-charge`) — 15 min.
 - [DDIA Ch7 P2] Wrap `handleDisputeCreated` in `$transaction`
   following sibling `handleTransactionCreated` pattern — 20 min.
 - [DDIA Ch7 P3] Compare-and-set on invite token redemption
@@ -102,6 +99,10 @@ protected.
   — 10 min.
 
 **Action items (closed):**
+- 2026-04-17: DDIA Ch7 P1 — `retryOnSerializationFailure` wrapping
+  on `virtual-cards/[id]/close` + `jobs/process-charge` Serializable
+  tx sites (commit `70808ee`). Matches gold-standard pattern at
+  `approve/route.ts:101`.
 - 2026-04-17: Fraud webhook idempotency (commit `1fb4df5`) —
   wired `stripe-fraud` through `markWebhookProcessed` /
   `releaseWebhookEvent`, matching sibling `stripe/route.ts`
