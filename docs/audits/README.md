@@ -68,15 +68,12 @@ protected.
   webhook queries with context
 
 **Action items (open):**
-- Priority 1 — Review HANDLER_HAS_ORG money-flow files (~1 hour):
-  `app/api/ledger/route.ts`, `app/api/expenses/[id]/route.ts`,
-  `app/api/org/fund/route.ts`.
-- Priority 2 — Review remaining HANDLER_HAS_ORG files (~2-3 hours).
-- Priority 3 — Prisma middleware to reject queries missing
+- Priority 1 — Review remaining HANDLER_HAS_ORG files (~2-3 hours).
+- Priority 2 — Prisma middleware to reject queries missing
   `organizationId` on org-scoped models (defense in depth —
   separate PDR). Must whitelist the EXEMPT_CRON / EXEMPT_PLATFORM
   / AUTH_FLOW paths.
-- Priority 4 — Release-on-error cleanup for the declined-auth
+- Priority 3 — Release-on-error cleanup for the declined-auth
   branch in `app/api/webhooks/stripe-charges/route.ts` (lines
   54-119). LOW — impacts log/notification loss only, no money
   movement.
@@ -87,6 +84,15 @@ protected.
   current behavior is defensible.
 
 **Action items (closed):**
+- 2026-04-17: Cross-org isolation P1 (HANDLER_HAS_ORG money-flow
+  files) — 10/10 queries verified safe on adversarial per-query
+  review across `app/api/ledger/route.ts`,
+  `app/api/expenses/[id]/route.ts`, `app/api/org/fund/route.ts`.
+  All safe via one of three patterns: variable-bound where
+  clauses (ledger `ledgerWhere`/`transactionWhere`), relational
+  scoping (expenses `grant: { organizationId }`), server-created
+  id chains (fundTransfer update by local id). Classifier
+  false-positive rate: 100% on this subset.
 - 2026-04-17: Cross-org isolation P1 (WEBHOOK_REVIEW bucket) —
   23/23 queries verified safe on detailed per-query review. Every
   query is either the derive step itself, a unique-by-Stripe-ID
@@ -139,3 +145,16 @@ protected.
   the same file.
 - Full run is reproducible from the Python classifier in the
   conversation transcript for 2026-04-17.
+- **Classifier limitations (observed during verification):**
+  The HANDLER_HAS_ORG bucket generator is block-only and cannot
+  trace through: (1) variable-aliased where clauses
+  (`const w = { organizationId }` then `where: w`), (2)
+  relational scoping (`grant: { organizationId }` when the child
+  model has no direct `organizationId` column), (3) local
+  server-created id chains (`x = create(...); update({ where:
+  { id: x.id } })`). These are all correct scoping patterns —
+  the classifier simply can't see them. The money-flow subset
+  (10/10 queries, P1 closure) produced a 100% false-positive
+  rate entirely from these three shapes. Any future re-audit
+  should account for this, ideally by extending the analyzer
+  to recognize these shapes.
