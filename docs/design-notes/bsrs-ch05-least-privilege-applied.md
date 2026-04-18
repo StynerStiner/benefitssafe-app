@@ -373,6 +373,10 @@ Ordered by leverage × fix-cost. Solo-founder scope.
 
 **BSRS section:** "Testing of least privilege" (§5.3).
 
+**Status:**
+- Option A (classifier unit tests) — CLOSED in commit `907c657` (56 new tests in `__tests__/security/prisma-org-scoping.test.ts` covering every classification pathway + 4 documented blind-spot regression guards. CI vitest step is now blocking.)
+- Option B (e2e cross-org HTTP tests with seeded second org) — OPEN, next PDR.
+
 **Priority rationale:** highest-leverage because the audit is a point-in-time proof; tests are the living proof.
 
 ### P2 — Classification doc + audit review cadence + high-risk action justifications
@@ -458,7 +462,7 @@ Several topics Ch 5 touches will get fuller treatment later:
 
 | # | Gap | Scope | BSRS section | Status |
 |---|---|---|---|---|
-| P1 | Cross-org isolation regression test suite | 4–6 hrs | §5.3 Testing of least privilege | Open — highest leverage |
+| P1 | Cross-org isolation regression test suite | 4–6 hrs | §5.3 Testing of least privilege | Option A closed in `907c657`; Option B open |
 | P2 | Access classification doc + audit review cadence + high-risk justifications | 2–3 hrs | §5.2 Classification, §5.3 Auditing | Open |
 | P3 | Expiring role grants (CPA-season + future hires) | 4–6 hrs | §5.5 Temporary Access | Open |
 | P4 | Correlation IDs + role-guard helper + convention linter | 3–5 hrs | §5.3 Diagnosing, §5.4 Policy Framework | Open |
