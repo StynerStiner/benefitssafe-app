@@ -84,16 +84,21 @@ protected.
   branch in `app/api/webhooks/stripe-charges/route.ts` (lines
   54-119). LOW — impacts log/notification loss only, no money
   movement.
-- [DDIA Ch7 P4] Design conversation + implementation of DB-level
-  CHECK constraints on money invariants (`Grant.remainingAmount
-  >= 0`, `LedgerEntry` invariant). Conflicts with intentional
-  overspend path in Stripe settlement — design call required
-  before implementation. TBD.
-- [DDIA Ch7 P5] Verify `VirtualCard` partial unique index
-  side-script applied to Aurora (`scripts/add-virtual-card-unique-constraints.ts`)
-  — 10 min.
+- [DDIA Ch7 P4 follow-up] Design conversation on
+  `allowNegativeBalance` lifecycle — once set on a Grant the flag
+  stays true. Decide reset policy: manual reconciliation, auto on
+  first positive-balance restoration, or time-based. Non-urgent;
+  current behavior is defensible.
 
 **Action items (closed):**
+- 2026-04-17: DDIA Ch7 P5 — `VirtualCard`
+  `uniq_active_card_per_grant_beneficiary` partial unique index
+  applied to Aurora (commit `07c6611`). Enforces one active card
+  per (grant, beneficiary) pair.
+- 2026-04-17: DDIA Ch7 P4 — Grant CHECK constraints with
+  `allowNegativeBalance` escape hatch (commit `07c6611`). Three
+  CHECKs on money columns; overspend path flags the Grant when
+  committing a negative-balance debit.
 - 2026-04-17: DDIA Ch7 P3 — invite token redemption now uses
   `updateMany` with `usedAt: null` guard (compare-and-set)
   (commit `dab2f0f`). Prevents double-redemption race.
