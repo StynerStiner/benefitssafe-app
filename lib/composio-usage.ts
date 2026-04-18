@@ -30,6 +30,10 @@ export async function getComposioUsage(): Promise<UsageReport> {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
+  // PLATFORM-WIDE METRIC — INTENTIONALLY UNSCOPED across all orgs.
+  // This is the global Composio tier meter used for SaaS-level
+  // rate limiting. Any per-org metering must use UsageCounter
+  // (which IS org-scoped).
   const callsThisMonth = await prisma.workflowLog.count({
     where: {
       createdAt: { gte: monthStart },

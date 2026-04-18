@@ -1,0 +1,43 @@
+
+=== app/api/org/workflows/usage/route.ts:14 -- user.findUnique ===
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true },
+    });
+
+=== app/api/mfa/status/route.ts:14 -- user.findUnique ===
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { mfaEnabled: true },
+    });
+
+=== app/api/users/avatar/route.ts:39 -- user.update ===
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { avatarUrl },
+    });
+
+=== app/api/notifications/[id]/route.ts:24 -- notification.updateMany ===
+    const result = await prisma.notification.updateMany({
+      where: { id, userId: session.user.id },
+      data: { read: true },
+    });
+
+=== app/api/notifications/[id]/route.ts:52 -- notification.deleteMany ===
+    const result = await prisma.notification.deleteMany({
+      where: { id, userId: session.user.id },
+    });
+
+=== components/auth/actions/login.ts:19 -- user.findUnique ===
+  const user = await prisma.user.findUnique({
+    where: { email: email.toLowerCase().trim() },
+    select: { emailVerified: true, passwordHash: true },
+  })
+
+=== lib/composio-usage.ts:33 -- workflowLog.count ===
+  const callsThisMonth = await prisma.workflowLog.count({
+    where: {
+      createdAt: { gte: monthStart },
+      status: { in: ["success", "failed"] }, // skipped = no Composio call
+    },
+  });

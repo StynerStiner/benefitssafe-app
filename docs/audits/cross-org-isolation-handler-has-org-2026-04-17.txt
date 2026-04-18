@@ -1,0 +1,775 @@
+
+=== app/api/audit-logs/route.ts:99 -- auditLog.findMany ===
+      prisma.auditLog.findMany({
+        where: where as never,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+
+=== app/api/audit-logs/route.ts:105 -- auditLog.count ===
+      prisma.auditLog.count({ where: where as never }),
+
+=== app/api/vendors/route.ts:61 -- vendor.findMany ===
+        prisma.vendor.findMany({
+          where: where as never,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            type: true,
+            status: true,
+            website: true,
+            approvedAt: true,
+            createdAt: true,
+            user: { select: { avatarUrl: true } },
+            _count: { select: { expenses: true } },
+          },
+          orderBy: { createdAt: "desc" },
+          take: limit,
+          skip: offset,
+        }),
+
+=== app/api/vendors/route.ts:79 -- vendor.count ===
+        prisma.vendor.count({ where: where as never }),
+
+=== app/api/vendors/[id]/route.ts:112 -- vendor.update ===
+    const updated = await prisma.vendor.update({
+      where: { id },
+      data: parsed.data as never,
+      select: { id: true, name: true, status: true },
+    });
+
+=== app/api/vendors/[id]/route.ts:162 -- vendor.update ===
+    await prisma.vendor.update({
+      where: { id },
+      data: { archivedAt: new Date() },
+    });
+
+=== app/api/vendors/[id]/payments/route.ts:125 -- grant.findMany ===
+      ? await prisma.grant.findMany({
+          where: { id: { in: grantIds } },
+          select: { id: true, name: true },
+        })
+
+=== app/api/vendors/[id]/reject/route.ts:35 -- vendor.update ===
+    const updated = await prisma.vendor.update({
+      where: { id },
+      data: { status: "BLOCKED" },
+      select: { id: true, name: true, status: true },
+    });
+
+=== app/api/vendors/[id]/approve/route.ts:33 -- vendor.update ===
+    const updated = await prisma.vendor.update({
+      where: { id },
+      data: { status: "APPROVED", approvedAt: new Date() },
+      select: { id: true, name: true, status: true },
+    });
+
+=== app/api/ledger/route.ts:33 -- ledgerEntry.findMany ===
+      prisma.ledgerEntry.findMany({
+        where: ledgerWhere,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+
+=== app/api/ledger/route.ts:39 -- ledgerEntry.count ===
+      prisma.ledgerEntry.count({ where: ledgerWhere }),
+
+=== app/api/ledger/route.ts:40 -- transaction.findMany ===
+      prisma.transaction.findMany({
+        where: transactionWhere,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+
+=== app/api/ledger/route.ts:46 -- transaction.count ===
+      prisma.transaction.count({ where: transactionWhere }),
+
+=== app/api/messages/conversations/route.ts:77 -- user.findMany ===
+    const users = await prisma.user.findMany({
+      where: { id: { in: Array.from(allUserIds) } },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        avatarUrl: true,
+        role: true,
+      },
+    });
+
+=== app/api/messages/conversations/route.ts:203 -- conversation.update ===
+    await prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    });
+
+=== app/api/messages/conversations/[id]/messages/route.ts:55 -- conversation.update ===
+    await prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    });
+
+=== app/api/messages/conversations/[id]/join/route.ts:67 -- conversation.update ===
+    await prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    });
+
+=== app/api/grants/route.ts:44 -- grant.findMany ===
+        prisma.grant.findMany({
+          where,
+          include: {
+            beneficiary: { select: { id: true, firstName: true, lastName: true, email: true, avatarUrl: true } },
+            categories: true,
+          },
+          orderBy: { createdAt: "desc" },
+          take: limit,
+          skip: offset,
+        }),
+
+=== app/api/grants/route.ts:54 -- grant.count ===
+        prisma.grant.count({ where }),
+
+=== app/api/grants/[id]/document/route.ts:92 -- grant.update ===
+    await prisma.grant.update({
+      where: { id },
+      data: {
+        grantDocumentText: documentText,
+        grantDocumentName: documentName,
+      },
+    });
+
+=== app/api/grants/[id]/document/route.ts:157 -- grant.update ===
+    await prisma.grant.update({
+      where: { id },
+      data: {
+        grantDocumentText: null,
+        grantDocumentName: null,
+      },
+    });
+
+=== app/api/grants/[id]/issue-card/route.ts:199 -- virtualCard.findFirst ===
+    const existingActiveCard = await prisma.virtualCard.findFirst({
+      where: {
+        grantId,
+        beneficiaryId,
+        status: "ACTIVE",
+      },
+      select: { id: true, last4: true },
+    });
+
+=== app/api/org/link-bank/route.ts:172 -- organization.update ===
+    await prisma.organization.update({
+      where: { id: organization.id },
+      data: { stripeOriginPaymentMethodId: paymentMethodId },
+    });
+
+=== app/api/org/workflows/[triggerId]/route.ts:53 -- workflowTrigger.update ===
+    const updated = await prisma.workflowTrigger.update({
+      where: { id: triggerId },
+      data: updateData,
+    });
+
+=== app/api/org/workflows/[triggerId]/route.ts:118 -- workflowTrigger.delete ===
+    await prisma.workflowTrigger.delete({
+      where: { id: triggerId },
+    });
+
+=== app/api/org/integrations/route.ts:147 -- integration.update ===
+    await prisma.integration.update({
+      where: { id: integration.id },
+      data: { composioConnectionId: connectionRequest.id },
+    });
+
+=== app/api/org/integrations/callback/route.ts:32 -- integration.update ===
+      await prisma.integration.update({
+        where: { id: integrationId },
+        data: { status: "error" },
+      });
+
+=== app/api/org/integrations/callback/route.ts:43 -- integration.update ===
+    await prisma.integration.update({
+      where: { id: integrationId },
+      data: {
+        status: "connected",
+        composioConnectionId: connectedAccountId || `composio_${provider}_${Date.now()}`,
+        connectedAt: new Date(),
+      },
+    });
+
+=== app/api/org/integrations/[provider]/route.ts:46 -- integration.update ===
+    await prisma.integration.update({
+      where: { id: integration.id },
+      data: {
+        status: "disconnected",
+        composioConnectionId: null,
+        connectedAt: null,
+      },
+    });
+
+=== app/api/org/stripe-onboarding/route.ts:177 -- organization.update ===
+      await prisma.organization.update({
+        where: { id: organization.id },
+        data: {
+          stripeAccountId: accountId,
+          stripeFinancialAccountId: financialAccountId,
+        },
+      });
+
+=== app/api/org/disbursement-policy/route.ts:85 -- disbursementPolicy.update ===
+      policy = await prisma.disbursementPolicy.update({
+        where: { id: existing.id },
+        data,
+      });
+
+=== app/api/org/fund/route.ts:356 -- fundTransfer.update ===
+      await prisma.fundTransfer.update({
+        where: { id: fundTransfer.id },
+        data: {
+          status: "SUCCEEDED",
+          stripeTransferId: transfer.id,
+        },
+      });
+
+=== app/api/org/fund/route.ts:398 -- fundTransfer.update ===
+        await prisma.fundTransfer.update({
+          where: { id: fundTransfer.id },
+          data: {
+            status: "FAILED",
+            failureReason,
+          },
+        });
+
+=== app/api/expenses/route.ts:95 -- expenseRequest.count ===
+      prisma.expenseRequest.count({ where }),
+
+=== app/api/expenses/route.ts:356 -- notification.createMany ===
+      await prisma.notification.createMany({ data: notificationRows });
+
+=== app/api/expenses/[id]/route.ts:105 -- expenseRequest.findFirst ===
+    const expense = await prisma.expenseRequest.findFirst({
+      where: whereClause,
+      include: {
+        grant: { select: { id: true, name: true } },
+        category: { select: { id: true, name: true } },
+      },
+    });
+
+=== app/api/expenses/[id]/route.ts:142 -- expenseRequest.update ===
+    const updatedExpense = await prisma.expenseRequest.update({
+      where: { id },
+      data: updateData,
+      include: {
+        grant: { select: { id: true, name: true } },
+        category: { select: { id: true, name: true } },
+        requestedBy: { select: { id: true, firstName: true, lastName: true, email: true } },
+        vendor: { select: { id: true, name: true, type: true } },
+      },
+    });
+
+=== app/api/expenses/[id]/route.ts:206 -- expenseRequest.findFirst ===
+    const expense = await prisma.expenseRequest.findFirst({
+      where: whereClause,
+    });
+
+=== app/api/expenses/[id]/route.ts:218 -- expenseRequest.update ===
+    await prisma.expenseRequest.update({
+      where: { id },
+      data: { archivedAt: new Date() },
+    });
+
+=== app/api/beneficiaries/route.ts:106 -- organizationMembership.count ===
+      prisma.organizationMembership.count({ where: membershipWhere }),
+
+=== app/api/beneficiaries/route.ts:394 -- user.create ===
+    const beneficiary = await prisma.user.create({
+      data: createData,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        beneficiaryCode: true,
+        createdAt: true,
+      },
+    });
+
+=== app/api/beneficiaries/[id]/route.ts:261 -- organizationMembership.update ===
+      await prisma.organizationMembership.update({
+        where: { id: membership.id },
+        data: { notes: clean(data.notes) },
+      });
+
+=== app/api/beneficiaries/[id]/route.ts:267 -- user.update ===
+    const updated = await prisma.user.update({
+      where: { id },
+      data: {
+        ...(data.firstName !== undefined && { firstName: data.firstName.trim() }),
+        ...(data.lastName !== undefined && { lastName: data.lastName.trim() }),
+        ...(data.phone !== undefined && { phone: clean(data.phone) }),
+        ...(data.dateOfBirth !== undefined && {
+          dateOfBirth: data.dateOfBirth && data.dateOfBirth.trim() ? new Date(data.dateOfBirth) : null,
+        }),
+        ...(data.addressStreet !== undefined && { addressStreet: clean(data.addressStreet) }),
+        ...(data.addressCity !== undefined && { addressCity: clean(data.addressCity) }),
+        ...(data.addressState !== undefined && { addressState: clean(data.addressState) }),
+        ...(data.addressZip !== undefined && { addressZip: clean(data.addressZip) }),
+        ...(data.ssnLast4 !== undefined && { ssnLast4: clean(data.ssnLast4) }),
+        ...(data.benefitPrograms !== undefined && { benefitPrograms: data.benefitPrograms }),
+        ...(data.emergencyContactName !== undefined && { emergencyContactName: clean(data.emergencyContactName) }),
+        ...(data.emergencyContactPhone !== undefined && { emergencyContactPhone: clean(data.emergencyContactPhone) }),
+        ...(data.isActive !== undefined && { isActive: data.isActive }),
+      },
+      select: { id: true, firstName: true, lastName: true, email: true },
+    });
+
+=== app/api/user/data-deletion/route.ts:30 -- user.update ===
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        firstName: "DELETED",
+        lastName: "USER",
+        email: `deleted_${userId}@benefitssafe.removed`,
+        phone: null,
+        dateOfBirth: null,
+        addressStreet: null,
+        addressCity: null,
+        addressState: null,
+        addressZip: null,
+        ssnLast4: null,
+        benefitPrograms: Prisma.DbNull,
+        emergencyContactName: null,
+        emergencyContactPhone: null,
+        notes: null,
+        avatarUrl: null,
+        isActive: false,
+        passwordHash: null,
+      },
+    });
+
+=== app/api/user/data-deletion/route.ts:54 -- virtualCard.updateMany ===
+    await prisma.virtualCard.updateMany({
+      where: { beneficiaryId: userId, status: "ACTIVE" },
+      data: { status: "CANCELLED" },
+    });
+
+=== app/api/mfa/disable/route.ts:85 -- user.update ===
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        mfaEnabled: false,
+        mfaSecret: null,
+        mfaBackupCodes: [],
+      },
+    });
+
+=== app/api/mfa/verify-setup/route.ts:81 -- user.update ===
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        mfaEnabled: true,
+        mfaBackupCodes: hashedCodes,
+      },
+    });
+
+=== app/api/mfa/verify/route.ts:76 -- user.update ===
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { mfaBackupCodes: updatedCodes },
+        });
+
+=== app/api/mfa/setup/route.ts:50 -- user.update ===
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { mfaSecret: secret },
+    });
+
+=== app/api/policies/route.ts:20 -- disbursementPolicy.findFirst ===
+      () => prisma.disbursementPolicy.findFirst({
+
+=== app/api/subscriptions/route.ts:28 -- subscription.findMany ===
+      prisma.subscription.findMany({
+        where,
+        include: {
+          vendor: { select: { id: true, name: true, type: true, status: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+
+=== app/api/subscriptions/route.ts:37 -- subscription.count ===
+      prisma.subscription.count({ where }),
+
+=== app/api/subscriptions/[id]/route.ts:214 -- subscription.update ===
+    const updated = await prisma.subscription.update({
+      where: { id },
+      data: updateData,
+      include: {
+        vendor: { select: { id: true, name: true, type: true, status: true } },
+        card: { select: { id: true, last4: true, status: true, cardLabel: true } },
+      },
+    });
+
+=== app/api/invite/route.ts:136 -- user.update ===
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { email: overrideEmail },
+      });
+
+=== app/api/memberships/switch/route.ts:48 -- organizationMembership.update ===
+    await prisma.organizationMembership.update({
+      where: { id: membership.id },
+      data: { lastAccessedAt: new Date() },
+    });
+
+=== app/api/users/route.ts:59 -- organizationMembership.findMany ===
+      prisma.organizationMembership.findMany({
+        where: membershipWhere as never,
+        select: {
+          id: true,
+          memberCode: true,
+          status: true,
+          role: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              phone: true,
+              role: true,
+              isActive: true,
+              avatarUrl: true,
+              beneficiaryCode: true,
+              addressCity: true,
+              addressState: true,
+              createdAt: true,
+            },
+          },
+        },
+        orderBy: { user: { lastName: "asc" } },
+        take: limit,
+        skip: offset,
+      }),
+
+=== app/api/users/route.ts:87 -- organizationMembership.count ===
+      prisma.organizationMembership.count({ where: membershipWhere as never }),
+
+=== app/api/users/profile/route.ts:263 -- user.update ===
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: dataToWrite,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        avatarUrl: true,
+        role: true,
+        title: true,
+        companyName: true,
+        businessAddress: true,
+        firmName: true,
+        licenseNumber: true,
+        barNumber: true,
+        organizationName: true,
+        emergencyContactName: true,
+        emergencyContactPhone: true,
+      },
+    });
+
+=== app/api/users/[id]/route.ts:151 -- organizationMembership.update ===
+      await prisma.organizationMembership.update({
+        where: { id: membership.id },
+        data: { role: data.role },
+      });
+
+=== app/api/users/[id]/route.ts:163 -- user.update ===
+      await prisma.user.update({ where: { id }, data: userUpdate });
+
+=== app/api/users/[id]/route.ts:241 -- organizationMembership.update ===
+      await prisma.organizationMembership.update({
+        where: { id: membership.id },
+        data: { status: "revoked" },
+      });
+
+=== app/api/users/[id]/route.ts:251 -- organizationMembership.count ===
+    const remainingActive = await prisma.organizationMembership.count({
+      where: { userId: id, status: "active" },
+    });
+
+=== app/api/users/[id]/route.ts:255 -- user.update ===
+      await prisma.user.update({
+        where: { id },
+        data: { isActive: false },
+      });
+
+=== app/api/virtual-cards/route.ts:38 -- virtualCard.findMany ===
+      prisma.virtualCard.findMany({
+        where: cardWhere,
+        select: {
+          id: true,
+          last4: true,
+          expirationMonth: true,
+          expirationYear: true,
+          spendingCap: true,
+          merchantLock: true,
+          cardType: true,
+          status: true,
+          expiresAt: true,
+          createdAt: true,
+          beneficiary: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              avatarUrl: true,
+              email: true,
+            },
+          },
+          vendor: { select: { id: true, name: true, type: true } },
+          expense: { select: { id: true, description: true, amount: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+
+=== app/api/virtual-cards/route.ts:67 -- virtualCard.count ===
+      prisma.virtualCard.count({ where: cardWhere }),
+
+=== app/api/documents/route.ts:32 -- document.findMany ===
+      prisma.document.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+
+=== app/api/documents/route.ts:38 -- document.count ===
+      prisma.document.count({ where }),
+
+=== app/api/events/route.ts:54 -- calendarEvent.findMany ===
+    const realEvents = await prisma.calendarEvent.findMany({
+      where: where as never,
+      orderBy: { startDate: "asc" },
+    });
+
+=== app/api/events/route.ts:69 -- grant.findMany ===
+    const grants = await prisma.grant.findMany({
+      where: grantWhere as never,
+      select: {
+        id: true,
+        name: true,
+        startDate: true,
+        endDate: true,
+        status: true,
+      },
+    });
+
+=== app/api/events/[id]/route.ts:47 -- calendarEvent.update ===
+    const event = await prisma.calendarEvent.update({
+      where: { id },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(description !== undefined && { description }),
+        ...(startDate !== undefined && { startDate: new Date(startDate) }),
+        ...(endDate !== undefined && { endDate: endDate ? new Date(endDate) : null }),
+        ...(category !== undefined && { category }),
+        ...(color !== undefined && { color }),
+      },
+    });
+
+=== app/api/events/[id]/route.ts:105 -- calendarEvent.delete ===
+    await prisma.calendarEvent.delete({
+      where: { id },
+    });
+
+=== app/api/notifications/route.ts:37 -- notification.findMany ===
+      prisma.notification.findMany({
+        where: where as never,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+      }),
+
+=== app/api/notifications/route.ts:69 -- notification.deleteMany ===
+      await prisma.notification.deleteMany({
+        where: { id: { in: notificationIds }, userId: session.user.id },
+      });
+
+=== app/api/notifications/route.ts:74 -- notification.deleteMany ===
+      await prisma.notification.deleteMany({
+        where: { userId: session.user.id, read: true },
+      });
+
+=== app/api/notifications/route.ts:99 -- notification.updateMany ===
+      await prisma.notification.updateMany({
+        where: { id: notificationId, userId: session.user.id },
+        data: { read: true },
+      });
+
+=== app/api/notifications/route.ts:105 -- notification.updateMany ===
+      await prisma.notification.updateMany({
+        where: { userId: session.user.id, read: false },
+        data: { read: true },
+      });
+
+=== app/api/reports/grants/route.ts:33 -- grantReport.findMany ===
+      prisma.grantReport.findMany({
+        where: where as never,
+        orderBy: { generatedAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+
+=== app/api/reports/grants/route.ts:39 -- grantReport.count ===
+      prisma.grantReport.count({ where: where as never }),
+
+=== app/api/reports/export/route.ts:303 -- expenseRequest.findMany ===
+  const rows = await prisma.expenseRequest.findMany({
+    where: {
+      grantId,
+      createdAt: { gte: startDate, lte: endDate },
+      archivedAt: null,
+    },
+    select: {
+      id: true,
+      description: true,
+      amount: true,
+      status: true,
+      riskClassification: true,
+      createdAt: true,
+      grant: { select: { name: true } },
+      category: { select: { name: true } },
+      requestedBy: { select: { firstName: true, lastName: true, email: true } },
+      vendor: { select: { name: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 5000,
+  });
+
+=== app/api/reports/export/route.ts:461 -- user.findMany ===
+    ? await prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, firstName: true, lastName: true, email: true },
+      })
+
+=== app/api/reports/export/route.ts:496 -- ledgerEntry.findMany ===
+  const rows = await prisma.ledgerEntry.findMany({
+    where: {
+      grantId: { in: grantIds },
+      createdAt: { gte: startDate, lte: endDate },
+    },
+    select: {
+      id: true,
+      type: true,
+      amount: true,
+      balanceAfter: true,
+      description: true,
+      reference: true,
+      createdAt: true,
+      grantId: true,
+    },
+    orderBy: { createdAt: "asc" },
+    take: 10000,
+  });
+
+=== app/api/stripe/account-health/route.ts:40 -- organization.findMany ===
+      organizations = await prisma.organization.findMany({
+        where: {
+          stripeAccountId: {
+            not: null,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          stripeAccountId: true,
+        },
+      });
+
+=== app/(dashboard)/alert-preferences/actions.ts:40 -- user.update ===
+    await prisma.user.update({
+      where: { id: session.user.id },
+      // Prisma Json field: pass the object directly — no JSON.stringify.
+      data: { alertPreferences: prefs as unknown as object },
+    });
+
+=== app/(dashboard)/(homes)/vendor-dashboard/page.tsx:82 -- transaction.aggregate ===
+    prisma.transaction.aggregate({
+      where: { card: { vendorId: vendor.id }, status: "completed" },
+      _sum: { amount: true },
+      _count: { _all: true },
+    }),
+
+=== app/(dashboard)/(homes)/vendor-dashboard/page.tsx:87 -- transaction.findMany ===
+    prisma.transaction.findMany({
+      where: { card: { vendorId: vendor.id }, status: "completed" },
+      select: {
+        id: true,
+        amount: true,
+        merchantName: true,
+        createdAt: true,
+        card: { select: { cardLabel: true, last4: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+
+=== lib/data/index.ts:165 -- grant.findMany ===
+  const items = await prisma.grant.findMany({
+    where,
+    include: {
+      categories: { select: { id: true, name: true, allocatedAmount: true, spentAmount: true } },
+      beneficiary: { select: { id: true, firstName: true, lastName: true, email: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+
+=== lib/data/index.ts:284 -- virtualCard.findMany ===
+  const items = await prisma.virtualCard.findMany({
+    where,
+    select: {
+      id: true,
+      last4: true,
+      spendingCap: true,
+      status: true,
+      cardType: true,
+      createdAt: true,
+      beneficiary: { select: { id: true, firstName: true, lastName: true } },
+      vendor: { select: { id: true, name: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+
+=== lib/data/index.ts:334 -- auditLog.findMany ===
+  const items = await prisma.auditLog.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    take: 20,
+  });
+
+=== lib/data/index.ts:365 -- subscription.findMany ===
+  const items = await prisma.subscription.findMany({
+    where,
+    include: {
+      vendor: { select: { id: true, name: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+
+=== lib/data/index.ts:405 -- expenseRequest.groupBy ===
+  const groups = await prisma.expenseRequest.groupBy({
+    by: ["riskClassification"],
+    where,
+    _count: { _all: true },
+  });

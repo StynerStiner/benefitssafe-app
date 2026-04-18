@@ -1,0 +1,231 @@
+
+=== app/api/webhooks/stripe-charges/route.ts:135 -- virtualCard.findUnique ===
+    const virtualCard = await prisma.virtualCard.findUnique({
+      where: { stripeCardId: typeof stripeCardId === 'string' ? stripeCardId : stripeCardId },
+      include: {
+        expense: {
+          select: { grantId: true },
+        },
+      },
+    });
+
+=== app/api/webhooks/stripe-charges/route.ts:153 -- subscription.findFirst ===
+    const subscription = await prisma.subscription.findFirst({
+      where: {
+        cardId: virtualCard.id,
+        status: "ACTIVE",
+      },
+      include: {
+        vendor: { select: { id: true, name: true, type: true } },
+      },
+    });
+
+=== app/api/webhooks/stripe-charges/route.ts:171 -- transaction.findUnique ===
+    const existingTx = await prisma.transaction.findUnique({
+      where: { stripeTransactionId },
+    });
+
+=== app/api/webhooks/stripe-charges/route.ts:202 -- vendor.findUnique ===
+            prisma.vendor.findUnique({
+              where: { id: vendorIdForEmail },
+              select: { name: true, email: true },
+            }),
+
+=== app/api/webhooks/stripe-billing/route.ts:312 -- billingSubscription.updateMany ===
+  const result = await prisma.billingSubscription.updateMany({
+    where: {
+      id: created.id,
+      OR: [
+        { lastBillingEventAt: null },
+        { lastBillingEventAt: { lt: eventAt } },
+      ],
+    },
+    data: {
+      tier,
+      stripeCustomerId,
+      stripeSubscriptionId: sub.id,
+      stripePriceId: priceId,
+      currentPeriodStart: new Date(sub.current_period_start * 1000),
+      currentPeriodEnd: new Date(sub.current_period_end * 1000),
+      cancelAtPeriodEnd: sub.cancel_at_period_end,
+      status: sub.status,
+      lastBillingEventAt: eventAt,
+    },
+  });
+
+=== app/api/webhooks/stripe-billing/route.ts:384 -- billingSubscription.updateMany ===
+  const updateResult = await prisma.billingSubscription.updateMany({
+    where: {
+      id: existing.id,
+      OR: [
+        { lastBillingEventAt: null },
+        { lastBillingEventAt: { lt: eventAt } },
+      ],
+    },
+    data: {
+      tier: newTier,
+      stripePriceId: priceId,
+      currentPeriodStart: new Date(sub.current_period_start * 1000),
+      currentPeriodEnd: new Date(sub.current_period_end * 1000),
+      cancelAtPeriodEnd: sub.cancel_at_period_end,
+      status: sub.status,
+      lastBillingEventAt: eventAt,
+    },
+  });
+
+=== app/api/webhooks/stripe-billing/route.ts:495 -- billingSubscription.updateMany ===
+  const result = await prisma.billingSubscription.updateMany({
+    where: {
+      id: existing.id,
+      OR: [
+        { lastBillingEventAt: null },
+        { lastBillingEventAt: { lt: eventAt } },
+      ],
+    },
+    data: {
+      tier: "free",
+      status: "canceled",
+      stripeSubscriptionId: null,
+      stripePriceId: null,
+      currentPeriodStart: null,
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
+      lastBillingEventAt: eventAt,
+    },
+  });
+
+=== app/api/webhooks/stripe-billing/route.ts:571 -- billingSubscription.updateMany ===
+    const result = await prisma.billingSubscription.updateMany({
+      where: {
+        id: existing.id,
+        OR: [
+          { lastBillingEventAt: null },
+          { lastBillingEventAt: { lt: eventAt } },
+        ],
+      },
+      data: { status: "active", lastBillingEventAt: eventAt },
+    });
+
+=== app/api/webhooks/stripe-billing/route.ts:596 -- billingSubscription.updateMany ===
+    await prisma.billingSubscription.updateMany({
+      where: {
+        id: existing.id,
+        OR: [
+          { lastBillingEventAt: null },
+          { lastBillingEventAt: { lt: eventAt } },
+        ],
+      },
+      data: { lastBillingEventAt: eventAt },
+    });
+
+=== app/api/webhooks/stripe-billing/route.ts:642 -- billingSubscription.updateMany ===
+  const result = await prisma.billingSubscription.updateMany({
+    where: {
+      id: existing.id,
+      OR: [
+        { lastBillingEventAt: null },
+        { lastBillingEventAt: { lt: eventAt } },
+      ],
+    },
+    data: { status: "past_due", lastBillingEventAt: eventAt },
+  });
+
+=== app/api/webhooks/stripe/route.ts:199 -- cardholderEligibility.findUnique ===
+    const eligibility = await prisma.cardholderEligibility.findUnique({
+      where: { beneficiaryId: virtualCard.beneficiaryId },
+      select: {
+        eligibilityStatus: true,
+        ofacScreened: true,
+        ofacMatchFound: true,
+        ofacScreenedAt: true,
+      },
+    });
+
+=== app/api/webhooks/stripe/route.ts:322 -- user.findUnique ===
+    ? await prisma.user.findUnique({
+        where: { id: virtualCard.beneficiaryId },
+        select: { benefitPrograms: true },
+      })
+
+=== app/api/webhooks/stripe/route.ts:411 -- transaction.findUnique ===
+    const existingTx = await prisma.transaction.findUnique({
+      where: { stripeTransactionId: authorization.id as string },
+      select: { id: true },
+    });
+
+=== app/api/webhooks/stripe/route.ts:465 -- ledgerEntry.findFirst ===
+    const existingLedger = await prisma.ledgerEntry.findFirst({
+      where: { reference: transaction.id as string },
+      select: { id: true },
+    });
+
+=== app/api/webhooks/stripe/route.ts:598 -- grant.findUnique ===
+      const grantInfo = await prisma.grant.findUnique({
+        where: { id: virtualCard.expense.grantId },
+        select: { name: true, totalAmount: true, remainingAmount: true },
+      });
+
+=== app/api/webhooks/stripe/route.ts:603 -- user.findUnique ===
+        ? await prisma.user.findUnique({
+            where: { id: virtualCard.expense.requestedById },
+            select: { firstName: true, lastName: true },
+          })
+
+=== app/api/webhooks/stripe/route.ts:655 -- organization.findFirst ===
+    const org = await prisma.organization.findFirst({
+      where: { stripeAccountId: accountId },
+      select: { id: true },
+    });
+
+=== app/api/webhooks/stripe/route.ts:667 -- organization.update ===
+      await prisma.organization.update({
+        where: { id: org.id },
+        data: { bankConnectedAt: new Date() },
+      }).catch((err) => {
+
+=== app/api/webhooks/stripe/route.ts:711 -- notification.findFirst ===
+    const existingDispute = await prisma.notification.findFirst({
+      where: {
+        entityId: disputeId,
+        type: "dispute_created",
+      },
+      select: { id: true },
+    });
+
+=== app/api/webhooks/stripe/route.ts:745 -- transaction.update ===
+    await prisma.transaction.update({
+      where: { id: transaction.id },
+      data: {
+        status: "disputed",
+        declinedReason: reason,
+      },
+    });
+
+=== app/api/webhooks/stripe/route.ts:812 -- auditLog.findFirst ===
+    const existingUpdate = await prisma.auditLog.findFirst({
+      where: {
+        entityId: disputeId,
+        action: "dispute_updated",
+      },
+      select: { id: true },
+    });
+
+=== app/api/webhooks/stripe/fraud/route.ts:280 -- organization.findUnique ===
+  const org = await prisma.organization.findUnique({
+    where: { id: params.resolvedOrgId },
+    select: { name: true },
+  });
+
+=== app/api/webhooks/stripe/fraud/route.ts:430 -- auditLog.create ===
+  await prisma.auditLog.create({
+    data: {
+      action: "authorization_fraud_check",
+      entityType: "authorization",
+      entityId: authorization.id,
+      newValue: {
+        amount: amount / 100,
+        merchant,
+        timestamp: new Date().toISOString(),
+      },
+    },
+  });
