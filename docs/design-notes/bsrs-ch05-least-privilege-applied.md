@@ -486,10 +486,11 @@ Several topics Ch 5 touches will get fuller treatment later:
 |---|---|---|---|---|
 | P1 | Cross-org isolation regression test suite | 4–6 hrs | §5.3 Testing of least privilege | Option A closed in `907c657`; Option B open |
 | P2 | Access classification doc + audit review cadence + high-risk justifications | 2–3 hrs | §5.2 Classification, §5.3 Auditing | CLOSED in `69ea0d1`; P2b open |
-| P2b | Beneficiary deactivation reason-gate + shared reason-modal UI | 2–4 hrs | §5.3 Auditing | Open |
+| P2b | Beneficiary deactivation reason-gate + shared reason-modal UI | 2–4 hrs | §5.3 Auditing | CLOSED in `9018781` |
 | P3 | Expiring role grants (CPA-season + future hires) | 4–6 hrs | §5.5 Temporary Access | Open |
 | P4 | Correlation IDs + role-guard helper + convention linter | 3–5 hrs | §5.3 Diagnosing, §5.4 Policy Framework | CLOSED — P4.1 `9338211`; P4.2 `95b7904`; P4.3 `059b9aa` |
 | P5 | Policy framework + AuditLog immutability + retention policy | Multi-session | §5.4, defers to Ch 15 | Deferred |
+| P6 | Testing-library infrastructure (`@testing-library/react` + `jest-dom` + `jsdom` + vitest config) for component-level unit tests — surfaced while closing P2b; covers this modal plus the rest of the UI codebase | 3–5 hrs | §5.3 Testing of least privilege | Open |
 
 ---
 
