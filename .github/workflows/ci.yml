@@ -22,4 +22,10 @@ jobs:
       # non-blocking until the pre-existing WowDash template file
       # warnings are cleaned up (drop its `|| true` at that time).
       - run: npx vitest run --reporter=verbose 2>&1
+      # BSRS Ch 5 P4.3 — convention linter. Blocks a new route from
+      # bypassing the auth-guard (Rule A), reading session.user.role
+      # directly (Rule B), or returning bare NextResponse.json errors
+      # without a correlationId (Rule C). Allowlist grandfathers
+      # legacy routes; see docs/runbooks/auth-guard-convention.md.
+      - run: node scripts/lint/auth-guard-convention.mjs
       - run: npx eslint . --max-warnings=0 2>&1 || true
