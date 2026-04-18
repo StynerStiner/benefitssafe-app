@@ -155,6 +155,22 @@ export async function PATCH(
         },
       });
 
+      // DDIA Ch7 P4 follow-up — auto-reset allowNegativeBalance when an
+      // admin refill restores the balance. Guarded so the write only fires
+      // on an actual true→false transition, which keeps this atomic with
+      // the balance update above without producing unnecessary writes on
+      // every PATCH. See docs/runbooks/stuck-overspend-grants.md for the
+      // coverage gaps this does NOT close (dispute-win, off-ledger
+      // reconciliation) — those still require the platform manual override.
+      await tx.grant.updateMany({
+        where: {
+          id,
+          allowNegativeBalance: true,
+          remainingAmount: { gte: 0 },
+        },
+        data: { allowNegativeBalance: false },
+      });
+
       await tx.auditLog.create({
         data: {
           userId,
