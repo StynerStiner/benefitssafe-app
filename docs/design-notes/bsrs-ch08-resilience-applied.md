@@ -182,6 +182,8 @@ Ordered by leverage × fix-cost. Solo-founder scope. Numbering continues the BSR
 
 **Leverage:** Prevents the highest-probability cascading failure mode (third-party API slowness). Stripe has had multi-minute slowdowns twice in 2025 per their status page; next incident is when, not if.
 
+**Shipped (P1a):** commit `4fc087a` — core module, error-response extension, 15 tests covering state machine + timeout + logging. P1b retrofit of 17 route files / 41 call sites is the next PDR.
+
 ### P2 — Aurora read-only degraded mode + maintenance page
 
 **Problem:** When Aurora writes are unavailable (primary failover, migration stuck, etc.), every user-facing action returns 500. No graceful degradation (§3.2, §3.5).
@@ -264,7 +266,7 @@ Ordered by leverage × fix-cost. Solo-founder scope. Numbering continues the BSR
 
 | P | Item | Effort | BSRS section | Status |
 |---|---|---|---|---|
-| P1 | Stripe circuit breaker + timeout budget | 4-6 hrs | Controlling Degradation | Open |
+| P1 | Stripe circuit breaker + timeout budget | 4-6 hrs | Controlling Degradation | P1a CLOSED in `4fc087a`; P1b retrofit open |
 | P2 | Aurora degraded-mode + maintenance page | 6-8 hrs | Controlling Degradation | Open |
 | P3 | Two failure domains (Vercel aliased deploys) | 8-12 hrs | Failure Domains | Open |
 | P4 | Quarterly key rotation + latency measurement | 3-4 hrs first, 30min recurring | Time Separation + Key Rotation Cycles | CLOSED in `bbb9378` |
