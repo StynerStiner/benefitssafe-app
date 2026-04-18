@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
+import { markWebhookProcessed, releaseWebhookEvent } from "@/lib/webhook-idempotency";
 
 const APP_BASE_URL =
   process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
@@ -24,6 +25,12 @@ interface FraudEvent {
 }
 
 export async function POST(request: Request) {
+  // Track whether we committed the idempotency row so the outer catch
+  // can release it and let Stripe retry. issuing_authorization.request
+  // is intentionally NOT deduped (see comment below) — for that path,
+  // processedEventId stays null and no release happens.
+  let processedEventId: string | null = null;
+
   try {
     const body = await request.text();
     const signature = request.headers.get("stripe-signature");
@@ -56,6 +63,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true });
     }
 
+    // Idempotency: reject duplicate deliveries of the same Stripe event.
+    // NOTE: issuing_authorization.request is NOT deduped here — Stripe
+    // needs a fresh approve/decline decision within 2s every time it
+    // retries, and the JIT handler itself is already idempotent at the
+    // DB level. All other event types get the full dedupe guard.
+    // Mirrors the sibling stripe/route.ts pattern.
+    if (event.type !== "issuing_authorization.request") {
+      const { firstTime } = await markWebhookProcessed(event.id, "stripe-fraud");
+      if (!firstTime) {
+        return NextResponse.json({ received: true, deduped: true });
+      }
+      processedEventId = event.id;
+    }
+
     // Handle fraud-related events
     switch (event.type) {
       case "radar.early_fraud_warning.created": {
@@ -74,6 +95,9 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error("Stripe fraud webhook error:", error);
+    if (processedEventId) {
+      await releaseWebhookEvent(processedEventId);
+    }
     return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
 }
@@ -145,8 +169,11 @@ async function handleEarlyFraudWarning(warning: any) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
+    // Rethrow so the outer POST handler releases the idempotency row
+    // and returns 500 — Stripe will retry. Silently returning 200 on
+    // error permanently dropped the fraud event.
     console.error("Failed to handle early fraud warning:", error);
-    return NextResponse.json({ received: true });
+    throw error;
   }
 }
 
@@ -217,8 +244,11 @@ async function handleChargeFraudDetected(charge: any) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
+    // Rethrow so the outer POST handler releases the idempotency row
+    // and returns 500 — Stripe will retry. Silently returning 200 on
+    // error permanently dropped the fraud event.
     console.error("Failed to handle charge fraud detection:", error);
-    return NextResponse.json({ received: true });
+    throw error;
   }
 }
 

@@ -28,7 +28,7 @@
 
 import { prisma } from "@/lib/db";
 
-export type WebhookType = "stripe" | "stripe-charges" | "stripe-billing";
+export type WebhookType = "stripe" | "stripe-charges" | "stripe-billing" | "stripe-fraud";
 
 export interface IdempotencyResult {
   firstTime: boolean;
