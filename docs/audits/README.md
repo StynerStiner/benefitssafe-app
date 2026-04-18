@@ -68,15 +68,38 @@ protected.
   webhook queries with context
 
 **Action items (open):**
-- Priority 1 — Prisma middleware to reject queries missing
-  `organizationId` on org-scoped models (defense in depth —
-  separate PDR). Must whitelist the EXEMPT_CRON / EXEMPT_PLATFORM
-  / AUTH_FLOW paths. Phase 1 shadow mode shipped in commit
-  `9428032` (log-only, no block); Phase 2 (mutations in dev, log
-  in prod) and Phase 3 (full enforcement) pending shadow-mode
-  telemetry.
+- Phase 2a — wrap the ~90 unwrapped routes in the
+  HANDLER_HAS_ORG bucket with `withOrgContext`. Intentional
+  deferral for noise reduction (zero correctness implication
+  — all 90 queries were adversarially verified safe). Tracked
+  as a follow-up sweep for fresh eyes.
+
+**Action items (scheduled):**
+- Prisma middleware Phase 2 / 2b / 3 enablement — awaiting
+  ≥48h of Phase 1 shadow telemetry before flipping the
+  enforcement switches. See
+  `docs/runbooks/prisma-middleware-phase-2-3-enablement.md`
+  for the exact Better Stack queries, numeric decision
+  thresholds, code diffs, and rollback procedure. Converts
+  the former "blocked on telemetry" state into a 5-minute
+  Monday checklist runnable by any platform operator.
 
 **Action items (closed):**
+- 2026-04-17: Prisma middleware Phase 2/3 enablement runbook —
+  `docs/runbooks/prisma-middleware-phase-2-3-enablement.md`
+  shipped in commit `3d95348`. Documents the log-shape
+  reference for `[org_scoping_shadow]` plaintext output,
+  exact Better Stack substring queries, numeric thresholds
+  (`==0` / `>0`), and emergency extension-disable procedure.
+- 2026-04-17: Platform-admin UI for `allowNegativeBalance`
+  manual override — stuck-grants list page at
+  `app/(dashboard)/(homes)/platform/stuck-grants/page.tsx`,
+  inline expand-row reset form with 10-char client-side
+  validation mirroring the endpoint's zod schema, and
+  backing GET endpoint at
+  `app/api/platform/grants/stuck-overspend/route.ts`.
+  Shipped in commit `3d95348`. Backs the override endpoint
+  from commit `854a984`.
 - 2026-04-17: DDIA Ch7 P4 follow-up (`allowNegativeBalance`
   reset policy) — Hybrid implementation shipped in commit
   `854a984`. Auto-reset on admin-refill positive-balance
