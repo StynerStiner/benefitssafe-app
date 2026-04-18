@@ -233,6 +233,8 @@ Ordered by leverage × fix-cost. Solo-founder scope. Numbering continues the BSR
 
 **Leverage:** Makes emergency rotation (post-breach scenario) a known-quantity operation instead of an improvised scramble. The first rotation under routine conditions will surface at least one broken assumption; better to discover that now than during an actual incident.
 
+**Shipped:** commit `bbb9378` — ledger + logger + linter + index runbook. First real rotation pending as an operational task.
+
 ### P5 — Load testing + failure injection (continuous validation tier)
 
 **Problem:** No load validation, no failure injection, no game days (§3.6).
@@ -265,7 +267,7 @@ Ordered by leverage × fix-cost. Solo-founder scope. Numbering continues the BSR
 | P1 | Stripe circuit breaker + timeout budget | 4-6 hrs | Controlling Degradation | Open |
 | P2 | Aurora degraded-mode + maintenance page | 6-8 hrs | Controlling Degradation | Open |
 | P3 | Two failure domains (Vercel aliased deploys) | 8-12 hrs | Failure Domains | Open |
-| P4 | Quarterly key rotation + latency measurement | 3-4 hrs first, 30min recurring | Time Separation + Key Rotation Cycles | Open |
+| P4 | Quarterly key rotation + latency measurement | 3-4 hrs first, 30min recurring | Time Separation + Key Rotation Cycles | CLOSED in `bbb9378` |
 | P5 | Load testing + failure injection + quarterly game day | 12-20 hrs initial, recurring | Continuous Validation | Open |
 | P6 | Low-dep tier, multi-region, threat intel team | Multi-session / deferred | §Where to Begin | Deferred |
 
