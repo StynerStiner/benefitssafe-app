@@ -15,90 +15,90 @@ datasource db {
 // ============================================
 
 model Organization {
-  id              String   @id @default(cuid())
-  name            String
-  ein             String?  // Tax ID
-  orgCode         String?  @unique  // e.g., "ORG-00001"
+  id                          String    @id @default(cuid())
+  name                        String
+  ein                         String? // Tax ID
+  orgCode                     String?   @unique // e.g., "ORG-00001"
   // True only for the BenefitsSafe platform org. Schema-enforced invariant
   // that internal staff (platform_admin, compliance_officer, support_agent,
   // billing_admin) belong to this org and not a tenant nonprofit. Set via
   // raw SQL on the live DB; never flip via app code.
-  isPlatformOrg   Boolean  @default(false) @map("is_platform_org")
-  einVerified     Boolean  @default(false) // Whether EIN was verified via IRS/ProPublica lookup
-  address         String?
-  phone           String?
-  website         String?
-  stripeAccountId               String?  // Stripe Connect account
-  stripeFinancialAccountId      String?  // Stripe Treasury Financial Account
-  stripeOriginPaymentMethodId   String?  // Connected-account PaymentMethod used as ACH origin for Treasury inbound transfers
-  bankConnectedAt               DateTime? // When Stripe Connect onboarding was completed
-  plaidItemId                String?  // Plaid connection
-  logoUrl         String?  // Organization logo image URL
+  isPlatformOrg               Boolean   @default(false) @map("is_platform_org")
+  einVerified                 Boolean   @default(false) // Whether EIN was verified via IRS/ProPublica lookup
+  address                     String?
+  phone                       String?
+  website                     String?
+  stripeAccountId             String? // Stripe Connect account
+  stripeFinancialAccountId    String? // Stripe Treasury Financial Account
+  stripeOriginPaymentMethodId String? // Connected-account PaymentMethod used as ACH origin for Treasury inbound transfers
+  bankConnectedAt             DateTime? // When Stripe Connect onboarding was completed
+  plaidItemId                 String? // Plaid connection
+  logoUrl                     String? // Organization logo image URL
 
   // Trial & Subscription
   trialStartDate     DateTime?
   trialEndDate       DateTime?
-  subscriptionStatus String   @default("trial") // trial, active, expired, suspended
+  subscriptionStatus String    @default("trial") // trial, active, expired, suspended
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  users            User[]
-  grants           Grant[]
-  vendors          Vendor[]
-  cards            VirtualCard[]
-  policies         DisbursementPolicy[]
-  promoRedemptions PromoRedemption[]
+  users                   User[]
+  grants                  Grant[]
+  vendors                 Vendor[]
+  cards                   VirtualCard[]
+  policies                DisbursementPolicy[]
+  promoRedemptions        PromoRedemption[]
   cardholderEligibilities CardholderEligibility[]
-  calendarEvents   CalendarEvent[]
-  memberships      OrganizationMembership[]
-  integrations     Integration[]
-  workflowTriggers WorkflowTrigger[]
-  workflowLogs     WorkflowLog[]
-  billingSubscription BillingSubscription?
-  usageCounters    UsageCounter[]
-  budgetCategories BudgetCategory[]
-  subscriptions    Subscription[]
-  approvals        Approval[]
-  fundTransfers    FundTransfer[]
+  calendarEvents          CalendarEvent[]
+  memberships             OrganizationMembership[]
+  integrations            Integration[]
+  workflowTriggers        WorkflowTrigger[]
+  workflowLogs            WorkflowLog[]
+  billingSubscription     BillingSubscription?
+  usageCounters           UsageCounter[]
+  budgetCategories        BudgetCategory[]
+  subscriptions           Subscription[]
+  approvals               Approval[]
+  fundTransfers           FundTransfer[]
 }
 
 model User {
-  id             String   @id @default(cuid())
-  email          String   @unique
+  id             String       @id @default(cuid())
+  email          String       @unique
   firstName      String
   lastName       String
   phone          String?
-  passwordHash   String?  // For credentials auth
-  avatarUrl      String?  // Profile image URL
+  passwordHash   String? // For credentials auth
+  avatarUrl      String? // Profile image URL
   role           UserRole
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
-  isActive       Boolean  @default(true)
+  isActive       Boolean      @default(true)
 
   // Email verification
-  emailVerified     Boolean  @default(false)
-  emailVerifyToken  String?  @unique
+  emailVerified     Boolean   @default(false)
+  emailVerifyToken  String?   @unique
   emailVerifyExpiry DateTime?
 
   // MFA / Two-Factor Authentication (TOTP)
   mfaEnabled     Boolean  @default(false)
-  mfaSecret      String?  // Encrypted TOTP secret
+  mfaSecret      String? // Encrypted TOTP secret
   mfaBackupCodes String[] // Recovery codes (hashed)
 
   // Session security
-  lastLoginIp       String?
+  lastLoginIp        String?
   lastLoginUserAgent String?
-  lastLoginAt       DateTime?
-  trustedDevices    Json?     // Array of { ip, userAgent, firstSeen, lastSeen }
+  lastLoginAt        DateTime?
+  trustedDevices     Json? // Array of { ip, userAgent, firstSeen, lastSeen }
 
   // Per-channel notification preferences. Shape is intentionally flexible
   // so the /alert-preferences UI can evolve without another migration.
   // Current shape: { mail:{enabled,message}, sms:{...}, push:{...} }
-  alertPreferences  Json?     @map("alert_preferences")
+  alertPreferences Json? @map("alert_preferences")
 
   // Beneficiary ID — human-readable, collision-safe across orgs (e.g., BS-0001-00042)
-  beneficiaryCode       String?   @unique
+  beneficiaryCode String? @unique
 
   // Beneficiary profile fields
   dateOfBirth           DateTime?
@@ -106,33 +106,33 @@ model User {
   addressCity           String?
   addressState          String?
   addressZip            String?
-  ssnLast4              String?   // Encrypted at app level, NEVER in API list responses
-  benefitPrograms       Json?     // { ssi: true, ssdi: false, mediCal: true, ... }
+  ssnLast4              String? // Encrypted at app level, NEVER in API list responses
+  benefitPrograms       Json? // { ssi: true, ssdi: false, mediCal: true, ... }
   emergencyContactName  String?
   emergencyContactPhone String?
   notes                 String?
 
   // Role-aware profile fields (used by different roles; all optional)
-  title                 String?   // Generic job title for internal staff
-  companyName           String?   // Vendor: their company/business name
-  businessAddress       String?   // Vendor: business street address
-  firmName              String?   // CPA/attorney: firm name
-  licenseNumber         String?   // CPA: professional license number
-  barNumber             String?   // Attorney: bar admission number
-  organizationName      String?   // Grant officer: funding org/foundation name (free-text, distinct from Organization relation)
+  title            String? // Generic job title for internal staff
+  companyName      String? // Vendor: their company/business name
+  businessAddress  String? // Vendor: business street address
+  firmName         String? // CPA/attorney: firm name
+  licenseNumber    String? // CPA: professional license number
+  barNumber        String? // Attorney: bar admission number
+  organizationName String? // Grant officer: funding org/foundation name (free-text, distinct from Organization relation)
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  expenseRequests ExpenseRequest[]
-  approvals       Approval[]
-  grants          Grant[]    @relation("GrantBeneficiary")
-  vendors         Vendor[]
-  inviteTokens    InviteToken[]
+  expenseRequests       ExpenseRequest[]
+  approvals             Approval[]
+  grants                Grant[]                  @relation("GrantBeneficiary")
+  vendors               Vendor[]
+  inviteTokens          InviteToken[]
   cardholderEligibility CardholderEligibility?
-  memberships     OrganizationMembership[]
-  virtualCards    VirtualCard[] @relation("CardBeneficiary")
-  fundTransfers   FundTransfer[]
+  memberships           OrganizationMembership[]
+  virtualCards          VirtualCard[]            @relation("CardBeneficiary")
+  fundTransfers         FundTransfer[]
 
   @@index([organizationId])
   @@index([email])
@@ -143,9 +143,9 @@ model InviteToken {
   userId    String
   user      User      @relation(fields: [userId], references: [id])
   token     String    @unique @default(uuid())
-  sentTo    String?   // Email address the invite was sent to
-  method    String?   // "email" or "link"
-  sentById  String?   // Admin who sent the invite
+  sentTo    String? // Email address the invite was sent to
+  method    String? // "email" or "link"
+  sentById  String? // Admin who sent the invite
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime  @default(now())
@@ -169,53 +169,53 @@ enum UserRole {
 }
 
 model Grant {
-  id                 String   @id @default(cuid())
-  organizationId     String
-  organization       Organization @relation(fields: [organizationId], references: [id])
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
 
   // Three-party model
   grantIssuerName    String
   grantIssuerContact String?
   beneficiaryId      String?
-  beneficiary        User?    @relation("GrantBeneficiary", fields: [beneficiaryId], references: [id])
+  beneficiary        User?   @relation("GrantBeneficiary", fields: [beneficiaryId], references: [id])
 
-  name               String
-  description        String?
-  totalAmount        Decimal  @db.Decimal(12, 2)
-  spentAmount        Decimal  @default(0) @db.Decimal(12, 2)
-  remainingAmount    Decimal  @db.Decimal(12, 2)
-  allowNegativeBalance Boolean @default(false) // DDIA Ch7 P4: escape hatch for intentional overspend on Stripe settlement (see app/api/webhooks/stripe/route.ts handleTransactionCreated)
-  status             GrantStatus @default(ACTIVE)
-  startDate          DateTime
-  endDate            DateTime?
-  restrictions       String?  // Grant restrictions text
+  name                 String
+  description          String?
+  totalAmount          Decimal     @db.Decimal(12, 2)
+  spentAmount          Decimal     @default(0) @db.Decimal(12, 2)
+  remainingAmount      Decimal     @db.Decimal(12, 2)
+  allowNegativeBalance Boolean     @default(false) // DDIA Ch7 P4: escape hatch for intentional overspend on Stripe settlement (see app/api/webhooks/stripe/route.ts handleTransactionCreated)
+  status               GrantStatus @default(ACTIVE)
+  startDate            DateTime
+  endDate              DateTime?
+  restrictions         String? // Grant restrictions text
 
   // Benefit flags for the beneficiary
-  benefitFlags       Json?    // { ssi: true, ssdi: false, mediCal: true, medicaid: false, able: false }
+  benefitFlags Json? // { ssi: true, ssdi: false, mediCal: true, medicaid: false, able: false }
 
   // Grant document (optional — for AI compliance assistant context)
-  grantDocumentText  String?  // Extracted text from uploaded PDF or pasted content
-  grantDocumentName  String?  // Original filename of uploaded document
+  grantDocumentText String? // Extracted text from uploaded PDF or pasted content
+  grantDocumentName String? // Original filename of uploaded document
 
   // MCC-level spending controls
-  purpose               String?    // What the grant funds are for
-  funderRequirements    Json?      // Legal/compliance rules from the funder
-  approvedMCCs          Json?      // JSON array of allowed MCC codes for this grant
-  blockedMCCs           Json?      // JSON array of blocked MCC codes for this grant
-  whitelistedVendorIds  Json?      // JSON array of vendor IDs allowed for this grant
+  purpose              String? // What the grant funds are for
+  funderRequirements   Json? // Legal/compliance rules from the funder
+  approvedMCCs         Json? // JSON array of allowed MCC codes for this grant
+  blockedMCCs          Json? // JSON array of blocked MCC codes for this grant
+  whitelistedVendorIds Json? // JSON array of vendor IDs allowed for this grant
 
-  archivedAt         DateTime? // Soft delete
+  archivedAt DateTime? // Soft delete
 
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  categories  BudgetCategory[]
-  expenses    ExpenseRequest[]
+  categories   BudgetCategory[]
+  expenses     ExpenseRequest[]
   virtualCards VirtualCard[]
 
   @@index([beneficiaryId])
-  @@index([organizationId, status])          // Grant listing filtered by org and status
-  @@index([organizationId, createdAt])       // Paginated org list sorted by recency
+  @@index([organizationId, status]) // Grant listing filtered by org and status
+  @@index([organizationId, createdAt]) // Paginated org list sorted by recency
 }
 
 enum GrantStatus {
@@ -227,15 +227,15 @@ enum GrantStatus {
 }
 
 model BudgetCategory {
-  id              String   @id @default(cuid())
+  id              String       @id @default(cuid())
   organizationId  String
   organization    Organization @relation(fields: [organizationId], references: [id])
   grantId         String
-  grant           Grant    @relation(fields: [grantId], references: [id])
-  name            String   // e.g., "Editing", "Subscriptions", "Travel"
-  allocatedAmount Decimal  @db.Decimal(12, 2)
-  spentAmount     Decimal  @default(0) @db.Decimal(12, 2)
-  cardMode        CardMode @default(SINGLE_CARD)
+  grant           Grant        @relation(fields: [grantId], references: [id])
+  name            String // e.g., "Editing", "Subscriptions", "Travel"
+  allocatedAmount Decimal      @db.Decimal(12, 2)
+  spentAmount     Decimal      @default(0) @db.Decimal(12, 2)
+  cardMode        CardMode     @default(SINGLE_CARD)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -253,21 +253,21 @@ enum CardMode {
 }
 
 model ExpenseRequest {
-  id            String   @id @default(cuid())
-  organizationId String  // Denormalized from Grant for partition-aware queries
-  grantId       String
-  grant         Grant    @relation(fields: [grantId], references: [id])
-  categoryId    String
-  category      BudgetCategory @relation(fields: [categoryId], references: [id])
-  requestedById String
-  requestedBy   User     @relation(fields: [requestedById], references: [id])
-  vendorId      String?
-  vendor        Vendor?  @relation(fields: [vendorId], references: [id])
+  id             String         @id @default(cuid())
+  organizationId String // Denormalized from Grant for partition-aware queries
+  grantId        String
+  grant          Grant          @relation(fields: [grantId], references: [id])
+  categoryId     String
+  category       BudgetCategory @relation(fields: [categoryId], references: [id])
+  requestedById  String
+  requestedBy    User           @relation(fields: [requestedById], references: [id])
+  vendorId       String?
+  vendor         Vendor?        @relation(fields: [vendorId], references: [id])
 
   description String
-  amount      Decimal  @db.Decimal(12, 2)
+  amount      Decimal          @db.Decimal(12, 2)
   frequency   ExpenseFrequency @default(ONE_TIME)
-  expenseType String   // e.g., "subscription", "invoice", "equipment"
+  expenseType String // e.g., "subscription", "invoice", "equipment"
 
   // Vendor info from beneficiary (before admin links to Vendor record)
   vendorName    String?
@@ -278,7 +278,7 @@ model ExpenseRequest {
   // Compliance
   riskClassification RiskLevel @default(PENDING)
   riskNotes          String?
-  policyViolations   Json?    // Array of policy violations if any
+  policyViolations   Json? // Array of policy violations if any
 
   // Status
   status         ExpenseStatus @default(PENDING)
@@ -290,8 +290,8 @@ model ExpenseRequest {
   suggestedCategory String?
 
   // Documents
-  receiptUrl  String?
-  invoiceUrl  String?
+  receiptUrl String?
+  invoiceUrl String?
 
   archivedAt DateTime? // Soft delete
 
@@ -305,11 +305,11 @@ model ExpenseRequest {
   // Hot-path covering indexes only — shorter composites that are subsumed
   // by leftmost-prefix of these longer ones were dropped in the DDIA Ch3
   // index audit (see references/engineering/designing-data-intensive-applications/AUDIT-TRACKER.md).
-  @@index([organizationId, status, createdAt])      // List queries: where org+status order by createdAt
-  @@index([organizationId, riskClassification])     // Compliance page count-per-risk-tier
-  @@index([grantId])                                // Join back from Grant.expenses
-  @@index([requestedById, status])                  // Beneficiary's own expenses filtered by status
-  @@index([grantId, status, createdAt])             // Per-grant expense list with date range
+  @@index([organizationId, status, createdAt]) // List queries: where org+status order by createdAt
+  @@index([organizationId, riskClassification]) // Compliance page count-per-risk-tier
+  @@index([grantId]) // Join back from Grant.expenses
+  @@index([requestedById, status]) // Beneficiary's own expenses filtered by status
+  @@index([grantId, status, createdAt]) // Per-grant expense list with date range
 }
 
 enum ExpenseFrequency {
@@ -336,19 +336,19 @@ enum ExpenseStatus {
 }
 
 model Vendor {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
-  userId         String?  // If vendor has a user account
-  user           User?    @relation(fields: [userId], references: [id])
+  userId         String? // If vendor has a user account
+  user           User?        @relation(fields: [userId], references: [id])
 
   name       String
-  vendorCode String?  @unique  // e.g., "VN-0001-00001" (orgSeq-vendorSeq)
-  type    VendorType
-  email   String?
-  phone   String?
-  website String?
-  address String?
+  vendorCode String?    @unique // e.g., "VN-0001-00001" (orgSeq-vendorSeq)
+  type       VendorType
+  email      String?
+  phone      String?
+  website    String?
+  address    String?
 
   // Payment info (stored securely, not raw bank details)
   paymentMethod         String? // "ach", "card", "check"
@@ -359,7 +359,7 @@ model Vendor {
   approvedAt DateTime?
 
   // Tax
-  taxIdCollected  Boolean @default(false)
+  taxIdCollected   Boolean @default(false)
   form1099Required Boolean @default(false)
 
   archivedAt DateTime? // Soft delete
@@ -371,8 +371,8 @@ model Vendor {
   subscriptions Subscription[]
   virtualCards  VirtualCard[]
 
-  @@index([organizationId, status])          // Vendor approval workflow queries
-  @@index([organizationId, createdAt])       // Paginated vendor list sorted by recency
+  @@index([organizationId, status]) // Vendor approval workflow queries
+  @@index([organizationId, createdAt]) // Paginated vendor list sorted by recency
 }
 
 enum VendorType {
@@ -400,11 +400,11 @@ model Subscription {
   grantId        String
   categoryId     String
 
-  serviceName String   // e.g., "Adobe Creative Cloud"
-  loginEmail  String   // Email used for the subscription account
-  monthlyCost Decimal  @db.Decimal(10, 2)
-  billingCycle String  // "monthly", "annual"
-  renewalDate DateTime?
+  serviceName  String // e.g., "Adobe Creative Cloud"
+  loginEmail   String // Email used for the subscription account
+  monthlyCost  Decimal   @db.Decimal(10, 2)
+  billingCycle String // "monthly", "annual"
+  renewalDate  DateTime?
 
   // Card assignment
   cardId String?
@@ -415,12 +415,12 @@ model Subscription {
   billingUpdatedAt    DateTime?
 
   status    SubscriptionStatus @default(ACTIVE)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
 
-  @@index([organizationId])              // Org-scoped list (kept; no composite subsumes)
-  @@index([grantId, status])             // Subscription queries by grant and status
-  @@index([vendorId, status])            // Subscription queries by vendor and status
+  @@index([organizationId]) // Org-scoped list (kept; no composite subsumes)
+  @@index([grantId, status]) // Subscription queries by grant and status
+  @@index([vendorId, status]) // Subscription queries by vendor and status
 }
 
 enum BillingUpdateStatus {
@@ -439,21 +439,21 @@ enum SubscriptionStatus {
 }
 
 model VirtualCard {
-  id             String       @id @default(cuid())
+  id             String          @id @default(cuid())
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  organization   Organization    @relation(fields: [organizationId], references: [id])
   categoryId     String?
   category       BudgetCategory? @relation(fields: [categoryId], references: [id])
-  grantId        String?      // Grant this card was issued from (direct or via expense)
-  grant          Grant?       @relation(fields: [grantId], references: [id])
-  expenseId      String?      // Expense this card was issued for
+  grantId        String? // Grant this card was issued from (direct or via expense)
+  grant          Grant?          @relation(fields: [grantId], references: [id])
+  expenseId      String? // Expense this card was issued for
   expense        ExpenseRequest? @relation(fields: [expenseId], references: [id])
-  vendorId       String?      // Vendor this card is locked to
-  vendor         Vendor?      @relation(fields: [vendorId], references: [id])
-  beneficiaryId  String?      // Beneficiary who uses this card
-  beneficiary    User?        @relation("CardBeneficiary", fields: [beneficiaryId], references: [id])
+  vendorId       String? // Vendor this card is locked to
+  vendor         Vendor?         @relation(fields: [vendorId], references: [id])
+  beneficiaryId  String? // Beneficiary who uses this card
+  beneficiary    User?           @relation("CardBeneficiary", fields: [beneficiaryId], references: [id])
 
-  stripeCardId    String  @unique // Stripe Issuing card ID
+  stripeCardId    String   @unique // Stripe Issuing card ID
   // Which Stripe account this card lives on:
   // - "platform"  => issued on acct_1THZmv1lmD1ohIWk (shared Issuing pool)
   // - "connected" => issued on the nonprofit's own Custom account
@@ -466,12 +466,12 @@ model VirtualCard {
   expirationMonth Int
   expirationYear  Int
   spendingCap     Decimal? @db.Decimal(10, 2)
-  merchantLock    String?  // Locked to specific merchant if applicable
+  merchantLock    String? // Locked to specific merchant if applicable
   cardType        String   @default("one_time") // one_time, monthly, custom
-  cardLabel       String?    // "Writing Supplies Card", "Medical Copay Card"
+  cardLabel       String? // "Writing Supplies Card", "Medical Copay Card"
 
   status    CardStatus @default(ACTIVE)
-  expiresAt DateTime?  // Custom expiration
+  expiresAt DateTime? // Custom expiration
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
@@ -487,11 +487,11 @@ model VirtualCard {
   // because Prisma's schema language cannot express partial unique indexes.
   // (DDIA Ch7 Transaction Safety audit — prevents double card issuance.)
   @@unique([expenseId])
-  @@index([grantId])                     // Grant → cards join
-  @@index([vendorId])                    // Vendor → cards join
-  @@index([beneficiaryId])               // Beneficiary's own cards
-  @@index([organizationId, status])      // Card listing filtered by org and status
-  @@index([organizationId, createdAt])   // Paginated card list sorted by recency
+  @@index([grantId]) // Grant → cards join
+  @@index([vendorId]) // Vendor → cards join
+  @@index([beneficiaryId]) // Beneficiary's own cards
+  @@index([organizationId, status]) // Card listing filtered by org and status
+  @@index([organizationId, createdAt]) // Paginated card list sorted by recency
 }
 
 enum CardStatus {
@@ -510,29 +510,29 @@ enum EligibilityStatus {
 }
 
 model CardholderEligibility {
-  id                          String   @id @default(cuid())
-  beneficiaryId               String   @unique
-  beneficiary                 User     @relation(fields: [beneficiaryId], references: [id])
-  organizationId              String
-  organization                Organization @relation(fields: [organizationId], references: [id])
+  id             String       @id @default(cuid())
+  beneficiaryId  String       @unique
+  beneficiary    User         @relation(fields: [beneficiaryId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
 
-  hasActiveWarrant            Boolean  @default(false)
-  isCurrentlyIncarcerated     Boolean  @default(false)
+  hasActiveWarrant             Boolean @default(false)
+  isCurrentlyIncarcerated      Boolean @default(false)
   hasDrugTraffickingConviction Boolean @default(false)
-  probationParoleRestrictions String?
+  probationParoleRestrictions  String?
 
-  eligibilityStatus           EligibilityStatus @default(PENDING_VERIFICATION)
+  eligibilityStatus EligibilityStatus @default(PENDING_VERIFICATION)
 
   // OFAC sanctions screening
-  ofacScreened        Boolean  @default(false)
-  ofacMatchFound      Boolean  @default(false)
-  ofacScreenedAt      DateTime?
-  ofacMatches         Json?    // Array of match results
+  ofacScreened   Boolean   @default(false)
+  ofacMatchFound Boolean   @default(false)
+  ofacScreenedAt DateTime?
+  ofacMatches    Json? // Array of match results
 
-  verifiedBy                  String?
-  verifiedAt                  DateTime?
-  createdAt                   DateTime @default(now())
-  updatedAt                   DateTime @updatedAt
+  verifiedBy String?
+  verifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@index([organizationId])
 }
@@ -547,15 +547,15 @@ model Transaction {
   amount           Decimal @db.Decimal(10, 2)
   merchantName     String
   merchantCategory String?
-  status           String  // "pending", "completed", "declined"
+  status           String // "pending", "completed", "declined"
   declinedReason   String?
   grantId          String? // For ledger tracking
   expenseId        String? // For expense tracking
 
   createdAt DateTime @default(now())
 
-  @@index([cardId, createdAt])           // Transaction history by card
-  @@index([organizationId, createdAt])   // Transaction history time-series queries
+  @@index([cardId, createdAt]) // Transaction history by card
+  @@index([organizationId, createdAt]) // Transaction history time-series queries
 }
 
 // ============================================
@@ -564,24 +564,24 @@ model Transaction {
 
 model LedgerEntry {
   id             String          @id @default(cuid())
-  organizationId String          // Denormalized from Grant for partition-aware queries
+  organizationId String // Denormalized from Grant for partition-aware queries
   grantId        String
   categoryId     String?
   expenseId      String?
   expense        ExpenseRequest? @relation(fields: [expenseId], references: [id])
 
   type         LedgerType
-  amount       Decimal @db.Decimal(12, 2)
-  balanceAfter Decimal @db.Decimal(12, 2)
+  amount       Decimal    @db.Decimal(12, 2)
+  balanceAfter Decimal    @db.Decimal(12, 2)
   description  String
   reference    String? // Transaction ID, invoice number, etc.
 
   createdAt DateTime @default(now())
   // IMMUTABLE — no updatedAt. Ledger entries are NEVER modified.
 
-  @@index([organizationId, createdAt])   // Ledger time-series queries per org
-  @@index([expenseId])                   // Join back from ExpenseRequest.ledgerEntries
-  @@index([grantId, createdAt])          // Monthly reconciliation queries at scale
+  @@index([organizationId, createdAt]) // Ledger time-series queries per org
+  @@index([expenseId]) // Join back from ExpenseRequest.ledgerEntries
+  @@index([grantId, createdAt]) // Monthly reconciliation queries at scale
 }
 
 enum LedgerType {
@@ -615,8 +615,8 @@ model AuditLog {
   id             String   @id @default(cuid())
   userId         String
   organizationId String
-  action         String   // "create", "update", "delete", "approve", "reject"
-  entityType     String   // "grant", "expense", "vendor", "card", etc.
+  action         String // "create", "update", "delete", "approve", "reject"
+  entityType     String // "grant", "expense", "vendor", "card", etc.
   entityId       String
   oldValue       Json?
   newValue       Json?
@@ -626,8 +626,8 @@ model AuditLog {
   // IMMUTABLE — no updatedAt. Audit logs are NEVER modified or deleted.
 
   @@index([entityType, entityId])
-  @@index([userId, organizationId])      // Audit queries by user within an org
-  @@index([organizationId, createdAt])   // Audit trail time-series queries
+  @@index([userId, organizationId]) // Audit queries by user within an org
+  @@index([organizationId, createdAt]) // Audit trail time-series queries
 }
 
 // ============================================
@@ -639,7 +639,7 @@ model Conversation {
   organizationId String
   subject        String?
   type           String   @default("direct") // direct, department, support
-  department     String?  // "grants", "compliance", "support", etc.
+  department     String? // "grants", "compliance", "support", etc.
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -650,27 +650,27 @@ model Conversation {
 }
 
 model ConversationParticipant {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   conversationId String
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   userId         String
-  role           String   @default("member") // member, admin
-  lastReadAt     DateTime @default(now())
-  createdAt      DateTime @default(now())
+  role           String       @default("member") // member, admin
+  lastReadAt     DateTime     @default(now())
+  createdAt      DateTime     @default(now())
 
   @@unique([conversationId, userId])
   @@index([userId])
 }
 
 model Message {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   conversationId String
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   senderId       String
   content        String
   attachmentUrl  String?
   attachmentName String?
-  createdAt      DateTime @default(now())
+  createdAt      DateTime     @default(now())
 
   @@index([conversationId, createdAt])
   @@index([senderId])
@@ -678,20 +678,20 @@ model Message {
 
 model Notification {
   id             String   @id @default(cuid())
-  userId         String   // Who receives this notification
+  userId         String // Who receives this notification
   organizationId String
-  type           String   // expense_submitted, expense_approved, expense_rejected, vendor_profile_complete, invite_accepted, card_issued
+  type           String // expense_submitted, expense_approved, expense_rejected, vendor_profile_complete, invite_accepted, card_issued
   title          String
   message        String
-  entityType     String?  // grant, expense, vendor, user
+  entityType     String? // grant, expense, vendor, user
   entityId       String?
-  href           String?  // Link to navigate to
+  href           String? // Link to navigate to
   read           Boolean  @default(false)
   createdAt      DateTime @default(now())
 
-  @@index([userId, read])                         // Unread-count badge
-  @@index([organizationId, createdAt])            // Org-level notification feeds
-  @@index([userId, organizationId, createdAt])    // Per-user dashboard list (hot path)
+  @@index([userId, read]) // Unread-count badge
+  @@index([organizationId, createdAt]) // Org-level notification feeds
+  @@index([userId, organizationId, createdAt]) // Per-user dashboard list (hot path)
 }
 
 // ============================================
@@ -701,11 +701,11 @@ model Notification {
 model Document {
   id             String   @id @default(cuid())
   organizationId String
-  entityType     String   // "expense", "vendor", "grant"
+  entityType     String // "expense", "vendor", "grant"
   entityId       String
   fileName       String
-  fileUrl        String   // S3 URL
-  fileType       String   // "receipt", "invoice", "contract", "grant_letter"
+  fileUrl        String // S3 URL
+  fileType       String // "receipt", "invoice", "contract", "grant_letter"
   uploadedById   String
   createdAt      DateTime @default(now())
 
@@ -714,7 +714,7 @@ model Document {
   // user whose PII has been scrubbed — we keep the row for audit
   // continuity but hide it from active queries. Nullable; live
   // documents have archivedAt = NULL.
-  archivedAt     DateTime?
+  archivedAt DateTime?
 
   @@index([organizationId])
   @@index([entityType, entityId])
@@ -724,19 +724,19 @@ model DisbursementPolicy {
   id             String       @id @default(cuid())
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
-  grantId        String?      // If null, applies to all grants for this org
+  grantId        String? // If null, applies to all grants for this org
 
-  cashToRecipient            PolicySetting @default(DISALLOWED)
-  reimbursementToRecipient   PolicySetting @default(DISALLOWED)
-  rentUtilityPayments        PolicySetting @default(REQUIRES_REVIEW)
-  recurringSubscriptions     PolicySetting @default(ALLOWED)
-  maxSingleTransaction       Decimal?      @db.Decimal(10, 2)
+  cashToRecipient          PolicySetting @default(DISALLOWED)
+  reimbursementToRecipient PolicySetting @default(DISALLOWED)
+  rentUtilityPayments      PolicySetting @default(REQUIRES_REVIEW)
+  recurringSubscriptions   PolicySetting @default(ALLOWED)
+  maxSingleTransaction     Decimal?      @db.Decimal(10, 2)
 
   // Auto-approval settings for card charges
   autoApproveEnabled    Boolean  @default(false)
   autoApproveMaxAmount  Decimal? @db.Decimal(12, 2)
-  autoApproveCategories Json?    // Array of category IDs eligible for auto-approval
-  autoApproveRiskLevels Json?    // e.g. ["LIKELY_SAFE"] — default checked in code
+  autoApproveCategories Json? // Array of category IDs eligible for auto-approval
+  autoApproveRiskLevels Json? // e.g. ["LIKELY_SAFE"] — default checked in code
   requireReviewAbove    Decimal? @db.Decimal(12, 2)
 
   allowedCategories Json? // Array of allowed expense category names
@@ -762,12 +762,12 @@ model PromoCode {
   id          String    @id @default(cuid())
   code        String    @unique
   description String?
-  trialDays   Int       // How many days of free access this code gives
-  maxUses     Int       @default(50)   // Max number of times this code can be used
+  trialDays   Int // How many days of free access this code gives
+  maxUses     Int       @default(50) // Max number of times this code can be used
   currentUses Int       @default(0)
   isActive    Boolean   @default(true)
   expiresAt   DateTime? // When the code itself expires
-  createdById String    // platform_admin who created it
+  createdById String // platform_admin who created it
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -777,12 +777,12 @@ model PromoCode {
 }
 
 model PromoRedemption {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   promoCodeId    String
   promoCode      PromoCode    @relation(fields: [promoCodeId], references: [id])
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
-  redeemedById   String       // User who redeemed it
+  redeemedById   String // User who redeemed it
   redeemedAt     DateTime     @default(now())
 
   @@unique([promoCodeId, organizationId]) // One code per org
@@ -794,22 +794,22 @@ model PromoRedemption {
 // ============================================
 
 model CalendarEvent {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
   title          String
   description    String?
   startDate      DateTime
   endDate        DateTime?
-  category       String   @default("general") // grants, payments, compliance, subscriptions, general
-  color          String?  // hex color for calendar display
+  category       String       @default("general") // grants, payments, compliance, subscriptions, general
+  color          String? // hex color for calendar display
   createdById    String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
-  @@index([organizationId])              // Kept for org-scoped lookups without date filter
-  @@index([startDate])                   // Cross-org admin/jobs view
-  @@index([organizationId, startDate])   // Calendar page query: where org, range over startDate
+  @@index([organizationId]) // Kept for org-scoped lookups without date filter
+  @@index([startDate]) // Cross-org admin/jobs view
+  @@index([organizationId, startDate]) // Calendar page query: where org, range over startDate
 }
 
 // ============================================
@@ -817,19 +817,31 @@ model CalendarEvent {
 // ============================================
 
 model OrganizationMembership {
-  id               String   @id @default(cuid())
+  id               String    @id @default(cuid())
   userId           String
   organizationId   String
-  role             String   @default("member") // matches UserRole values: nonprofit_admin, beneficiary, vendor, cpa, auditor, attorney, platform_admin, member, etc.
-  memberCode       String?  @unique  // e.g., "TM-0001-00001" (orgSeq-memberSeq)
-  status           String   @default("active") // active, suspended, pending, revoked
+  role             String    @default("member") // matches UserRole values: nonprofit_admin, beneficiary, vendor, cpa, auditor, attorney, platform_admin, member, etc.
+  memberCode       String?   @unique // e.g., "TM-0001-00001" (orgSeq-memberSeq)
+  status           String    @default("active") // active, suspended, pending, revoked
   invitedBy        String?
-  joinedAt         DateTime @default(now())
-  isDefaultOrg     Boolean  @default(false)
+  joinedAt         DateTime  @default(now())
+  isDefaultOrg     Boolean   @default(false)
   lastAccessedAt   DateTime?
   orgSpecificTitle String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // BSRS Ch 5 P3 — time-boxed role grants. NULL expiresAt means the
+  // membership is permanent (every row prior to this column's migration
+  // is NULL, i.e. permanent, so the backfill is a no-op). When non-null,
+  // the auth.ts JWT callback treats the grant as active only when
+  // expiresAt > now() AND revokedAt IS NULL; otherwise effective role
+  // falls through to User.role. See docs/design-notes/bsrs-ch05-…-applied.md §P3.
+  expiresAt   DateTime?
+  grantedBy   String? // userId of platform_admin who granted the expiring role
+  grantReason String? // compliance justification (≥10 chars, ≤500 chars, enforced at zod)
+  revokedAt   DateTime?
+  revokedBy   String? // userId of the revoker. NULL = auto-revoked by the hourly cron.
 
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -838,7 +850,7 @@ model OrganizationMembership {
   // case file on Maria without leaking those notes to nonprofit B that
   // also has Maria as a beneficiary. The legacy User.notes field is
   // retained for backward compat but new writes go here.
-  notes            String?
+  notes String?
 
   @@unique([userId, organizationId])
   @@index([userId, status])
@@ -849,6 +861,11 @@ model OrganizationMembership {
   // index even when the caller omits role. Keeps the query an indexed
   // range read at 900M+ rows. See DDIA Ch3 audit.
   @@index([organizationId, status, role])
+  // BSRS Ch 5 P3 — hot path for the hourly revoke-expired-grants cron:
+  // WHERE expiresAt < now() AND revokedAt IS NULL AND status = 'active'.
+  // Partial index would be ideal but Prisma schema doesn't support them;
+  // the regular index still keeps the sweep an indexed range scan.
+  @@index([expiresAt, status])
 }
 
 model CronCheckpoint {
@@ -868,50 +885,50 @@ model CronCheckpoint {
 // ── Composio Workflow Automation ────────────────────
 
 model Integration {
-  id                   String    @id @default(cuid())
+  id                   String       @id @default(cuid())
   organizationId       String
   organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  provider             String    // "gmail", "slack", "google_calendar", "google_sheets", "asana", "trello"
-  composioConnectionId String?   // Composio's connection ID for this org+provider
-  status               String    @default("disconnected") // "connected", "disconnected", "error"
-  connectedBy          String?   // userId of who connected it
+  provider             String // "gmail", "slack", "google_calendar", "google_sheets", "asana", "trello"
+  composioConnectionId String? // Composio's connection ID for this org+provider
+  status               String       @default("disconnected") // "connected", "disconnected", "error"
+  connectedBy          String? // userId of who connected it
   connectedAt          DateTime?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
 
   @@unique([organizationId, provider])
 }
 
 model WorkflowTrigger {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  eventType      String   // "expense_approved", "card_issued", "transaction_needs_review", "grant_low_balance", "beneficiary_onboarded"
-  provider       String   // which integration this trigger uses
-  actionSlug     String   // Composio tool slug, e.g. "GMAIL_SEND_EMAIL"
-  actionConfig   Json     // template data: subject, body template, channel, etc.
-  enabled        Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  eventType      String // "expense_approved", "card_issued", "transaction_needs_review", "grant_low_balance", "beneficiary_onboarded"
+  provider       String // which integration this trigger uses
+  actionSlug     String // Composio tool slug, e.g. "GMAIL_SEND_EMAIL"
+  actionConfig   Json // template data: subject, body template, channel, etc.
+  enabled        Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   @@index([organizationId, eventType])
   @@index([organizationId, enabled])
 }
 
 model WorkflowLog {
-  id              String   @id @default(cuid())
+  id              String       @id @default(cuid())
   organizationId  String
   organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   triggerId       String
   eventType       String
   provider        String
   actionSlug      String
-  status          String   // "success", "failed", "skipped"
+  status          String // "success", "failed", "skipped"
   requestPayload  Json?
   responsePayload Json?
   errorMessage    String?
   executionTimeMs Int?
-  createdAt       DateTime @default(now())
+  createdAt       DateTime     @default(now())
 
   @@index([organizationId, createdAt])
   @@index([triggerId])
@@ -920,16 +937,16 @@ model WorkflowLog {
 // ── Grant Reports (generated by SentinelLayer Reporter) ──────
 
 model GrantReport {
-  id              String   @id @default(cuid())
-  organizationId  String
-  grantId         String
-  reportType      String   @default("weekly_disbursement")
-  reportData      Json
-  periodStart     DateTime
-  periodEnd       DateTime
-  generatedAt     DateTime @default(now())
-  generatedBy     String   @default("sentinellayer_reporter")
-  status          String   @default("draft") // draft, reviewed, final
+  id             String   @id @default(cuid())
+  organizationId String
+  grantId        String
+  reportType     String   @default("weekly_disbursement")
+  reportData     Json
+  periodStart    DateTime
+  periodEnd      DateTime
+  generatedAt    DateTime @default(now())
+  generatedBy    String   @default("sentinellayer_reporter")
+  status         String   @default("draft") // draft, reviewed, final
 
   @@index([organizationId, grantId])
   @@index([organizationId, generatedAt])
@@ -942,20 +959,20 @@ model GrantReport {
 // ============================================
 
 model BillingSubscription {
-  id                   String   @id @default(cuid())
-  organizationId       String   @unique
-  organization         Organization @relation(fields: [organizationId], references: [id])
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id])
 
-  tier                 String   @default("free") // free, starter, growth, professional, enterprise
+  tier                 String  @default("free") // free, starter, growth, professional, enterprise
   stripeCustomerId     String?
   stripeSubscriptionId String?
   stripePriceId        String?
 
-  currentPeriodStart   DateTime?
-  currentPeriodEnd     DateTime?
-  cancelAtPeriodEnd    Boolean  @default(false)
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean   @default(false)
 
-  status               String   @default("trialing") // trialing, active, past_due, canceled, unpaid
+  status String @default("trialing") // trialing, active, past_due, canceled, unpaid
 
   // Stripe event-ordering guard. Stripe delivers webhooks at-least-once and
   // does not guarantee order across retries: a late `invoice.payment_failed`
@@ -965,30 +982,30 @@ model BillingSubscription {
   // clock, not our server's) into this column and guards its UPDATE with
   // `WHERE lastBillingEventAt IS NULL OR lastBillingEventAt < :eventAt` so a
   // stale retry becomes a no-op. DDIA Ch9 Consistency & Consensus audit.
-  lastBillingEventAt   DateTime?
+  lastBillingEventAt DateTime?
 
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([stripeCustomerId])
   @@index([stripeSubscriptionId])
 }
 
 model UsageCounter {
-  id                 String   @id @default(cuid())
-  organizationId     String
-  organization       Organization @relation(fields: [organizationId], references: [id])
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
 
-  period             String   // "2026-04" (year-month)
-  beneficiariesAdded Int      @default(0)
-  grantsCreated      Int      @default(0)
-  expensesProcessed  Int      @default(0)
-  cardsIssued        Int      @default(0)
-  apiCalls           Int      @default(0)
-  storageMB          Float    @default(0)
+  period             String // "2026-04" (year-month)
+  beneficiariesAdded Int    @default(0)
+  grantsCreated      Int    @default(0)
+  expensesProcessed  Int    @default(0)
+  cardsIssued        Int    @default(0)
+  apiCalls           Int    @default(0)
+  storageMB          Float  @default(0)
 
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([organizationId, period])
 }
@@ -999,30 +1016,30 @@ model UsageCounter {
 // (by a prior delivery or a concurrent Lambda handling the same retry)
 // and the handler returns 200 immediately without re-running.
 model ProcessedWebhookEvent {
-  id          String   @id  // Stripe event.id, e.g. "evt_1N..."
-  webhookType String            // "stripe" | "stripe-charges" | "stripe-billing"
+  id          String   @id // Stripe event.id, e.g. "evt_1N..."
+  webhookType String // "stripe" | "stripe-charges" | "stripe-billing"
   processedAt DateTime @default(now())
 
   @@index([webhookType, processedAt])
 }
 
 model FundTransfer {
-  id                    String   @id @default(cuid())
-  organizationId        String
-  organization          Organization @relation(fields: [organizationId], references: [id])
-  requestId             String   // Client-supplied UUID — the idempotency key
-  amountCents           Int      // Integer cents to avoid float issues
-  currency              String   @default("usd")
-  bankPaymentMethodId   String   // Stripe payment method id (token, not PII)
-  stripeTransferId      String?  // null until Stripe call succeeds
-  stripeAccountId       String   // Connect account the transfer is against
-  financialAccountId    String   // Treasury financial account
-  status                String   // "PENDING" | "SUCCEEDED" | "FAILED"
-  failureReason         String?
-  initiatedByUserId     String
-  initiatedBy           User     @relation(fields: [initiatedByUserId], references: [id])
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id                  String       @id @default(cuid())
+  organizationId      String
+  organization        Organization @relation(fields: [organizationId], references: [id])
+  requestId           String // Client-supplied UUID — the idempotency key
+  amountCents         Int // Integer cents to avoid float issues
+  currency            String       @default("usd")
+  bankPaymentMethodId String // Stripe payment method id (token, not PII)
+  stripeTransferId    String? // null until Stripe call succeeds
+  stripeAccountId     String // Connect account the transfer is against
+  financialAccountId  String // Treasury financial account
+  status              String // "PENDING" | "SUCCEEDED" | "FAILED"
+  failureReason       String?
+  initiatedByUserId   String
+  initiatedBy         User         @relation(fields: [initiatedByUserId], references: [id])
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
 
   @@unique([organizationId, requestId])
   @@index([organizationId, createdAt])

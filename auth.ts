@@ -266,7 +266,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.organizationId = user.organizationId;
 
         // Use the membership role for this org if it exists, otherwise fall back to user.role
-        // This ensures multi-org users get the correct role per org
+        // This ensures multi-org users get the correct role per org.
+        //
+        // BSRS Ch 5 P3 gate (α): filter out memberships whose time-boxed grant
+        // has expired or been revoked. An expired/revoked membership is
+        // treated as if it didn't exist, so effectiveRole falls through to
+        // User.role (typically a non-privileged role like `cpa`). The hybrid
+        // β check in lib/auth-guard.ts#requirePlatformAdmin adds a per-request
+        // DB re-check for breakglass tightness; non-platform-admin roles
+        // rely on this α gate alone and tolerate the ≤15-min JWT staleness
+        // window set by updateAge.
         let effectiveRole = user.role;
         try {
           const membership = await prisma.organizationMembership.findFirst({
@@ -274,6 +283,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               userId: user.id as string,
               organizationId: user.organizationId,
               status: "active",
+              revokedAt: null,
+              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
             },
             select: { role: true },
           });

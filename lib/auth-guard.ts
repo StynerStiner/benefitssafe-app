@@ -21,6 +21,7 @@
 
 import { auth } from "@/auth";
 import type { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
 import { ApiErrorKind, errorResponse } from "./error-response";
 
 type RawSession = Awaited<ReturnType<typeof auth>>;
@@ -200,13 +201,58 @@ export async function requireAdmin(
   return requireRole(ctx, ADMIN_ROLES, route, method);
 }
 
-/** platform_admin only. Cross-org and breakglass endpoints. */
+/**
+ * platform_admin only. Cross-org and breakglass endpoints.
+ *
+ * BSRS Ch 5 P3 gate (β): in addition to the session role check, re-check
+ * the caller's OrganizationMembership at request time. If the grant is
+ * expired or revoked since the JWT was last refreshed, reject with
+ * `forbidden`. Only platformAdmin gets this β check — non-platform roles
+ * ride on the α gate in auth.ts alone (≤15-min JWT staleness window is
+ * acceptable for non-breakglass roles; it is not acceptable for the role
+ * that can read every tenant's data).
+ *
+ * Cost: one `OrganizationMembership.findFirst` per platform_admin request
+ * on a composite (userId, organizationId) unique index — a single indexed
+ * lookup, no table scan.
+ */
 export async function requirePlatformAdmin(
   route: string,
   method?: string,
 ): Promise<GuardContext> {
   const ctx = await requireAuth(route, method);
-  return requireRole(ctx, PLATFORM_ADMIN_ROLES, route, method);
+  requireRole(ctx, PLATFORM_ADMIN_ROLES, route, method);
+
+  const membership = await prisma.organizationMembership.findFirst({
+    where: {
+      userId: ctx.userId,
+      organizationId: ctx.organizationId,
+    },
+    select: { expiresAt: true, revokedAt: true },
+  });
+
+  // A platform_admin with no membership row at all is fine — that's a
+  // historical seeded admin whose role lives on User.role. We only gate
+  // when a membership exists AND it has been expired or revoked, which
+  // is the only way a P3 time-boxed grant can be the role source.
+  if (membership) {
+    const now = new Date();
+    const expired =
+      membership.expiresAt !== null && membership.expiresAt <= now;
+    const revoked = membership.revokedAt !== null;
+    if (expired || revoked) {
+      throw new GuardDenial({
+        kind: "forbidden",
+        message: "Grant expired or revoked",
+        route,
+        method,
+        userId: ctx.userId,
+        organizationId: ctx.organizationId,
+      });
+    }
+  }
+
+  return ctx;
 }
 
 /**

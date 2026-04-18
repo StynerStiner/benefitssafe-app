@@ -583,6 +583,11 @@ export const OrganizationMembershipScalarFieldEnum = {
   orgSpecificTitle: 'orgSpecificTitle',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  expiresAt: 'expiresAt',
+  grantedBy: 'grantedBy',
+  grantReason: 'grantReason',
+  revokedAt: 'revokedAt',
+  revokedBy: 'revokedBy',
   notes: 'notes'
 } as const
 

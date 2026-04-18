@@ -2,6 +2,18 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
+// P3a β check uses prisma.organizationMembership.findFirst inside
+// requirePlatformAdmin. The existing tests that exercise that helper
+// don't care about the β check; mocking the lookup to return null keeps
+// the permanent-grant path live (null membership = pass-through) so
+// none of the pre-P3a assertions change.
+vi.mock("@/lib/db", () => ({
+  prisma: {
+    organizationMembership: {
+      findFirst: vi.fn(() => Promise.resolve(null)),
+    },
+  },
+}));
 
 beforeEach(() => {
   vi.clearAllMocks();
