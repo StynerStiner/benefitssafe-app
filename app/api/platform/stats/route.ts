@@ -4,6 +4,7 @@
 import { auth } from "@/auth";
 import { cached, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { prisma } from "@/lib/db";
+import { withOrgContext } from "@/lib/org-context";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -17,6 +18,9 @@ export async function GET() {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    return withOrgContext(
+      { kind: "exempt", reason: "PLATFORM_ADMIN", note: "stats" },
+      async () => {
     const data = await cached(CACHE_KEYS.platformStats(), CACHE_TTL.SHORT, async () => {
       const [totalOrgs, totalUsers, totalGrants, activeGrants, recentOrgs, recentUsers] =
         await Promise.all([
@@ -53,6 +57,8 @@ export async function GET() {
     });
 
     return NextResponse.json({ data });
+      },
+    );
   } catch (error) {
     console.error("Platform stats error:", error);
     return NextResponse.json(

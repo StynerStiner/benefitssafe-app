@@ -17,6 +17,7 @@ import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { validateMCC } from "@/lib/mcc-controls";
+import { withOrgContext } from "@/lib/org-context";
 import { markWebhookProcessed, releaseWebhookEvent } from "@/lib/webhook-idempotency";
 import { NextResponse } from "next/server";
 
@@ -76,6 +77,9 @@ export async function POST(request: Request) {
       }
     }
 
+    return withOrgContext(
+      { kind: "exempt", reason: "WEBHOOK_DERIVE", note: "stripe-issuing" },
+      async () => {
     // Idempotency: reject duplicate deliveries of the same Stripe event.
     // NOTE: issuing_authorization.request is NOT deduped here — Stripe
     // needs a fresh approve/decline decision within 2s every time it
@@ -115,6 +119,8 @@ export async function POST(request: Request) {
         return NextResponse.json({ received: true });
       }
     }
+      },
+    );
   } catch (error) {
     console.error("Stripe webhook error:", error);
     if (processedEventId) {

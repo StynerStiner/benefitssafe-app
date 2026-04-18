@@ -5,6 +5,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { captureApiError } from "@/lib/error-handler";
+import { withOrgContext } from "@/lib/org-context";
 import { updateExpenseSchema } from "@/lib/validations/expense";
 import { NextResponse } from "next/server";
 
@@ -20,6 +21,9 @@ export async function GET(
     }
 
     const { role, organizationId, id: userId } = session.user;
+    return withOrgContext(
+      { kind: "session", organizationId, userId, role },
+      async () => {
     const { id } = await params;
 
     const where: Record<string, unknown> = { id, archivedAt: null };
@@ -53,6 +57,8 @@ export async function GET(
     }
 
     return NextResponse.json(expense);
+      },
+    );
   } catch (error) {
     captureApiError(error, { route: "GET /api/expenses/[id]" });
     console.error("GET /api/expenses/[id] error:", error);
@@ -77,6 +83,9 @@ export async function PATCH(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    return withOrgContext(
+      { kind: "session", organizationId, userId, role },
+      async () => {
     const { id } = await params;
 
     const body = await request.json();
@@ -164,6 +173,8 @@ export async function PATCH(
     });
 
     return NextResponse.json(updatedExpense);
+      },
+    );
   } catch (error) {
     captureApiError(error, { route: "PATCH /api/expenses/[id]" });
     console.error("PATCH /api/expenses/[id] error:", error);
@@ -188,6 +199,9 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    return withOrgContext(
+      { kind: "session", organizationId, userId, role },
+      async () => {
     const { id } = await params;
 
     // Find the expense and verify org scope + PENDING status
@@ -238,6 +252,8 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
+      },
+    );
   } catch (error) {
     captureApiError(error, { route: "DELETE /api/expenses/[id]" });
     console.error("DELETE /api/expenses/[id] error:", error);

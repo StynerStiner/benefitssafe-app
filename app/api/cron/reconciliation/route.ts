@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { withOrgContext } from "@/lib/org-context";
 import { acquireCronLock } from "@/lib/queue";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
@@ -39,6 +40,9 @@ export async function GET(request: Request) {
     );
   }
 
+  return withOrgContext(
+    { kind: "exempt", reason: "CRON", note: "reconciliation" },
+    async () => {
   // DDIA Ch8 — distributed lock. Reconciliation is monthly but Vercel
   // cron retries a failed tick, and this handler is slow enough that
   // the retry could overlap an in-flight run, doubling admin alerts.
@@ -388,4 +392,6 @@ export async function GET(request: Request) {
   } finally {
     await release();
   }
+    },
+  );
 }
