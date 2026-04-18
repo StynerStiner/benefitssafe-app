@@ -4,8 +4,17 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+  CIRCUIT_OPEN_COOLDOWN_MS,
+} from "@/lib/stripe-circuit";
+import { errorResponse } from "@/lib/error-response";
 import { stripeOptsForCard } from "@/lib/stripe-helpers";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/virtual-cards/[id]/reveal:GET";
 
 export async function GET(
   _request: Request,
@@ -95,9 +104,13 @@ export async function GET(
     // id; in "platform" mode we pass nothing and Stripe targets the
     // platform account.
     const cardStripeOpts = stripeOptsForCard(card, org?.stripeAccountId ?? null);
-    const ephemeralKey = await stripe.ephemeralKeys.create(
-      { issuing_card: card.stripeCardId },
-      { apiVersion: "2023-10-16", ...cardStripeOpts },
+    const ephemeralKey = await stripeCircuit.run(
+      `${ROUTE}:stripe.ephemeralKeys.create`,
+      { mode: "write" },
+      () => stripe.ephemeralKeys.create(
+        { issuing_card: card.stripeCardId },
+        { apiVersion: "2023-10-16", ...cardStripeOpts },
+      ),
     );
 
     return NextResponse.json({
@@ -112,6 +125,20 @@ export async function GET(
       status: card.status,
     });
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      const retryAfterSeconds =
+        error instanceof CircuitOpenError
+          ? Math.ceil(error.cooldown_ms_remaining / 1000)
+          : Math.ceil(CIRCUIT_OPEN_COOLDOWN_MS / 1000);
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Stripe is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "GET",
+        retryAfterSeconds,
+        cause: error,
+      });
+    }
     console.error("GET /api/virtual-cards/[id]/reveal error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

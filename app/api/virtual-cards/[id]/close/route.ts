@@ -26,6 +26,12 @@ import { auth } from "@/auth";
 import { prisma, retryOnSerializationFailure } from "@/lib/db";
 import { errorResponse } from "@/lib/error-response";
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+  CIRCUIT_OPEN_COOLDOWN_MS,
+} from "@/lib/stripe-circuit";
 import { stripeOptsForCard } from "@/lib/stripe-helpers";
 import { NextResponse } from "next/server";
 import { Prisma } from "@/lib/generated/prisma/client";
@@ -261,12 +267,18 @@ export async function POST(
     // cards (ic_mock_*) don't exist at Stripe; skip them.
     if (card.stripeCardId && !card.stripeCardId.startsWith("ic_mock_")) {
       try {
-        await stripe.issuing.cards.update(
-          card.stripeCardId,
-          { status: "canceled" },
-          stripeOptsForCard(card, org?.stripeAccountId ?? null),
+        await stripeCircuit.run(
+          `${ROUTE}:stripe.issuing.cards.update`,
+          { mode: "write" },
+          () => stripe.issuing.cards.update(
+            card.stripeCardId,
+            { status: "canceled" },
+            stripeOptsForCard(card, org?.stripeAccountId ?? null),
+          ),
         );
       } catch (stripeErr) {
+        // Pattern β: bubble circuit errors to outer catch for 503 mapping.
+        if (stripeErr instanceof CircuitOpenError || stripeErr instanceof CircuitTimeoutError) throw stripeErr;
         console.error(
           "[close] Stripe card cancellation failed:",
           stripeErr instanceof Error ? stripeErr.message : stripeErr,
@@ -281,6 +293,20 @@ export async function POST(
       creditBackAmount,
     });
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      const retryAfterSeconds =
+        error instanceof CircuitOpenError
+          ? Math.ceil(error.cooldown_ms_remaining / 1000)
+          : Math.ceil(CIRCUIT_OPEN_COOLDOWN_MS / 1000);
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Stripe is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds,
+        cause: error,
+      });
+    }
     return errorResponse({
       kind: "internal",
       message: "Internal server error",

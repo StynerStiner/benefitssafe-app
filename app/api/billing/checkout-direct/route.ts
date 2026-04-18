@@ -3,8 +3,15 @@
 // After payment, redirects to /auth/register with checkout_success + session_id params.
 
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+} from "@/lib/stripe-circuit";
 import { TIER_CONFIG, PricingTier, coerceTier } from "@/lib/pricing";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/billing/checkout-direct:GET";
 
 const VALID_PLANS = ["seed", "core", "network", "enterprise"] as const;
 
@@ -41,30 +48,40 @@ export async function GET(request: Request) {
   }
 
   try {
-    const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price: config.stripePriceId,
-          quantity: 1,
+    // `plan` + `config.stripePriceId` are both narrowed by guards above, but
+    // TypeScript's member-access + param narrowing doesn't always carry into
+    // the arrow-function closure that stripeCircuit.run() creates. Hoist both
+    // into local const values so the closure sees clean `string` types.
+    const validatedPlan: string = plan;
+    const priceId: string = config.stripePriceId;
+    const session = await stripeCircuit.run(
+      `${ROUTE}:stripe.checkout.sessions.create`,
+      { mode: "write" },
+      () => stripe.checkout.sessions.create({
+        mode: "subscription",
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+        subscription_data: {
+          trial_period_days: 14,
+          metadata: {
+            plan: validatedPlan,
+            source: "pricing_page",
+          },
         },
-      ],
-      subscription_data: {
-        trial_period_days: 14,
+        success_url: `${baseUrl}/auth/register?plan=${validatedPlan}&checkout_success=true&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${marketingUrl}/pricing?canceled=true`,
+        allow_promotion_codes: true,
         metadata: {
-          plan: plan,
-          source: "pricing_page",
+          plan: validatedPlan,
+          source: "pricing_page_direct",
         },
-      },
-      success_url: `${baseUrl}/auth/register?plan=${plan}&checkout_success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${marketingUrl}/pricing?canceled=true`,
-      allow_promotion_codes: true,
-      metadata: {
-        plan: plan,
-        source: "pricing_page_direct",
-      },
-    });
+      }),
+    );
 
     if (!session.url) {
       return NextResponse.redirect(
@@ -74,6 +91,16 @@ export async function GET(request: Request) {
 
     return NextResponse.redirect(session.url);
   } catch (error) {
+    // Redirect-based route — browser is the client, not an API consumer.
+    // Circuit open / timeout redirects with an explicit error marker so
+    // the landing page can show "Stripe unavailable, try again later"
+    // instead of a generic "checkout failed". Deviation from the standard
+    // errorResponse() 503 pattern is intentional for this flow.
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      return NextResponse.redirect(
+        `${baseUrl}/auth/register?plan=${plan}&error=stripe_unavailable`,
+      );
+    }
     console.error("checkout-direct error:", error);
     return NextResponse.redirect(
       `${baseUrl}/auth/register?plan=${plan}&error=checkout_failed`,

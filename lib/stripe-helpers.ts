@@ -24,6 +24,11 @@
 // continue to be updated on whichever account owns them.
 
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+} from "@/lib/stripe-circuit";
 
 export type IssuingMode = "connected" | "platform";
 
@@ -50,12 +55,20 @@ export async function getIssuingAccount(
   }
 
   try {
-    const account = await stripe.accounts.retrieve(orgStripeAccountId);
+    const account = await stripeCircuit.run(
+      "lib/stripe-helpers:getIssuingAccount:stripe.accounts.retrieve",
+      { mode: "read" },
+      () => stripe.accounts.retrieve(orgStripeAccountId),
+    );
     if (account.capabilities?.card_issuing === "active") {
       return { accountId: orgStripeAccountId, mode: "connected" };
     }
     return { accountId: null, mode: "platform" };
   } catch (err) {
+    // Pattern β: bubble circuit errors to caller so route's outer catch
+    // can surface 503 + Retry-After. Stripe-returned errors continue to
+    // fall through to the platform-mode fallback below.
+    if (err instanceof CircuitOpenError || err instanceof CircuitTimeoutError) throw err;
     // If the retrieve itself fails (network, revoked account, etc.),
     // fall back to platform so card issuance isn't blocked on a
     // diagnostic call.

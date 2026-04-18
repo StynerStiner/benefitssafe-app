@@ -9,8 +9,17 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+  CIRCUIT_OPEN_COOLDOWN_MS,
+} from "@/lib/stripe-circuit";
+import { errorResponse } from "@/lib/error-response";
 import { stripeOptsForCard } from "@/lib/stripe-helpers";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/virtual-cards/[id]/pause:POST";
 
 export async function POST(
   _request: Request,
@@ -90,12 +99,18 @@ export async function POST(
     // be updated at Stripe; skip them.
     if (card.stripeCardId && !card.stripeCardId.startsWith("ic_mock_")) {
       try {
-        await stripe.issuing.cards.update(
-          card.stripeCardId,
-          { status: "inactive" },
-          stripeOptsForCard(card, org?.stripeAccountId ?? null),
+        await stripeCircuit.run(
+          `${ROUTE}:stripe.issuing.cards.update`,
+          { mode: "write" },
+          () => stripe.issuing.cards.update(
+            card.stripeCardId,
+            { status: "inactive" },
+            stripeOptsForCard(card, org?.stripeAccountId ?? null),
+          ),
         );
       } catch (stripeErr) {
+        // Pattern β: bubble circuit errors to outer catch for 503 mapping.
+        if (stripeErr instanceof CircuitOpenError || stripeErr instanceof CircuitTimeoutError) throw stripeErr;
         console.error(
           "[pause] Stripe card update failed:",
           stripeErr instanceof Error ? stripeErr.message : stripeErr,
@@ -109,6 +124,20 @@ export async function POST(
       previousStatus,
     });
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      const retryAfterSeconds =
+        error instanceof CircuitOpenError
+          ? Math.ceil(error.cooldown_ms_remaining / 1000)
+          : Math.ceil(CIRCUIT_OPEN_COOLDOWN_MS / 1000);
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Stripe is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds,
+        cause: error,
+      });
+    }
     console.error("POST /api/virtual-cards/[id]/pause error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

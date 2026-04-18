@@ -2,11 +2,20 @@
 import { prisma } from "@/lib/db";
 import { validateRecipientEmail, buildSecureLink } from "@/lib/email-security";
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+  CIRCUIT_OPEN_COOLDOWN_MS,
+} from "@/lib/stripe-circuit";
+import { errorResponse } from "@/lib/error-response";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+const ROUTE = "api/auth/register:POST";
 
 const DEFAULT_TRIAL_DAYS = 14;
 
@@ -235,20 +244,26 @@ export async function POST(request: Request) {
       // network retry without a key creates a second Stripe Connect
       // account. Key on email (normalized) because the org row
       // doesn't exist yet at this point.
-      const stripeAccount = await stripe.accounts.create(
-        {
-          type: "express",
-          country: "US",
-          email: email.toLowerCase().trim(),
-          business_profile: {
-            name: organizationName.trim(),
-            product_category: "non_profit",
+      const stripeAccount = await stripeCircuit.run(
+        `${ROUTE}:stripe.accounts.create`,
+        { mode: "write" },
+        () => stripe.accounts.create(
+          {
+            type: "express",
+            country: "US",
+            email: email.toLowerCase().trim(),
+            business_profile: {
+              name: organizationName.trim(),
+              product_category: "non_profit",
+            },
           },
-        },
-        { idempotencyKey: `signup-acct-${email.toLowerCase().trim()}` },
+          { idempotencyKey: `signup-acct-${email.toLowerCase().trim()}` },
+        ),
       );
       stripeAccountId = stripeAccount.id;
     } catch (stripeError) {
+      // Pattern β: bubble circuit errors to outer catch for 503 mapping.
+      if (stripeError instanceof CircuitOpenError || stripeError instanceof CircuitTimeoutError) throw stripeError;
       console.error("Stripe account creation failed:", stripeError);
       // Don't fail registration if Stripe fails — the org can finish
       // onboarding later via /api/org/stripe-onboarding.
@@ -360,9 +375,13 @@ export async function POST(request: Request) {
     // ----------------------------------------------------------------
     if (stripeSessionId) {
       try {
-        const checkoutSession = await stripe.checkout.sessions.retrieve(stripeSessionId, {
-          expand: ["subscription"],
-        });
+        const checkoutSession = await stripeCircuit.run(
+          `${ROUTE}:stripe.checkout.sessions.retrieve`,
+          { mode: "read" },
+          () => stripe.checkout.sessions.retrieve(stripeSessionId, {
+            expand: ["subscription"],
+          }),
+        );
 
         if (checkoutSession.payment_status === "paid" || checkoutSession.status === "complete") {
           const stripeCustomerId = typeof checkoutSession.customer === "string"
@@ -423,6 +442,8 @@ export async function POST(request: Request) {
           }
         }
       } catch (stripeSessionError) {
+        // Pattern β: bubble circuit errors to outer catch for 503 mapping.
+        if (stripeSessionError instanceof CircuitOpenError || stripeSessionError instanceof CircuitTimeoutError) throw stripeSessionError;
         console.error("Failed to link checkout session:", stripeSessionError);
         // Don't fail registration — subscription can be linked later via webhook
       }
@@ -451,6 +472,20 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error: unknown) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      const retryAfterSeconds =
+        error instanceof CircuitOpenError
+          ? Math.ceil(error.cooldown_ms_remaining / 1000)
+          : Math.ceil(CIRCUIT_OPEN_COOLDOWN_MS / 1000);
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Stripe is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds,
+        cause: error,
+      });
+    }
     const err = error as { code?: string; message?: string };
     console.error("POST /api/auth/register error:", err.message);
 

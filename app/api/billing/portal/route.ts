@@ -6,7 +6,16 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+  CIRCUIT_OPEN_COOLDOWN_MS,
+} from "@/lib/stripe-circuit";
+import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/billing/portal:POST";
 
 export async function POST() {
   try {
@@ -40,12 +49,16 @@ export async function POST() {
     // DDIA Ch8 — 5-minute bucket prevents duplicate portal sessions from
     // quick double-clicks while still allowing legitimate later attempts.
     const portalBucket = Math.floor(Date.now() / (5 * 60 * 1000));
-    const portalSession = await stripe.billingPortal.sessions.create(
-      {
-        customer: sub.stripeCustomerId,
-        return_url: `${baseUrl}/settings/billing`,
-      },
-      { idempotencyKey: `billing-portal-${organizationId}-${portalBucket}` },
+    const portalSession = await stripeCircuit.run(
+      `${ROUTE}:stripe.billingPortal.sessions.create`,
+      { mode: "write" },
+      () => stripe.billingPortal.sessions.create(
+        {
+          customer: sub.stripeCustomerId,
+          return_url: `${baseUrl}/settings/billing`,
+        },
+        { idempotencyKey: `billing-portal-${organizationId}-${portalBucket}` },
+      ),
     );
 
     await prisma.auditLog.create({
@@ -61,6 +74,20 @@ export async function POST() {
 
     return NextResponse.json({ url: portalSession.url });
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      const retryAfterSeconds =
+        error instanceof CircuitOpenError
+          ? Math.ceil(error.cooldown_ms_remaining / 1000)
+          : Math.ceil(CIRCUIT_OPEN_COOLDOWN_MS / 1000);
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Stripe is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds,
+        cause: error,
+      });
+    }
     console.error("POST /api/billing/portal error:", error);
     return NextResponse.json({ error: "Failed to open billing portal" }, { status: 500 });
   }

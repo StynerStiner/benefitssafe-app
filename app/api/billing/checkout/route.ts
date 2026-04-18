@@ -5,9 +5,18 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+  CIRCUIT_OPEN_COOLDOWN_MS,
+} from "@/lib/stripe-circuit";
+import { errorResponse } from "@/lib/error-response";
 import { TIER_CONFIG, PricingTier, coerceTier } from "@/lib/pricing";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+const ROUTE = "api/billing/checkout:POST";
 
 const checkoutSchema = z.object({
   tier: z.enum(["seed", "core", "network", "enterprise"]),
@@ -64,13 +73,17 @@ export async function POST(request: Request) {
       });
       // DDIA Ch8 — idempotency key. A retried checkout create against
       // Stripe without a key will spawn a second customer row per retry.
-      const customer = await stripe.customers.create(
-        {
-          email: email || undefined,
-          name: org?.name || undefined,
-          metadata: { organizationId, platform: "benefitssafe" },
-        },
-        { idempotencyKey: `billing-customer-${organizationId}` },
+      const customer = await stripeCircuit.run(
+        `${ROUTE}:stripe.customers.create`,
+        { mode: "write" },
+        () => stripe.customers.create(
+          {
+            email: email || undefined,
+            name: org?.name || undefined,
+            metadata: { organizationId, platform: "benefitssafe" },
+          },
+          { idempotencyKey: `billing-customer-${organizationId}` },
+        ),
       );
       customerId = customer.id;
 
@@ -92,29 +105,33 @@ export async function POST(request: Request) {
     // org clicking checkout twice in quick succession reuses the same
     // session, but legitimate later attempts get a fresh one.
     const sessionBucket = Math.floor(Date.now() / (5 * 60 * 1000));
-    const checkoutSession = await stripe.checkout.sessions.create(
-      {
-        mode: "subscription",
-        customer: customerId,
-        line_items: [{ price: config.stripePriceId, quantity: 1 }],
-        success_url: `${baseUrl}/settings/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${baseUrl}/settings/billing?checkout=canceled`,
-        client_reference_id: organizationId,
-        metadata: {
-          organizationId,
-          tier: tierEnum,
-          initiatedBy: userId,
-        },
-        subscription_data: {
+    const checkoutSession = await stripeCircuit.run(
+      `${ROUTE}:stripe.checkout.sessions.create`,
+      { mode: "write" },
+      () => stripe.checkout.sessions.create(
+        {
+          mode: "subscription",
+          customer: customerId,
+          line_items: [{ price: config.stripePriceId, quantity: 1 }],
+          success_url: `${baseUrl}/settings/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${baseUrl}/settings/billing?checkout=canceled`,
+          client_reference_id: organizationId,
           metadata: {
             organizationId,
             tier: tierEnum,
+            initiatedBy: userId,
           },
+          subscription_data: {
+            metadata: {
+              organizationId,
+              tier: tierEnum,
+            },
+          },
+          allow_promotion_codes: true,
+          billing_address_collection: "required",
         },
-        allow_promotion_codes: true,
-        billing_address_collection: "required",
-      },
-      { idempotencyKey: `checkout-${organizationId}-${tierEnum}-${sessionBucket}` },
+        { idempotencyKey: `checkout-${organizationId}-${tierEnum}-${sessionBucket}` },
+      ),
     );
 
     await prisma.auditLog.create({
@@ -130,6 +147,20 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ url: checkoutSession.url });
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      const retryAfterSeconds =
+        error instanceof CircuitOpenError
+          ? Math.ceil(error.cooldown_ms_remaining / 1000)
+          : Math.ceil(CIRCUIT_OPEN_COOLDOWN_MS / 1000);
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Stripe is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds,
+        cause: error,
+      });
+    }
     console.error("POST /api/billing/checkout error:", error);
     // Surface Stripe-specific errors for debugging
     const stripeError = error as { type?: string; message?: string; code?: string };
