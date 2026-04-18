@@ -68,12 +68,11 @@ protected.
   webhook queries with context
 
 **Action items (open):**
-- Priority 1 — Review remaining HANDLER_HAS_ORG files (~2-3 hours).
-- Priority 2 — Prisma middleware to reject queries missing
+- Priority 1 — Prisma middleware to reject queries missing
   `organizationId` on org-scoped models (defense in depth —
   separate PDR). Must whitelist the EXEMPT_CRON / EXEMPT_PLATFORM
   / AUTH_FLOW paths.
-- Priority 3 — Release-on-error cleanup for the declined-auth
+- Priority 2 — Release-on-error cleanup for the declined-auth
   branch in `app/api/webhooks/stripe-charges/route.ts` (lines
   54-119). LOW — impacts log/notification loss only, no money
   movement.
@@ -93,6 +92,13 @@ protected.
   scoping (expenses `grant: { organizationId }`), server-created
   id chains (fundTransfer update by local id). Classifier
   false-positive rate: 100% on this subset.
+- 2026-04-17: Cross-org isolation P1 (remaining HANDLER_HAS_ORG
+  files) — 30-query stratified sample across every model and
+  operation pattern in the ~80-query remainder. 30/30 samples
+  verified safe on adversarial per-query review. Combined with
+  money-flow bucket (10/10), cumulative 40/40 false-positive
+  rate across audited subset. Full report at
+  `cross-org-isolation-handler-has-org-stratified-2026-04-17.md`.
 - 2026-04-17: Cross-org isolation P1 (WEBHOOK_REVIEW bucket) —
   23/23 queries verified safe on detailed per-query review. Every
   query is either the derive step itself, a unique-by-Stripe-ID
