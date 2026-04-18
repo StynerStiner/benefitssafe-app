@@ -49,6 +49,7 @@ export type GrantMinAggregateOutputType = {
   totalAmount: runtime.Decimal | null
   spentAmount: runtime.Decimal | null
   remainingAmount: runtime.Decimal | null
+  allowNegativeBalance: boolean | null
   status: $Enums.GrantStatus | null
   startDate: Date | null
   endDate: Date | null
@@ -72,6 +73,7 @@ export type GrantMaxAggregateOutputType = {
   totalAmount: runtime.Decimal | null
   spentAmount: runtime.Decimal | null
   remainingAmount: runtime.Decimal | null
+  allowNegativeBalance: boolean | null
   status: $Enums.GrantStatus | null
   startDate: Date | null
   endDate: Date | null
@@ -95,6 +97,7 @@ export type GrantCountAggregateOutputType = {
   totalAmount: number
   spentAmount: number
   remainingAmount: number
+  allowNegativeBalance: number
   status: number
   startDate: number
   endDate: number
@@ -137,6 +140,7 @@ export type GrantMinAggregateInputType = {
   totalAmount?: true
   spentAmount?: true
   remainingAmount?: true
+  allowNegativeBalance?: true
   status?: true
   startDate?: true
   endDate?: true
@@ -160,6 +164,7 @@ export type GrantMaxAggregateInputType = {
   totalAmount?: true
   spentAmount?: true
   remainingAmount?: true
+  allowNegativeBalance?: true
   status?: true
   startDate?: true
   endDate?: true
@@ -183,6 +188,7 @@ export type GrantCountAggregateInputType = {
   totalAmount?: true
   spentAmount?: true
   remainingAmount?: true
+  allowNegativeBalance?: true
   status?: true
   startDate?: true
   endDate?: true
@@ -298,6 +304,7 @@ export type GrantGroupByOutputType = {
   totalAmount: runtime.Decimal
   spentAmount: runtime.Decimal
   remainingAmount: runtime.Decimal
+  allowNegativeBalance: boolean
   status: $Enums.GrantStatus
   startDate: Date
   endDate: Date | null
@@ -349,6 +356,7 @@ export type GrantWhereInput = {
   totalAmount?: Prisma.DecimalFilter<"Grant"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFilter<"Grant"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFilter<"Grant"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFilter<"Grant"> | boolean
   status?: Prisma.EnumGrantStatusFilter<"Grant"> | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFilter<"Grant"> | Date | string
   endDate?: Prisma.DateTimeNullableFilter<"Grant"> | Date | string | null
@@ -382,6 +390,7 @@ export type GrantOrderByWithRelationInput = {
   totalAmount?: Prisma.SortOrder
   spentAmount?: Prisma.SortOrder
   remainingAmount?: Prisma.SortOrder
+  allowNegativeBalance?: Prisma.SortOrder
   status?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -418,6 +427,7 @@ export type GrantWhereUniqueInput = Prisma.AtLeast<{
   totalAmount?: Prisma.DecimalFilter<"Grant"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFilter<"Grant"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFilter<"Grant"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFilter<"Grant"> | boolean
   status?: Prisma.EnumGrantStatusFilter<"Grant"> | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFilter<"Grant"> | Date | string
   endDate?: Prisma.DateTimeNullableFilter<"Grant"> | Date | string | null
@@ -451,6 +461,7 @@ export type GrantOrderByWithAggregationInput = {
   totalAmount?: Prisma.SortOrder
   spentAmount?: Prisma.SortOrder
   remainingAmount?: Prisma.SortOrder
+  allowNegativeBalance?: Prisma.SortOrder
   status?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -487,6 +498,7 @@ export type GrantScalarWhereWithAggregatesInput = {
   totalAmount?: Prisma.DecimalWithAggregatesFilter<"Grant"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalWithAggregatesFilter<"Grant"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalWithAggregatesFilter<"Grant"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolWithAggregatesFilter<"Grant"> | boolean
   status?: Prisma.EnumGrantStatusWithAggregatesFilter<"Grant"> | $Enums.GrantStatus
   startDate?: Prisma.DateTimeWithAggregatesFilter<"Grant"> | Date | string
   endDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Grant"> | Date | string | null
@@ -513,6 +525,7 @@ export type GrantCreateInput = {
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: boolean
   status?: $Enums.GrantStatus
   startDate: Date | string
   endDate?: Date | string | null
@@ -546,6 +559,7 @@ export type GrantUncheckedCreateInput = {
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: boolean
   status?: $Enums.GrantStatus
   startDate: Date | string
   endDate?: Date | string | null
@@ -575,6 +589,7 @@ export type GrantUpdateInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -608,6 +623,7 @@ export type GrantUncheckedUpdateInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -639,6 +655,7 @@ export type GrantCreateManyInput = {
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: boolean
   status?: $Enums.GrantStatus
   startDate: Date | string
   endDate?: Date | string | null
@@ -665,6 +682,7 @@ export type GrantUpdateManyMutationInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -693,6 +711,7 @@ export type GrantUncheckedUpdateManyInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -731,6 +750,7 @@ export type GrantCountOrderByAggregateInput = {
   totalAmount?: Prisma.SortOrder
   spentAmount?: Prisma.SortOrder
   remainingAmount?: Prisma.SortOrder
+  allowNegativeBalance?: Prisma.SortOrder
   status?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
@@ -765,6 +785,7 @@ export type GrantMaxOrderByAggregateInput = {
   totalAmount?: Prisma.SortOrder
   spentAmount?: Prisma.SortOrder
   remainingAmount?: Prisma.SortOrder
+  allowNegativeBalance?: Prisma.SortOrder
   status?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
@@ -788,6 +809,7 @@ export type GrantMinOrderByAggregateInput = {
   totalAmount?: Prisma.SortOrder
   spentAmount?: Prisma.SortOrder
   remainingAmount?: Prisma.SortOrder
+  allowNegativeBalance?: Prisma.SortOrder
   status?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
@@ -965,6 +987,7 @@ export type GrantCreateWithoutOrganizationInput = {
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: boolean
   status?: $Enums.GrantStatus
   startDate: Date | string
   endDate?: Date | string | null
@@ -996,6 +1019,7 @@ export type GrantUncheckedCreateWithoutOrganizationInput = {
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: boolean
   status?: $Enums.GrantStatus
   startDate: Date | string
   endDate?: Date | string | null
@@ -1056,6 +1080,7 @@ export type GrantScalarWhereInput = {
   totalAmount?: Prisma.DecimalFilter<"Grant"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFilter<"Grant"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFilter<"Grant"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFilter<"Grant"> | boolean
   status?: Prisma.EnumGrantStatusFilter<"Grant"> | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFilter<"Grant"> | Date | string
   endDate?: Prisma.DateTimeNullableFilter<"Grant"> | Date | string | null
@@ -1082,6 +1107,7 @@ export type GrantCreateWithoutBeneficiaryInput = {
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: boolean
   status?: $Enums.GrantStatus
   startDate: Date | string
   endDate?: Date | string | null
@@ -1113,6 +1139,7 @@ export type GrantUncheckedCreateWithoutBeneficiaryInput = {
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: boolean
   status?: $Enums.GrantStatus
   startDate: Date | string
   endDate?: Date | string | null
@@ -1168,6 +1195,7 @@ export type GrantCreateWithoutCategoriesInput = {
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: boolean
   status?: $Enums.GrantStatus
   startDate: Date | string
   endDate?: Date | string | null
@@ -1200,6 +1228,7 @@ export type GrantUncheckedCreateWithoutCategoriesInput = {
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: boolean
   status?: $Enums.GrantStatus
   startDate: Date | string
   endDate?: Date | string | null
@@ -1244,6 +1273,7 @@ export type GrantUpdateWithoutCategoriesInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1276,6 +1306,7 @@ export type GrantUncheckedUpdateWithoutCategoriesInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1304,6 +1335,7 @@ export type GrantCreateWithoutExpensesInput = {
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: boolean
   status?: $Enums.GrantStatus
   startDate: Date | string
   endDate?: Date | string | null
@@ -1336,6 +1368,7 @@ export type GrantUncheckedCreateWithoutExpensesInput = {
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: boolean
   status?: $Enums.GrantStatus
   startDate: Date | string
   endDate?: Date | string | null
@@ -1380,6 +1413,7 @@ export type GrantUpdateWithoutExpensesInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1412,6 +1446,7 @@ export type GrantUncheckedUpdateWithoutExpensesInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1440,6 +1475,7 @@ export type GrantCreateWithoutVirtualCardsInput = {
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: boolean
   status?: $Enums.GrantStatus
   startDate: Date | string
   endDate?: Date | string | null
@@ -1472,6 +1508,7 @@ export type GrantUncheckedCreateWithoutVirtualCardsInput = {
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: boolean
   status?: $Enums.GrantStatus
   startDate: Date | string
   endDate?: Date | string | null
@@ -1516,6 +1553,7 @@ export type GrantUpdateWithoutVirtualCardsInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1548,6 +1586,7 @@ export type GrantUncheckedUpdateWithoutVirtualCardsInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1577,6 +1616,7 @@ export type GrantCreateManyOrganizationInput = {
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: boolean
   status?: $Enums.GrantStatus
   startDate: Date | string
   endDate?: Date | string | null
@@ -1603,6 +1643,7 @@ export type GrantUpdateWithoutOrganizationInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1634,6 +1675,7 @@ export type GrantUncheckedUpdateWithoutOrganizationInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1664,6 +1706,7 @@ export type GrantUncheckedUpdateManyWithoutOrganizationInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1691,6 +1734,7 @@ export type GrantCreateManyBeneficiaryInput = {
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: boolean
   status?: $Enums.GrantStatus
   startDate: Date | string
   endDate?: Date | string | null
@@ -1717,6 +1761,7 @@ export type GrantUpdateWithoutBeneficiaryInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1748,6 +1793,7 @@ export type GrantUncheckedUpdateWithoutBeneficiaryInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1778,6 +1824,7 @@ export type GrantUncheckedUpdateManyWithoutBeneficiaryInput = {
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   spentAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allowNegativeBalance?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumGrantStatusFieldUpdateOperationsInput | $Enums.GrantStatus
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1855,6 +1902,7 @@ export type GrantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   totalAmount?: boolean
   spentAmount?: boolean
   remainingAmount?: boolean
+  allowNegativeBalance?: boolean
   status?: boolean
   startDate?: boolean
   endDate?: boolean
@@ -1889,6 +1937,7 @@ export type GrantSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   totalAmount?: boolean
   spentAmount?: boolean
   remainingAmount?: boolean
+  allowNegativeBalance?: boolean
   status?: boolean
   startDate?: boolean
   endDate?: boolean
@@ -1919,6 +1968,7 @@ export type GrantSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   totalAmount?: boolean
   spentAmount?: boolean
   remainingAmount?: boolean
+  allowNegativeBalance?: boolean
   status?: boolean
   startDate?: boolean
   endDate?: boolean
@@ -1949,6 +1999,7 @@ export type GrantSelectScalar = {
   totalAmount?: boolean
   spentAmount?: boolean
   remainingAmount?: boolean
+  allowNegativeBalance?: boolean
   status?: boolean
   startDate?: boolean
   endDate?: boolean
@@ -1966,7 +2017,7 @@ export type GrantSelectScalar = {
   updatedAt?: boolean
 }
 
-export type GrantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "grantIssuerName" | "grantIssuerContact" | "beneficiaryId" | "name" | "description" | "totalAmount" | "spentAmount" | "remainingAmount" | "status" | "startDate" | "endDate" | "restrictions" | "benefitFlags" | "grantDocumentText" | "grantDocumentName" | "purpose" | "funderRequirements" | "approvedMCCs" | "blockedMCCs" | "whitelistedVendorIds" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["grant"]>
+export type GrantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "grantIssuerName" | "grantIssuerContact" | "beneficiaryId" | "name" | "description" | "totalAmount" | "spentAmount" | "remainingAmount" | "allowNegativeBalance" | "status" | "startDate" | "endDate" | "restrictions" | "benefitFlags" | "grantDocumentText" | "grantDocumentName" | "purpose" | "funderRequirements" | "approvedMCCs" | "blockedMCCs" | "whitelistedVendorIds" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["grant"]>
 export type GrantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   beneficiary?: boolean | Prisma.Grant$beneficiaryArgs<ExtArgs>
@@ -2004,6 +2055,7 @@ export type $GrantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     totalAmount: runtime.Decimal
     spentAmount: runtime.Decimal
     remainingAmount: runtime.Decimal
+    allowNegativeBalance: boolean
     status: $Enums.GrantStatus
     startDate: Date
     endDate: Date | null
@@ -2457,6 +2509,7 @@ export interface GrantFieldRefs {
   readonly totalAmount: Prisma.FieldRef<"Grant", 'Decimal'>
   readonly spentAmount: Prisma.FieldRef<"Grant", 'Decimal'>
   readonly remainingAmount: Prisma.FieldRef<"Grant", 'Decimal'>
+  readonly allowNegativeBalance: Prisma.FieldRef<"Grant", 'Boolean'>
   readonly status: Prisma.FieldRef<"Grant", 'GrantStatus'>
   readonly startDate: Prisma.FieldRef<"Grant", 'DateTime'>
   readonly endDate: Prisma.FieldRef<"Grant", 'DateTime'>

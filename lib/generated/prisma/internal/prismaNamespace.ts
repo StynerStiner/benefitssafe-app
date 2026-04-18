@@ -3016,6 +3016,7 @@ export const GrantScalarFieldEnum = {
   totalAmount: 'totalAmount',
   spentAmount: 'spentAmount',
   remainingAmount: 'remainingAmount',
+  allowNegativeBalance: 'allowNegativeBalance',
   status: 'status',
   startDate: 'startDate',
   endDate: 'endDate',
