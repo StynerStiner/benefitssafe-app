@@ -254,3 +254,27 @@ describe("Grants API - Terminal-status reason gate (BSRS Ch 5 P2)", () => {
     expect(result.success).toBe(false);
   });
 });
+
+// BSRS Ch 5 P4.1 — every API error response carries a correlationId so an
+// operator can tie a user-reported failure to a structured server log line.
+describe("Grants API - Error correlation IDs (BSRS Ch 5 P4.1)", () => {
+  it("PATCH /api/grants/[id] unauthorized response includes correlationId", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { auth } = await import("@/auth");
+    (auth as ReturnType<typeof vi.fn>).mockResolvedValueOnce(null);
+
+    const mod = await import("@/app/api/grants/[id]/route");
+    const res = await mod.PATCH(
+      new Request("http://localhost/api/grants/abc", {
+        method: "PATCH",
+        body: JSON.stringify({ name: "x" }),
+      }),
+      { params: Promise.resolve({ id: "abc" }) },
+    );
+
+    expect(res.status).toBe(401);
+    const body = await res.json();
+    expect(body.error).toBe("Unauthorized");
+    expect(body.correlationId).toMatch(/^req_[A-Za-z0-9_-]{8}$/);
+  });
+});

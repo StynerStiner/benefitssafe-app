@@ -3,11 +3,13 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { captureApiError } from "@/lib/error-handler";
+import { errorResponse } from "@/lib/error-response";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildExpenseRejectedEmail } from "@/lib/services/email-templates";
 import { rejectExpenseSchema } from "@/lib/validations/expense";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/expenses/[id]/reject:PATCH";
 
 // PATCH /api/expenses/[id]/reject — reject an expense request
 export async function PATCH(
@@ -17,14 +19,26 @@ export async function PATCH(
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse({
+        kind: "unauthorized",
+        message: "Unauthorized",
+        route: ROUTE,
+        method: "PATCH",
+      });
     }
 
     const { role, id: userId, organizationId } = session.user;
 
     // Only nonprofit admins and platform admins can reject
     if (role !== "nonprofit_admin" && role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return errorResponse({
+        kind: "forbidden",
+        message: "Forbidden",
+        route: ROUTE,
+        method: "PATCH",
+        userId,
+        organizationId,
+      });
     }
 
     const { id } = await params;
@@ -33,10 +47,15 @@ export async function PATCH(
     const parsed = rejectExpenseSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
-        { status: 400 },
-      );
+      return errorResponse({
+        kind: "validation",
+        message: "Validation failed",
+        route: ROUTE,
+        method: "PATCH",
+        userId,
+        organizationId,
+        extraBody: { details: parsed.error.flatten() },
+      });
     }
 
     // Find the expense and verify org scope
@@ -49,10 +68,14 @@ export async function PATCH(
     });
 
     if (!expense) {
-      return NextResponse.json(
-        { error: "Expense not found or not pending" },
-        { status: 404 },
-      );
+      return errorResponse({
+        kind: "not_found",
+        message: "Expense not found or not pending",
+        route: ROUTE,
+        method: "PATCH",
+        userId,
+        organizationId,
+      });
     }
 
     // All mutations in a single transaction for consistency. The status
@@ -115,10 +138,15 @@ export async function PATCH(
       });
     } catch (err) {
       if ((err as Error)?.message === "expense_not_pending_at_commit") {
-        return NextResponse.json(
-          { error: "Expense is no longer pending" },
-          { status: 409 },
-        );
+        return errorResponse({
+          kind: "conflict",
+          message: "Expense is no longer pending",
+          route: ROUTE,
+          method: "PATCH",
+          userId,
+          organizationId,
+          cause: err,
+        });
       }
       throw err;
     }
@@ -166,8 +194,12 @@ export async function PATCH(
 
     return NextResponse.json(updatedExpense);
   } catch (error) {
-    captureApiError(error, { route: "PATCH /api/expenses/[id]/reject" });
-    console.error("PATCH /api/expenses/[id]/reject error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE,
+      method: "PATCH",
+      cause: error,
+    });
   }
 }

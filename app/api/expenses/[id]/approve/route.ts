@@ -17,12 +17,14 @@
 import { auth } from "@/auth";
 import { prisma, retryOnSerializationFailure } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
-import { captureApiError } from "@/lib/error-handler";
+import { errorResponse } from "@/lib/error-response";
 import { invalidateDashboardCache } from "@/lib/data";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildExpenseApprovedEmail } from "@/lib/services/email-templates";
 import { approveExpenseSchema } from "@/lib/validations/expense";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/expenses/[id]/approve:PATCH";
 
 // Sentinel error classes so the $transaction body can reject with
 // structured reasons and the outer handler can map them to HTTP codes
@@ -41,14 +43,26 @@ export async function PATCH(
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse({
+        kind: "unauthorized",
+        message: "Unauthorized",
+        route: ROUTE,
+        method: "PATCH",
+      });
     }
 
     const { role, id: userId, organizationId } = session.user;
 
     // Only nonprofit admins and platform admins can approve
     if (role !== "nonprofit_admin" && role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return errorResponse({
+        kind: "forbidden",
+        message: "Forbidden",
+        route: ROUTE,
+        method: "PATCH",
+        userId,
+        organizationId,
+      });
     }
 
     const { id } = await params;
@@ -57,10 +71,15 @@ export async function PATCH(
     const parsed = approveExpenseSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
-        { status: 400 },
-      );
+      return errorResponse({
+        kind: "validation",
+        message: "Validation failed",
+        route: ROUTE,
+        method: "PATCH",
+        userId,
+        organizationId,
+        extraBody: { details: parsed.error.flatten() },
+      });
     }
 
     // Pre-fetch expense for org-scope check and to surface the current
@@ -79,10 +98,14 @@ export async function PATCH(
     });
 
     if (!expense) {
-      return NextResponse.json(
-        { error: "Expense not found or not pending" },
-        { status: 404 },
-      );
+      return errorResponse({
+        kind: "not_found",
+        message: "Expense not found or not pending",
+        route: ROUTE,
+        method: "PATCH",
+        userId,
+        organizationId,
+      });
     }
 
     const amount = Number(expense.amount);
@@ -240,17 +263,23 @@ export async function PATCH(
       );
     } catch (err) {
       if (err instanceof ApprovalConflictError) {
-        const status =
+        const kind: "conflict" | "validation" | "internal" =
           err.code === "already_processed"
-            ? 409
+            ? "conflict"
             : err.code === "insufficient_grant_funds" ||
                 err.code === "insufficient_category_funds"
-              ? 400
-              : 500;
-        return NextResponse.json(
-          { error: err.detail, code: err.code },
-          { status },
-        );
+              ? "validation"
+              : "internal";
+        return errorResponse({
+          kind,
+          message: err.detail,
+          route: ROUTE,
+          method: "PATCH",
+          userId,
+          organizationId,
+          extraBody: { code: err.code },
+          cause: err,
+        });
       }
       throw err;
     }
@@ -312,8 +341,12 @@ export async function PATCH(
 
     return NextResponse.json(result);
   } catch (error) {
-    captureApiError(error, { route: "PATCH /api/expenses/[id]/approve" });
-    console.error("PATCH /api/expenses/[id]/approve error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE,
+      method: "PATCH",
+      cause: error,
+    });
   }
 }

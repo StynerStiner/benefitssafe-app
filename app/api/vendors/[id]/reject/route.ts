@@ -6,8 +6,11 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { rejectVendorSchema } from "@/lib/validations/vendor";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/vendors/[id]/reject:POST";
 
 export async function POST(
   request: Request,
@@ -16,22 +19,38 @@ export async function POST(
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse({
+        kind: "unauthorized",
+        message: "Unauthorized",
+        route: ROUTE,
+        method: "POST",
+      });
     }
 
     const { role, organizationId } = session.user;
     if (role !== "nonprofit_admin" && role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return errorResponse({
+        kind: "forbidden",
+        message: "Forbidden",
+        route: ROUTE,
+        method: "POST",
+        userId: session.user.id,
+        organizationId,
+      });
     }
 
     const { id } = await params;
     const body = await request.json().catch(() => ({}));
     const parsed = rejectVendorSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: parsed.error.issues[0].message },
-        { status: 400 },
-      );
+      return errorResponse({
+        kind: "validation",
+        message: parsed.error.issues[0].message,
+        route: ROUTE,
+        method: "POST",
+        userId: session.user.id,
+        organizationId,
+      });
     }
     const reason = parsed.data.reason.trim();
 
@@ -41,7 +60,14 @@ export async function POST(
     });
 
     if (!vendor) {
-      return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
+      return errorResponse({
+        kind: "not_found",
+        message: "Vendor not found",
+        route: ROUTE,
+        method: "POST",
+        userId: session.user.id,
+        organizationId,
+      });
     }
 
     const updated = await prisma.vendor.update({
@@ -64,7 +90,12 @@ export async function POST(
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("POST /api/vendors/[id]/reject error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE,
+      method: "POST",
+      cause: error,
+    });
   }
 }

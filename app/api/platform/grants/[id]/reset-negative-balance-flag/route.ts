@@ -8,9 +8,12 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { withOrgContext } from "@/lib/org-context";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+const ROUTE = "api/platform/grants/[id]/reset-negative-balance-flag:POST";
 
 const bodySchema = z.object({
   reason: z.string().min(10, "Reason must be at least 10 characters"),
@@ -23,10 +26,21 @@ export async function POST(
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse({
+        kind: "unauthorized",
+        message: "Unauthorized",
+        route: ROUTE,
+        method: "POST",
+      });
     }
     if (session.user.role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return errorResponse({
+        kind: "forbidden",
+        message: "Forbidden",
+        route: ROUTE,
+        method: "POST",
+        userId: session.user.id,
+      });
     }
 
     return withOrgContext(
@@ -40,10 +54,13 @@ export async function POST(
         const body = await request.json();
         const parsed = bodySchema.safeParse(body);
         if (!parsed.success) {
-          return NextResponse.json(
-            { error: parsed.error.issues[0].message },
-            { status: 400 },
-          );
+          return errorResponse({
+            kind: "validation",
+            message: parsed.error.issues[0].message,
+            route: ROUTE,
+            method: "POST",
+            userId: session.user.id,
+          });
         }
 
         const grant = await prisma.grant.findUnique({
@@ -56,7 +73,13 @@ export async function POST(
           },
         });
         if (!grant) {
-          return NextResponse.json({ error: "Grant not found" }, { status: 404 });
+          return errorResponse({
+            kind: "not_found",
+            message: "Grant not found",
+            route: ROUTE,
+            method: "POST",
+            userId: session.user.id,
+          });
         }
 
         const result = await prisma.$transaction(async (tx) => {
@@ -96,10 +119,12 @@ export async function POST(
       },
     );
   } catch (error) {
-    console.error(
-      "POST /api/platform/grants/[id]/reset-negative-balance-flag error:",
-      error,
-    );
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE,
+      method: "POST",
+      cause: error,
+    });
   }
 }

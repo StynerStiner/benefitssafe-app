@@ -3,8 +3,12 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { updateBeneficiarySchema } from "@/lib/validations/beneficiary";
 import { NextResponse } from "next/server";
+
+const ROUTE_GET = "api/beneficiaries/[id]:GET";
+const ROUTE_PATCH = "api/beneficiaries/[id]:PATCH";
 
 // Full profile select — includes all profile fields.
 // ssnLast4 is masked before returning.
@@ -103,12 +107,24 @@ export async function GET(
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse({
+        kind: "unauthorized",
+        message: "Unauthorized",
+        route: ROUTE_GET,
+        method: "GET",
+      });
     }
 
     const { role, organizationId } = session.user;
     if (role !== "nonprofit_admin" && role !== "nonprofit_staff" && role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return errorResponse({
+        kind: "forbidden",
+        message: "Forbidden",
+        route: ROUTE_GET,
+        method: "GET",
+        userId: session.user.id,
+        organizationId,
+      });
     }
 
     const { id } = await params;
@@ -131,10 +147,14 @@ export async function GET(
       select: { id: true, notes: true },
     });
     if (!membership) {
-      return NextResponse.json(
-        { error: "Beneficiary not found" },
-        { status: 404 },
-      );
+      return errorResponse({
+        kind: "not_found",
+        message: "Beneficiary not found",
+        route: ROUTE_GET,
+        method: "GET",
+        userId: session.user.id,
+        organizationId,
+      });
     }
 
     const beneficiary = await prisma.user.findUnique({
@@ -143,10 +163,14 @@ export async function GET(
     });
 
     if (!beneficiary) {
-      return NextResponse.json(
-        { error: "Beneficiary not found" },
-        { status: 404 },
-      );
+      return errorResponse({
+        kind: "not_found",
+        message: "Beneficiary not found",
+        route: ROUTE_GET,
+        method: "GET",
+        userId: session.user.id,
+        organizationId,
+      });
     }
 
     // Derive invite status
@@ -199,11 +223,13 @@ export async function GET(
 
     return NextResponse.json(masked);
   } catch (error) {
-    console.error("GET /api/beneficiaries/[id] error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_GET,
+      method: "GET",
+      cause: error,
+    });
   }
 }
 
@@ -215,12 +241,24 @@ export async function PATCH(
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse({
+        kind: "unauthorized",
+        message: "Unauthorized",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+      });
     }
 
     const { role, organizationId } = session.user;
     if (role !== "nonprofit_admin" && role !== "nonprofit_staff" && role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return errorResponse({
+        kind: "forbidden",
+        message: "Forbidden",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+        userId: session.user.id,
+        organizationId,
+      });
     }
 
     const { id } = await params;
@@ -235,20 +273,29 @@ export async function PATCH(
       select: { id: true },
     });
     if (!membership) {
-      return NextResponse.json(
-        { error: "Beneficiary not found" },
-        { status: 404 },
-      );
+      return errorResponse({
+        kind: "not_found",
+        message: "Beneficiary not found",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+        userId: session.user.id,
+        organizationId,
+      });
     }
 
     const body = await request.json();
     const parsed = updateBeneficiarySchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
-        { status: 400 },
-      );
+      return errorResponse({
+        kind: "validation",
+        message: "Validation failed",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+        userId: session.user.id,
+        organizationId,
+        extraBody: { details: parsed.error.flatten().fieldErrors },
+      });
     }
 
     const data = parsed.data;
@@ -302,10 +349,12 @@ export async function PATCH(
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("PATCH /api/beneficiaries/[id] error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_PATCH,
+      method: "PATCH",
+      cause: error,
+    });
   }
 }

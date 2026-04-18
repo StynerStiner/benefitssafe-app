@@ -5,9 +5,12 @@
 import { prisma, retryOnSerializationFailure } from "@/lib/db";
 import { classifyExpense } from "@/utils/compliance-rules";
 import { shouldAutoApprove } from "@/lib/auto-approve";
+import { errorResponse } from "@/lib/error-response";
 import { verifyJobAuth, claimJobMessage } from "@/lib/queue";
 import { NextResponse } from "next/server";
 import { Prisma } from "@/lib/generated/prisma/client";
+
+const ROUTE = "api/jobs/process-charge:POST";
 
 // Structured error for grant-balance failures inside the auto-approve
 // $transaction. The outer catch maps this to a terminal 200 (not 500)
@@ -21,7 +24,13 @@ class InsufficientFundsError extends Error {
 export async function POST(request: Request) {
   const auth = await verifyJobAuth(request);
   if (!auth.valid) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return errorResponse({
+      kind: "unauthorized",
+      message: "Unauthorized",
+      route: ROUTE,
+      method: "POST",
+      userId: "system",
+    });
   }
   // Ch8 messageId-level dedup as a belt-and-braces with the existing
   // Ch7 txRecord.expenseId + ledger reference guards below.
@@ -35,7 +44,13 @@ export async function POST(request: Request) {
     const { transactionId } = data;
 
     if (!transactionId) {
-      return NextResponse.json({ error: "Missing transactionId" }, { status: 400 });
+      return errorResponse({
+        kind: "validation",
+        message: "Missing transactionId",
+        route: ROUTE,
+        method: "POST",
+        userId: "system",
+      });
     }
 
     // 1. Load the transaction
@@ -51,7 +66,14 @@ export async function POST(request: Request) {
     });
 
     if (!txRecord) {
-      return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
+      return errorResponse({
+        kind: "not_found",
+        message: "Transaction not found",
+        route: ROUTE,
+        method: "POST",
+        userId: "system",
+        extraBody: { transactionId },
+      });
     }
 
     const { organizationId, merchantName, amount, merchantCategory } = txRecord;
@@ -67,8 +89,16 @@ export async function POST(request: Request) {
     // Resolve grantId
     const grantId = subscription?.grantId ?? virtualCard.expense?.grantId ?? txRecord.grantId;
     if (!grantId) {
-      console.error(`[process-charge] No grantId for tx ${transactionId}`);
-      return NextResponse.json({ error: "No grant linked" }, { status: 422 });
+      return errorResponse({
+        kind: "validation",
+        message: "No grant linked",
+        route: ROUTE,
+        method: "POST",
+        userId: "system",
+        organizationId,
+        status: 422,
+        extraBody: { transactionId },
+      });
     }
 
     // 3. Load grant
@@ -85,8 +115,16 @@ export async function POST(request: Request) {
     });
 
     if (!grant || grant.organizationId !== organizationId) {
-      console.error(`[process-charge] Grant mismatch for tx ${transactionId}`);
-      return NextResponse.json({ error: "Grant not found or org mismatch" }, { status: 422 });
+      return errorResponse({
+        kind: "validation",
+        message: "Grant not found or org mismatch",
+        route: ROUTE,
+        method: "POST",
+        userId: "system",
+        organizationId,
+        status: 422,
+        extraBody: { transactionId, grantId },
+      });
     }
 
     // 3a. Retry idempotency guard. QStash delivers-at-least-once, so a
@@ -361,7 +399,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, deduped: "race_loser" });
     }
 
-    console.error("[process-charge] Error:", error);
-    return NextResponse.json({ error: "Processing failed" }, { status: 500 });
+    return errorResponse({
+      kind: "internal",
+      message: "Processing failed",
+      route: ROUTE,
+      method: "POST",
+      userId: "system",
+      cause: error,
+    });
   }
 }

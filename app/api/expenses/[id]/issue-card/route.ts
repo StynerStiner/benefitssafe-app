@@ -4,6 +4,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { stripe } from "@/lib/stripe";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { checkLimitAccess, buildLimitReachedResponse, getCurrentPeriod } from "@/lib/feature-gates";
@@ -15,6 +16,8 @@ import { buildCardIssuedEmail } from "@/lib/services/email-templates";
 import { getIssuingAccount } from "@/lib/stripe-helpers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+const ROUTE = "api/expenses/[id]/issue-card:POST";
 
 // Platform Treasury Financial Account id — balance precheck target
 // when cards are issued in platform mode. See STRIPE.md.
@@ -36,12 +39,24 @@ export async function POST(
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse({
+        kind: "unauthorized",
+        message: "Unauthorized",
+        route: ROUTE,
+        method: "POST",
+      });
     }
 
     const { role, organizationId, id: userId } = session.user;
     if (role !== "nonprofit_admin" && role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return errorResponse({
+        kind: "forbidden",
+        message: "Forbidden",
+        route: ROUTE,
+        method: "POST",
+        userId,
+        organizationId,
+      });
     }
 
     // Rate limit: max 10 card issues per minute per user per org
@@ -49,21 +64,32 @@ export async function POST(
     const limitResult = rateLimit(rateLimitKey, RATE_LIMIT_CONFIGS.cardIssuance);
 
     if (!limitResult.allowed) {
-      return NextResponse.json(
-        {
-          error: "Rate limit exceeded",
+      return errorResponse({
+        kind: "validation",
+        message: "Rate limit exceeded",
+        route: ROUTE,
+        method: "POST",
+        userId,
+        organizationId,
+        status: 429,
+        extraBody: {
           message: "Too many card issuance requests. Please wait before trying again.",
           retryAfter: limitResult.resetAt,
         },
-        { status: 429, headers: { "Retry-After": limitResult.resetAt.toISOString() } },
-      );
+        headers: { "Retry-After": limitResult.resetAt.toISOString() },
+      });
     }
 
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === "sk_test_REMOVED_PLACEHOLDER") {
-      return NextResponse.json(
-        { error: "Stripe is not configured. Add STRIPE_SECRET_KEY to environment variables." },
-        { status: 503 },
-      );
+      return errorResponse({
+        kind: "internal",
+        message: "Stripe is not configured. Add STRIPE_SECRET_KEY to environment variables.",
+        route: ROUTE,
+        method: "POST",
+        userId,
+        organizationId,
+        status: 503,
+      });
     }
 
     // Gate: organization must have a connected bank account to issue cards
@@ -72,10 +98,14 @@ export async function POST(
       select: { stripeAccountId: true, stripeFinancialAccountId: true },
     });
     if (!org?.stripeAccountId) {
-      return NextResponse.json(
-        { error: "Connect your bank account before issuing cards. Go to Organization Settings > Funding to connect." },
-        { status: 400 },
-      );
+      return errorResponse({
+        kind: "validation",
+        message: "Connect your bank account before issuing cards. Go to Organization Settings > Funding to connect.",
+        route: ROUTE,
+        method: "POST",
+        userId,
+        organizationId,
+      });
     }
 
     // Hybrid routing: connected-account Issuing if available, otherwise
@@ -92,13 +122,15 @@ export async function POST(
         );
         const availableCash = fa.balance?.cash?.usd || 0;
         if (availableCash <= 0) {
-          return NextResponse.json(
-            {
-              error: "Your organization's Treasury account has no funds. Add funds before issuing cards.",
-              href: "/org-settings",
-            },
-            { status: 400 },
-          );
+          return errorResponse({
+            kind: "validation",
+            message: "Your organization's Treasury account has no funds. Add funds before issuing cards.",
+            route: ROUTE,
+            method: "POST",
+            userId,
+            organizationId,
+            extraBody: { href: "/org-settings" },
+          });
         }
       } else if (issuing.mode === "platform") {
         const fa = await stripe.treasury.financialAccounts.retrieve(
@@ -106,12 +138,15 @@ export async function POST(
         );
         const availableCash = fa.balance?.cash?.usd || 0;
         if (availableCash <= 0) {
-          return NextResponse.json(
-            {
-              error: "The BenefitsSafe platform funding account is temporarily unavailable. Please try again shortly or contact support.",
-            },
-            { status: 503 },
-          );
+          return errorResponse({
+            kind: "internal",
+            message: "The BenefitsSafe platform funding account is temporarily unavailable. Please try again shortly or contact support.",
+            route: ROUTE,
+            method: "POST",
+            userId,
+            organizationId,
+            status: 503,
+          });
         }
       }
     } catch (balanceErr) {
@@ -131,10 +166,15 @@ export async function POST(
       currentCardsIssued,
     );
     if (!limitCheck.allowed) {
-      return NextResponse.json(
-        buildLimitReachedResponse("maxCardsPerMonth", limitCheck),
-        { status: 403 },
-      );
+      return errorResponse({
+        kind: "forbidden",
+        message: "Card issuance limit reached for this period",
+        route: ROUTE,
+        method: "POST",
+        userId,
+        organizationId,
+        extraBody: buildLimitReachedResponse("maxCardsPerMonth", limitCheck),
+      });
     }
 
     const { id: expenseId } = await params;
@@ -142,10 +182,15 @@ export async function POST(
     const parsed = issueCardSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
-        { status: 400 },
-      );
+      return errorResponse({
+        kind: "validation",
+        message: "Validation failed",
+        route: ROUTE,
+        method: "POST",
+        userId,
+        organizationId,
+        extraBody: { details: parsed.error.flatten().fieldErrors },
+      });
     }
 
     const { cardType, expiresAt } = parsed.data;
@@ -173,19 +218,27 @@ export async function POST(
     });
 
     if (!expense) {
-      return NextResponse.json(
-        { error: "Approved expense not found or not in your organization" },
-        { status: 404 },
-      );
+      return errorResponse({
+        kind: "not_found",
+        message: "Approved expense not found or not in your organization",
+        route: ROUTE,
+        method: "POST",
+        userId,
+        organizationId,
+      });
     }
 
     // Check if active card already exists
     const activeCard = expense.virtualCards.find((c) => c.status === "ACTIVE");
     if (activeCard) {
-      return NextResponse.json(
-        { error: "An active card already exists for this expense" },
-        { status: 409 },
-      );
+      return errorResponse({
+        kind: "conflict",
+        message: "An active card already exists for this expense",
+        route: ROUTE,
+        method: "POST",
+        userId,
+        organizationId,
+      });
     }
 
     // Check cardholder eligibility before issuing
@@ -196,10 +249,14 @@ export async function POST(
 
     if (eligibility?.eligibilityStatus === "INELIGIBLE_WARRANT" ||
         eligibility?.eligibilityStatus === "INELIGIBLE_INCARCERATED") {
-      return NextResponse.json(
-        { error: `Cannot issue card: beneficiary is ${eligibility.eligibilityStatus === "INELIGIBLE_WARRANT" ? "ineligible due to active warrant" : "currently incarcerated"}` },
-        { status: 403 },
-      );
+      return errorResponse({
+        kind: "forbidden",
+        message: `Cannot issue card: beneficiary is ${eligibility.eligibilityStatus === "INELIGIBLE_WARRANT" ? "ineligible due to active warrant" : "currently incarcerated"}`,
+        route: ROUTE,
+        method: "POST",
+        userId,
+        organizationId,
+      });
     }
 
     if (!eligibility) {
@@ -212,10 +269,14 @@ export async function POST(
         },
       });
     } else if (eligibility.eligibilityStatus === "PENDING_VERIFICATION") {
-      return NextResponse.json(
-        { error: "Beneficiary eligibility is pending verification. Please complete the eligibility check first." },
-        { status: 400 },
-      );
+      return errorResponse({
+        kind: "validation",
+        message: "Beneficiary eligibility is pending verification. Please complete the eligibility check first.",
+        route: ROUTE,
+        method: "POST",
+        userId,
+        organizationId,
+      });
     }
 
     // OFAC sanctions screening
@@ -234,10 +295,16 @@ export async function POST(
         ofacResult = await screenAgainstOFAC(beneficiaryForOFAC.firstName, beneficiaryForOFAC.lastName);
       } catch (err) {
         if (err instanceof OFACScreeningError) {
-          return NextResponse.json(
-            { error: "OFAC screening service temporarily unavailable. Please try again in a few minutes." },
-            { status: 503 },
-          );
+          return errorResponse({
+            kind: "internal",
+            message: "OFAC screening service temporarily unavailable. Please try again in a few minutes.",
+            route: ROUTE,
+            method: "POST",
+            userId,
+            organizationId,
+            status: 503,
+            cause: err,
+          });
         }
         throw err;
       }
@@ -270,10 +337,15 @@ export async function POST(
           },
         });
 
-        return NextResponse.json(
-          { error: "Card issuance blocked: OFAC sanctions match detected. Please contact compliance." },
-          { status: 403 },
-        );
+        return errorResponse({
+          kind: "forbidden",
+          message: "Card issuance blocked: OFAC sanctions match detected. Please contact compliance.",
+          route: ROUTE,
+          method: "POST",
+          userId,
+          organizationId,
+          extraBody: { beneficiaryId: expense.requestedById },
+        });
       }
 
       // Record successful screening
@@ -326,10 +398,14 @@ export async function POST(
       });
 
       if (!beneficiary) {
-        return NextResponse.json(
-          { error: "Beneficiary not found" },
-          { status: 404 },
-        );
+        return errorResponse({
+          kind: "not_found",
+          message: "Beneficiary not found",
+          route: ROUTE,
+          method: "POST",
+          userId,
+          organizationId,
+        });
       }
 
       let cardholder;
@@ -448,10 +524,16 @@ export async function POST(
           exp_year: new Date().getFullYear() + 3,
         };
       } else {
-        return NextResponse.json(
-          { error: "Failed to create virtual card with Stripe. Ensure Stripe Issuing is enabled on your account." },
-          { status: 502 },
-        );
+        return errorResponse({
+          kind: "internal",
+          message: "Failed to create virtual card with Stripe. Ensure Stripe Issuing is enabled on your account.",
+          route: ROUTE,
+          method: "POST",
+          userId,
+          organizationId,
+          status: 502,
+          cause: stripeError,
+        });
       }
     }
 
@@ -555,16 +637,26 @@ export async function POST(
       }
       const prismaErr = txErr as { code?: string; message?: string };
       if (prismaErr.code === "P2002") {
-        return NextResponse.json(
-          { error: "A card already exists for this expense" },
-          { status: 409 },
-        );
+        return errorResponse({
+          kind: "conflict",
+          message: "A card already exists for this expense",
+          route: ROUTE,
+          method: "POST",
+          userId,
+          organizationId,
+          cause: txErr,
+        });
       }
       if (prismaErr.message === "expense_not_approved_at_commit") {
-        return NextResponse.json(
-          { error: "Expense is no longer in APPROVED state" },
-          { status: 409 },
-        );
+        return errorResponse({
+          kind: "conflict",
+          message: "Expense is no longer in APPROVED state",
+          route: ROUTE,
+          method: "POST",
+          userId,
+          organizationId,
+          cause: txErr,
+        });
       }
       throw txErr;
     }
@@ -664,7 +756,12 @@ export async function POST(
       card: virtualCard,
     }, { status: 201 });
   } catch (error) {
-    console.error("POST /api/expenses/[id]/issue-card error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE,
+      method: "POST",
+      cause: error,
+    });
   }
 }

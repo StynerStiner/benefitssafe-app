@@ -24,10 +24,13 @@
 
 import { auth } from "@/auth";
 import { prisma, retryOnSerializationFailure } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { stripe } from "@/lib/stripe";
 import { stripeOptsForCard } from "@/lib/stripe-helpers";
 import { NextResponse } from "next/server";
 import { Prisma } from "@/lib/generated/prisma/client";
+
+const ROUTE = "api/virtual-cards/[id]/close:POST";
 
 // Structured error for credit-back failures inside the card-close
 // $transaction. The outer catch maps this to a 400 (terminal, not
@@ -45,11 +48,23 @@ export async function POST(
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse({
+        kind: "unauthorized",
+        message: "Unauthorized",
+        route: ROUTE,
+        method: "POST",
+      });
     }
     const { role, organizationId } = session.user;
     if (role !== "nonprofit_admin" && role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return errorResponse({
+        kind: "forbidden",
+        message: "Forbidden",
+        route: ROUTE,
+        method: "POST",
+        userId: session.user.id,
+        organizationId,
+      });
     }
 
     const { id } = await params;
@@ -66,7 +81,16 @@ export async function POST(
         spendingCap: true,
       },
     });
-    if (!card) return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    if (!card) {
+      return errorResponse({
+        kind: "not_found",
+        message: "Card not found",
+        route: ROUTE,
+        method: "POST",
+        userId: session.user.id,
+        organizationId,
+      });
+    }
 
     // stripeOptsForCard honors the card's original issuing mode.
     const org = await prisma.organization.findUnique({
@@ -208,17 +232,27 @@ export async function POST(
       // Credit-back failed — terminal state error. Do not close the
       // card, do not retry. Return 400 so the admin can investigate.
       if (err instanceof InvalidCreditBackError) {
-        console.error(`[close] ${err.detail}`);
-        return NextResponse.json(
-          { error: err.detail, code: err.code },
-          { status: 400 },
-        );
+        return errorResponse({
+          kind: "validation",
+          message: err.detail,
+          route: ROUTE,
+          method: "POST",
+          userId: session.user.id,
+          organizationId,
+          extraBody: { code: err.code },
+          cause: err,
+        });
       }
       if ((err as Error)?.message === "card_already_cancelled") {
-        return NextResponse.json(
-          { error: "Card is already cancelled" },
-          { status: 409 },
-        );
+        return errorResponse({
+          kind: "conflict",
+          message: "Card is already cancelled",
+          route: ROUTE,
+          method: "POST",
+          userId: session.user.id,
+          organizationId,
+          cause: err,
+        });
       }
       throw err;
     }
@@ -247,7 +281,12 @@ export async function POST(
       creditBackAmount,
     });
   } catch (error) {
-    console.error("POST /api/virtual-cards/[id]/close error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE,
+      method: "POST",
+      cause: error,
+    });
   }
 }

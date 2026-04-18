@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/lib/db", () => ({ prisma: {} }));
 vi.mock("@/auth", () => ({ auth: vi.fn() }));
+vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -73,5 +74,29 @@ describe("Vendors API - Reject reason gate (BSRS Ch 5 P2)", () => {
     if (result.success) {
       expect(result.data.reason).toMatch(/TIN verification/);
     }
+  });
+});
+
+// BSRS Ch 5 P4.1 — every API error response carries a correlationId so an
+// operator can tie a user-reported failure to a structured server log line.
+describe("Vendors API - Error correlation IDs (BSRS Ch 5 P4.1)", () => {
+  it("POST /api/vendors/[id]/reject unauthorized response includes correlationId", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { auth } = await import("@/auth");
+    (auth as ReturnType<typeof vi.fn>).mockResolvedValueOnce(null);
+
+    const mod = await import("@/app/api/vendors/[id]/reject/route");
+    const res = await mod.POST(
+      new Request("http://localhost/api/vendors/vendor-1/reject", {
+        method: "POST",
+        body: JSON.stringify({ reason: "not needed for 401 path" }),
+      }),
+      { params: Promise.resolve({ id: "vendor-1" }) },
+    );
+
+    expect(res.status).toBe(401);
+    const body = await res.json();
+    expect(body.error).toBe("Unauthorized");
+    expect(body.correlationId).toMatch(/^req_[A-Za-z0-9_-]{8}$/);
   });
 });

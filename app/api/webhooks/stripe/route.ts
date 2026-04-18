@@ -15,11 +15,14 @@
 
 import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { stripe } from "@/lib/stripe";
 import { validateMCC } from "@/lib/mcc-controls";
 import { withOrgContext } from "@/lib/org-context";
 import { markWebhookProcessed, releaseWebhookEvent } from "@/lib/webhook-idempotency";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/webhooks/stripe:POST";
 
 const MCC_NAMES: Record<string, string> = {
   "5921": "Liquor Stores", "5813": "Bars & Nightclubs", "7995": "Gambling",
@@ -57,13 +60,23 @@ export async function POST(request: Request) {
     let event;
     if (!process.env.STRIPE_WEBHOOK_SECRET) {
       if (process.env.NODE_ENV === "production") {
-        console.error("STRIPE_WEBHOOK_SECRET is not set in production — rejecting webhook");
-        return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+        return errorResponse({
+          kind: "internal",
+          message: "Webhook not configured",
+          route: ROUTE,
+          method: "POST",
+          cause: new Error("STRIPE_WEBHOOK_SECRET is not set in production"),
+        });
       }
       // Development only: allow unsigned payloads
       event = JSON.parse(body);
     } else if (!signature) {
-      return NextResponse.json({ error: "Missing stripe-signature header" }, { status: 400 });
+      return errorResponse({
+        kind: "validation",
+        message: "Missing stripe-signature header",
+        route: ROUTE,
+        method: "POST",
+      });
     } else {
       try {
         event = stripe.webhooks.constructEvent(
@@ -71,9 +84,14 @@ export async function POST(request: Request) {
           signature,
           process.env.STRIPE_WEBHOOK_SECRET,
         );
-      } catch {
-        console.error("Stripe webhook signature verification failed");
-        return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+      } catch (sigErr) {
+        return errorResponse({
+          kind: "validation",
+          message: "Invalid signature",
+          route: ROUTE,
+          method: "POST",
+          cause: sigErr,
+        });
       }
     }
 
@@ -122,11 +140,16 @@ export async function POST(request: Request) {
       },
     );
   } catch (error) {
-    console.error("Stripe webhook error:", error);
     if (processedEventId) {
       await releaseWebhookEvent(processedEventId);
     }
-    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
+    return errorResponse({
+      kind: "internal",
+      message: "Webhook handler failed",
+      route: ROUTE,
+      method: "POST",
+      cause: error,
+    });
   }
 }
 

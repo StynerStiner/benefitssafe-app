@@ -3,8 +3,12 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { patchGrantBodySchema } from "@/lib/validations/grant";
 import { NextResponse } from "next/server";
+
+const ROUTE_GET = "api/grants/[id]:GET";
+const ROUTE_PATCH = "api/grants/[id]:PATCH";
 
 // GET /api/grants/[id] — get single grant with categories and expenses
 export async function GET(
@@ -14,7 +18,12 @@ export async function GET(
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse({
+        kind: "unauthorized",
+        message: "Unauthorized",
+        route: ROUTE_GET,
+        method: "GET",
+      });
     }
 
     const { id } = await params;
@@ -23,7 +32,14 @@ export async function GET(
     // Vendors never see grant detail — they have no business touching other
     // people's compliance rules or cards.
     if (role === "vendor") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return errorResponse({
+        kind: "forbidden",
+        message: "Forbidden",
+        route: ROUTE_GET,
+        method: "GET",
+        userId: session.user.id,
+        organizationId,
+      });
     }
 
     const grant = await prisma.grant.findFirst({
@@ -66,13 +82,25 @@ export async function GET(
     });
 
     if (!grant) {
-      return NextResponse.json({ error: "Grant not found" }, { status: 404 });
+      return errorResponse({
+        kind: "not_found",
+        message: "Grant not found",
+        route: ROUTE_GET,
+        method: "GET",
+        userId: session.user.id,
+        organizationId,
+      });
     }
 
     return NextResponse.json(grant);
   } catch (error) {
-    console.error("GET /api/grants/[id] error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_GET,
+      method: "GET",
+      cause: error,
+    });
   }
 }
 
@@ -84,14 +112,26 @@ export async function PATCH(
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse({
+        kind: "unauthorized",
+        message: "Unauthorized",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+      });
     }
 
     const { id } = await params;
     const { role, organizationId, id: userId } = session.user;
 
     if (role !== "nonprofit_admin" && role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return errorResponse({
+        kind: "forbidden",
+        message: "Forbidden",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+        userId,
+        organizationId,
+      });
     }
 
     // Pre-check org scope before opening the tx. The canonical spentAmount
@@ -103,17 +143,29 @@ export async function PATCH(
       select: { id: true },
     });
     if (!exists) {
-      return NextResponse.json({ error: "Grant not found" }, { status: 404 });
+      return errorResponse({
+        kind: "not_found",
+        message: "Grant not found",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+        userId,
+        organizationId,
+      });
     }
 
     const body = await request.json();
     const parsed = patchGrantBodySchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
-        { status: 400 }
-      );
+      return errorResponse({
+        kind: "validation",
+        message: "Validation failed",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+        userId,
+        organizationId,
+        extraBody: { details: parsed.error.flatten() },
+      });
     }
 
     // `reason` is carried in the request body only for AuditLog enrichment
@@ -195,9 +247,19 @@ export async function PATCH(
     return NextResponse.json(grant);
   } catch (error) {
     if ((error as Error)?.message === "grant_not_found") {
-      return NextResponse.json({ error: "Grant not found" }, { status: 404 });
+      return errorResponse({
+        kind: "not_found",
+        message: "Grant not found",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+      });
     }
-    console.error("PATCH /api/grants/[id] error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_PATCH,
+      method: "PATCH",
+      cause: error,
+    });
   }
 }
