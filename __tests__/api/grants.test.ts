@@ -163,3 +163,94 @@ describe("Grants API - Org Isolation", () => {
     // This is enforced by the API route, verified via audit
   });
 });
+
+// BSRS Ch 5 P2 — terminal-status transitions (ARCHIVED / COMPLETED) demand
+// a written justification captured in AuditLog.newValue.reason. The schema
+// is the first line of defense; these tests pin the gate shape so a future
+// refactor can't silently drop it.
+describe("Grants API - Terminal-status reason gate (BSRS Ch 5 P2)", () => {
+  it("rejects status=ARCHIVED when reason is missing", async () => {
+    const { patchGrantBodySchema } = await import("@/lib/validations/grant");
+
+    const result = patchGrantBodySchema.safeParse({ status: "ARCHIVED" });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) =>
+        i.path.includes("reason"),
+      );
+      expect(issue).toBeDefined();
+      expect(issue?.message).toMatch(/min 10 characters/i);
+    }
+  });
+
+  it("rejects status=COMPLETED when reason is under 10 chars", async () => {
+    const { patchGrantBodySchema } = await import("@/lib/validations/grant");
+
+    const result = patchGrantBodySchema.safeParse({
+      status: "COMPLETED",
+      reason: "too short",
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(
+        result.error.issues.some((i) => i.path.includes("reason")),
+      ).toBe(true);
+    }
+  });
+
+  it("accepts status=ARCHIVED with a sufficient reason", async () => {
+    const { patchGrantBodySchema } = await import("@/lib/validations/grant");
+
+    const result = patchGrantBodySchema.safeParse({
+      status: "ARCHIVED",
+      reason: "Grant period ended; final report filed with funder",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.reason).toMatch(/Grant period ended/);
+    }
+  });
+
+  it("does NOT require reason for status=PAUSED (reversible, routine)", async () => {
+    const { patchGrantBodySchema } = await import("@/lib/validations/grant");
+
+    const result = patchGrantBodySchema.safeParse({ status: "PAUSED" });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("does NOT require reason for status=ACTIVE", async () => {
+    const { patchGrantBodySchema } = await import("@/lib/validations/grant");
+
+    const result = patchGrantBodySchema.safeParse({ status: "ACTIVE" });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("does NOT require reason for non-status PATCH fields", async () => {
+    const { patchGrantBodySchema } = await import("@/lib/validations/grant");
+
+    // Changing a grant's name or description has no status transition, so
+    // no reason should be demanded.
+    const result = patchGrantBodySchema.safeParse({
+      name: "Renamed grant",
+      description: "Refined scope based on funder conversation",
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects whitespace-only reason on terminal transition", async () => {
+    const { patchGrantBodySchema } = await import("@/lib/validations/grant");
+
+    const result = patchGrantBodySchema.safeParse({
+      status: "ARCHIVED",
+      reason: "          ",
+    });
+
+    expect(result.success).toBe(false);
+  });
+});

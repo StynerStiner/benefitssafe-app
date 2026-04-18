@@ -21,5 +21,14 @@ export const createVendorSchema = z.object({
 
 export const updateVendorSchema = createVendorSchema.partial();
 
+// BSRS Ch 5 P2 — rejecting a vendor transitions them to BLOCKED, which is
+// a high-risk moderation decision (blocks all future disbursements on that
+// vendor org-wide). Reason is written verbatim to AuditLog.newValue.reason
+// for the weekly audit review cadence.
+export const rejectVendorSchema = z.object({
+  reason: z.string().min(10, "Reason must be at least 10 characters"),
+});
+
 export type CreateVendorInput = z.infer<typeof createVendorSchema>;
 export type UpdateVendorInput = z.infer<typeof updateVendorSchema>;
+export type RejectVendorInput = z.infer<typeof rejectVendorSchema>;

@@ -28,6 +28,28 @@ export const updateGrantSchema = createGrantSchema.partial().extend({
   status: z.enum(["DRAFT", "ACTIVE", "PAUSED", "COMPLETED", "ARCHIVED"]).optional(),
 });
 
+// BSRS Ch 5 P2 — transitions to ARCHIVED/COMPLETED are terminal and
+// irreversible without platform-admin intervention, so they require a
+// written justification that lands in AuditLog.newValue.reason. PAUSED
+// is intentionally not gated (reversible, routine operator action).
+export const terminalGrantStatuses = ["ARCHIVED", "COMPLETED"] as const;
+
+export const patchGrantBodySchema = updateGrantSchema
+  .extend({ reason: z.string().optional() })
+  .superRefine((val, ctx) => {
+    const isTerminal =
+      val.status !== undefined &&
+      (terminalGrantStatuses as readonly string[]).includes(val.status);
+    if (isTerminal && (!val.reason || val.reason.trim().length < 10)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["reason"],
+        message:
+          "Reason (min 10 characters) is required when setting grant status to ARCHIVED or COMPLETED",
+      });
+    }
+  });
+
 export const createBudgetCategorySchema = z.object({
   grantId: z.string().min(1),
   name: z.string().min(1, "Category name is required").max(100),

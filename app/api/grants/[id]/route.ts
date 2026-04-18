@@ -3,7 +3,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { updateGrantSchema } from "@/lib/validations/grant";
+import { patchGrantBodySchema } from "@/lib/validations/grant";
 import { NextResponse } from "next/server";
 
 // GET /api/grants/[id] — get single grant with categories and expenses
@@ -107,7 +107,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const parsed = updateGrantSchema.safeParse(body);
+    const parsed = patchGrantBodySchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -116,7 +116,9 @@ export async function PATCH(
       );
     }
 
-    const data = parsed.data;
+    // `reason` is carried in the request body only for AuditLog enrichment
+    // on terminal-status transitions — it is not a Grant column.
+    const { reason, ...data } = parsed.data;
 
     // Wrap the read + recompute + update in a single tx with FOR UPDATE
     // on the grant row. Without the lock, a concurrent card-charge or
@@ -179,7 +181,11 @@ export async function PATCH(
           entityType: "grant",
           entityId: updated.id,
           oldValue: { name: locked[0].name, status: locked[0].status },
-          newValue: { name: updated.name, status: updated.status },
+          newValue: {
+            name: updated.name,
+            status: updated.status,
+            ...(reason ? { reason: reason.trim() } : {}),
+          },
         },
       });
 

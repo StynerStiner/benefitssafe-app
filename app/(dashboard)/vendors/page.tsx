@@ -383,7 +383,7 @@ const UsersList = () => {
                     <div className="space-y-3">
                         <div>
                             <Label htmlFor="rejectReason" className="text-[#4b5563] dark:text-white mb-2">
-                                Reason (optional)
+                                Reason (required, min 10 characters)
                             </Label>
                             <Textarea
                                 id="rejectReason"
@@ -405,7 +405,7 @@ const UsersList = () => {
                         <Button
                             variant="destructive"
                             onClick={handleRejectConfirm}
-                            disabled={rejecting}
+                            disabled={rejecting || rejectReason.trim().length < 10}
                         >
                             {rejecting ? "Rejecting..." : "Reject Vendor"}
                         </Button>

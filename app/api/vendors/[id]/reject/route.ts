@@ -1,7 +1,12 @@
 // POST /api/vendors/[id]/reject — ORG-SCOPED
+//
+// BSRS Ch 5 P2 high-risk action: transitions vendor to BLOCKED. Reason is
+// required (zod min 10) and persisted verbatim to AuditLog.newValue.reason
+// for the weekly audit-log review cadence.
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { rejectVendorSchema } from "@/lib/validations/vendor";
 import { NextResponse } from "next/server";
 
 export async function POST(
@@ -21,7 +26,14 @@ export async function POST(
 
     const { id } = await params;
     const body = await request.json().catch(() => ({}));
-    const reason = body?.reason || "";
+    const parsed = rejectVendorSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0].message },
+        { status: 400 },
+      );
+    }
+    const reason = parsed.data.reason.trim();
 
     const vendor = await prisma.vendor.findFirst({
       where: { id, organizationId, archivedAt: null },
