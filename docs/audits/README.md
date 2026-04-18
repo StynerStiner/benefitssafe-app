@@ -84,11 +84,6 @@ protected.
   branch in `app/api/webhooks/stripe-charges/route.ts` (lines
   54-119). LOW — impacts log/notification loss only, no money
   movement.
-- [DDIA Ch7 P2] Wrap `handleDisputeCreated` in `$transaction`
-  following sibling `handleTransactionCreated` pattern — 20 min.
-- [DDIA Ch7 P3] Compare-and-set on invite token redemption
-  (`User.update` and `InviteToken.update` → `updateMany WHERE
-  usedAt: null`) — 10 min, cosmetic.
 - [DDIA Ch7 P4] Design conversation + implementation of DB-level
   CHECK constraints on money invariants (`Grant.remainingAmount
   >= 0`, `LedgerEntry` invariant). Conflicts with intentional
@@ -99,6 +94,13 @@ protected.
   — 10 min.
 
 **Action items (closed):**
+- 2026-04-17: DDIA Ch7 P3 — invite token redemption now uses
+  `updateMany` with `usedAt: null` guard (compare-and-set)
+  (commit `dab2f0f`). Prevents double-redemption race.
+- 2026-04-17: DDIA Ch7 P2 — `handleDisputeCreated` wrapped in
+  `prisma.$transaction` (commit `dea1876`). Multi-table dispute
+  processing is now atomic; matches sibling `handleTransactionCreated`
+  pattern.
 - 2026-04-17: DDIA Ch7 P1 — `retryOnSerializationFailure` wrapping
   on `virtual-cards/[id]/close` + `jobs/process-charge` Serializable
   tx sites (commit `70808ee`). Matches gold-standard pattern at
