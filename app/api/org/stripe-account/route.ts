@@ -4,7 +4,16 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+  CIRCUIT_OPEN_COOLDOWN_MS,
+} from "@/lib/stripe-circuit";
+import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/org/stripe-account:GET";
 
 export async function GET() {
   try {
@@ -38,7 +47,12 @@ export async function GET() {
     }
 
     try {
-      const account = await stripe.accounts.retrieve(org.stripeAccountId);
+      const accountId: string = org.stripeAccountId;
+      const account = await stripeCircuit.run(
+        `${ROUTE}:stripe.accounts.retrieve`,
+        { mode: "read" },
+        () => stripe.accounts.retrieve(accountId),
+      );
 
       // Get external accounts (bank accounts linked to this Connect account)
       let bankName: string | null = null;
@@ -62,7 +76,9 @@ export async function GET() {
         payoutsEnabled: account.payouts_enabled || false,
         chargesEnabled: account.charges_enabled || false,
       });
-    } catch {
+    } catch (err) {
+      // Pattern β: bubble circuit errors to outer catch for 503 mapping.
+      if (err instanceof CircuitOpenError || err instanceof CircuitTimeoutError) throw err;
       return NextResponse.json({
         connected: true,
         bankName: null,
@@ -74,6 +90,20 @@ export async function GET() {
       });
     }
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      const retryAfterSeconds =
+        error instanceof CircuitOpenError
+          ? Math.ceil(error.cooldown_ms_remaining / 1000)
+          : Math.ceil(CIRCUIT_OPEN_COOLDOWN_MS / 1000);
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Stripe is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "GET",
+        retryAfterSeconds,
+        cause: error,
+      });
+    }
     console.error("GET /api/org/stripe-account error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

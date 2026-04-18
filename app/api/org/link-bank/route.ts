@@ -15,9 +15,39 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+  CIRCUIT_OPEN_COOLDOWN_MS,
+} from "@/lib/stripe-circuit";
+import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
 
+const ROUTE_GET = "api/org/link-bank:GET";
+const ROUTE_POST = "api/org/link-bank:POST";
+const ROUTE_PATCH = "api/org/link-bank:PATCH";
+
 const ADMIN_ROLES = ["nonprofit_admin", "platform_admin"];
+
+function circuitErrorResponse(
+  error: CircuitOpenError | CircuitTimeoutError,
+  route: string,
+  method: "GET" | "POST" | "PATCH",
+) {
+  const retryAfterSeconds =
+    error instanceof CircuitOpenError
+      ? Math.ceil(error.cooldown_ms_remaining / 1000)
+      : Math.ceil(CIRCUIT_OPEN_COOLDOWN_MS / 1000);
+  return errorResponse({
+    kind: "dependency_unavailable",
+    message: "Stripe is currently unavailable; please retry.",
+    route,
+    method,
+    retryAfterSeconds,
+    cause: error,
+  });
+}
 
 async function loadOrg(userId: string) {
   const user = await prisma.user.findUnique({
@@ -56,9 +86,13 @@ export async function GET(): Promise<NextResponse> {
     // Fetch the PaymentMethod on the connected account so we can show the
     // admin which bank is currently on file.
     try {
-      const pm = await stripe.paymentMethods.retrieve(
-        organization.stripeOriginPaymentMethodId,
-        { stripeAccount: organization.stripeAccountId },
+      const pm = await stripeCircuit.run(
+        `${ROUTE_GET}:stripe.paymentMethods.retrieve`,
+        { mode: "read" },
+        () => stripe.paymentMethods.retrieve(
+          organization.stripeOriginPaymentMethodId,
+          { stripeAccount: organization.stripeAccountId },
+        ),
       );
       return NextResponse.json({
         linked: true,
@@ -68,6 +102,8 @@ export async function GET(): Promise<NextResponse> {
         accountType: pm.us_bank_account?.account_type ?? null,
       });
     } catch (err) {
+      // Pattern β: bubble circuit errors to outer catch for 503 mapping.
+      if (err instanceof CircuitOpenError || err instanceof CircuitTimeoutError) throw err;
       console.error("[link-bank] PaymentMethod retrieve failed:", err);
       return NextResponse.json({
         linked: true,
@@ -78,6 +114,9 @@ export async function GET(): Promise<NextResponse> {
       });
     }
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      return circuitErrorResponse(error, ROUTE_GET, "GET");
+    }
     console.error("GET /api/org/link-bank error:", error);
     return NextResponse.json({ error: "Failed to load bank link status" }, { status: 500 });
   }
@@ -102,24 +141,28 @@ export async function POST(): Promise<NextResponse> {
 
     // SetupIntent for a US bank account, off_session so the funding route
     // can debit ACH later without the admin present.
-    const setupIntent = await stripe.setupIntents.create(
-      {
-        payment_method_types: ["us_bank_account"],
-        usage: "off_session",
-        payment_method_options: {
-          us_bank_account: {
-            verification_method: "instant",
-            financial_connections: {
-              permissions: ["payment_method", "balances"],
+    const setupIntent = await stripeCircuit.run(
+      `${ROUTE_POST}:stripe.setupIntents.create`,
+      { mode: "write" },
+      () => stripe.setupIntents.create(
+        {
+          payment_method_types: ["us_bank_account"],
+          usage: "off_session",
+          payment_method_options: {
+            us_bank_account: {
+              verification_method: "instant",
+              financial_connections: {
+                permissions: ["payment_method", "balances"],
+              },
             },
           },
+          metadata: {
+            organizationId: organization.id,
+            purpose: "treasury_inbound_transfer_origin",
+          },
         },
-        metadata: {
-          organizationId: organization.id,
-          purpose: "treasury_inbound_transfer_origin",
-        },
-      },
-      { stripeAccount: organization.stripeAccountId },
+        { stripeAccount: organization.stripeAccountId },
+      ),
     );
 
     return NextResponse.json({
@@ -128,6 +171,9 @@ export async function POST(): Promise<NextResponse> {
       publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || "",
     });
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      return circuitErrorResponse(error, ROUTE_POST, "POST");
+    }
     console.error("POST /api/org/link-bank error:", error);
     return NextResponse.json({ error: "Failed to start bank link" }, { status: 500 });
   }
@@ -156,11 +202,17 @@ export async function PATCH(request: Request): Promise<NextResponse> {
     // Verify the PaymentMethod exists on the connected account before we save it.
     let pm;
     try {
-      pm = await stripe.paymentMethods.retrieve(
-        paymentMethodId,
-        { stripeAccount: organization.stripeAccountId },
+      pm = await stripeCircuit.run(
+        `${ROUTE_PATCH}:stripe.paymentMethods.retrieve`,
+        { mode: "read" },
+        () => stripe.paymentMethods.retrieve(
+          paymentMethodId,
+          { stripeAccount: organization.stripeAccountId },
+        ),
       );
     } catch (err) {
+      // Pattern β: bubble circuit errors to outer catch for 503 mapping.
+      if (err instanceof CircuitOpenError || err instanceof CircuitTimeoutError) throw err;
       console.error("[link-bank] PaymentMethod verify failed:", err);
       return NextResponse.json({ error: "PaymentMethod not found on your Stripe account" }, { status: 400 });
     }
@@ -197,6 +249,9 @@ export async function PATCH(request: Request): Promise<NextResponse> {
       last4: pm.us_bank_account?.last4 ?? null,
     });
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      return circuitErrorResponse(error, ROUTE_PATCH, "PATCH");
+    }
     console.error("PATCH /api/org/link-bank error:", error);
     return NextResponse.json({ error: "Failed to save bank link" }, { status: 500 });
   }

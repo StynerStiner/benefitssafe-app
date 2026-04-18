@@ -6,6 +6,12 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { errorResponse } from "@/lib/error-response";
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+  CIRCUIT_OPEN_COOLDOWN_MS,
+} from "@/lib/stripe-circuit";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { checkLimitAccess, buildLimitReachedResponse, getCurrentPeriod } from "@/lib/feature-gates";
 import { incrementUsage } from "@/lib/usage-tracker";
@@ -116,9 +122,13 @@ export async function POST(
     // Balance precheck against the appropriate Financial Account.
     try {
       if (issuing.mode === "connected" && org.stripeFinancialAccountId && !org.stripeFinancialAccountId.startsWith("fa_mock_")) {
-        const fa = await stripe.treasury.financialAccounts.retrieve(
-          org.stripeFinancialAccountId,
-          { stripeAccount: issuing.accountId! },
+        const fa = await stripeCircuit.run(
+          `${ROUTE}:stripe.treasury.financialAccounts.retrieve:connected`,
+          { mode: "read" },
+          () => stripe.treasury.financialAccounts.retrieve(
+            org.stripeFinancialAccountId,
+            { stripeAccount: issuing.accountId! },
+          ),
         );
         const availableCash = fa.balance?.cash?.usd || 0;
         if (availableCash <= 0) {
@@ -133,8 +143,12 @@ export async function POST(
           });
         }
       } else if (issuing.mode === "platform") {
-        const fa = await stripe.treasury.financialAccounts.retrieve(
-          PLATFORM_FINANCIAL_ACCOUNT_ID,
+        const fa = await stripeCircuit.run(
+          `${ROUTE}:stripe.treasury.financialAccounts.retrieve:platform`,
+          { mode: "read" },
+          () => stripe.treasury.financialAccounts.retrieve(
+            PLATFORM_FINANCIAL_ACCOUNT_ID,
+          ),
         );
         const availableCash = fa.balance?.cash?.usd || 0;
         if (availableCash <= 0) {
@@ -150,6 +164,8 @@ export async function POST(
         }
       }
     } catch (balanceErr) {
+      // Pattern β: bubble circuit errors to outer catch for 503 mapping.
+      if (balanceErr instanceof CircuitOpenError || balanceErr instanceof CircuitTimeoutError) throw balanceErr;
       console.error("[expenses/issue-card] Balance precheck failed:", balanceErr);
     }
 
@@ -425,12 +441,19 @@ export async function POST(
 
       if (existingCard) {
         try {
-          const existingStripeCard = await stripe.issuing.cards.retrieve(
-            existingCard.stripeCardId,
-            stripeOpts,
+          const existingStripeCard = await stripeCircuit.run(
+            `${ROUTE}:stripe.issuing.cards.retrieve`,
+            { mode: "read" },
+            () => stripe.issuing.cards.retrieve(
+              existingCard.stripeCardId,
+              stripeOpts,
+            ),
           );
           cardholder = existingStripeCard.cardholder;
-        } catch {
+        } catch (retrieveErr) {
+          // Pattern β: bubble circuit errors to the big stripe-create
+          // catch, which re-throws them to the outer catch for 503.
+          if (retrieveErr instanceof CircuitOpenError || retrieveErr instanceof CircuitTimeoutError) throw retrieveErr;
           // Fall through to create new cardholder
         }
       }
@@ -441,39 +464,43 @@ export async function POST(
         // Idempotency key ties the cardholder to (beneficiary, org, mode).
         // On retry Stripe returns the same cardholder instead of creating
         // a duplicate KYC record. (DDIA Ch7 Transaction Safety audit.)
-        const cardholderResult = await stripe.issuing.cardholders.create({
-          type: "individual",
-          name: `${beneficiary.firstName} ${beneficiary.lastName}`,
-          email: beneficiary.email,
-          individual: {
-            first_name: beneficiary.firstName,
-            last_name: beneficiary.lastName,
-            dob: {
-              day: beneficiary.dateOfBirth?.getDate(),
-              month: beneficiary.dateOfBirth?.getMonth() + 1,
-              year: beneficiary.dateOfBirth?.getFullYear(),
+        const cardholderResult = await stripeCircuit.run(
+          `${ROUTE}:stripe.issuing.cardholders.create`,
+          { mode: "write" },
+          () => stripe.issuing.cardholders.create({
+            type: "individual",
+            name: `${beneficiary.firstName} ${beneficiary.lastName}`,
+            email: beneficiary.email,
+            individual: {
+              first_name: beneficiary.firstName,
+              last_name: beneficiary.lastName,
+              dob: {
+                day: beneficiary.dateOfBirth?.getDate(),
+                month: beneficiary.dateOfBirth?.getMonth() + 1,
+                year: beneficiary.dateOfBirth?.getFullYear(),
+              },
             },
-          },
-          status: "active",
-          billing: {
-            address: {
-              line1: beneficiary.addressStreet || "On file with BenefitsSafe",
-              city: beneficiary.addressCity || "Los Angeles",
-              state: beneficiary.addressState || "CA",
-              postal_code: beneficiary.addressZip || "90001",
-              country: "US",
+            status: "active",
+            billing: {
+              address: {
+                line1: beneficiary.addressStreet || "On file with BenefitsSafe",
+                city: beneficiary.addressCity || "Los Angeles",
+                state: beneficiary.addressState || "CA",
+                postal_code: beneficiary.addressZip || "90001",
+                country: "US",
+              },
             },
-          },
-          metadata: {
-            organizationId,
-            beneficiaryId: expense.requestedById,
-            platform: "benefitssafe",
-            issuingMode: issuing.mode,
-          },
-        }, {
-          ...stripeOpts,
-          idempotencyKey: `cardholder-${expense.requestedById}-${issuing.mode}-${organizationId}`,
-        });
+            metadata: {
+              organizationId,
+              beneficiaryId: expense.requestedById,
+              platform: "benefitssafe",
+              issuingMode: issuing.mode,
+            },
+          }, {
+            ...stripeOpts,
+            idempotencyKey: `cardholder-${expense.requestedById}-${issuing.mode}-${organizationId}`,
+          }),
+        );
         cardholder = cardholderResult;
       }
 
@@ -486,34 +513,43 @@ export async function POST(
       // VirtualCard (DDIA Ch7 audit fix), this guarantees exactly-once
       // card issuance per expense regardless of double-clicks, 504
       // retries, or two nodes racing the same request.
-      stripeCard = await stripe.issuing.cards.create({
-        cardholder: typeof cardholder === "string" ? cardholder : cardholder.id,
-        type: "virtual",
-        currency: "usd",
-        status: "active",
-        spending_controls: {
-          spending_limits: [
-            {
-              amount: Math.round(parseFloat(expense.amount.toString()) * 100), // Stripe uses cents
-              interval: cardType === "monthly" ? "monthly" : "all_time",
-            },
-          ],
-          blocked_categories: blockedCategories.length > 0 ? blockedCategories : undefined,
-        },
-        metadata: {
-          organizationId,
-          expenseId: expense.id,
-          grantId: expense.grantId,
-          vendorId: expense.vendorId || "",
-          beneficiaryId: expense.requestedById,
-          platform: "benefitssafe",
-          issuingMode: issuing.mode,
-        },
-      }, {
-        ...stripeOpts,
-        idempotencyKey: `card-exp-${expense.id}-${issuing.mode}`,
-      });
+      stripeCard = await stripeCircuit.run(
+        `${ROUTE}:stripe.issuing.cards.create`,
+        { mode: "write" },
+        () => stripe.issuing.cards.create({
+          cardholder: typeof cardholder === "string" ? cardholder : cardholder.id,
+          type: "virtual",
+          currency: "usd",
+          status: "active",
+          spending_controls: {
+            spending_limits: [
+              {
+                amount: Math.round(parseFloat(expense.amount.toString()) * 100), // Stripe uses cents
+                interval: cardType === "monthly" ? "monthly" : "all_time",
+              },
+            ],
+            blocked_categories: blockedCategories.length > 0 ? blockedCategories : undefined,
+          },
+          metadata: {
+            organizationId,
+            expenseId: expense.id,
+            grantId: expense.grantId,
+            vendorId: expense.vendorId || "",
+            beneficiaryId: expense.requestedById,
+            platform: "benefitssafe",
+            issuingMode: issuing.mode,
+          },
+        }, {
+          ...stripeOpts,
+          idempotencyKey: `card-exp-${expense.id}-${issuing.mode}`,
+        }),
+      );
     } catch (stripeError) {
+      // Pattern β: bubble circuit errors to outer catch for 503 mapping.
+      // Without this, circuit open would fall into the dev-mock or
+      // prod-502 branches below — neither of which is the right UX for a
+      // transient Stripe outage.
+      if (stripeError instanceof CircuitOpenError || stripeError instanceof CircuitTimeoutError) throw stripeError;
       console.error("Stripe card creation error:", stripeError);
       // Only allow mock cards in local development — NEVER in production
       if (process.env.NODE_ENV === "development") {
@@ -622,12 +658,21 @@ export async function POST(
       // lingers on the Stripe account. Mock cards (dev) are skipped.
       if (stripeCard.id && !stripeCard.id.startsWith("ic_mock_")) {
         try {
-          await stripe.issuing.cards.update(
-            stripeCard.id,
-            { status: "canceled" },
-            stripeOpts,
+          await stripeCircuit.run(
+            `${ROUTE}:stripe.issuing.cards.update:compensate`,
+            { mode: "write" },
+            () => stripe.issuing.cards.update(
+              stripeCard.id,
+              { status: "canceled" },
+              stripeOpts,
+            ),
           );
         } catch (cancelErr) {
+          // Pattern β: don't suppress a circuit error here — the tx
+          // failure above is already the primary response path, but we
+          // want the outer catch to map to 503 if this was circuit-open.
+          // (Compensation failure otherwise logs + orphan as before.)
+          if (cancelErr instanceof CircuitOpenError || cancelErr instanceof CircuitTimeoutError) throw cancelErr;
           console.error(
             "[expenses/issue-card] compensation failed — orphan Stripe card:",
             stripeCard.id,
@@ -756,6 +801,20 @@ export async function POST(
       card: virtualCard,
     }, { status: 201 });
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      const retryAfterSeconds =
+        error instanceof CircuitOpenError
+          ? Math.ceil(error.cooldown_ms_remaining / 1000)
+          : Math.ceil(CIRCUIT_OPEN_COOLDOWN_MS / 1000);
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Stripe is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds,
+        cause: error,
+      });
+    }
     return errorResponse({
       kind: "internal",
       message: "Internal server error",

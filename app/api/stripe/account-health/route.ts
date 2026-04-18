@@ -7,6 +7,15 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+  CIRCUIT_OPEN_COOLDOWN_MS,
+} from "@/lib/stripe-circuit";
+import { errorResponse } from "@/lib/error-response";
+
+const ROUTE = "api/stripe/account-health:GET";
 
 export async function GET(request: Request) {
   try {
@@ -77,7 +86,11 @@ export async function GET(request: Request) {
         }
 
         try {
-          const account = await stripe.accounts.retrieve(org.stripeAccountId);
+          const account = await stripeCircuit.run(
+            `${ROUTE}:stripe.accounts.retrieve`,
+            { mode: "read" },
+            () => stripe.accounts.retrieve(org.stripeAccountId),
+          );
 
           return {
             organizationId: org.id,
@@ -112,6 +125,8 @@ export async function GET(request: Request) {
             readinessScore: calculateReadinessScore(account),
           };
         } catch (error) {
+          // Pattern β: bubble circuit errors to outer catch for 503 mapping.
+          if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) throw error;
           console.error(`Failed to fetch Stripe account ${org.stripeAccountId}:`, error);
           return {
             organizationId: org.id,
@@ -148,6 +163,20 @@ export async function GET(request: Request) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      const retryAfterSeconds =
+        error instanceof CircuitOpenError
+          ? Math.ceil(error.cooldown_ms_remaining / 1000)
+          : Math.ceil(CIRCUIT_OPEN_COOLDOWN_MS / 1000);
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Stripe is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "GET",
+        retryAfterSeconds,
+        cause: error,
+      });
+    }
     console.error("GET /api/stripe/account-health error:", error);
     return NextResponse.json(
       { error: "Failed to fetch account health" },

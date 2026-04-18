@@ -6,7 +6,36 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+  CIRCUIT_OPEN_COOLDOWN_MS,
+} from "@/lib/stripe-circuit";
+import { errorResponse } from "@/lib/error-response";
 import { z } from "zod";
+
+const ROUTE_GET = "api/org/fund:GET";
+const ROUTE_POST = "api/org/fund:POST";
+
+function circuitErrorResponse(
+  error: CircuitOpenError | CircuitTimeoutError,
+  route: string,
+  method: "GET" | "POST",
+) {
+  const retryAfterSeconds =
+    error instanceof CircuitOpenError
+      ? Math.ceil(error.cooldown_ms_remaining / 1000)
+      : Math.ceil(CIRCUIT_OPEN_COOLDOWN_MS / 1000);
+  return errorResponse({
+    kind: "dependency_unavailable",
+    message: "Stripe is currently unavailable; please retry.",
+    route,
+    method,
+    retryAfterSeconds,
+    cause: error,
+  });
+}
 
 const fundTransferSchema = z.object({
   amount: z.number().positive("Amount must be a positive number"),
@@ -81,19 +110,27 @@ export async function GET(): Promise<NextResponse> {
 
     try {
       // Retrieve the Financial Account to get balance
-      const financialAccount = await stripe.treasury.financialAccounts.retrieve(
-        financialAccountId,
-        { expand: ["financial_addresses"] },
-        { stripeAccount: stripeAccountId },
+      const financialAccount = await stripeCircuit.run(
+        `${ROUTE_GET}:stripe.treasury.financialAccounts.retrieve`,
+        { mode: "read" },
+        () => stripe.treasury.financialAccounts.retrieve(
+          financialAccountId,
+          { expand: ["financial_addresses"] },
+          { stripeAccount: stripeAccountId },
+        ),
       );
 
       // Get recent inbound transfers
-      const inboundTransfers = await stripe.treasury.inboundTransfers.list(
-        {
-          financial_account: financialAccountId,
-          limit: 20,
-        },
-        { stripeAccount: stripeAccountId },
+      const inboundTransfers = await stripeCircuit.run(
+        `${ROUTE_GET}:stripe.treasury.inboundTransfers.list`,
+        { mode: "read" },
+        () => stripe.treasury.inboundTransfers.list(
+          {
+            financial_account: financialAccountId,
+            limit: 20,
+          },
+          { stripeAccount: stripeAccountId },
+        ),
       );
 
       return NextResponse.json({
@@ -109,6 +146,8 @@ export async function GET(): Promise<NextResponse> {
         })),
       });
     } catch (stripeError) {
+      // Pattern β: bubble circuit errors to outer catch for 503 mapping.
+      if (stripeError instanceof CircuitOpenError || stripeError instanceof CircuitTimeoutError) throw stripeError;
       console.warn("Failed to retrieve Treasury balance (dev mode?):", stripeError);
       return NextResponse.json({
         balance: { cash: 0, inbound_pending: 0, outbound_pending: 0 },
@@ -118,6 +157,9 @@ export async function GET(): Promise<NextResponse> {
       });
     }
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      return circuitErrorResponse(error, ROUTE_GET, "GET");
+    }
     console.error("GET /api/org/fund error:", error);
     return NextResponse.json(
       { error: "Failed to retrieve fund balance" },
@@ -251,6 +293,18 @@ export async function POST(request: Request): Promise<NextResponse> {
     // violation, and we return the existing row's state instead of
     // calling Stripe again. This survives any retry window — there is
     // no time bucket to roll over.
+    //
+    // TODO(reconciliation): if anything between this INSERT and the
+    // stripe.treasury.inboundTransfers.create call below errors —
+    // CircuitOpenError, CircuitTimeoutError, Stripe 5xx, network
+    // reset — this row stays PENDING and a same-requestId retry
+    // hits P2002 → 409 "in_progress" indefinitely. The race existed
+    // pre-circuit but surfaces more reliably now that circuit-open
+    // is a distinct failure mode. Follow-up: reconciliation cron
+    // that sweeps PENDING FundTransfers older than N minutes and
+    // either reconciles against Stripe or marks FAILED so the admin
+    // can retry with a fresh requestId. Out of scope for BSRS Ch 8
+    // P1b; tracked for Phase 2B.
     let fundTransfer;
     try {
       fundTransfer = await prisma.fundTransfer.create({
@@ -344,13 +398,17 @@ export async function POST(request: Request): Promise<NextResponse> {
     const idempotencyKey = `ibt-${user.organizationId}-${requestId}`;
 
     try {
-      const transfer = await stripe.treasury.inboundTransfers.create({
-        financial_account: financialAccountId,
-        amount: amountInCents,
-        currency: "usd",
-        origin_payment_method: bankPaymentMethodId,
-        description: "Grant fund deposit",
-      }, { stripeAccount: stripeAccountId, idempotencyKey });
+      const transfer = await stripeCircuit.run(
+        `${ROUTE_POST}:stripe.treasury.inboundTransfers.create`,
+        { mode: "write" },
+        () => stripe.treasury.inboundTransfers.create({
+          financial_account: financialAccountId,
+          amount: amountInCents,
+          currency: "usd",
+          origin_payment_method: bankPaymentMethodId,
+          description: "Grant fund deposit",
+        }, { stripeAccount: stripeAccountId, idempotencyKey }),
+      );
 
       // Mark the FundTransfer as SUCCEEDED with the Stripe transfer ID.
       await prisma.fundTransfer.update({
@@ -390,6 +448,11 @@ export async function POST(request: Request): Promise<NextResponse> {
         },
       });
     } catch (stripeError) {
+      // Pattern β: bubble circuit errors to outer catch for 503 mapping.
+      // Circuit open/timeout must not be recorded as a terminal FAILED
+      // transfer — it's a transient dependency outage, and the caller
+      // should retry with the same requestId once cooldown elapses.
+      if (stripeError instanceof CircuitOpenError || stripeError instanceof CircuitTimeoutError) throw stripeError;
       // Stripe call failed — mark the FundTransfer as FAILED.
       const failureReason = (stripeError instanceof Error ? stripeError.message : "Unknown Stripe error").slice(0, 500);
       console.error("[org/fund] Stripe inbound transfer failed:", failureReason);
@@ -429,6 +492,9 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      return circuitErrorResponse(error, ROUTE_POST, "POST");
+    }
     console.error("POST /api/org/fund error:", error);
     return NextResponse.json(
       { error: "Failed to initiate fund transfer" },

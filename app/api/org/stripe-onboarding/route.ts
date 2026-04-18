@@ -7,6 +7,35 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+  CIRCUIT_OPEN_COOLDOWN_MS,
+} from "@/lib/stripe-circuit";
+import { errorResponse } from "@/lib/error-response";
+
+const ROUTE_POST = "api/org/stripe-onboarding:POST";
+const ROUTE_GET = "api/org/stripe-onboarding:GET";
+
+function circuitErrorResponse(
+  error: CircuitOpenError | CircuitTimeoutError,
+  route: string,
+  method: "GET" | "POST",
+) {
+  const retryAfterSeconds =
+    error instanceof CircuitOpenError
+      ? Math.ceil(error.cooldown_ms_remaining / 1000)
+      : Math.ceil(CIRCUIT_OPEN_COOLDOWN_MS / 1000);
+  return errorResponse({
+    kind: "dependency_unavailable",
+    message: "Stripe is currently unavailable; please retry.",
+    route,
+    method,
+    retryAfterSeconds,
+    cause: error,
+  });
+}
 
 interface OnboardingResponse {
   url?: string;
@@ -92,35 +121,15 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
       // request.
       let account;
       try {
-        account = await stripe.accounts.create(
-          {
-            type: "custom",
-            country: "US",
-            email: session.user.email || undefined,
-            capabilities,
-            business_profile: {
-              name: organization.name,
-              product_description: "Nonprofit grant disbursement platform for restricted fund management",
-              url: organization.website || undefined,
-            },
-            business_type: "non_profit",
-            tos_acceptance: {
-              service_agreement: "full",
-            },
-          },
-          { idempotencyKey: `onboarding-acct-full-${organization.id}` },
-        );
-      } catch (createError: unknown) {
-        const errMsg = createError instanceof Error ? createError.message : "";
-        if (errMsg.includes("treasury") || errMsg.includes("card_issuing")) {
-          account = await stripe.accounts.create(
+        account = await stripeCircuit.run(
+          `${ROUTE_POST}:stripe.accounts.create:full`,
+          { mode: "write" },
+          () => stripe.accounts.create(
             {
               type: "custom",
               country: "US",
               email: session.user.email || undefined,
-              capabilities: {
-                transfers: { requested: true },
-              },
+              capabilities,
               business_profile: {
                 name: organization.name,
                 product_description: "Nonprofit grant disbursement platform for restricted fund management",
@@ -131,7 +140,41 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
                 service_agreement: "full",
               },
             },
-            { idempotencyKey: `onboarding-acct-transfers-${organization.id}` },
+            { idempotencyKey: `onboarding-acct-full-${organization.id}` },
+          ),
+        );
+      } catch (createError: unknown) {
+        // Pattern β: bubble circuit errors to outer catch for 503 mapping.
+        // Circuit error messages never contain "treasury"/"card_issuing"
+        // so the existing discriminator would rethrow, but making this
+        // explicit prevents a future refactor of the guard from silently
+        // swallowing circuit opens.
+        if (createError instanceof CircuitOpenError || createError instanceof CircuitTimeoutError) throw createError;
+        const errMsg = createError instanceof Error ? createError.message : "";
+        if (errMsg.includes("treasury") || errMsg.includes("card_issuing")) {
+          account = await stripeCircuit.run(
+            `${ROUTE_POST}:stripe.accounts.create:transfers`,
+            { mode: "write" },
+            () => stripe.accounts.create(
+              {
+                type: "custom",
+                country: "US",
+                email: session.user.email || undefined,
+                capabilities: {
+                  transfers: { requested: true },
+                },
+                business_profile: {
+                  name: organization.name,
+                  product_description: "Nonprofit grant disbursement platform for restricted fund management",
+                  url: organization.website || undefined,
+                },
+                business_type: "non_profit",
+                tos_acceptance: {
+                  service_agreement: "full",
+                },
+              },
+              { idempotencyKey: `onboarding-acct-transfers-${organization.id}` },
+            ),
           );
         } else {
           throw createError;
@@ -142,32 +185,41 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
       // Create a Treasury Financial Account for this connected account
       let financialAccountId: string | null = null;
       try {
-        const financialAccount = await stripe.treasury.financialAccounts.create(
-          {
-            supported_currencies: ["usd"],
-            features: {
-              card_issuing: { requested: true },
-              deposit_insurance: { requested: true },
-              financial_addresses: { aba: { requested: true } },
-              inbound_transfers: { ach: { requested: true } },
-              intra_stripe_flows: { requested: true },
-              outbound_payments: {
-                ach: { requested: true },
-                us_domestic_wire: { requested: true },
-              },
-              outbound_transfers: {
-                ach: { requested: true },
-                us_domestic_wire: { requested: true },
+        const financialAccount = await stripeCircuit.run(
+          `${ROUTE_POST}:stripe.treasury.financialAccounts.create`,
+          { mode: "write" },
+          () => stripe.treasury.financialAccounts.create(
+            {
+              supported_currencies: ["usd"],
+              features: {
+                card_issuing: { requested: true },
+                deposit_insurance: { requested: true },
+                financial_addresses: { aba: { requested: true } },
+                inbound_transfers: { ach: { requested: true } },
+                intra_stripe_flows: { requested: true },
+                outbound_payments: {
+                  ach: { requested: true },
+                  us_domestic_wire: { requested: true },
+                },
+                outbound_transfers: {
+                  ach: { requested: true },
+                  us_domestic_wire: { requested: true },
+                },
               },
             },
-          },
-          {
-            stripeAccount: account.id,
-            idempotencyKey: `onboarding-fa-${organization.id}`,
-          },
+            {
+              stripeAccount: account.id,
+              idempotencyKey: `onboarding-fa-${organization.id}`,
+            },
+          ),
         );
         financialAccountId = financialAccount.id;
       } catch (treasuryError) {
+        // Pattern β: bubble circuit errors to outer catch for 503 mapping.
+        // Circuit open during Treasury create must NOT degrade to null FA
+        // id — that would persist an incomplete org state. Reject with
+        // 503 and let the admin retry once Stripe is healthy.
+        if (treasuryError instanceof CircuitOpenError || treasuryError instanceof CircuitTimeoutError) throw treasuryError;
         console.warn("Treasury Financial Account creation failed:", treasuryError);
         // Store null — Treasury can be configured later. Never store mock IDs.
         financialAccountId = null;
@@ -185,16 +237,20 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
 
     // Create onboarding link. 5-minute bucket dedupes quick retries.
     const linkBucket = Math.floor(Date.now() / (5 * 60 * 1000));
-    const onboardingLink = await stripe.accountLinks.create(
-      {
-        account: accountId,
-        type: "account_onboarding",
-        // When user completes onboarding, redirect to dashboard
-        success_url: `${process.env.NEXTAUTH_URL || "http://localhost:3002"}/org-settings?stripe_connect_success=true`,
-        // If user closes onboarding without completing, redirect to retry
-        failure_url: `${process.env.NEXTAUTH_URL || "http://localhost:3002"}/org-settings?stripe_connect_success=false`,
-      },
-      { idempotencyKey: `onboarding-link-${accountId}-${linkBucket}` },
+    const onboardingLink = await stripeCircuit.run(
+      `${ROUTE_POST}:stripe.accountLinks.create`,
+      { mode: "write" },
+      () => stripe.accountLinks.create(
+        {
+          account: accountId,
+          type: "account_onboarding",
+          // When user completes onboarding, redirect to dashboard
+          success_url: `${process.env.NEXTAUTH_URL || "http://localhost:3002"}/org-settings?stripe_connect_success=true`,
+          // If user closes onboarding without completing, redirect to retry
+          failure_url: `${process.env.NEXTAUTH_URL || "http://localhost:3002"}/org-settings?stripe_connect_success=false`,
+        },
+        { idempotencyKey: `onboarding-link-${accountId}-${linkBucket}` },
+      ),
     );
 
     // Create audit log
@@ -218,6 +274,9 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
       status: "pending",
     });
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      return circuitErrorResponse(error, ROUTE_POST, "POST");
+    }
     console.error("POST /api/org/stripe-onboarding error:", error);
     return NextResponse.json(
       { error: "Failed to create onboarding link" },
@@ -263,7 +322,11 @@ export async function GET(): Promise<NextResponse<OnboardingResponse>> {
     }
 
     // Get account details from Stripe
-    const account = await stripe.accounts.retrieve(organization.stripeAccountId);
+    const account = await stripeCircuit.run(
+      `${ROUTE_GET}:stripe.accounts.retrieve`,
+      { mode: "read" },
+      () => stripe.accounts.retrieve(organization.stripeAccountId),
+    );
 
     // Check if account is fully onboarded
     const isOnboarded =
@@ -279,6 +342,9 @@ export async function GET(): Promise<NextResponse<OnboardingResponse>> {
         : `Missing: ${account.requirements?.currently_due?.join(", ")}`,
     });
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      return circuitErrorResponse(error, ROUTE_GET, "GET");
+    }
     console.error("GET /api/org/stripe-onboarding error:", error);
     return NextResponse.json(
       { error: "Failed to check onboarding status" },
