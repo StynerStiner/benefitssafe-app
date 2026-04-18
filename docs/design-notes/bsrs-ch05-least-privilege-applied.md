@@ -431,6 +431,11 @@ Ordered by leverage × fix-cost. Solo-founder scope.
 
 ### P4 — Error correlation IDs + shared role-guard helper + convention linter
 
+**Status:**
+- P4.1 (correlation IDs on API error responses) CLOSED in commit `9338211`. 10 highest-leverage routes retrofitted; new `lib/error-response.ts` helper with structured Better Stack logging; Sentry paged only for internal errors; 19 new tests.
+- P4.2 (shared role-guard helper) OPEN.
+- P4.3 (convention linter) OPEN.
+
 **Problem:** Three related hygiene gaps.
 1. Generic 403s have no correlation ID — hard to debug when a nonprofit admin reports "I can't approve."
 2. Role-guard pattern is copy-pasted across 95 handlers — divergence risk.
@@ -481,7 +486,7 @@ Several topics Ch 5 touches will get fuller treatment later:
 | P2 | Access classification doc + audit review cadence + high-risk justifications | 2–3 hrs | §5.2 Classification, §5.3 Auditing | CLOSED in `69ea0d1`; P2b open |
 | P2b | Beneficiary deactivation reason-gate + shared reason-modal UI | 2–4 hrs | §5.3 Auditing | Open |
 | P3 | Expiring role grants (CPA-season + future hires) | 4–6 hrs | §5.5 Temporary Access | Open |
-| P4 | Correlation IDs + role-guard helper + convention linter | 3–5 hrs | §5.3 Diagnosing, §5.4 Policy Framework | Open |
+| P4 | Correlation IDs + role-guard helper + convention linter | 3–5 hrs | §5.3 Diagnosing, §5.4 Policy Framework | P4.1 closed in `9338211`; P4.2 + P4.3 open |
 | P5 | Policy framework + AuditLog immutability + retention policy | Multi-session | §5.4, defers to Ch 15 | Deferred |
 
 ---
