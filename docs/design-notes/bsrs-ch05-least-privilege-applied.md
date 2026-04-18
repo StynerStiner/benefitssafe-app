@@ -490,7 +490,7 @@ Several topics Ch 5 touches will get fuller treatment later:
 | P3 | Expiring role grants (CPA-season + future hires) | 4–6 hrs | §5.5 Temporary Access | Open |
 | P4 | Correlation IDs + role-guard helper + convention linter | 3–5 hrs | §5.3 Diagnosing, §5.4 Policy Framework | CLOSED — P4.1 `9338211`; P4.2 `95b7904`; P4.3 `059b9aa` |
 | P5 | Policy framework + AuditLog immutability + retention policy | Multi-session | §5.4, defers to Ch 15 | Deferred |
-| P6 | Testing-library infrastructure (`@testing-library/react` + `jest-dom` + `jsdom` + vitest config) for component-level unit tests — surfaced while closing P2b; covers this modal plus the rest of the UI codebase | 3–5 hrs | §5.3 Testing of least privilege | Open |
+| P6 | Testing-library infrastructure (`@testing-library/react` + `jest-dom` + `jsdom` + vitest config) for component-level unit tests — surfaced while closing P2b; covers this modal plus the rest of the UI codebase | 3–5 hrs | §5.3 Testing of least privilege | CLOSED in `5d0064b` |
 
 ---
 
