@@ -508,6 +508,7 @@ async function handleTransactionCreated(transaction: Record<string, unknown>) {
           data: {
             spentAmount: { increment: chargeAmount },
             remainingAmount: { decrement: chargeAmount },
+            ...(overspent ? { allowNegativeBalance: true } : {}),
           },
         });
 
