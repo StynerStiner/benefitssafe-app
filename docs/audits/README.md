@@ -11,10 +11,11 @@ See `webhook-idempotency-audit-2026-04-17.md`.
 
 **Summary:** 3 of 4 webhook handlers correctly wired via
 `lib/webhook-idempotency.ts` (`stripe`, `stripe-billing`,
-`stripe-charges`). 1 handler — `stripe/fraud` — has no idempotency
-wiring at all and will drop fraud signals on transient DB errors
-and fan out duplicate notifications on Stripe retries. Fix is
-mechanical, queued as Priority 1 for the next session.
+`stripe-charges`). 1 handler — `stripe/fraud` — had no idempotency
+wiring at all and would have dropped fraud signals on transient DB
+errors and fanned out duplicate notifications on Stripe retries.
+**Fixed in commit `1fb4df5` (2026-04-17)** — all 4 handlers now
+protected.
 
 ## 2026-04-17: Cross-org isolation audit
 
@@ -60,32 +61,28 @@ mechanical, queued as Priority 1 for the next session.
   webhook queries with context
 
 **Action items (open):**
-- **Priority 1 — Fix `app/api/webhooks/stripe/fraud/route.ts`
-  idempotency wiring (~30-45 min).** Confirmed broken in the
-  2026-04-17 webhook idempotency audit (see
-  `webhook-idempotency-audit-2026-04-17.md`). The handler has no
-  `markWebhookProcessed` call, and inner catches return 200 on
-  error — Stripe stops retrying, fraud signal is permanently lost
-  on any transient DB error. Mechanical fix, pattern already
-  established in sibling handlers.
-- Priority 2 — Review WEBHOOK_REVIEW bucket for cross-org
+- Priority 1 — Review WEBHOOK_REVIEW bucket for cross-org
   derive-org-from-Stripe-ID pattern (~1 hour). Start with
   `app/api/webhooks/stripe/route.ts` (11 queries — highest
   concentration).
-- Priority 3 — Review HANDLER_HAS_ORG money-flow files (~1 hour):
+- Priority 2 — Review HANDLER_HAS_ORG money-flow files (~1 hour):
   `app/api/ledger/route.ts`, `app/api/expenses/[id]/route.ts`,
   `app/api/org/fund/route.ts`.
-- Priority 4 — Review remaining HANDLER_HAS_ORG files (~2-3 hours).
-- Priority 5 — Prisma middleware to reject queries missing
+- Priority 3 — Review remaining HANDLER_HAS_ORG files (~2-3 hours).
+- Priority 4 — Prisma middleware to reject queries missing
   `organizationId` on org-scoped models (defense in depth —
   separate PDR). Must whitelist the EXEMPT_CRON / EXEMPT_PLATFORM
   / AUTH_FLOW paths.
-- Priority 6 — Release-on-error cleanup for the declined-auth
+- Priority 5 — Release-on-error cleanup for the declined-auth
   branch in `app/api/webhooks/stripe-charges/route.ts` (lines
   54-119). LOW — impacts log/notification loss only, no money
   movement.
 
 **Action items (closed):**
+- 2026-04-17: Fraud webhook idempotency (commit `1fb4df5`) —
+  wired `stripe-fraud` through `markWebhookProcessed` /
+  `releaseWebhookEvent`, matching sibling `stripe/route.ts`
+  pattern. See `webhook-idempotency-audit-2026-04-17.md`.
 - `lib/composio-usage.ts:33` annotated as intentionally platform-wide
   (see commit that added `docs/audits/`).
 - 7/7 TRUE_UNSCOPED queries individually reviewed and cleared.
