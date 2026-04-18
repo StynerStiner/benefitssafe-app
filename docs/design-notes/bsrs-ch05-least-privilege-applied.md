@@ -397,6 +397,21 @@ Ordered by leverage × fix-cost. Solo-founder scope.
 
 **BSRS section:** "Classifying Access Based on Risk" (§5.2), "Auditing" (§5.3).
 
+**Status:**
+- CLOSED in commit `69ea0d1` (access classification doc at `docs/security/access-classification.md`, audit-log review runbook at `docs/runbooks/audit-log-review.md`, zod reason-gates on grant terminal-status transitions + vendor reject, 13 new tests). Beneficiary deactivation reason-gate deferred to P2b (requires UI modal work).
+
+### P2b — Beneficiary deactivation reason-gate + UI modal
+
+**Problem:** `PATCH /api/beneficiaries/[id]` with `isActive=false` does not require a reason. Two UI toggle cards (`top-performer-card.tsx`, `todo-list-recent-card.tsx`) deactivate beneficiaries with a single click and no text input.
+
+**Fix:** Shared "reason modal" UI component (reusable pattern that applies here, P3 when CPA access expires, and future high-risk UI paths). Server-side zod-gate on `PATCH /api/beneficiaries/[id]` when `body.isActive === false`. Both toggle cards call the modal before firing the PATCH.
+
+**Scope:** 2–4 hrs. Modal component + 2 UI call-site updates + 1 route change + ~4 tests.
+
+**BSRS section:** §5.3 Auditing (business justifications).
+
+**Priority rationale:** split off from P2 to keep P2 tight and because the modal is reusable. The deactivation itself is org-internal (non-money) so urgency is lower than P1 and P3.
+
 ### P3 — Expiring role grants (CPA role, temporary platform access)
 
 **Problem:** All role grants are permanent. CPA role used for seasonal work has no expiry. Temporary platform_admin access for future hires has no mechanism.
@@ -463,7 +478,8 @@ Several topics Ch 5 touches will get fuller treatment later:
 | # | Gap | Scope | BSRS section | Status |
 |---|---|---|---|---|
 | P1 | Cross-org isolation regression test suite | 4–6 hrs | §5.3 Testing of least privilege | Option A closed in `907c657`; Option B open |
-| P2 | Access classification doc + audit review cadence + high-risk justifications | 2–3 hrs | §5.2 Classification, §5.3 Auditing | Open |
+| P2 | Access classification doc + audit review cadence + high-risk justifications | 2–3 hrs | §5.2 Classification, §5.3 Auditing | CLOSED in `69ea0d1`; P2b open |
+| P2b | Beneficiary deactivation reason-gate + shared reason-modal UI | 2–4 hrs | §5.3 Auditing | Open |
 | P3 | Expiring role grants (CPA-season + future hires) | 4–6 hrs | §5.5 Temporary Access | Open |
 | P4 | Correlation IDs + role-guard helper + convention linter | 3–5 hrs | §5.3 Diagnosing, §5.4 Policy Framework | Open |
 | P5 | Policy framework + AuditLog immutability + retention policy | Multi-session | §5.4, defers to Ch 15 | Deferred |
