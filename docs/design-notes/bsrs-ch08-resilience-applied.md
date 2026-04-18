@@ -182,7 +182,7 @@ Ordered by leverage × fix-cost. Solo-founder scope. Numbering continues the BSR
 
 **Leverage:** Prevents the highest-probability cascading failure mode (third-party API slowness). Stripe has had multi-minute slowdowns twice in 2025 per their status page; next incident is when, not if.
 
-**Shipped (P1a):** commit `4fc087a` — core module, error-response extension, 15 tests covering state machine + timeout + logging. P1b retrofit of 17 route files / 41 call sites is the next PDR.
+**Shipped (P1a + P1b):** P1a `4fc087a` (core module + tests), P1b `399c4e0` (Tier 1 user-facing, 10 sites) + `37cc4ba` (Tier 2 org-onboarding + card-issuance, 25 sites) + `10ebd00` (Tier 3 cron routes, 6 sites). 41 outbound Stripe call sites wrapped across 18 files. 27 Pattern β re-throws. Circuit breaker infrastructure is now load-bearing for every outbound Stripe call in the platform.
 
 ### P2 — Aurora read-only degraded mode + maintenance page
 
@@ -266,7 +266,7 @@ Ordered by leverage × fix-cost. Solo-founder scope. Numbering continues the BSR
 
 | P | Item | Effort | BSRS section | Status |
 |---|---|---|---|---|
-| P1 | Stripe circuit breaker + timeout budget | 4-6 hrs | Controlling Degradation | P1a CLOSED in `4fc087a`; P1b retrofit open |
+| P1 | Stripe circuit breaker + timeout budget | 4-6 hrs | Controlling Degradation | P1a CLOSED in `4fc087a`; P1b CLOSED across `399c4e0`+`37cc4ba`+`10ebd00` |
 | P2 | Aurora degraded-mode + maintenance page | 6-8 hrs | Controlling Degradation | Open |
 | P3 | Two failure domains (Vercel aliased deploys) | 8-12 hrs | Failure Domains | Open |
 | P4 | Quarterly key rotation + latency measurement | 3-4 hrs first, 30min recurring | Time Separation + Key Rotation Cycles | CLOSED in `bbb9378` |
