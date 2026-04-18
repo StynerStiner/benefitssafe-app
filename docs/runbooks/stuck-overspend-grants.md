@@ -72,7 +72,7 @@ curl -X POST https://app.benefitssafe.com/api/platform/grants/GRANT_ID/reset-neg
 | `403 { error: "Forbidden" }` | Session is not `platform_admin`. Do not escalate by changing roles — ask a platform admin to run this. |
 | `404 { error: "Grant not found" }` | The grant id does not exist. |
 
-A UI for this endpoint is **not yet implemented**; use curl or Postman. UI work is deferred to a later session.
+A platform-admin UI is available at `/platform/stuck-grants` (shipped in commit `3d95348`). Operators can also reach the endpoint directly via curl or Postman if preferred — the UI calls the same endpoint with the same validation rules.
 
 ## Audit trail
 

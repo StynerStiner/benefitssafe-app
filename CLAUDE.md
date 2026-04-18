@@ -13,15 +13,15 @@ There are 5 folders in ~/Downloads/Projects/:
 
 | Folder | Purpose | Edit? |
 |--------|---------|-------|
-| `benefits-safe-app-main` | **ACTIVE PROJECT** — the dashboard app | YES — all edits go here |
+| `benefits-safe-app` | **ACTIVE PROJECT** — the dashboard app (all 2026-04-17 work lands here; Vercel production points here) | YES — all edits go here |
 | `wowdash-next-shadcn-typescript-main` | **ORIGINAL TEMPLATE** — untouched reference copy | **NEVER EDIT** — READ ONLY |
-| `benefits-safe-app` | OLD app — business logic source, being phased out | Do not edit |
+| `benefits-safe-app-main` | OLD app — being phased out | Do not edit |
 | `benefits-safe-marketing` | Marketing website (port 3000) | Separate project |
 | (empty folder) | Ignore | — |
 
 ### THE GOLDEN RULE:
 - **READ** from `wowdash-next-shadcn-typescript-main` to understand original design
-- **EDIT** only in `benefits-safe-app-main`
+- **EDIT** only in `benefits-safe-app`
 - **NEVER** write to, edit, or modify `wowdash-next-shadcn-typescript-main`
 
 ---
@@ -335,8 +335,8 @@ STRIPE_PUBLISHABLE_KEY=
 
 | Project | Port | Command |
 |---------|------|---------|
-| benefits-safe-app-main | 3002 | `npm run dev -- -p 3002` |
-| benefits-safe-app (old) | 3001 | `npm run dev -- -p 3001` |
+| benefits-safe-app | 3002 | `npm run dev -- -p 3002` |
+| benefits-safe-app-main (old) | 3001 | `npm run dev -- -p 3001` |
 | benefits-safe-marketing | 3000 | `npm run dev -- -p 3000` |
 
 ---
