@@ -741,55 +741,57 @@ async function handleDisputeCreated(dispute: Record<string, unknown>) {
       return NextResponse.json({ received: true });
     }
 
-    // Update transaction status
-    await prisma.transaction.update({
-      where: { id: transaction.id },
-      data: {
-        status: "disputed",
-        declinedReason: reason,
-      },
-    });
-
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        organizationId: transaction.organizationId,
-        action: "dispute_created",
-        entityType: "transaction",
-        entityId: transaction.id,
-        newValue: {
-          disputeId,
-          reason,
-          amount: amount / 100,
-          status: "open",
-        },
-      },
-    });
-
-    // Notify admin about dispute
-    const admins = await prisma.user.findMany({
-      where: {
-        organizationId: transaction.organizationId,
-        role: {
-          in: ["nonprofit_admin", "platform_admin"],
-        },
-      },
-      select: { id: true },
-    });
-
-    for (const admin of admins) {
-      await prisma.notification.create({
+    await prisma.$transaction(async (tx) => {
+      // Update transaction status
+      await tx.transaction.update({
+        where: { id: transaction.id },
         data: {
-          userId: admin.id,
-          organizationId: transaction.organizationId,
-          type: "dispute_created",
-          entityId: disputeId,
-          title: `Dispute filed on card transaction: $${(amount / 100).toFixed(2)}`,
-          message: `A ${reason} dispute has been filed. Amount: $${(amount / 100).toFixed(2)}. Please review and respond within 7 days.`,
-          href: `/audit-trail?filter=dispute&id=${disputeId}`,
+          status: "disputed",
+          declinedReason: reason,
         },
       });
-    }
+
+      // Create audit log
+      await tx.auditLog.create({
+        data: {
+          organizationId: transaction.organizationId,
+          action: "dispute_created",
+          entityType: "transaction",
+          entityId: transaction.id,
+          newValue: {
+            disputeId,
+            reason,
+            amount: amount / 100,
+            status: "open",
+          },
+        },
+      });
+
+      // Notify admin about dispute
+      const admins = await tx.user.findMany({
+        where: {
+          organizationId: transaction.organizationId,
+          role: {
+            in: ["nonprofit_admin", "platform_admin"],
+          },
+        },
+        select: { id: true },
+      });
+
+      for (const admin of admins) {
+        await tx.notification.create({
+          data: {
+            userId: admin.id,
+            organizationId: transaction.organizationId,
+            type: "dispute_created",
+            entityId: disputeId,
+            title: `Dispute filed on card transaction: $${(amount / 100).toFixed(2)}`,
+            message: `A ${reason} dispute has been filed. Amount: $${(amount / 100).toFixed(2)}. Please review and respond within 7 days.`,
+            href: `/audit-trail?filter=dispute&id=${disputeId}`,
+          },
+        });
+      }
+    });
 
     return NextResponse.json({ received: true });
   } catch (error) {
