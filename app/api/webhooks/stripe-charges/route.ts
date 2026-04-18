@@ -113,6 +113,11 @@ export async function POST(request: Request) {
         }
       } catch (err) {
         console.error("Error processing declined authorization:", err);
+        await releaseWebhookEvent(event.id);
+        return NextResponse.json(
+          { error: "Processing failed" },
+          { status: 500 },
+        );
       }
     }
     return NextResponse.json({ received: true });
