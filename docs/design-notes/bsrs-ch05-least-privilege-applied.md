@@ -434,7 +434,9 @@ Ordered by leverage × fix-cost. Solo-founder scope.
 **Status:**
 - P4.1 (correlation IDs on API error responses) CLOSED in commit `9338211`. 10 highest-leverage routes retrofitted; new `lib/error-response.ts` helper with structured Better Stack logging; Sentry paged only for internal errors; 19 new tests.
 - P4.2 (shared role-guard helper) CLOSED in commit `95b7904`. New `lib/auth-guard.ts` with 4 convenience helpers + 2 primitives. 15 routes retrofitted; 13 gain correlationId coverage as a P4.1 free-rider. 20 new tests. Catch-order invariant awk-verified across all retrofits.
-- P4.3 (convention linter) OPEN.
+- P4.3 (convention linter) CLOSED in commit `059b9aa`. New `scripts/lint/auth-guard-convention.mjs` enforces the P4.1 + P4.2 patterns on every CI run. Three grep-based rules (import check, role access, bare error returns), 5 path-based exceptions, 3 allowlists (74 + 12 + 63 entries) grandfathering legacy routes as a one-way ratchet. Linter runs in ~140ms; blocks PRs on violations.
+
+**P4 is fully closed** across all three sub-items (`9338211` + `95b7904` + `059b9aa`). The P4.1 / P4.2 patterns are now self-enforcing.
 
 **Problem:** Three related hygiene gaps.
 1. Generic 403s have no correlation ID — hard to debug when a nonprofit admin reports "I can't approve."
@@ -486,7 +488,7 @@ Several topics Ch 5 touches will get fuller treatment later:
 | P2 | Access classification doc + audit review cadence + high-risk justifications | 2–3 hrs | §5.2 Classification, §5.3 Auditing | CLOSED in `69ea0d1`; P2b open |
 | P2b | Beneficiary deactivation reason-gate + shared reason-modal UI | 2–4 hrs | §5.3 Auditing | Open |
 | P3 | Expiring role grants (CPA-season + future hires) | 4–6 hrs | §5.5 Temporary Access | Open |
-| P4 | Correlation IDs + role-guard helper + convention linter | 3–5 hrs | §5.3 Diagnosing, §5.4 Policy Framework | P4.1 closed in `9338211`; P4.2 closed in `95b7904`; P4.3 open |
+| P4 | Correlation IDs + role-guard helper + convention linter | 3–5 hrs | §5.3 Diagnosing, §5.4 Policy Framework | CLOSED — P4.1 `9338211`; P4.2 `95b7904`; P4.3 `059b9aa` |
 | P5 | Policy framework + AuditLog immutability + retention policy | Multi-session | §5.4, defers to Ch 15 | Deferred |
 
 ---
