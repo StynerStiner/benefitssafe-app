@@ -5,6 +5,13 @@ codebase. Each audit is dated and committed so future developers and
 auditors have a paper trail of what was reviewed, when, and what the
 triage state was.
 
+## Design Notes
+
+Reference material that informs architecture decisions across
+sessions. Different from audits, which are point-in-time findings.
+
+- [DDIA Chapter 7 (Transactions) Applied to BenefitsSafe](../design-notes/ddia-ch07-transactions-applied.md) — 2026-04-17
+
 ## 2026-04-17: Webhook idempotency audit
 
 See `webhook-idempotency-audit-2026-04-17.md`.
@@ -77,6 +84,22 @@ protected.
   branch in `app/api/webhooks/stripe-charges/route.ts` (lines
   54-119). LOW — impacts log/notification loss only, no money
   movement.
+- [DDIA Ch7 P1] Wire `retryOnSerializationFailure` on 2 missing
+  Serializable tx sites (`virtual-cards/[id]/close`,
+  `jobs/process-charge`) — 15 min.
+- [DDIA Ch7 P2] Wrap `handleDisputeCreated` in `$transaction`
+  following sibling `handleTransactionCreated` pattern — 20 min.
+- [DDIA Ch7 P3] Compare-and-set on invite token redemption
+  (`User.update` and `InviteToken.update` → `updateMany WHERE
+  usedAt: null`) — 10 min, cosmetic.
+- [DDIA Ch7 P4] Design conversation + implementation of DB-level
+  CHECK constraints on money invariants (`Grant.remainingAmount
+  >= 0`, `LedgerEntry` invariant). Conflicts with intentional
+  overspend path in Stripe settlement — design call required
+  before implementation. TBD.
+- [DDIA Ch7 P5] Verify `VirtualCard` partial unique index
+  side-script applied to Aurora (`scripts/add-virtual-card-unique-constraints.ts`)
+  — 10 min.
 
 **Action items (closed):**
 - 2026-04-17: Fraud webhook idempotency (commit `1fb4df5`) —
