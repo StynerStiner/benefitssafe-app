@@ -51,11 +51,17 @@ const RELATIONAL_SCOPE: Record<string, string[]> = {
   Approval: ["expenseRequest", "grant", "organizationId"],
 };
 
-type Classification =
+export type Classification =
   | { kind: "allowed"; reason: string }
   | { kind: "shadow_violation"; details: string };
 
-function classifyQuery(
+/**
+ * Exported for unit tests only. Production callers should
+ * use orgScopingExtension() instead. Direct classification
+ * is not a stable API surface — the return reason strings
+ * may change as the classifier evolves.
+ */
+export function classifyQuery(
   model: string,
   operation: string,
   args: unknown,

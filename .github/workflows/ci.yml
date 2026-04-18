@@ -18,10 +18,8 @@ jobs:
       - run: npm ci
       - run: npx prisma generate
       - run: npx tsc --noEmit
-      # vitest and eslint are non-blocking until the pre-existing issues
-      # are cleaned up (the Ch9 audit found a grants.test.ts mock error,
-      # and there are open eslint warnings from the WowDash template
-      # files). Drop `|| true` from each line below once those are
-      # resolved so CI starts failing on new regressions.
-      - run: npx vitest run --reporter=verbose 2>&1 || true
+      # Vitest is blocking: all tests must pass. Eslint remains
+      # non-blocking until the pre-existing WowDash template file
+      # warnings are cleaned up (drop its `|| true` at that time).
+      - run: npx vitest run --reporter=verbose 2>&1
       - run: npx eslint . --max-warnings=0 2>&1 || true
