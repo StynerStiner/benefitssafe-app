@@ -23,7 +23,7 @@
 // path. There is nothing to reverse.
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma, retryOnSerializationFailure } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { stripeOptsForCard } from "@/lib/stripe-helpers";
 import { NextResponse } from "next/server";
@@ -81,7 +81,8 @@ export async function POST(
     let previousStatus: string;
     let creditBackAmount = 0;
     try {
-      const txResult = await prisma.$transaction(async (tx) => {
+      const txResult = await retryOnSerializationFailure(() =>
+        prisma.$transaction(async (tx) => {
         const updated = await tx.virtualCard.updateMany({
           where: {
             id,
@@ -199,7 +200,8 @@ export async function POST(
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
         maxWait: 5_000,
         timeout: 15_000,
-      });
+      }),
+      );
       previousStatus = txResult.previousStatus;
       creditBackAmount = txResult.creditAmount;
     } catch (err) {

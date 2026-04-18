@@ -2,7 +2,7 @@
 // POST /api/jobs/process-charge — Async processing of Stripe card charges
 // Called by QStash queue after webhook receives the event.
 
-import { prisma } from "@/lib/db";
+import { prisma, retryOnSerializationFailure } from "@/lib/db";
 import { classifyExpense } from "@/utils/compliance-rules";
 import { shouldAutoApprove } from "@/lib/auto-approve";
 import { verifyJobAuth, claimJobMessage } from "@/lib/queue";
@@ -201,7 +201,8 @@ export async function POST(request: Request) {
       // remainingAmount >= amount guard prevents the balance from going
       // negative. Without the WHERE, Prisma's { decrement } happily
       // drives the balance below zero. (DDIA Ch12 audit — C-2 fix.)
-      await prisma.$transaction(async (tx) => {
+      await retryOnSerializationFailure(() =>
+        prisma.$transaction(async (tx) => {
         // Lock grant row (belt-and-suspenders with Serializable)
         await tx.$queryRaw`
           SELECT id FROM "Grant"
@@ -267,7 +268,8 @@ export async function POST(request: Request) {
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
         maxWait: 5_000,
         timeout: 15_000,
-      });
+      }),
+      );
 
       if (adminUser) {
         await prisma.notification.create({
