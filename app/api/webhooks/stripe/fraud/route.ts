@@ -144,6 +144,7 @@ async function handleEarlyFraudWarning(warning: any) {
       // Audit log scoped to the resolved org.
       await prisma.auditLog.create({
         data: {
+          userId: "system_webhook",
           organizationId: transaction.organizationId,
           action: "fraud_warning",
           entityType: "transaction",
@@ -228,6 +229,8 @@ async function handleChargeFraudDetected(charge: any) {
     // audit record of the fraud event itself).
     await prisma.auditLog.create({
       data: {
+        userId: "system_webhook",
+        organizationId: transaction?.organizationId ?? "SYSTEM",
         action: "fraud_detected",
         entityType: "charge",
         entityId: chargeId,
@@ -459,6 +462,8 @@ async function handleAuthorizationFraudCheck(authorization: any) {
   // For now, just log it
   await prisma.auditLog.create({
     data: {
+      userId: "system_webhook",
+      organizationId: "SYSTEM",
       action: "authorization_fraud_check",
       entityType: "authorization",
       entityId: authorization.id,

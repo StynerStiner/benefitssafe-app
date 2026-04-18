@@ -755,6 +755,7 @@ async function handleDisputeCreated(dispute: Record<string, unknown>) {
       // Create audit log
       await tx.auditLog.create({
         data: {
+          userId: "system_webhook",
           organizationId: transaction.organizationId,
           action: "dispute_created",
           entityType: "transaction",
