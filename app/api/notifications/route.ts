@@ -1,24 +1,26 @@
-// GET  /api/notifications — Get notifications for current user
-// PATCH /api/notifications — Mark notifications as read
+// GET    /api/notifications — Get notifications for current user
+// DELETE /api/notifications — Delete specific or all read notifications
+// PATCH  /api/notifications — Mark notifications as read
 
-import { auth } from "@/auth";
+import { GuardDenial, requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { NextRequest, NextResponse } from "next/server";
+
+const ROUTE_GET = "api/notifications:GET";
+const ROUTE_DELETE = "api/notifications:DELETE";
+const ROUTE_PATCH = "api/notifications:PATCH";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { userId, organizationId } = await requireAuth(ROUTE_GET, "GET");
 
     const limit = parseInt(request.nextUrl.searchParams.get("limit") || "20");
     const unreadOnly = request.nextUrl.searchParams.get("unread") === "true";
     const typeFilter = request.nextUrl.searchParams.get("type");
 
-    const { organizationId } = session.user;
     const where: Record<string, unknown> = {
-      userId: session.user.id,
+      userId,
       organizationId, // Required for partition pruning
     };
     if (unreadOnly) {
@@ -40,7 +42,7 @@ export async function GET(request: NextRequest) {
         take: limit,
       }),
       prisma.notification.count({
-        where: { userId: session.user.id, organizationId, read: false },
+        where: { userId, organizationId, read: false },
       }),
     ]);
 
@@ -48,18 +50,21 @@ export async function GET(request: NextRequest) {
       headers: { 'Cache-Control': 'private, max-age=15, stale-while-revalidate=10' },
     });
   } catch (error) {
-    console.error("GET /api/notifications error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_GET,
+      method: "GET",
+      cause: error,
+    });
   }
 }
 
 // Delete specific notifications or all read notifications
 export async function DELETE(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { userId } = await requireAuth(ROUTE_DELETE, "DELETE");
 
     const body = await request.json().catch(() => ({}));
     const { notificationIds } = body;
@@ -67,29 +72,32 @@ export async function DELETE(request: Request) {
     if (Array.isArray(notificationIds) && notificationIds.length > 0) {
       // Delete specific notifications (verify they belong to this user)
       await prisma.notification.deleteMany({
-        where: { id: { in: notificationIds }, userId: session.user.id },
+        where: { id: { in: notificationIds }, userId },
       });
     } else {
       // Delete all read notifications for this user
       await prisma.notification.deleteMany({
-        where: { userId: session.user.id, read: true },
+        where: { userId, read: true },
       });
     }
 
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
-    console.error("DELETE /api/notifications error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_DELETE,
+      method: "DELETE",
+      cause: error,
+    });
   }
 }
 
 // Mark all or specific notifications as read
 export async function PATCH(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { userId } = await requireAuth(ROUTE_PATCH, "PATCH");
 
     const body = await request.json().catch(() => ({}));
     const { notificationId } = body;
@@ -97,20 +105,26 @@ export async function PATCH(request: Request) {
     if (notificationId) {
       // Verify the notification belongs to the current user (prevent IDOR)
       await prisma.notification.updateMany({
-        where: { id: notificationId, userId: session.user.id },
+        where: { id: notificationId, userId },
         data: { read: true },
       });
     } else {
       // Mark all as read
       await prisma.notification.updateMany({
-        where: { userId: session.user.id, read: false },
+        where: { userId, read: false },
         data: { read: true },
       });
     }
 
     return NextResponse.json({ message: "Marked as read" });
   } catch (error) {
-    console.error("PATCH /api/notifications error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_PATCH,
+      method: "PATCH",
+      cause: error,
+    });
   }
 }

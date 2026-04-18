@@ -20,21 +20,17 @@
 // the already-indexed `name` column. Do NOT implement now — YAGNI until
 // we actually cross the 500-org threshold.
 
-import { auth } from "@/auth";
+import { GuardDenial, requirePlatformAdmin } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
 
+const ROUTE = "api/platform/orgs:GET";
 const MAX_ORGS = 500;
 
 export async function GET(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    if (session.user.role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    await requirePlatformAdmin(ROUTE, "GET");
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.trim() || "";
@@ -66,7 +62,13 @@ export async function GET(request: Request) {
       truncated: orgs.length === MAX_ORGS,
     });
   } catch (error) {
-    console.error("GET /api/platform/orgs error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE,
+      method: "GET",
+      cause: error,
+    });
   }
 }

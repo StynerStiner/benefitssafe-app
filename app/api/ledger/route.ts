@@ -1,15 +1,13 @@
-import { auth } from "@/auth";
+import { GuardDenial, requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/ledger:GET";
 
 export async function GET(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { organizationId } = session.user;
+    const { organizationId } = await requireAuth(ROUTE, "GET");
     const { searchParams } = new URL(request.url);
 
     // Parse and validate pagination params
@@ -55,7 +53,13 @@ export async function GET(request: Request) {
       offset,
     });
   } catch (error) {
-    console.error("GET /api/ledger error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE,
+      method: "GET",
+      cause: error,
+    });
   }
 }

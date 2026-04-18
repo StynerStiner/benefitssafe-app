@@ -3,18 +3,16 @@
 // Also used by beneficiaries to see their own cards
 
 import * as Sentry from "@sentry/nextjs";
-import { auth } from "@/auth";
+import { GuardDenial, requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/virtual-cards:GET";
 
 export async function GET(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { role, organizationId, id: userId } = session.user;
+    const { role, organizationId, userId } = await requireAuth(ROUTE, "GET");
     const isBeneficiary = role === "beneficiary";
     const { searchParams } = new URL(request.url);
 
@@ -69,10 +67,16 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ data: cards, total, limit, offset });
   } catch (error) {
+    if (error instanceof GuardDenial) return error.toErrorResponse();
     Sentry.captureException(error, {
       tags: { route: '/api/virtual-cards', method: 'GET' },
     });
-    console.error("GET /api/virtual-cards error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE,
+      method: "GET",
+      cause: error,
+    });
   }
 }

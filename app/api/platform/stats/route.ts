@@ -1,22 +1,18 @@
 // PLATFORM ADMIN ONLY: Cross-organization aggregate stats.
 // No org scoping — platform_admin sees everything.
 
-import { auth } from "@/auth";
+import { GuardDenial, requirePlatformAdmin } from "@/lib/auth-guard";
 import { cached, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { withOrgContext } from "@/lib/org-context";
 import { NextResponse } from "next/server";
 
+const ROUTE = "api/platform/stats:GET";
+
 export async function GET() {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (session.user.role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    await requirePlatformAdmin(ROUTE, "GET");
 
     return withOrgContext(
       { kind: "exempt", reason: "PLATFORM_ADMIN", note: "stats" },
@@ -60,10 +56,13 @@ export async function GET() {
       },
     );
   } catch (error) {
-    console.error("Platform stats error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE,
+      method: "GET",
+      cause: error,
+    });
   }
 }

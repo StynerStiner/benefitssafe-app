@@ -2,31 +2,28 @@
 // GET  /api/vendors — list vendors (paginated, searchable)
 // POST /api/vendors — create vendor
 
-import { auth } from "@/auth";
+import { GuardDenial, requireAuth, requireRole } from "@/lib/auth-guard";
 import { cached, invalidateCacheByPrefix, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { validateRecipientEmail, sanitizeEmailForLog, buildSecureLink } from "@/lib/email-security";
+import { errorResponse } from "@/lib/error-response";
 import { createVendorSchema } from "@/lib/validations/vendor";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildInviteEmail } from "@/lib/services/email-templates";
 import { generateMembershipCode } from "@/lib/utils/membership-code";
 import { NextRequest, NextResponse } from "next/server";
 
+const ROUTE_GET = "api/vendors:GET";
+const ROUTE_POST = "api/vendors:POST";
 const ALLOWED_ROLES = ["nonprofit_admin", "nonprofit_staff", "platform_admin"];
 const WRITE_ROLES = ["nonprofit_admin", "platform_admin"];
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    if (!ALLOWED_ROLES.includes(session.user.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const { organizationId } = session.user;
+    const ctx = await requireAuth(ROUTE_GET, "GET");
+    requireRole(ctx, ALLOWED_ROLES, ROUTE_GET, "GET");
+    const { organizationId } = ctx;
     const params = request.nextUrl.searchParams;
     const search = params.get("search")?.trim();
     const status = params.get("status");
@@ -83,30 +80,35 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("GET /api/vendors error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_GET,
+      method: "GET",
+      cause: error,
+    });
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    if (!WRITE_ROLES.includes(session.user.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const { organizationId } = session.user;
+    const ctx = await requireAuth(ROUTE_POST, "POST");
+    requireRole(ctx, WRITE_ROLES, ROUTE_POST, "POST");
+    const { session, userId, organizationId } = ctx;
     const body = await request.json();
     const parsed = createVendorSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
-        { status: 400 },
-      );
+      return errorResponse({
+        kind: "validation",
+        message: "Validation failed",
+        route: ROUTE_POST,
+        method: "POST",
+        userId,
+        organizationId,
+        extraBody: { details: parsed.error.flatten().fieldErrors },
+      });
     }
 
     const data = parsed.data;
@@ -118,10 +120,14 @@ export async function POST(request: Request) {
       // Validate email against disposable domains and injection attacks
       const emailCheck = validateRecipientEmail(data.email);
       if (!emailCheck.valid) {
-        return NextResponse.json(
-          { error: emailCheck.reason || "Invalid email address" },
-          { status: 400 },
-        );
+        return errorResponse({
+          kind: "validation",
+          message: emailCheck.reason || "Invalid email address",
+          route: ROUTE_POST,
+          method: "POST",
+          userId,
+          organizationId,
+        });
       }
 
       // Check if a User with this email already exists
@@ -337,7 +343,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json(vendor, { status: 201 });
   } catch (error) {
-    console.error("POST /api/vendors error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_POST,
+      method: "POST",
+      cause: error,
+    });
   }
 }

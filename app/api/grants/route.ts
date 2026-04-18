@@ -2,26 +2,24 @@
 // No cross-organization data leakage possible.
 
 import * as Sentry from "@sentry/nextjs";
-import { auth } from "@/auth";
+import { GuardDenial, requireAdmin, requireAuth } from "@/lib/auth-guard";
 import { cached, invalidateCacheByPrefix, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
-import { captureApiError } from "@/lib/error-handler";
+import { errorResponse } from "@/lib/error-response";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { createGrantSchema } from "@/lib/validations/grant";
 import { checkLimitAccess, buildLimitReachedResponse } from "@/lib/feature-gates";
 import { incrementUsage } from "@/lib/usage-tracker";
 import { NextResponse } from "next/server";
 
+const ROUTE_GET = "api/grants:GET";
+const ROUTE_POST = "api/grants:POST";
+
 // GET /api/grants — list grants scoped to organization (paginated)
 export async function GET(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { role, organizationId } = session.user;
+    const { session, organizationId, role } = await requireAuth(ROUTE_GET, "GET");
     const { searchParams } = new URL(request.url);
 
     // Parse and validate pagination params
@@ -60,27 +58,24 @@ export async function GET(request: Request) {
       headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=15' },
     });
   } catch (error) {
+    if (error instanceof GuardDenial) return error.toErrorResponse();
     Sentry.captureException(error, {
       tags: { route: '/api/grants', method: 'GET' },
     });
-    captureApiError(error, { route: "GET /api/grants" });
-    console.error("GET /api/grants error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_GET,
+      method: "GET",
+      cause: error,
+    });
   }
 }
 
 // POST /api/grants — create a new grant
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { role, organizationId, id: userId } = session.user;
-    if (role !== "nonprofit_admin" && role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { session, userId, organizationId } = await requireAdmin(ROUTE_POST, "POST");
 
     // Rate limit: 10 requests per minute per user
     const rateLimitResult = rateLimit(
@@ -88,26 +83,34 @@ export async function POST(request: Request) {
       RATE_LIMIT_CONFIGS.grantCreate,
     );
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: "Too many requests. Please slow down." },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000)),
-            "X-RateLimit-Remaining": String(rateLimitResult.remaining),
-          },
+      return errorResponse({
+        kind: "validation",
+        message: "Too many requests. Please slow down.",
+        route: ROUTE_POST,
+        method: "POST",
+        userId,
+        organizationId,
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000)),
+          "X-RateLimit-Remaining": String(rateLimitResult.remaining),
         },
-      );
+      });
     }
 
     const body = await request.json();
     const parsed = createGrantSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
-        { status: 400 }
-      );
+      return errorResponse({
+        kind: "validation",
+        message: "Validation failed",
+        route: ROUTE_POST,
+        method: "POST",
+        userId,
+        organizationId,
+        extraBody: { details: parsed.error.flatten() },
+      });
     }
 
     const data = parsed.data;
@@ -122,10 +125,15 @@ export async function POST(request: Request) {
       currentGrantCount,
     );
     if (!limitCheck.allowed) {
-      return NextResponse.json(
-        buildLimitReachedResponse("maxGrants", limitCheck),
-        { status: 403 },
-      );
+      return errorResponse({
+        kind: "forbidden",
+        message: "Grant creation limit reached for this period",
+        route: ROUTE_POST,
+        method: "POST",
+        userId,
+        organizationId,
+        extraBody: buildLimitReachedResponse("maxGrants", limitCheck),
+      });
     }
 
     const grant = await prisma.grant.create({
@@ -179,11 +187,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json(grant, { status: 201 });
   } catch (error) {
+    if (error instanceof GuardDenial) return error.toErrorResponse();
     Sentry.captureException(error, {
       tags: { route: '/api/grants', method: 'POST' },
     });
-    captureApiError(error, { route: "POST /api/grants" });
-    console.error("POST /api/grants error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_POST,
+      method: "POST",
+      cause: error,
+    });
   }
 }

@@ -1,24 +1,25 @@
 // ORG-SCOPED vendor detail + update
-// GET   /api/vendors/[id]
-// PATCH /api/vendors/[id]
+// GET    /api/vendors/[id]
+// PATCH  /api/vendors/[id]
+// DELETE /api/vendors/[id]
 
-import { auth } from "@/auth";
+import { GuardDenial, requireAdmin, requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { updateVendorSchema } from "@/lib/validations/vendor";
 import { NextResponse } from "next/server";
+
+const ROUTE_GET = "api/vendors/[id]:GET";
+const ROUTE_PATCH = "api/vendors/[id]:PATCH";
+const ROUTE_DELETE = "api/vendors/[id]:DELETE";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
+    const { userId, organizationId } = await requireAuth(ROUTE_GET, "GET");
     const { id } = await params;
-    const { organizationId } = session.user;
 
     const vendor = await prisma.vendor.findFirst({
       where: { id, organizationId, archivedAt: null },
@@ -53,7 +54,14 @@ export async function GET(
     });
 
     if (!vendor) {
-      return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
+      return errorResponse({
+        kind: "not_found",
+        message: "Vendor not found",
+        route: ROUTE_GET,
+        method: "GET",
+        userId,
+        organizationId,
+      });
     }
 
     // Calculate total paid
@@ -69,8 +77,14 @@ export async function GET(
       lastTransaction,
     });
   } catch (error) {
-    console.error("GET /api/vendors/[id] error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_GET,
+      method: "GET",
+      cause: error,
+    });
   }
 }
 
@@ -79,25 +93,22 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { role, organizationId } = session.user;
-    if (role !== "nonprofit_admin" && role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { userId, organizationId } = await requireAdmin(ROUTE_PATCH, "PATCH");
 
     const { id } = await params;
     const body = await request.json();
     const parsed = updateVendorSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
-        { status: 400 },
-      );
+      return errorResponse({
+        kind: "validation",
+        message: "Validation failed",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+        userId,
+        organizationId,
+        extraBody: { details: parsed.error.flatten().fieldErrors },
+      });
     }
 
     const existing = await prisma.vendor.findFirst({
@@ -106,7 +117,14 @@ export async function PATCH(
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
+      return errorResponse({
+        kind: "not_found",
+        message: "Vendor not found",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+        userId,
+        organizationId,
+      });
     }
 
     const updated = await prisma.vendor.update({
@@ -117,7 +135,7 @@ export async function PATCH(
 
     await prisma.auditLog.create({
       data: {
-        userId: session.user.id,
+        userId,
         organizationId,
         action: "update",
         entityType: "vendor",
@@ -128,8 +146,14 @@ export async function PATCH(
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("PATCH /api/vendors/[id] error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_PATCH,
+      method: "PATCH",
+      cause: error,
+    });
   }
 }
 
@@ -138,15 +162,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { role, organizationId } = session.user;
-    if (role !== "nonprofit_admin" && role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { userId, organizationId } = await requireAdmin(ROUTE_DELETE, "DELETE");
 
     const { id } = await params;
 
@@ -156,7 +172,14 @@ export async function DELETE(
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
+      return errorResponse({
+        kind: "not_found",
+        message: "Vendor not found",
+        route: ROUTE_DELETE,
+        method: "DELETE",
+        userId,
+        organizationId,
+      });
     }
 
     await prisma.vendor.update({
@@ -166,7 +189,7 @@ export async function DELETE(
 
     await prisma.auditLog.create({
       data: {
-        userId: session.user.id,
+        userId,
         organizationId,
         action: "archive",
         entityType: "vendor",
@@ -178,7 +201,13 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("DELETE /api/vendors/[id] error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_DELETE,
+      method: "DELETE",
+      cause: error,
+    });
   }
 }

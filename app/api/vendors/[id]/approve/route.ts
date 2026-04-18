@@ -1,23 +1,18 @@
 // POST /api/vendors/[id]/approve — ORG-SCOPED
 
-import { auth } from "@/auth";
+import { GuardDenial, requireAdmin } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/vendors/[id]/approve:POST";
 
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { role, organizationId } = session.user;
-    if (role !== "nonprofit_admin" && role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { userId, organizationId } = await requireAdmin(ROUTE, "POST");
 
     const { id } = await params;
 
@@ -27,7 +22,14 @@ export async function POST(
     });
 
     if (!vendor) {
-      return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
+      return errorResponse({
+        kind: "not_found",
+        message: "Vendor not found",
+        route: ROUTE,
+        method: "POST",
+        userId,
+        organizationId,
+      });
     }
 
     const updated = await prisma.vendor.update({
@@ -38,7 +40,7 @@ export async function POST(
 
     await prisma.auditLog.create({
       data: {
-        userId: session.user.id,
+        userId,
         organizationId,
         action: "approve",
         entityType: "vendor",
@@ -50,7 +52,13 @@ export async function POST(
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("POST /api/vendors/[id]/approve error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE,
+      method: "POST",
+      cause: error,
+    });
   }
 }

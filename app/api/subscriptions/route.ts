@@ -1,16 +1,15 @@
-import { auth } from "@/auth";
+import { GuardDenial, requireAdmin, requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { createSubscriptionSchema } from "@/lib/validations/subscription";
 import { NextRequest, NextResponse } from "next/server";
 
+const ROUTE_GET = "api/subscriptions:GET";
+const ROUTE_POST = "api/subscriptions:POST";
+
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { organizationId, role, id: userId } = session.user;
+    const { organizationId, role, userId } = await requireAuth(ROUTE_GET, "GET");
     const params = request.nextUrl.searchParams;
 
     const limit = Math.min(parseInt(params.get("limit") || "25", 10) || 25, 100);
@@ -39,32 +38,35 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ subscriptions, total, limit, offset });
   } catch (error) {
-    console.error("GET /api/subscriptions error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_GET,
+      method: "GET",
+      cause: error,
+    });
   }
 }
 
 // POST /api/subscriptions -- create a new subscription
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { role, organizationId, id: userId } = session.user;
-    if (role !== "nonprofit_admin" && role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { userId, organizationId } = await requireAdmin(ROUTE_POST, "POST");
 
     const body = await request.json();
     const parsed = createSubscriptionSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
-        { status: 400 }
-      );
+      return errorResponse({
+        kind: "validation",
+        message: "Validation failed",
+        route: ROUTE_POST,
+        method: "POST",
+        userId,
+        organizationId,
+        extraBody: { details: parsed.error.flatten() },
+      });
     }
 
     const data = parsed.data;
@@ -74,7 +76,14 @@ export async function POST(request: Request) {
       where: { id: data.vendorId, organizationId, archivedAt: null },
     });
     if (!vendor) {
-      return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
+      return errorResponse({
+        kind: "not_found",
+        message: "Vendor not found",
+        route: ROUTE_POST,
+        method: "POST",
+        userId,
+        organizationId,
+      });
     }
 
     // Verify grant belongs to org
@@ -82,7 +91,14 @@ export async function POST(request: Request) {
       where: { id: data.grantId, organizationId, archivedAt: null },
     });
     if (!grant) {
-      return NextResponse.json({ error: "Grant not found" }, { status: 404 });
+      return errorResponse({
+        kind: "not_found",
+        message: "Grant not found",
+        route: ROUTE_POST,
+        method: "POST",
+        userId,
+        organizationId,
+      });
     }
 
     // Verify category belongs to grant
@@ -90,7 +106,14 @@ export async function POST(request: Request) {
       where: { id: data.categoryId, grantId: data.grantId, organizationId },
     });
     if (!category) {
-      return NextResponse.json({ error: "Budget category not found" }, { status: 404 });
+      return errorResponse({
+        kind: "not_found",
+        message: "Budget category not found",
+        route: ROUTE_POST,
+        method: "POST",
+        userId,
+        organizationId,
+      });
     }
 
     const subscription = await prisma.subscription.create({
@@ -131,7 +154,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json(subscription, { status: 201 });
   } catch (error) {
-    console.error("POST /api/subscriptions error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_POST,
+      method: "POST",
+      cause: error,
+    });
   }
 }

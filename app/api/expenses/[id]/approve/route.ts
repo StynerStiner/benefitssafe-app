@@ -14,7 +14,7 @@
 //   - Audit log insert lives INSIDE the $transaction so it only persists
 //     when the approval actually commits.
 
-import { auth } from "@/auth";
+import { GuardDenial, requireAdmin } from "@/lib/auth-guard";
 import { prisma, retryOnSerializationFailure } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { errorResponse } from "@/lib/error-response";
@@ -41,29 +41,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return errorResponse({
-        kind: "unauthorized",
-        message: "Unauthorized",
-        route: ROUTE,
-        method: "PATCH",
-      });
-    }
-
-    const { role, id: userId, organizationId } = session.user;
-
-    // Only nonprofit admins and platform admins can approve
-    if (role !== "nonprofit_admin" && role !== "platform_admin") {
-      return errorResponse({
-        kind: "forbidden",
-        message: "Forbidden",
-        route: ROUTE,
-        method: "PATCH",
-        userId,
-        organizationId,
-      });
-    }
+    const { session, userId, organizationId } = await requireAdmin(ROUTE, "PATCH");
 
     const { id } = await params;
 
@@ -341,6 +319,7 @@ export async function PATCH(
 
     return NextResponse.json(result);
   } catch (error) {
+    if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({
       kind: "internal",
       message: "Internal server error",

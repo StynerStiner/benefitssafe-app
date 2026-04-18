@@ -4,7 +4,7 @@
 // required (zod min 10) and persisted verbatim to AuditLog.newValue.reason
 // for the weekly audit-log review cadence.
 
-import { auth } from "@/auth";
+import { GuardDenial, requireAdmin } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
 import { errorResponse } from "@/lib/error-response";
 import { rejectVendorSchema } from "@/lib/validations/vendor";
@@ -17,27 +17,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return errorResponse({
-        kind: "unauthorized",
-        message: "Unauthorized",
-        route: ROUTE,
-        method: "POST",
-      });
-    }
-
-    const { role, organizationId } = session.user;
-    if (role !== "nonprofit_admin" && role !== "platform_admin") {
-      return errorResponse({
-        kind: "forbidden",
-        message: "Forbidden",
-        route: ROUTE,
-        method: "POST",
-        userId: session.user.id,
-        organizationId,
-      });
-    }
+    const { userId, organizationId } = await requireAdmin(ROUTE, "POST");
 
     const { id } = await params;
     const body = await request.json().catch(() => ({}));
@@ -48,7 +28,7 @@ export async function POST(
         message: parsed.error.issues[0].message,
         route: ROUTE,
         method: "POST",
-        userId: session.user.id,
+        userId,
         organizationId,
       });
     }
@@ -65,7 +45,7 @@ export async function POST(
         message: "Vendor not found",
         route: ROUTE,
         method: "POST",
-        userId: session.user.id,
+        userId,
         organizationId,
       });
     }
@@ -78,7 +58,7 @@ export async function POST(
 
     await prisma.auditLog.create({
       data: {
-        userId: session.user.id,
+        userId,
         organizationId,
         action: "reject",
         entityType: "vendor",
@@ -90,6 +70,7 @@ export async function POST(
 
     return NextResponse.json(updated);
   } catch (error) {
+    if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({
       kind: "internal",
       message: "Internal server error",

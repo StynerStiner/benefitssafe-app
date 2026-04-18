@@ -1,10 +1,13 @@
 // ORG-SCOPED: All queries filtered by session.user.organizationId
 // No cross-organization data leakage possible.
 
-import { auth } from "@/auth";
+import { GuardDenial, requireAuth, requireRole } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { auditLogQuerySchema } from "@/lib/validations/audit-log";
 import { NextRequest, NextResponse } from "next/server";
+
+const ROUTE = "api/audit-logs:GET";
 
 const ALLOWED_ROLES = [
   "nonprofit_admin",
@@ -20,15 +23,9 @@ const ALLOWED_ROLES = [
 // GET /api/audit-logs -- list audit logs with filters and pagination
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    if (!ALLOWED_ROLES.includes(session.user.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const { organizationId, role } = session.user;
+    const ctx = await requireAuth(ROUTE, "GET");
+    requireRole(ctx, ALLOWED_ROLES, ROUTE, "GET");
+    const { userId, organizationId } = ctx;
     const params = request.nextUrl.searchParams;
 
     // Extract raw query params into an object for Zod validation
@@ -43,10 +40,15 @@ export async function GET(request: NextRequest) {
 
     const parsed = auditLogQuerySchema.safeParse(rawQuery);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid query parameters", details: parsed.error.flatten() },
-        { status: 400 }
-      );
+      return errorResponse({
+        kind: "validation",
+        message: "Invalid query parameters",
+        route: ROUTE,
+        method: "GET",
+        userId,
+        organizationId,
+        extraBody: { details: parsed.error.flatten() },
+      });
     }
 
     const { search, action, entityType, from, to, limit, offset } = parsed.data;
@@ -109,10 +111,13 @@ export async function GET(request: NextRequest) {
       headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=15' },
     });
   } catch (error) {
-    console.error("GET /api/audit-logs error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE,
+      method: "GET",
+      cause: error,
+    });
   }
 }

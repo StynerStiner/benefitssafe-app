@@ -1,11 +1,11 @@
 // ORG-SCOPED: All queries filtered by session.user.organizationId
 // No cross-organization data leakage possible.
 
-import { auth } from "@/auth";
+import { GuardDenial, requireNonprofitStaff } from "@/lib/auth-guard";
 import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { validateRecipientEmail } from "@/lib/email-security";
-import { captureApiError } from "@/lib/error-handler";
+import { errorResponse } from "@/lib/error-response";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { createBeneficiarySchema } from "@/lib/validations/beneficiary";
 import { checkLimitAccess, buildLimitReachedResponse } from "@/lib/feature-gates";
@@ -15,19 +15,13 @@ import { buildInviteEmail } from "@/lib/services/email-templates";
 import { generateMembershipCode } from "@/lib/utils/membership-code";
 import { NextResponse } from "next/server";
 
+const ROUTE_GET = "api/beneficiaries:GET";
+const ROUTE_POST = "api/beneficiaries:POST";
+
 // GET /api/beneficiaries — list beneficiaries scoped to organization (paginated)
 export async function GET(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { role, organizationId } = session.user;
-    if (role !== "nonprofit_admin" && role !== "nonprofit_staff" && role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
+    const { organizationId } = await requireNonprofitStaff(ROUTE_GET, "GET");
     const { searchParams } = new URL(request.url);
 
     // Parse and validate pagination params
@@ -149,54 +143,56 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ data: result, total, limit, offset });
   } catch (error) {
-    captureApiError(error, { route: "GET /api/beneficiaries" });
-    console.error("GET /api/beneficiaries error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_GET,
+      method: "GET",
+      cause: error,
+    });
   }
 }
 
 // POST /api/beneficiaries — create a new beneficiary
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { role, organizationId } = session.user;
-    if (role !== "nonprofit_admin" && role !== "nonprofit_staff" && role !== "platform_admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { session, userId, organizationId } = await requireNonprofitStaff(ROUTE_POST, "POST");
 
     // Rate limit: 20 requests per minute per user
     const rateLimitResult = rateLimit(
-      `beneficiary-create:${session.user.id}`,
+      `beneficiary-create:${userId}`,
       RATE_LIMIT_CONFIGS.beneficiaryCreate,
     );
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: "Too many requests. Please slow down." },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000)),
-            "X-RateLimit-Remaining": String(rateLimitResult.remaining),
-          },
+      return errorResponse({
+        kind: "validation",
+        message: "Too many requests. Please slow down.",
+        route: ROUTE_POST,
+        method: "POST",
+        userId,
+        organizationId,
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000)),
+          "X-RateLimit-Remaining": String(rateLimitResult.remaining),
         },
-      );
+      });
     }
 
     const body = await request.json();
     const parsed = createBeneficiarySchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
-        { status: 400 },
-      );
+      return errorResponse({
+        kind: "validation",
+        message: "Validation failed",
+        route: ROUTE_POST,
+        method: "POST",
+        userId,
+        organizationId,
+        extraBody: { details: parsed.error.flatten().fieldErrors },
+      });
     }
 
     const data = parsed.data;
@@ -204,10 +200,14 @@ export async function POST(request: Request) {
     // Validate email against disposable domains and injection attacks
     const emailCheck = validateRecipientEmail(data.email);
     if (!emailCheck.valid) {
-      return NextResponse.json(
-        { error: emailCheck.reason || "Invalid email address" },
-        { status: 400 },
-      );
+      return errorResponse({
+        kind: "validation",
+        message: emailCheck.reason || "Invalid email address",
+        route: ROUTE_POST,
+        method: "POST",
+        userId,
+        organizationId,
+      });
     }
 
     // Plan limit gate: count active beneficiary *memberships* in this org.
@@ -224,10 +224,15 @@ export async function POST(request: Request) {
       currentBeneficiaryCount,
     );
     if (!limitCheck.allowed) {
-      return NextResponse.json(
-        buildLimitReachedResponse("maxBeneficiaries", limitCheck),
-        { status: 403 },
-      );
+      return errorResponse({
+        kind: "forbidden",
+        message: "Beneficiary limit reached for this period",
+        route: ROUTE_POST,
+        method: "POST",
+        userId,
+        organizationId,
+        extraBody: buildLimitReachedResponse("maxBeneficiaries", limitCheck),
+      });
     }
 
     // ------------------------------------------------------------------
@@ -501,25 +506,26 @@ export async function POST(request: Request) {
       inviteUrl: process.env.POSTMARK_API_TOKEN ? undefined : inviteUrl,
     }, { status: 201 });
   } catch (error: unknown) {
+    if (error instanceof GuardDenial) return error.toErrorResponse();
     const err = error as { code?: string; meta?: unknown; message?: string };
-    captureApiError(error, { route: "POST /api/beneficiaries" });
-    console.error("POST /api/beneficiaries error:", {
-      message: err.message,
-      code: err.code,
-      meta: err.meta,
-    });
 
     // Handle Prisma unique constraint violation
     if (err.code === "P2002") {
-      return NextResponse.json(
-        { error: "A user with this email already exists" },
-        { status: 409 },
-      );
+      return errorResponse({
+        kind: "conflict",
+        message: "A user with this email already exists",
+        route: ROUTE_POST,
+        method: "POST",
+        cause: error,
+      });
     }
 
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_POST,
+      method: "POST",
+      cause: error,
+    });
   }
 }
