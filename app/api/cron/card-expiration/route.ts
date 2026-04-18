@@ -13,10 +13,19 @@ import { NextResponse } from "next/server";
 import { readCheckpoint, writeCheckpoint } from "@/lib/cron-checkpoint";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+  CIRCUIT_OPEN_COOLDOWN_MS,
+} from "@/lib/stripe-circuit";
+import { errorResponse } from "@/lib/error-response";
 import { stripeOptsForCard } from "@/lib/stripe-helpers";
 import { acquireCronLock } from "@/lib/queue";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
+
+const ROUTE = "api/cron/card-expiration:GET";
 
 // Each pass has its own checkpoint so they advance independently across
 // cron firings even when one pass exhausts its budget before the other.
@@ -126,10 +135,14 @@ export async function GET(request: Request) {
         // connected-mode cards. Dev-mode mocks and rows with no id
         // are still skipped for the API call.
         if (!card.stripeCardId.startsWith("ic_mock_")) {
-          await stripe.issuing.cards.update(
-            card.stripeCardId,
-            { status: "canceled" },
-            stripeOptsForCard(card, card.organization?.stripeAccountId ?? null),
+          await stripeCircuit.run(
+            `${ROUTE}:stripe.issuing.cards.update:expire`,
+            { mode: "write" },
+            () => stripe.issuing.cards.update(
+              card.stripeCardId,
+              { status: "canceled" },
+              stripeOptsForCard(card, card.organization?.stripeAccountId ?? null),
+            ),
           );
         }
 
@@ -204,6 +217,13 @@ export async function GET(request: Request) {
 
         successCount++;
       } catch (error) {
+        // Pattern β: bubble circuit errors. Marking N cards as "failed
+        // to expire" because Stripe is briefly unreachable would mask
+        // the root cause and leave the checkpoint unadvanced anyway.
+        // Abort the current tick; next run retries from the same
+        // checkpoint cursor. Idempotent — per-card status flip to
+        // EXPIRED is a no-op on re-scan.
+        if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) throw error;
         console.error(`Failed to expire card ${card.id}:`, error);
         errorCount++;
       }
@@ -382,6 +402,24 @@ export async function GET(request: Request) {
       executedAt: new Date().toISOString(),
     });
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      // Cron 503: distinct telemetry signal vs generic 500. Checkpoint
+      // is NOT advanced on this path — next tick re-scans the same
+      // batch once Stripe is healthy. Per-card expiration is idempotent
+      // (EXPIRED → EXPIRED is a no-op).
+      const retryAfterSeconds =
+        error instanceof CircuitOpenError
+          ? Math.ceil(error.cooldown_ms_remaining / 1000)
+          : Math.ceil(CIRCUIT_OPEN_COOLDOWN_MS / 1000);
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Stripe is currently unavailable; card expiration aborted.",
+        route: ROUTE,
+        method: "GET",
+        retryAfterSeconds,
+        cause: error,
+      });
+    }
     console.error("Card expiration cron job failed:", error);
 
     return NextResponse.json(

@@ -7,10 +7,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+  CIRCUIT_OPEN_COOLDOWN_MS,
+} from "@/lib/stripe-circuit";
+import { errorResponse } from "@/lib/error-response";
 import { withOrgContext } from "@/lib/org-context";
 import { acquireCronLock } from "@/lib/queue";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildComplianceAlertEmail } from "@/lib/services/email-templates";
+
+const ROUTE = "api/cron/reconciliation:GET";
 
 const APP_BASE_URL =
   process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
@@ -124,12 +133,22 @@ export async function GET(request: Request) {
 
     // ---- Pass A: platform-scoped list (covers all platform-mode cards)
     try {
-      const platformTxns = await stripe.issuing.transactions.list({
-        limit: LIST_LIMIT,
-        created: createdFilter,
-      });
+      const platformTxns = await stripeCircuit.run(
+        `${ROUTE}:stripe.issuing.transactions.list:platform`,
+        { mode: "read" },
+        () => stripe.issuing.transactions.list({
+          limit: LIST_LIMIT,
+          created: createdFilter,
+        }),
+      );
       await processStripeTxnList(platformTxns);
     } catch (err) {
+      // Pattern β: bubble circuit errors to outer catch for 503 mapping.
+      // Aborting the cron mid-reconciliation is correct — next tick
+      // retries from the top once Stripe is healthy. Continuing to Pass
+      // B / ledger-retrieve would just pile more calls onto a degraded
+      // dependency. (DDIA Ch8 fail-fast for cron workers.)
+      if (err instanceof CircuitOpenError || err instanceof CircuitTimeoutError) throw err;
       console.error("[reconciliation] platform transactions.list failed:", err);
     }
 
@@ -162,12 +181,20 @@ export async function GET(request: Request) {
     for (const org of connectedOrgs) {
       if (!org.stripeAccountId) continue;
       try {
-        const connectedTxns = await stripe.issuing.transactions.list(
-          { limit: LIST_LIMIT, created: createdFilter },
-          { stripeAccount: org.stripeAccountId },
+        const connectedTxns = await stripeCircuit.run(
+          `${ROUTE}:stripe.issuing.transactions.list:connected`,
+          { mode: "read" },
+          () => stripe.issuing.transactions.list(
+            { limit: LIST_LIMIT, created: createdFilter },
+            { stripeAccount: org.stripeAccountId },
+          ),
         );
         await processStripeTxnList(connectedTxns);
       } catch (err) {
+        // Pattern β: bubble circuit errors — skip the remaining orgs in
+        // this tick rather than hammering a degraded Stripe with N more
+        // list calls. Next hourly run retries from the top.
+        if (err instanceof CircuitOpenError || err instanceof CircuitTimeoutError) throw err;
         console.error(
           `[reconciliation] transactions.list failed for org ${org.id}:`,
           err,
@@ -266,9 +293,13 @@ export async function GET(request: Request) {
           : {};
 
       try {
-        const stripeTx = await stripe.issuing.transactions.retrieve(
-          entry.reference,
-          retrieveOpts,
+        const stripeTx = await stripeCircuit.run(
+          `${ROUTE}:stripe.issuing.transactions.retrieve`,
+          { mode: "read" },
+          () => stripe.issuing.transactions.retrieve(
+            entry.reference,
+            retrieveOpts,
+          ),
         );
         if (!stripeTx) {
           reconciliationResults.discrepancies.push({
@@ -278,6 +309,11 @@ export async function GET(request: Request) {
           });
         }
       } catch (err) {
+        // Pattern β: bubble circuit errors. Recording N "orphaned" ledger
+        // entries when Stripe is simply unreachable would produce false
+        // alerts to platform_admin — the entries aren't orphaned, we just
+        // can't verify them right now. Abort and retry next tick.
+        if (err instanceof CircuitOpenError || err instanceof CircuitTimeoutError) throw err;
         console.error(
           `[reconciliation] transactions.retrieve failed for entry ${entry.id}:`,
           err,
@@ -384,6 +420,23 @@ export async function GET(request: Request) {
       budgetExhausted,
     });
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      // Cron 503: a distinct telemetry signal vs generic 500 for Better
+      // Stack alerting. Remaining orgs / ledger entries in this tick are
+      // intentionally skipped — next hourly tick retries from the top.
+      const retryAfterSeconds =
+        error instanceof CircuitOpenError
+          ? Math.ceil(error.cooldown_ms_remaining / 1000)
+          : Math.ceil(CIRCUIT_OPEN_COOLDOWN_MS / 1000);
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Stripe is currently unavailable; reconciliation aborted.",
+        route: ROUTE,
+        method: "GET",
+        retryAfterSeconds,
+        cause: error,
+      });
+    }
     console.error("Monthly reconciliation cron job failed:", error);
     return NextResponse.json(
       { error: "Reconciliation job failed" },

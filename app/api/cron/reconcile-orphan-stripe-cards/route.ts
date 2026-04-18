@@ -27,12 +27,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import {
+  stripeCircuit,
+  CircuitOpenError,
+  CircuitTimeoutError,
+  CIRCUIT_OPEN_COOLDOWN_MS,
+} from "@/lib/stripe-circuit";
+import { errorResponse } from "@/lib/error-response";
 import { acquireCronLock } from "@/lib/queue";
 import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
+const ROUTE = "api/cron/reconcile-orphan-stripe-cards:GET";
 const CRON_NAME = "reconcile-orphan-stripe-cards";
 
 const MIN_AGE_MINUTES = 15;
@@ -59,12 +67,16 @@ async function sweepAccount(
 
   try {
     const opts = stripeAccountId ? { stripeAccount: stripeAccountId } : undefined;
-    const cards = await stripe.issuing.cards.list(
-      {
-        limit: LIST_LIMIT,
-        created: { gte: minCreated, lte: maxCreated },
-      },
-      opts,
+    const cards = await stripeCircuit.run(
+      `${ROUTE}:stripe.issuing.cards.list`,
+      { mode: "read" },
+      () => stripe.issuing.cards.list(
+        {
+          limit: LIST_LIMIT,
+          created: { gte: minCreated, lte: maxCreated },
+        },
+        opts,
+      ),
     );
     listed = cards.data.length;
 
@@ -82,10 +94,14 @@ async function sweepAccount(
       orphaned++;
 
       try {
-        await stripe.issuing.cards.update(
-          card.id,
-          { status: "canceled" },
-          opts,
+        await stripeCircuit.run(
+          `${ROUTE}:stripe.issuing.cards.update:cancel-orphan`,
+          { mode: "write" },
+          () => stripe.issuing.cards.update(
+            card.id,
+            { status: "canceled" },
+            opts,
+          ),
         );
         cancelled++;
         logger.warn("Cancelled orphan Stripe card", {
@@ -94,6 +110,11 @@ async function sweepAccount(
           createdAt: new Date(card.created * 1000).toISOString(),
         });
       } catch (err) {
+        // Pattern β: bubble circuit errors. Without re-throw, a circuit
+        // open during the sweep would log N "failed to cancel" lines
+        // and continue hammering Stripe with more update calls per
+        // orphan in this account's batch.
+        if (err instanceof CircuitOpenError || err instanceof CircuitTimeoutError) throw err;
         logger.error("Failed to cancel orphan Stripe card", {
           stripeCardId: card.id,
           stripeAccountId: stripeAccountId ?? "platform",
@@ -102,6 +123,11 @@ async function sweepAccount(
       }
     }
   } catch (err) {
+    // Pattern β: bubble circuit errors to sweepAccount caller, which
+    // propagates to the GET outer catch for 503 mapping. Remaining orgs
+    // in the connected loop are intentionally skipped — next hourly
+    // tick retries.
+    if (err instanceof CircuitOpenError || err instanceof CircuitTimeoutError) throw err;
     logger.error("Stripe cards.list failed", {
       stripeAccountId: stripeAccountId ?? "platform",
       error: err instanceof Error ? err.message : String(err),
@@ -169,6 +195,25 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
+      // Cron 503: distinct telemetry signal vs generic 500. Remaining
+      // connected-org sweeps in this tick are intentionally skipped.
+      const retryAfterSeconds =
+        error instanceof CircuitOpenError
+          ? Math.ceil(error.cooldown_ms_remaining / 1000)
+          : Math.ceil(CIRCUIT_OPEN_COOLDOWN_MS / 1000);
+      logger.warn("Orphan sweep aborted — Stripe circuit open/timeout", {
+        retryAfterSeconds,
+      });
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Stripe is currently unavailable; orphan sweep aborted.",
+        route: ROUTE,
+        method: "GET",
+        retryAfterSeconds,
+        cause: error,
+      });
+    }
     logger.error("Orphan Stripe card sweep failed", {
       error: error instanceof Error ? error.message : "Unknown error",
     });
