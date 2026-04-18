@@ -179,8 +179,8 @@ export async function POST(request: Request) {
         where: { id: invite.userId },
         data: { passwordHash, isActive: true },
       }),
-      prisma.inviteToken.update({
-        where: { id: invite.id },
+      prisma.inviteToken.updateMany({
+        where: { id: invite.id, usedAt: null },
         data: { usedAt: new Date() },
       }),
       // Update OrganizationMembership from "pending" to "active"
