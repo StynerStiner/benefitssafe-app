@@ -339,3 +339,46 @@ narrow, connection string malformed):
   commented out): if re-enabled, create a `benefitssafe_app_ro` role
   with only `SELECT` + `USAGE` and use that instead of reusing the
   app role.
+
+## §11 Record in ledger (BSRS Ch 8 P4)
+
+Since P4 shipped, every rotation is tracked in two places — a pair of
+Better Stack log events and an append-only ledger row. When you run
+this Aurora runbook, wrap Phase 1-3 with the logger calls and append
+one ledger row at the end.
+
+```ts
+import {
+  startRotation,
+  completeRotation,
+  failRotation,
+} from "@/lib/credential-rotation-logger";
+
+// Before Phase 1:
+const { rotation_id, started_at } = startRotation({
+  credential_kind: "aurora_master",     // or "aurora_app_role" if that's what you're rotating
+  operator: "adm.benefitssafe@gmail.com",
+  incident: "routine",                  // "emergency" / "post_breach" for the fallback path
+});
+
+// After Phase 5 verification passes:
+completeRotation({
+  rotation_id,
+  started_at,
+  credential_kind: "aurora_master",
+  operator: "adm.benefitssafe@gmail.com",
+  incident: "routine",
+});
+```
+
+Then append one row to `docs/runbooks/credential-rotation-history.md`
+matching the column order. See
+[credential-rotation.md](./credential-rotation.md) §3 for the canonical
+format. The freshness linter picks up the new row on the next
+`npm run lint:conventions`.
+
+The **first real rotation** of `aurora_master` will establish the
+baseline latency number — expect 30-60 minutes for the cold-runbook
+first pass (Phase 1 SQL + Phase 2 Vercel env + Phase 3 ALTER ROLE +
+Phase 5 smoke tests). Record the real number in the ledger's
+`latency_ms` column. Future rotations should be meaningfully faster.
