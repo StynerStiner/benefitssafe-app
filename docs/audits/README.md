@@ -68,19 +68,15 @@ protected.
   webhook queries with context
 
 **Action items (open):**
-- Priority 1 — Review WEBHOOK_REVIEW bucket for cross-org
-  derive-org-from-Stripe-ID pattern (~1 hour). Start with
-  `app/api/webhooks/stripe/route.ts` (11 queries — highest
-  concentration).
-- Priority 2 — Review HANDLER_HAS_ORG money-flow files (~1 hour):
+- Priority 1 — Review HANDLER_HAS_ORG money-flow files (~1 hour):
   `app/api/ledger/route.ts`, `app/api/expenses/[id]/route.ts`,
   `app/api/org/fund/route.ts`.
-- Priority 3 — Review remaining HANDLER_HAS_ORG files (~2-3 hours).
-- Priority 4 — Prisma middleware to reject queries missing
+- Priority 2 — Review remaining HANDLER_HAS_ORG files (~2-3 hours).
+- Priority 3 — Prisma middleware to reject queries missing
   `organizationId` on org-scoped models (defense in depth —
   separate PDR). Must whitelist the EXEMPT_CRON / EXEMPT_PLATFORM
   / AUTH_FLOW paths.
-- Priority 5 — Release-on-error cleanup for the declined-auth
+- Priority 4 — Release-on-error cleanup for the declined-auth
   branch in `app/api/webhooks/stripe-charges/route.ts` (lines
   54-119). LOW — impacts log/notification loss only, no money
   movement.
@@ -91,6 +87,17 @@ protected.
   current behavior is defensible.
 
 **Action items (closed):**
+- 2026-04-17: Cross-org isolation P1 (WEBHOOK_REVIEW bucket) —
+  23/23 queries verified safe on detailed per-query review. Every
+  query is either the derive step itself, a unique-by-Stripe-ID
+  idempotency guard, or a BY_ID_FROM_DERIVED chain lookup. Zero
+  cross-org leaks.
+- 2026-04-17: AuditLog NOT NULL fix on 4 webhook handler sites
+  (commit `54926d8`) — discovered incidentally during
+  WEBHOOK_REVIEW verification. Latent runtime bug hidden by
+  `@ts-nocheck` that would have caused permanent dispute/fraud
+  event loss on first real Stripe traffic (especially the
+  `dea1876` `$transaction`-wrapped dispute path).
 - 2026-04-17: DDIA Ch7 P5 — `VirtualCard`
   `uniq_active_card_per_grant_beneficiary` partial unique index
   applied to Aurora (commit `07c6611`). Enforces one active card
