@@ -16,12 +16,13 @@ import { NextResponse } from "next/server";
 import { captureApiError } from "./error-handler";
 
 export type ApiErrorKind =
-  | "unauthorized"   // 401 — no valid session
-  | "forbidden"      // 403 — session exists but role/org forbids action
-  | "not_found"      // 404
-  | "validation"     // 400 — zod or handcrafted input rejection
-  | "conflict"       // 409 — version / unique / state collisions
-  | "internal";      // 500 — unexpected server-side failure
+  | "unauthorized"              // 401 — no valid session
+  | "forbidden"                 // 403 — session exists but role/org forbids action
+  | "not_found"                 // 404
+  | "validation"                // 400 — zod or handcrafted input rejection
+  | "conflict"                  // 409 — version / unique / state collisions
+  | "dependency_unavailable"    // 503 — circuit open / upstream slow (BSRS Ch 8 P1)
+  | "internal";                 // 500 — unexpected server-side failure
 
 const DEFAULT_STATUS: Record<ApiErrorKind, number> = {
   unauthorized: 401,
@@ -29,6 +30,7 @@ const DEFAULT_STATUS: Record<ApiErrorKind, number> = {
   not_found: 404,
   validation: 400,
   conflict: 409,
+  dependency_unavailable: 503,
   internal: 500,
 };
 
@@ -56,6 +58,13 @@ export interface ErrorResponseOpts {
   extraBody?: Record<string, unknown>;
   /** Extra response headers (e.g., `Retry-After` on 429). */
   headers?: Record<string, string>;
+  /**
+   * When set, adds a `Retry-After: <seconds>` response header. Primary
+   * use: 503 dependency_unavailable responses from the Stripe circuit
+   * breaker (BSRS Ch 8 P1) — value derives from CIRCUIT_OPEN_COOLDOWN_MS
+   * so both numbers move together.
+   */
+  retryAfterSeconds?: number;
 }
 
 export interface ApiErrorBody {
@@ -126,8 +135,14 @@ export function errorResponse(opts: ErrorResponseOpts): NextResponse {
   delete (extra as Record<string, unknown>).error;
   delete (extra as Record<string, unknown>).correlationId;
   const body = { ...extra, error: opts.message, correlationId };
+
+  const headers: Record<string, string> = { ...(opts.headers ?? {}) };
+  if (opts.retryAfterSeconds !== undefined) {
+    headers["Retry-After"] = String(opts.retryAfterSeconds);
+  }
+
   return NextResponse.json(body, {
     status,
-    ...(opts.headers ? { headers: opts.headers } : {}),
+    ...(Object.keys(headers).length > 0 ? { headers } : {}),
   });
 }
