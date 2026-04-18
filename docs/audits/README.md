@@ -75,13 +75,20 @@ protected.
   `9428032` (log-only, no block); Phase 2 (mutations in dev, log
   in prod) and Phase 3 (full enforcement) pending shadow-mode
   telemetry.
-- [DDIA Ch7 P4 follow-up] Design conversation on
-  `allowNegativeBalance` lifecycle — once set on a Grant the flag
-  stays true. Decide reset policy: manual reconciliation, auto on
-  first positive-balance restoration, or time-based. Non-urgent;
-  current behavior is defensible.
 
 **Action items (closed):**
+- 2026-04-17: DDIA Ch7 P4 follow-up (`allowNegativeBalance`
+  reset policy) — Hybrid implementation shipped in commit
+  `854a984`. Auto-reset on admin-refill positive-balance
+  restoration inside the existing `$transaction` at
+  `app/api/grants/[id]/route.ts` PATCH. Platform-admin manual
+  override at
+  `app/api/platform/grants/[id]/reset-negative-balance-flag/route.ts`
+  with zod-validated reason (min 10 chars) and atomic AuditLog.
+  Runbook at `docs/runbooks/stuck-overspend-grants.md` names
+  the narrow auto-reset coverage explicitly. Future dispute-win
+  and off-ledger reconciliation paths should add the same
+  5-line `updateMany` hook.
 - 2026-04-17: Cross-org isolation P2 (declined-auth
   release-on-error cleanup) — `releaseWebhookEvent(event.id)`
   now fires on downstream write failure in the declined-auth
