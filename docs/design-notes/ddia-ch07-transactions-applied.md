@@ -239,61 +239,74 @@ await prisma.$transaction(async (tx) => { ... }, {
 
 **Verified real issues, ranked by severity × fix-cost:**
 
-### Priority 1 — 15 min, zero design cost
+### Priority 1 — CLOSED in commit `70808ee`
 
 **V15-close / V15-process-charge: wire `retryOnSerializationFailure()` on the two Serializable tx blocks missing it.**
 
-- `app/api/virtual-cards/[id]/close/route.ts:199` — wrap existing `prisma.$transaction(...)` in `retryOnSerializationFailure(() => ...)`
-- `app/api/jobs/process-charge/route.ts:267` — same
+Two Serializable `$transaction` sites were missing the retry shell — `app/api/virtual-cards/[id]/close/route.ts` and `app/api/jobs/process-charge/route.ts`. Under real contention at 1.9M-org scale, Postgres 40001/40P01/P2034 errors would surface as user-facing 500s instead of transparent retry.
 
-Pattern already exists at `app/api/expenses/[id]/approve/route.ts:101` to copy.
+**What shipped:** `retryOnSerializationFailure(() => prisma.$transaction(...))` wrapping added at both sites. Both now match the gold-standard pattern at `app/api/expenses/[id]/approve/route.ts:101`. Retry utility at `lib/db.ts:78-116` — 3 attempts, exponential backoff 50→100→200ms with ±25% jitter, non-retryable errors propagate immediately.
 
-**Why P1:** At 1.9M-org scale, contention on Serializable transactions will happen. Without the retry shell, real contention surfaces as user-facing 500s instead of transparent retry. The util already exists; this is pure call-site wiring.
-
-### Priority 2 — 20 min, follows sibling pattern
+### Priority 2 — CLOSED in commit `dea1876`
 
 **V6: wrap `handleDisputeCreated` in `$transaction`.**
 
-`app/api/webhooks/stripe/route.ts:709-792` has:
-- Notification.findFirst (existence check)
-- Transaction.update (status → disputed)
-- AuditLog.create
-- for loop: Notification.create × N admins
+`app/api/webhooks/stripe/route.ts` `handleDisputeCreated` held a non-atomic sequence: Transaction.update (status → disputed), AuditLog.create, and a for-loop of Notification.create × N admins. If the fan-out errored mid-iteration, the Transaction was marked disputed with a partial notification set — some compliance officers would miss the alert.
 
-Not wrapped. If the fan-out loop errors mid-iteration, Transaction is marked disputed, audit log exists, but only some admins got the notification. No rollback.
+**What shipped:** the four internal writes are now inside `prisma.$transaction(async (tx) => { ... })`, mirroring the sibling `handleTransactionCreated` pattern in the same file. Dedupe `findFirst` and transaction lookup stay outside the wrap (read-only early-return is correct). Read-Committed isolation preserved — atomicity is the goal, not serializability; there's no write-skew scenario on this path.
 
-Fix: mirror the sibling `handleTransactionCreated` pattern at line 489 (same file, already uses `$transaction` with `SELECT FOR UPDATE` on Grant).
+*Interaction note:* commit `54926d8` subsequently fixed a latent `AuditLog` NOT NULL bug that became load-bearing under the new atomic wrap (every dispute would have rolled back). Both commits are required for the dispute path to work correctly. See `docs/audits/README.md`.
 
-**Why P2:** Stripe disputes are rare but high-signal. A partially-delivered dispute notification at scale means some compliance officers miss the alert. Not money-at-risk; it's alert-integrity-at-risk.
-
-### Priority 3 — 10 min, cosmetic
+### Priority 3 — CLOSED in commit `dab2f0f`
 
 **V18: compare-and-set on invite token redemption.**
 
-`app/api/auth/accept-invite/route.ts:177-209` — change User.update and InviteToken.update to `updateMany WHERE usedAt: null` with `count === 0` guard.
+`app/api/auth/accept-invite/route.ts` redeemed invite tokens without a concurrency guard. Double-submit produced duplicate audit rows and a brief window where two requests could both believe they'd successfully redeemed.
 
-**Why P3:** Double-submit of the same token doesn't create duplicate rows or security issues. This is polish.
+**What shipped:** invite token redemption now uses `prisma.inviteToken.updateMany({ where: { id, usedAt: null }, data: { usedAt: new Date() } })` inside the array-form `$transaction`. Concurrent redemptions: the second caller's update affects 0 rows — Prisma returns `{ count: 0 }` and the handler treats it as already-redeemed. Array-form `$transaction` preserved (Option A from the PDR) — other writes in the tx remain idempotent; worst-case residual is a cosmetic duplicate audit log entry on the losing race.
 
-### Priority 4 — design conversation, then ~30-45 min
+### Priority 4 — CLOSED in commit `07c6611` (Approach B)
 
 **V7 / V8: DB-level CHECK constraints on money invariants.**
 
-- `Grant.remainingAmount >= 0` CHECK — conflicts with the intentional overspend path at `webhooks/stripe/route.ts:498-503`. Need a design call: (a) allow negative and document, current behavior, (b) enforce non-negative and model pending settlements as a separate PendingSettlement row to reconcile Stripe delays.
-- `LedgerEntry` balance invariant — cumulative-sum constraint across multiple rows is harder than single-row CHECK. May need a trigger. Design question: what exact invariant do we want enforced (sum-per-grant? sign-per-type? both)?
+Application-level enforcement of `remainingAmount >= 0` was correct but not defense-in-depth; a future handler that forgot to check could land a corrupting write. A naïve CHECK would conflict with the intentional overspend path at `handleTransactionCreated` (Stripe settlement can legitimately produce a negative balance briefly).
 
-**Why P4:** Current application-level enforcement is correct. DB CHECK is defense-in-depth for a future-handler-that-forgets scenario. Worth doing; worth doing thoughtfully.
+**What shipped:** Approach B — `Grant` gained an `allowNegativeBalance BOOLEAN NOT NULL DEFAULT false` column. Three CHECK constraints now enforce strict invariants at the DB level:
+- `totalAmount >= 0`
+- `spentAmount >= 0`
+- `remainingAmount >= 0 OR allowNegativeBalance = true`
 
-### Priority 5 — verify before fixing
+`handleTransactionCreated` in `webhooks/stripe/route.ts` is the one site that flips `allowNegativeBalance = true`, and only on the overspend branch (conditional spread, not unconditional). Every other write path is locked to non-negative balances at the DB level.
+
+**Follow-up design question (open):** once `allowNegativeBalance` is set, it stays true. Reset policy — manual reconciliation, auto on first positive-balance restoration, or time-based — deferred to a future design conversation. Non-urgent; current behavior is defensible. Tracked under "Open questions for a future session" below.
+
+The `LedgerEntry` cumulative-sum invariant (originally part of this priority) was deferred: single-row CHECKs are cheap, but cumulative-sum constraints across multiple rows require a trigger, and the exact invariant shape (sum-per-grant? sign-per-type? both?) warrants its own design pass.
+
+### Priority 5 — CLOSED in commit `07c6611`
 
 **V16: confirm partial unique index side-script was applied to Aurora.**
 
-`prisma/schema.prisma:488` has `@@unique([expenseId])` — this allows unlimited `expenseId = NULL` rows. A separate script at `scripts/add-virtual-card-unique-constraints.ts` is supposed to add a partial unique index for the grant-direct (no expense) path. Agent flagged this as "not managed by Prisma's migration system."
+`prisma/schema.prisma` declares `@@unique([expenseId])` on `VirtualCard`, which permits unlimited `expenseId = NULL` rows. The grant-direct issuance path (no expense) could race and produce multiple active cards per (grant, beneficiary) pair. A separate script at `scripts/add-virtual-card-unique-constraints.ts` defined the partial unique index but had never been applied to Aurora — Prisma's migration system doesn't manage side-scripts.
 
-Action: verify the side-script has been applied to Aurora by checking `pg_indexes` for the grant-direct partial index. If not applied, apply it (trivial migration). If already applied, document it in the schema as a comment.
+**What shipped:** the partial unique index is now applied via the migration at `prisma/migrations/20260417220000_grant_allow_negative_balance_and_checks/migration.sql`:
 
-**V17: reports snapshot isolation.**
+```sql
+CREATE UNIQUE INDEX IF NOT EXISTS "uniq_active_card_per_grant_beneficiary"
+  ON "VirtualCard" ("grantId", "beneficiaryId")
+  WHERE status = 'ACTIVE';
+```
 
-`reports/grants/route.ts` runs at Read Committed. Upgrade only if regulatory/audit requirements demand point-in-time consistency.
+`IF NOT EXISTS` makes the statement idempotent. Enforces at the DB level that at most one `ACTIVE` VirtualCard exists per `(grantId, beneficiaryId)` pair.
+
+**V17 (reports snapshot isolation)** remains deferred. `reports/grants/route.ts` still runs at Read Committed. Upgrade only if regulatory/audit requirements demand point-in-time consistency; no such requirement has surfaced.
+
+---
+
+## Status summary
+
+All five action items from this section shipped on 2026-04-17. Section 6 (Serializability verification) was already complete; the P4 follow-up on `allowNegativeBalance` reset policy is the only design question remaining from section 7 and is tracked below under "Open questions for a future session."
+
+A separate defense-in-depth initiative — the Prisma client-extension for org-scoping enforcement — was scoped and shipped its Phase 1 shadow-mode rollout on the same day (commit `9428032`). That extension is tracked in `docs/audits/README.md` and its design document at `docs/design-notes/prisma-org-scoping-extension-design.md`, not here.
 
 ---
 
