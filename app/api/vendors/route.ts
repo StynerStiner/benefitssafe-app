@@ -160,7 +160,7 @@ export async function POST(request: Request) {
     const data = parsed.data;
 
     // For any vendor with an email: create a User account so they can log in
-    let userId: string | null = null;
+    let createdUserId: string | null = null;
 
     if (data.email) {
       // Validate email against disposable domains and injection attacks
@@ -171,7 +171,7 @@ export async function POST(request: Request) {
           message: emailCheck.reason || "Invalid email address",
           route: ROUTE_POST,
           method: "POST",
-          userId,
+          userId: createdUserId,
           organizationId,
         });
       }
@@ -183,7 +183,7 @@ export async function POST(request: Request) {
       });
 
       if (existingUser) {
-        userId = existingUser.id;
+        createdUserId = existingUser.id;
 
         // Create OrganizationMembership if one doesn't exist for this org
         const existingMembership = await prisma.organizationMembership.findFirst({
@@ -224,7 +224,7 @@ export async function POST(request: Request) {
           },
           select: { id: true, email: true, firstName: true, lastName: true },
         });
-        userId = newUser.id;
+        createdUserId = newUser.id;
 
         // Generate VN-{orgSeq}-{seq} via the shared utility
         const memberCode = await generateMembershipCode(prisma, organizationId, "vendor");
@@ -352,7 +352,7 @@ export async function POST(request: Request) {
             paymentMethod: data.paymentMethod || null,
             taxIdCollected: data.taxIdCollected || false,
             form1099Required: data.form1099Required || false,
-            userId,
+            userId: createdUserId,
           },
           select: { id: true, name: true, vendorCode: true, status: true, userId: true },
         });
