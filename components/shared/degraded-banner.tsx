@@ -2,54 +2,25 @@
 
 // BSRS Ch 8 P2a — client-side degraded-mode banner.
 //
-// Polls /api/health every 30s. Renders nothing while the platform is
-// healthy; yellow "slower than usual" banner when Aurora is degraded;
-// red "actions unavailable" banner when Aurora is down. Tailwind
-// classes mirror components/shared/trial-banner.tsx so the three
-// banners stack consistently in ClientRoot.
+// Renders nothing while the platform is healthy; yellow "slower than
+// usual" banner when Aurora is degraded; red "actions unavailable"
+// banner when Aurora is down. Tailwind classes mirror
+// components/shared/trial-banner.tsx so the three banners stack
+// consistently in ClientRoot.
 //
 // The banner is advisory; it does NOT bypass the server-side gate.
 // A user who clicks "retry" during degraded mode still hits
 // assertDbHealthy() and gets a 503 when the DB is actually down.
+//
+// P2c update: the 30s /api/health poll moved into hooks/useDegradedMode.ts
+// so other components can subscribe to the same status without
+// duplicating the interval.
 
-import { useEffect, useState } from "react";
 import { AlertTriangle } from "lucide-react";
-
-type HealthStatus = "ok" | "degraded" | "down";
-
-interface HealthResponse {
-  status: HealthStatus;
-}
-
-const POLL_INTERVAL_MS = 30_000;
+import { useDegradedMode } from "@/hooks/useDegradedMode";
 
 export default function DegradedBanner() {
-  const [status, setStatus] = useState<HealthStatus>("ok");
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function probe() {
-      try {
-        const res = await fetch("/api/health", { cache: "no-store" });
-        const body = (await res.json()) as HealthResponse;
-        if (!cancelled) setStatus(body.status);
-      } catch {
-        // Silent on fetch errors — the banner itself must not become a
-        // noise source during transient network issues. If /api/health
-        // is unreachable that's its own problem; leaving the last-known
-        // status visible is the correct UX.
-      }
-    }
-
-    probe();
-    const interval = setInterval(probe, POLL_INTERVAL_MS);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []);
+  const { status } = useDegradedMode();
 
   if (status === "ok") return null;
 

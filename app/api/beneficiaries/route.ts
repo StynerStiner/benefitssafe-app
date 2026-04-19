@@ -2,6 +2,12 @@
 // No cross-organization data leakage possible.
 
 import { GuardDenial, requireNonprofitStaff } from "@/lib/auth-guard";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  hashParams,
+} from "@/lib/cache";
 import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
@@ -32,6 +38,65 @@ export async function GET(request: Request) {
     const offset = Math.max(Number.isNaN(rawOffset) ? 0 : rawOffset, 0);
 
     const includeInactive = searchParams.get("includeInactive") === "true";
+
+    const cacheKey = `${STALE_CACHE_KEY_PREFIX}:${organizationId}:beneficiaries:list:${hashParams(request)}`;
+    const staleResult = await cachedWithStaleness({
+      key: cacheKey,
+      ttlSeconds: STALE_CACHE_TTL.LIST.ttlSeconds,
+      maxStaleSeconds: STALE_CACHE_TTL.LIST.maxStaleSeconds,
+      fetcher: () =>
+        buildBeneficiariesListResponse({
+          organizationId,
+          limit,
+          offset,
+          includeInactive,
+        }),
+    });
+
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
+
+    return NextResponse.json(staleResult.data);
+  } catch (error) {
+    if (error instanceof GuardDenial) return error.toErrorResponse();
+    return errorResponse({
+      kind: "internal",
+      message: "Internal server error",
+      route: ROUTE_GET,
+      method: "GET",
+      cause: error,
+    });
+  }
+}
+
+async function buildBeneficiariesListResponse(opts: {
+  organizationId: string;
+  limit: number;
+  offset: number;
+  includeInactive: boolean;
+}) {
+  const { organizationId, limit, offset, includeInactive } = opts;
 
     // ------------------------------------------------------------------
     // Multi-org list query: scope by OrganizationMembership, NOT by
@@ -142,17 +207,7 @@ export async function GET(request: Request) {
       };
     });
 
-    return NextResponse.json({ data: result, total, limit, offset });
-  } catch (error) {
-    if (error instanceof GuardDenial) return error.toErrorResponse();
-    return errorResponse({
-      kind: "internal",
-      message: "Internal server error",
-      route: ROUTE_GET,
-      method: "GET",
-      cause: error,
-    });
-  }
+    return { data: result, total, limit, offset };
 }
 
 // POST /api/beneficiaries — create a new beneficiary

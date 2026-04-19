@@ -26,6 +26,7 @@
 //   cross-instance cache would. Redis-backed shared state is a
 //   different PDR if ever needed.
 
+// WARNING: do not import from @/lib/cache — creates cycle with cachedWithStaleness.
 import { prisma } from "./db";
 import { logger } from "./logger";
 

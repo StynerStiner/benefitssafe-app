@@ -3,6 +3,12 @@
 // PATCH  /api/notifications — Mark notifications as read
 
 import { GuardDenial, requireAuth } from "@/lib/auth-guard";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  hashParams,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
@@ -36,20 +42,55 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const [notifications, unreadCount] = await Promise.all([
-      prisma.notification.findMany({
-        where: where as never,
-        orderBy: { createdAt: "desc" },
-        take: limit,
-      }),
-      prisma.notification.count({
-        where: { userId, organizationId, read: false },
-      }),
-    ]);
-
-    return NextResponse.json({ notifications, unreadCount }, {
-      headers: { 'Cache-Control': 'private, max-age=15, stale-while-revalidate=10' },
+    const cacheKey = `${STALE_CACHE_KEY_PREFIX}:${organizationId}:notifications:${userId}:${hashParams(request)}`;
+    const result = await cachedWithStaleness({
+      key: cacheKey,
+      ttlSeconds: STALE_CACHE_TTL.NOTIFICATIONS.ttlSeconds,
+      maxStaleSeconds: STALE_CACHE_TTL.NOTIFICATIONS.maxStaleSeconds,
+      fetcher: async () => {
+        const [notifications, unreadCount] = await Promise.all([
+          prisma.notification.findMany({
+            where: where as never,
+            orderBy: { createdAt: "desc" },
+            take: limit,
+          }),
+          prisma.notification.count({
+            where: { userId, organizationId, read: false },
+          }),
+        ]);
+        return { notifications, unreadCount };
+      },
     });
+
+    if (result.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    const headers: Record<string, string> = {
+      "Cache-Control": "private, max-age=15, stale-while-revalidate=10",
+    };
+    if (result.kind === "stale") {
+      headers["X-Data-Staleness"] = String(result.staleSeconds);
+      return NextResponse.json(
+        {
+          ...result.data,
+          _meta: {
+            stale: true,
+            staleSeconds: result.staleSeconds,
+            cachedAt: result.cachedAt,
+          },
+        },
+        { headers },
+      );
+    }
+
+    return NextResponse.json(result.data, { headers });
   } catch (error) {
     if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({

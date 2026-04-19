@@ -1,4 +1,17 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+
+// BSRS Ch 8 P2c — lib/cache.ts now imports getDbHealth() at module top
+// level for cachedWithStaleness. That transitively loads lib/db.ts,
+// which requires DATABASE_URL. Mock the transitive chain so this test
+// file (which only exercises cached()) doesn't need a real DB URL.
+vi.mock("@/lib/db-health", () => ({
+  getDbHealth: vi.fn(() => Promise.resolve({
+    status: "healthy",
+    latencyMs: 5,
+    checkedAt: new Date(),
+  })),
+}));
+
 import { cached, CACHE_TTL } from "@/lib/cache";
 
 // When Redis is not configured, cached() falls through to the fetcher

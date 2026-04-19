@@ -1,9 +1,15 @@
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
 
+const ROUTE_GET = "api/org:GET";
 const ROUTE_PATCH = "api/org:PATCH";
 
 // GET /api/org — Get current user's organization details
@@ -22,55 +28,94 @@ export async function GET() {
     if (!user?.organizationId) {
       return NextResponse.json({ error: "No organization" }, { status: 404 });
     }
+    const organizationId = user.organizationId;
 
-    const org = await prisma.organization.findUnique({
-      where: { id: user.organizationId },
-      select: {
-        id: true,
-        name: true,
-        ein: true,
-        einVerified: true,
-        address: true,
-        phone: true,
-        website: true,
-        logoUrl: true,
-        stripeAccountId: true,
-        stripeFinancialAccountId: true,
-        subscriptionStatus: true,
-        createdAt: true,
-      },
+    const cacheKey = `${STALE_CACHE_KEY_PREFIX}:${organizationId}:org:settings:default`;
+    const staleResult = await cachedWithStaleness({
+      key: cacheKey,
+      ttlSeconds: STALE_CACHE_TTL.ORG_SETTINGS.ttlSeconds,
+      maxStaleSeconds: STALE_CACHE_TTL.ORG_SETTINGS.maxStaleSeconds,
+      fetcher: () => buildOrgSettingsResponse(organizationId),
     });
 
-    if (!org) {
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.data === null) {
       return NextResponse.json({ error: "Organization not found" }, { status: 404 });
     }
 
-    // Parse address into parts for the form (stored as "street, city, state zip")
-    let addressStreet = "";
-    let addressCity = "";
-    let addressState = "";
-    let addressZip = "";
-    if (org.address) {
-      const parts = org.address.split(",").map((p) => p.trim());
-      addressStreet = parts[0] || "";
-      addressCity = parts[1] || "";
-      const stateZip = (parts[2] || "").split(" ").filter(Boolean);
-      addressState = stateZip[0] || "";
-      addressZip = stateZip[1] || "";
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
     }
 
-    return NextResponse.json({
-      ...org,
-      email: null, // Organization doesn't have email field — use admin's email
-      addressStreet,
-      addressCity,
-      addressState,
-      addressZip,
-    });
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     console.error("GET /api/org error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+}
+
+async function buildOrgSettingsResponse(organizationId: string) {
+  const org = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: {
+      id: true,
+      name: true,
+      ein: true,
+      einVerified: true,
+      address: true,
+      phone: true,
+      website: true,
+      logoUrl: true,
+      stripeAccountId: true,
+      stripeFinancialAccountId: true,
+      subscriptionStatus: true,
+      createdAt: true,
+    },
+  });
+
+  if (!org) return null;
+
+  // Parse address into parts for the form (stored as "street, city, state zip")
+  let addressStreet = "";
+  let addressCity = "";
+  let addressState = "";
+  let addressZip = "";
+  if (org.address) {
+    const parts = org.address.split(",").map((p) => p.trim());
+    addressStreet = parts[0] || "";
+    addressCity = parts[1] || "";
+    const stateZip = (parts[2] || "").split(" ").filter(Boolean);
+    addressState = stateZip[0] || "";
+    addressZip = stateZip[1] || "";
+  }
+
+  return {
+    ...org,
+    email: null as string | null, // Organization doesn't have email field — use admin's email
+    addressStreet,
+    addressCity,
+    addressState,
+    addressZip,
+  };
 }
 
 // PATCH /api/org — Update organization details
