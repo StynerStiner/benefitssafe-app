@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from 'next/server';
+import { validateCronSecret } from '@/lib/cron-auth';
 import { readCheckpoint, writeCheckpoint } from '@/lib/cron-checkpoint';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
@@ -11,15 +12,8 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
 export async function GET(request: Request) {
-  // Verify cron secret
-  const authHeader = request.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
+  if (!validateCronSecret(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   // DDIA Ch8 — distributed lock prevents concurrent dispatcher runs.

@@ -4,27 +4,5 @@
       "NPM_CONFIG_LEGACY_PEER_DEPS": "true",
       "NEXT_PRIVATE_SKIP_VALIDATION": "1"
     }
-  },
-  "crons": [
-    {
-      "path": "/api/cron/sentinel",
-      "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/cron/compliance",
-      "schedule": "0 12 * * *"
-    },
-    {
-      "path": "/api/cron/reports",
-      "schedule": "0 7 * * 1"
-    },
-    {
-      "path": "/api/cron/reconcile-orphan-stripe-cards",
-      "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron/revoke-expired-grants",
-      "schedule": "0 * * * *"
-    }
-  ]
+  }
 }

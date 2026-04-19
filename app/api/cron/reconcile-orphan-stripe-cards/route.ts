@@ -25,6 +25,7 @@
 // Schedule: hourly.
 
 import { NextResponse } from "next/server";
+import { validateCronSecret } from "@/lib/cron-auth";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import {
@@ -138,9 +139,7 @@ async function sweepAccount(
 }
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!validateCronSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -10,6 +10,7 @@
 // 3. Schedule for daily at 2 AM UTC
 
 import { NextResponse } from "next/server";
+import { validateCronSecret } from "@/lib/cron-auth";
 import { readCheckpoint, writeCheckpoint } from "@/lib/cron-checkpoint";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
@@ -37,18 +38,8 @@ const APP_BASE_URL =
   process.env.NEXTAUTH_URL || "https://app.benefitssafe.com";
 
 export async function GET(request: Request) {
-  // Verify cron secret via Authorization header (not query params, to avoid logging)
-  // Supports both: ?secret=X (legacy) and Authorization: Bearer X
-  const authHeader = request.headers.get("authorization");
-  const { searchParams } = new URL(request.url);
-  const querySecret = searchParams.get("secret");
-  const secret = authHeader?.replace("Bearer ", "") || querySecret;
-
-  if (!secret || secret !== process.env.CRON_SECRET) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 },
-    );
+  if (!validateCronSecret(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // DDIA Ch8 — prevent concurrent runs; each audit log / notification

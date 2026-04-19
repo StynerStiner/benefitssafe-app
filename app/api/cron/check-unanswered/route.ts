@@ -8,6 +8,7 @@
 // This ensures no beneficiary is left waiting. If a staff member is out,
 // the manager gets notified and can join the conversation.
 
+import { validateCronSecret } from "@/lib/cron-auth";
 import { readCheckpoint, writeCheckpoint } from "@/lib/cron-checkpoint";
 import { prisma } from "@/lib/db";
 import { acquireCronLock } from "@/lib/queue";
@@ -18,9 +19,7 @@ const URGENT_ESCALATION_HOURS = 48;
 const CRON_NAME = "check-unanswered";
 
 export async function GET(request: Request) {
-  // Verify cron secret (in production, use a secret to prevent abuse)
-  const authHeader = request.headers.get("authorization");
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!validateCronSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

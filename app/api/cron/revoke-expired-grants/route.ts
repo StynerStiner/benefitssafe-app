@@ -10,6 +10,7 @@
 // Schedule: hourly (see vercel.json). Expected volume is low — a few
 // dozen grants per day org-wide — so no cursor/checkpoint pattern.
 
+import { validateCronSecret } from "@/lib/cron-auth";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
@@ -23,9 +24,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!validateCronSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

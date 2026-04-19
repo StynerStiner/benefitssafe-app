@@ -5,6 +5,7 @@
 // Schedule: Monthly on 1st at 3 AM UTC
 
 import { NextResponse } from "next/server";
+import { validateCronSecret } from "@/lib/cron-auth";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import {
@@ -35,18 +36,8 @@ const CRON_NAME = "reconciliation";
 const LEDGER_RETRIEVE_BUDGET = 500;
 
 export async function GET(request: Request) {
-  // Verify cron secret via Authorization header (not query params, to avoid logging)
-  // Supports both: ?secret=X (legacy) and Authorization: Bearer X
-  const authHeader = request.headers.get("authorization");
-  const { searchParams } = new URL(request.url);
-  const querySecret = searchParams.get("secret");
-  const secret = authHeader?.replace("Bearer ", "") || querySecret;
-
-  if (!secret || secret !== process.env.CRON_SECRET) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 },
-    );
+  if (!validateCronSecret(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   return withOrgContext(
