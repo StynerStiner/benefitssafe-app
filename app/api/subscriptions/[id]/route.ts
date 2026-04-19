@@ -2,12 +2,19 @@
 // No cross-organization data leakage possible.
 
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
 import type { SubscriptionStatus, BillingUpdateStatus } from "@/lib/generated/prisma/client";
 
+const ROUTE_GET = "api/subscriptions/[id]:GET";
 const ROUTE_PATCH = "api/subscriptions/[id]:PATCH";
 
 const VALID_STATUSES: SubscriptionStatus[] = ["ACTIVE", "PAUSED", "CANCELLED"];
@@ -33,22 +40,52 @@ export async function GET(
     const { id } = await params;
     const { organizationId } = session.user;
 
-    const subscription = await prisma.subscription.findFirst({
-      where: {
-        id,
-        organizationId,
-      },
-      include: {
-        vendor: { select: { id: true, name: true, type: true, status: true } },
-        card: { select: { id: true, last4: true, status: true, cardLabel: true } },
-      },
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:subscriptions:detail:${id}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.FINANCIAL_LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.FINANCIAL_LIST.maxStaleSeconds,
+      fetcher: () =>
+        prisma.subscription.findFirst({
+          where: {
+            id,
+            organizationId,
+          },
+          include: {
+            vendor: { select: { id: true, name: true, type: true, status: true } },
+            card: { select: { id: true, last4: true, status: true, cardLabel: true } },
+          },
+        }),
     });
 
-    if (!subscription) {
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.data === null) {
       return NextResponse.json({ error: "Subscription not found" }, { status: 404 });
     }
 
-    return NextResponse.json(subscription);
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
+
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     console.error("GET /api/subscriptions/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

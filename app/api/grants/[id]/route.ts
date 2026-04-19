@@ -2,6 +2,12 @@
 // No cross-organization data leakage possible.
 
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
@@ -29,6 +35,7 @@ export async function GET(
 
     const { id } = await params;
     const { organizationId, role } = session.user;
+    const userId = session.user.id;
 
     // Vendors never see grant detail — they have no business touching other
     // people's compliance rules or cards.
@@ -38,62 +45,54 @@ export async function GET(
         message: "Forbidden",
         route: ROUTE_GET,
         method: "GET",
-        userId: session.user.id,
+        userId,
         organizationId,
       });
     }
 
-    const grant = await prisma.grant.findFirst({
-      where: {
-        id,
-        organizationId,
-        ...(role === "beneficiary" ? { beneficiaryId: session.user.id } : {}),
-      },
-      include: {
-        beneficiary: { select: { id: true, firstName: true, lastName: true, email: true } },
-        categories: {
-          orderBy: { createdAt: "asc" },
-        },
-        expenses: {
-          include: {
-            category: { select: { id: true, name: true } },
-            requestedBy: { select: { id: true, firstName: true, lastName: true } },
-          },
-          orderBy: { createdAt: "desc" },
-          take: 20,
-        },
-        virtualCards: {
-          include: {
-            beneficiary: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                memberships: {
-                  where: { organizationId },
-                  select: { memberCode: true },
-                  take: 1,
-                },
-              },
-            },
-          },
-          orderBy: { createdAt: "desc" },
-        },
-      },
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:grants:detail:${id}:${role}:${userId}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.FINANCIAL_LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.FINANCIAL_LIST.maxStaleSeconds,
+      fetcher: () => buildGrantDetailResponse(organizationId, id, role, userId),
     });
 
-    if (!grant) {
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.data === null) {
       return errorResponse({
         kind: "not_found",
         message: "Grant not found",
         route: ROUTE_GET,
         method: "GET",
-        userId: session.user.id,
+        userId,
         organizationId,
       });
     }
 
-    return NextResponse.json(grant);
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
+
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     return errorResponse({
       kind: "internal",
@@ -103,6 +102,52 @@ export async function GET(
       cause: error,
     });
   }
+}
+
+async function buildGrantDetailResponse(
+  organizationId: string,
+  id: string,
+  role: string,
+  userId: string,
+) {
+  return prisma.grant.findFirst({
+    where: {
+      id,
+      organizationId,
+      ...(role === "beneficiary" ? { beneficiaryId: userId } : {}),
+    },
+    include: {
+      beneficiary: { select: { id: true, firstName: true, lastName: true, email: true } },
+      categories: {
+        orderBy: { createdAt: "asc" },
+      },
+      expenses: {
+        include: {
+          category: { select: { id: true, name: true } },
+          requestedBy: { select: { id: true, firstName: true, lastName: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      },
+      virtualCards: {
+        include: {
+          beneficiary: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              memberships: {
+                where: { organizationId },
+                select: { memberCode: true },
+                take: 1,
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+    },
+  });
 }
 
 // PATCH /api/grants/[id] — update a grant

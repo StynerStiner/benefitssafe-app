@@ -1,4 +1,11 @@
 import { GuardDenial, requireAdmin, requireAuth } from "@/lib/auth-guard";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  hashParams,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
@@ -24,20 +31,52 @@ export async function GET(request: NextRequest) {
         ? { organizationId, grant: { is: { beneficiaryId: userId } } }
         : { organizationId };
 
-    const [subscriptions, total] = await Promise.all([
-      prisma.subscription.findMany({
-        where,
-        include: {
-          vendor: { select: { id: true, name: true, type: true, status: true } },
-        },
-        orderBy: { createdAt: "desc" },
-        take: limit,
-        skip: offset,
-      }),
-      prisma.subscription.count({ where }),
-    ]);
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:subscriptions:list:${role}:${userId}:${hashParams(request)}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.FINANCIAL_LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.FINANCIAL_LIST.maxStaleSeconds,
+      fetcher: async () => {
+        const [subscriptions, total] = await Promise.all([
+          prisma.subscription.findMany({
+            where,
+            include: {
+              vendor: { select: { id: true, name: true, type: true, status: true } },
+            },
+            orderBy: { createdAt: "desc" },
+            take: limit,
+            skip: offset,
+          }),
+          prisma.subscription.count({ where }),
+        ]);
+        return { subscriptions, total, limit, offset };
+      },
+    });
 
-    return NextResponse.json({ subscriptions, total, limit, offset });
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
+
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({

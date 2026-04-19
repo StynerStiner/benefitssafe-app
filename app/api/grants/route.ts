@@ -3,7 +3,17 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { GuardDenial, requireAdmin, requireAuth } from "@/lib/auth-guard";
-import { cached, invalidateCacheByPrefix, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
+import {
+  CACHE_KEYS,
+  CACHE_TTL,
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cached,
+  cachedWithStaleness,
+  hashParams,
+  invalidateCacheByPrefix,
+  jitterTtl,
+} from "@/lib/cache";
 import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
@@ -36,28 +46,65 @@ export async function GET(request: Request) {
         : { organizationId, archivedAt: null };
 
     // Cache key includes role, pagination, and org to avoid cross-tenant leaks
-    const cacheKey = `${CACHE_KEYS.orgGrants(organizationId)}:${role}:${limit}:${offset}`;
+    const perfCacheKey = `${CACHE_KEYS.orgGrants(organizationId)}:${role}:${limit}:${offset}`;
 
-    const result = await cached(cacheKey, CACHE_TTL.SHORT, async () => {
-      const [grants, total] = await Promise.all([
-        prisma.grant.findMany({
-          where,
-          include: {
-            beneficiary: { select: { id: true, firstName: true, lastName: true, email: true, avatarUrl: true } },
-            categories: true,
-          },
-          orderBy: { createdAt: "desc" },
-          take: limit,
-          skip: offset,
+    // Layered caches: inner cached() is the P4 perf cache (60s TTL,
+    // write-through). Outer cachedWithStaleness adds degraded-mode
+    // fallback with a tight 2min max-stale ceiling appropriate for
+    // financial-list data. Same layering as vendors/route.ts +
+    // platform/stats/route.ts.
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:grants:list:${role}:${hashParams(request)}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.FINANCIAL_LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.FINANCIAL_LIST.maxStaleSeconds,
+      fetcher: () =>
+        cached(perfCacheKey, CACHE_TTL.SHORT, async () => {
+          const [grants, total] = await Promise.all([
+            prisma.grant.findMany({
+              where,
+              include: {
+                beneficiary: { select: { id: true, firstName: true, lastName: true, email: true, avatarUrl: true } },
+                categories: true,
+              },
+              orderBy: { createdAt: "desc" },
+              take: limit,
+              skip: offset,
+            }),
+            prisma.grant.count({ where }),
+          ]);
+          return { data: grants, total, limit, offset };
         }),
-        prisma.grant.count({ where }),
-      ]);
-      return { data: grants, total, limit, offset };
     });
 
-    return NextResponse.json(result, {
-      headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=15' },
-    });
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    const headers: Record<string, string> = {
+      "Cache-Control": "private, max-age=30, stale-while-revalidate=15",
+    };
+    if (staleResult.kind === "stale") {
+      headers["X-Data-Staleness"] = String(staleResult.staleSeconds);
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers },
+      );
+    }
+
+    return NextResponse.json(staleResult.data, { headers });
   } catch (error) {
     if (error instanceof GuardDenial) return error.toErrorResponse();
     Sentry.captureException(error, {

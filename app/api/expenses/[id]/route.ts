@@ -3,6 +3,12 @@
 // No cross-organization data leakage possible.
 
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { captureApiError } from "@/lib/error-handler";
@@ -11,6 +17,7 @@ import { withOrgContext } from "@/lib/org-context";
 import { updateExpenseSchema } from "@/lib/validations/expense";
 import { NextResponse } from "next/server";
 
+const ROUTE_GET = "api/expenses/[id]:GET";
 const ROUTE_PATCH = "api/expenses/[id]:PATCH";
 const ROUTE_DELETE = "api/expenses/[id]:DELETE";
 
@@ -26,42 +33,86 @@ export async function GET(
     }
 
     const { role, organizationId, id: userId } = session.user;
+    // cachedWithStaleness goes INSIDE withOrgContext so the fetcher
+    // inherits the session-scoped Prisma org-scoping invariants (OD-2).
     return withOrgContext(
       { kind: "session", organizationId, userId, role },
       async () => {
     const { id } = await params;
 
-    const where: Record<string, unknown> = { id, archivedAt: null };
-
-    if (role === "beneficiary") {
-      where.requestedById = userId;
-      where.grant = { is: { organizationId } };
-    } else if (role === "nonprofit_admin" || role === "cpa") {
-      where.grant = { is: { organizationId } };
-    } else if (role !== "platform_admin") {
+    // Role gate stays pre-cache. platform_admin passes through; other
+    // roles either scope by membership (beneficiary, nonprofit_admin, cpa)
+    // or get rejected.
+    if (
+      role !== "beneficiary" &&
+      role !== "nonprofit_admin" &&
+      role !== "cpa" &&
+      role !== "platform_admin"
+    ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const expense = await prisma.expenseRequest.findFirst({
-      where,
-      include: {
-        grant: { select: { id: true, name: true, remainingAmount: true, organizationId: true } },
-        category: { select: { id: true, name: true, allocatedAmount: true, spentAmount: true } },
-        requestedBy: { select: { id: true, firstName: true, lastName: true, email: true, avatarUrl: true } },
-        vendor: { select: { id: true, name: true, type: true } },
-        virtualCards: { select: { id: true, last4: true, status: true } },
-        approvals: {
-          select: { id: true, action: true, notes: true, createdAt: true, approverId: true },
-          orderBy: { createdAt: "desc" },
-        },
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:expenses:detail:${id}:${role}:${userId}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.FINANCIAL_LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.FINANCIAL_LIST.maxStaleSeconds,
+      fetcher: async () => {
+        const where: Record<string, unknown> = { id, archivedAt: null };
+
+        if (role === "beneficiary") {
+          where.requestedById = userId;
+          where.grant = { is: { organizationId } };
+        } else if (role === "nonprofit_admin" || role === "cpa") {
+          where.grant = { is: { organizationId } };
+        }
+        // platform_admin falls through with no grant-org filter.
+
+        return prisma.expenseRequest.findFirst({
+          where,
+          include: {
+            grant: { select: { id: true, name: true, remainingAmount: true, organizationId: true } },
+            category: { select: { id: true, name: true, allocatedAmount: true, spentAmount: true } },
+            requestedBy: { select: { id: true, firstName: true, lastName: true, email: true, avatarUrl: true } },
+            vendor: { select: { id: true, name: true, type: true } },
+            virtualCards: { select: { id: true, last4: true, status: true } },
+            approvals: {
+              select: { id: true, action: true, notes: true, createdAt: true, approverId: true },
+              orderBy: { createdAt: "desc" },
+            },
+          },
+        });
       },
     });
 
-    if (!expense) {
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.data === null) {
       return NextResponse.json({ error: "Expense not found" }, { status: 404 });
     }
 
-    return NextResponse.json(expense);
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
+
+    return NextResponse.json(staleResult.data);
       },
     );
   } catch (error) {

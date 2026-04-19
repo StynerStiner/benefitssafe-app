@@ -3,6 +3,13 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  hashParams,
+  jitterTtl,
+} from "@/lib/cache";
 import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
@@ -14,6 +21,7 @@ import { checkLimitAccess, buildLimitReachedResponse, getCurrentPeriod } from "@
 import { incrementUsage } from "@/lib/usage-tracker";
 import { NextResponse } from "next/server";
 
+const ROUTE_GET = "api/expenses:GET";
 const ROUTE_POST = "api/expenses:POST";
 
 // GET /api/expenses — list expenses scoped by role
@@ -80,30 +88,64 @@ export async function GET(request: Request) {
       where.grantId = grantId;
     }
 
-    const [expenses, total] = await Promise.all([
-      prisma.expenseRequest.findMany({
-        where,
-        include: {
-          grant: {
-            select: { id: true, name: true, benefitFlags: true, organizationId: true },
-          },
-          category: { select: { id: true, name: true } },
-          requestedBy: { select: { id: true, firstName: true, lastName: true, email: true, avatarUrl: true } },
-          virtualCards: { select: { id: true, last4: true, status: true } },
-          vendor: { select: { id: true, name: true, type: true } },
-        },
-        orderBy: { createdAt: "desc" },
-        take: limit,
-        skip: offset,
-      }),
-      prisma.expenseRequest.count({ where }),
-    ]);
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:expenses:list:${role}:${userId}:${hashParams(request)}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.FINANCIAL_LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.FINANCIAL_LIST.maxStaleSeconds,
+      fetcher: async () => {
+        const [expenses, total] = await Promise.all([
+          prisma.expenseRequest.findMany({
+            where,
+            include: {
+              grant: {
+                select: { id: true, name: true, benefitFlags: true, organizationId: true },
+              },
+              category: { select: { id: true, name: true } },
+              requestedBy: { select: { id: true, firstName: true, lastName: true, email: true, avatarUrl: true } },
+              virtualCards: { select: { id: true, last4: true, status: true } },
+              vendor: { select: { id: true, name: true, type: true } },
+            },
+            orderBy: { createdAt: "desc" },
+            take: limit,
+            skip: offset,
+          }),
+          prisma.expenseRequest.count({ where }),
+        ]);
+        return { data: expenses, total, limit, offset };
+      },
+    });
+
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
 
     // Note: suggestedCategory and approvedAt are included automatically by Prisma
 
-    return NextResponse.json({ data: expenses, total, limit, offset }, {
-      headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=15' },
-    });
+    const headers: Record<string, string> = {
+      "Cache-Control": "private, max-age=30, stale-while-revalidate=15",
+    };
+    if (staleResult.kind === "stale") {
+      headers["X-Data-Staleness"] = String(staleResult.staleSeconds);
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers },
+      );
+    }
+
+    return NextResponse.json(staleResult.data, { headers });
   } catch (error) {
     Sentry.captureException(error, {
       tags: { route: '/api/expenses', method: 'GET' },
