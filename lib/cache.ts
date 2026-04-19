@@ -125,7 +125,16 @@ export const STALE_CACHE_TTL = {
   REPORTS: { ttlSeconds: 300, maxStaleSeconds: 900 },
 } as const;
 
-export const STALE_CACHE_KEY_PREFIX = "cache:degraded";
+// BSRS Ch 8 P3a — channel-prefixed so canary and stable deployments
+// don't stomp each other's degraded-mode cache entries. DEPLOY_CHANNEL
+// is set per-deployment by Vercel; unset defaults to "stable" so local
+// dev and single-deployment environments produce a deterministic
+// prefix and never collide with a real canary's keys. First deploy
+// after this change cold-starts the degraded-mode cache under the
+// new prefix — orphaned entries expire at their maxStaleSeconds TTL.
+// See docs/design-notes/bsrs-ch08-p3-design.md §9.
+const DEPLOY_CHANNEL = process.env.DEPLOY_CHANNEL || "stable";
+export const STALE_CACHE_KEY_PREFIX = `cache:degraded:${DEPLOY_CHANNEL}`;
 const DEFAULT_DEGRADED_FETCHER_TIMEOUT_MS = 3_000;
 
 /**

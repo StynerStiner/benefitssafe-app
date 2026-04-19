@@ -28,4 +28,12 @@ jobs:
       # without a correlationId (Rule C). Allowlist grandfathers
       # legacy routes; see docs/runbooks/auth-guard-convention.md.
       - run: node scripts/lint/auth-guard-convention.mjs
+      # BSRS Ch 8 P2b — write-path db-health convention linter. Blocks
+      # a new write route from shipping without assertDbHealthy() and
+      # the DbUnavailableError → 503 mapping.
+      - run: node scripts/lint/db-health-convention.mjs
+      # BSRS Ch 8 P2c — read-path stale-cache convention linter. Blocks
+      # a new GET route from shipping without cachedWithStaleness()
+      # degraded-mode fallback.
+      - run: node scripts/lint/stale-cache-convention.mjs
       - run: npx eslint . --max-warnings=0 2>&1 || true

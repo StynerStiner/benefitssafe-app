@@ -122,10 +122,11 @@ describe("GET /api/dashboard — stale-cache envelope (BSRS Ch 8 P2c)", () => {
     });
 
     // Pre-populate the cache under the exact key shape the route builds.
-    // Key: cache:degraded:${orgId}:dashboard:${role}:${userId}:${hashParams}
+    // Key: cache:degraded:${DEPLOY_CHANNEL}:${orgId}:dashboard:${role}:${userId}:${hashParams}
+    // DEPLOY_CHANNEL defaults to "stable" when unset (BSRS Ch 8 P3a).
     // queryHash for empty params = "default".
     const cacheKey =
-      "cache:degraded:org-1:dashboard:nonprofit_admin:user-1:default";
+      "cache:degraded:stable:org-1:dashboard:nonprofit_admin:user-1:default";
     const cachedAt = "2026-04-18T19:59:30.000Z"; // 30s ago
     mockRedisStore.set(cacheKey, {
       data: { totals: { grants: 2 } },
