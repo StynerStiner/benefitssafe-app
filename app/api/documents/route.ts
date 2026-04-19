@@ -1,4 +1,11 @@
 import { GuardDenial, requireAuth } from "@/lib/auth-guard";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  hashParams,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
@@ -30,17 +37,50 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const [documents, total] = await Promise.all([
-      prisma.document.findMany({
-        where,
-        orderBy: { createdAt: "desc" },
-        take: limit,
-        skip: offset,
-      }),
-      prisma.document.count({ where }),
-    ]);
+    const cacheKey = `${STALE_CACHE_KEY_PREFIX}:${organizationId}:documents:list:${role}:${userId}:${hashParams(request)}`;
+    const staleResult = await cachedWithStaleness({
+      key: cacheKey,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.LIST.maxStaleSeconds,
+      fetcher: async () => {
+        const [documents, total] = await Promise.all([
+          prisma.document.findMany({
+            where,
+            orderBy: { createdAt: "desc" },
+            take: limit,
+            skip: offset,
+          }),
+          prisma.document.count({ where }),
+        ]);
+        return { documents, total, limit, offset };
+      },
+    });
 
-    return NextResponse.json({ documents, total, limit, offset });
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
+
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({

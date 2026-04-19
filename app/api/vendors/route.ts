@@ -3,7 +3,17 @@
 // POST /api/vendors — create vendor
 
 import { GuardDenial, requireAuth, requireRole } from "@/lib/auth-guard";
-import { cached, invalidateCacheByPrefix, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
+import {
+  CACHE_KEYS,
+  CACHE_TTL,
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cached,
+  cachedWithStaleness,
+  hashParams,
+  invalidateCacheByPrefix,
+  jitterTtl,
+} from "@/lib/cache";
 import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
@@ -52,34 +62,68 @@ export async function GET(request: NextRequest) {
     }
 
     // Cache key includes filters and pagination to avoid stale cross-query results
-    const cacheKey = `${CACHE_KEYS.orgVendors(organizationId)}:${search || ""}:${status || ""}:${type || ""}:${limit}:${offset}`;
+    const perfCacheKey = `${CACHE_KEYS.orgVendors(organizationId)}:${search || ""}:${status || ""}:${type || ""}:${limit}:${offset}`;
 
-    const result = await cached(cacheKey, CACHE_TTL.MEDIUM, async () => {
-      const [vendors, total] = await Promise.all([
-        prisma.vendor.findMany({
-          where: where as never,
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            type: true,
-            status: true,
-            website: true,
-            approvedAt: true,
-            createdAt: true,
-            user: { select: { avatarUrl: true } },
-            _count: { select: { expenses: true } },
-          },
-          orderBy: { createdAt: "desc" },
-          take: limit,
-          skip: offset,
+    // Layered caches: inner cached() is the P4 perf cache (5min TTL,
+    // write-through). Outer cachedWithStaleness adds degraded-mode
+    // fallback with a longer max-stale ceiling. Same layering as
+    // platform/stats/route.ts.
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:vendors:list:${hashParams(request)}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.LIST.maxStaleSeconds,
+      fetcher: () =>
+        cached(perfCacheKey, CACHE_TTL.MEDIUM, async () => {
+          const [vendors, total] = await Promise.all([
+            prisma.vendor.findMany({
+              where: where as never,
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                type: true,
+                status: true,
+                website: true,
+                approvedAt: true,
+                createdAt: true,
+                user: { select: { avatarUrl: true } },
+                _count: { select: { expenses: true } },
+              },
+              orderBy: { createdAt: "desc" },
+              take: limit,
+              skip: offset,
+            }),
+            prisma.vendor.count({ where: where as never }),
+          ]);
+          return { vendors, total, limit, offset };
         }),
-        prisma.vendor.count({ where: where as never }),
-      ]);
-      return { vendors, total, limit, offset };
     });
 
-    return NextResponse.json(result);
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
+
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({

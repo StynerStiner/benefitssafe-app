@@ -2,8 +2,18 @@
 // No cross-organization data leakage possible.
 
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  hashParams,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { NextRequest, NextResponse } from "next/server";
+
+const ROUTE_GET = "api/users:GET";
 
 // GET /api/users?role=beneficiary&search=john&limit=20&offset=0
 // Supports server-side search and pagination for large datasets (1M+ users)
@@ -55,54 +65,87 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    const [memberships, total] = await Promise.all([
-      prisma.organizationMembership.findMany({
-        where: membershipWhere as never,
-        select: {
-          id: true,
-          memberCode: true,
-          status: true,
-          role: true,
-          user: {
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:users:list:${hashParams(request)}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.LIST.maxStaleSeconds,
+      fetcher: async () => {
+        const [memberships, total] = await Promise.all([
+          prisma.organizationMembership.findMany({
+            where: membershipWhere as never,
             select: {
               id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              phone: true,
+              memberCode: true,
+              status: true,
               role: true,
-              isActive: true,
-              avatarUrl: true,
-              beneficiaryCode: true,
-              addressCity: true,
-              addressState: true,
-              createdAt: true,
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                  phone: true,
+                  role: true,
+                  isActive: true,
+                  avatarUrl: true,
+                  beneficiaryCode: true,
+                  addressCity: true,
+                  addressState: true,
+                  createdAt: true,
+                },
+              },
             },
+            orderBy: { user: { lastName: "asc" } },
+            take: limit,
+            skip: offset,
+          }),
+          prisma.organizationMembership.count({ where: membershipWhere as never }),
+        ]);
+
+        // Flatten to the same shape the existing UI consumes. The per-org
+        // memberCode comes from the membership row; the role we surface is
+        // the membership role (per-org) not User.role (global / last-active).
+        const users = memberships.map((m) => ({
+          ...m.user,
+          role: m.role || m.user.role,
+          memberships: [{ id: m.id, memberCode: m.memberCode, status: m.status }],
+        }));
+
+        return {
+          users,
+          total,
+          limit,
+          offset,
+          hasMore: offset + limit < total,
+        };
+      },
+    });
+
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
           },
         },
-        orderBy: { user: { lastName: "asc" } },
-        take: limit,
-        skip: offset,
-      }),
-      prisma.organizationMembership.count({ where: membershipWhere as never }),
-    ]);
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
 
-    // Flatten to the same shape the existing UI consumes. The per-org
-    // memberCode comes from the membership row; the role we surface is
-    // the membership role (per-org) not User.role (global / last-active).
-    const users = memberships.map((m) => ({
-      ...m.user,
-      role: m.role || m.user.role,
-      memberships: [{ id: m.id, memberCode: m.memberCode, status: m.status }],
-    }));
-
-    return NextResponse.json({
-      users,
-      total,
-      limit,
-      offset,
-      hasMore: offset + limit < total,
-    });
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     console.error("GET /api/users error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

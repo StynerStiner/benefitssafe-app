@@ -3,6 +3,7 @@ import {
   STALE_CACHE_KEY_PREFIX,
   STALE_CACHE_TTL,
   cachedWithStaleness,
+  jitterTtl,
 } from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
@@ -33,7 +34,7 @@ export async function GET() {
     const cacheKey = `${STALE_CACHE_KEY_PREFIX}:${organizationId}:org:settings:default`;
     const staleResult = await cachedWithStaleness({
       key: cacheKey,
-      ttlSeconds: STALE_CACHE_TTL.ORG_SETTINGS.ttlSeconds,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.ORG_SETTINGS.ttlSeconds),
       maxStaleSeconds: STALE_CACHE_TTL.ORG_SETTINGS.maxStaleSeconds,
       fetcher: () => buildOrgSettingsResponse(organizationId),
     });

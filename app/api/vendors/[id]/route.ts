@@ -4,6 +4,12 @@
 // DELETE /api/vendors/[id]
 
 import { GuardDenial, requireAdmin, requireAuth } from "@/lib/auth-guard";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
@@ -22,39 +28,24 @@ export async function GET(
     const { userId, organizationId } = await requireAuth(ROUTE_GET, "GET");
     const { id } = await params;
 
-    const vendor = await prisma.vendor.findFirst({
-      where: { id, organizationId, archivedAt: null },
-      include: {
-        expenses: {
-          select: {
-            id: true,
-            description: true,
-            amount: true,
-            status: true,
-            expenseType: true,
-            createdAt: true,
-            grant: { select: { id: true, name: true } },
-            requestedBy: { select: { id: true, firstName: true, lastName: true } },
-          },
-          orderBy: { createdAt: "desc" },
-          take: 50,
-        },
-        virtualCards: {
-          select: {
-            id: true,
-            last4: true,
-            spendingCap: true,
-            status: true,
-            cardType: true,
-            createdAt: true,
-          },
-          orderBy: { createdAt: "desc" },
-        },
-        _count: { select: { expenses: true } },
-      },
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:vendors:detail:${id}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.LIST.maxStaleSeconds,
+      fetcher: () => buildVendorDetailResponse(organizationId, id),
     });
 
-    if (!vendor) {
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.data === null) {
       return errorResponse({
         kind: "not_found",
         message: "Vendor not found",
@@ -65,18 +56,21 @@ export async function GET(
       });
     }
 
-    // Calculate total paid
-    const totalPaid = vendor.expenses
-      .filter((e) => e.status === "PAID" || e.status === "APPROVED")
-      .reduce((sum, e) => sum + parseFloat(e.amount.toString()), 0);
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
 
-    const lastTransaction = vendor.expenses[0]?.createdAt || null;
-
-    return NextResponse.json({
-      ...vendor,
-      totalPaid: totalPaid.toFixed(2),
-      lastTransaction,
-    });
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({
@@ -87,6 +81,55 @@ export async function GET(
       cause: error,
     });
   }
+}
+
+async function buildVendorDetailResponse(organizationId: string, id: string) {
+  const vendor = await prisma.vendor.findFirst({
+    where: { id, organizationId, archivedAt: null },
+    include: {
+      expenses: {
+        select: {
+          id: true,
+          description: true,
+          amount: true,
+          status: true,
+          expenseType: true,
+          createdAt: true,
+          grant: { select: { id: true, name: true } },
+          requestedBy: { select: { id: true, firstName: true, lastName: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      },
+      virtualCards: {
+        select: {
+          id: true,
+          last4: true,
+          spendingCap: true,
+          status: true,
+          cardType: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: "desc" },
+      },
+      _count: { select: { expenses: true } },
+    },
+  });
+
+  if (!vendor) return null;
+
+  // Calculate total paid
+  const totalPaid = vendor.expenses
+    .filter((e) => e.status === "PAID" || e.status === "APPROVED")
+    .reduce((sum, e) => sum + parseFloat(e.amount.toString()), 0);
+
+  const lastTransaction = vendor.expenses[0]?.createdAt || null;
+
+  return {
+    ...vendor,
+    totalPaid: totalPaid.toFixed(2),
+    lastTransaction,
+  };
 }
 
 export async function PATCH(

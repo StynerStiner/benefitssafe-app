@@ -1,10 +1,17 @@
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { getProfileConfig, type ProfileField } from "@/lib/profile-config";
 import { NextResponse } from "next/server";
 
+const ROUTE_GET = "api/users/profile:GET";
 const ROUTE_PATCH = "api/users/profile:PATCH";
 
 // GET /api/users/profile — returns the authenticated user's full profile,
@@ -17,75 +24,117 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user.id;
+    const activeOrgId = session.user.organizationId ?? "none";
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phone: true,
-        avatarUrl: true,
-        role: true,
-        title: true,
-        companyName: true,
-        businessAddress: true,
-        firmName: true,
-        licenseNumber: true,
-        barNumber: true,
-        organizationName: true,
-        emergencyContactName: true,
-        emergencyContactPhone: true,
-      },
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:user:${userId}:profile:${activeOrgId}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.LIST.maxStaleSeconds,
+      fetcher: () => buildUserProfileResponse(userId, session.user.organizationId),
     });
 
-    if (!user) {
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.data === null) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Per-org identity codes. memberCode is scoped to the active org so a
-    // multi-org user sees a different code per organization; orgCode is the
-    // organization's own ORG- sequence.
-    const membership = session.user.organizationId
-      ? await prisma.organizationMembership.findUnique({
-          where: {
-            userId_organizationId: {
-              userId: user.id,
-              organizationId: session.user.organizationId,
-            },
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
           },
-          select: {
-            memberCode: true,
-            organization: { select: { orgCode: true } },
-          },
-        })
-      : null;
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
 
-    return NextResponse.json({
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phone: user.phone ?? "",
-      image: user.avatarUrl ?? undefined,
-      role: user.role,
-      title: user.title ?? "",
-      companyName: user.companyName ?? "",
-      businessAddress: user.businessAddress ?? "",
-      firmName: user.firmName ?? "",
-      licenseNumber: user.licenseNumber ?? "",
-      barNumber: user.barNumber ?? "",
-      organizationName: user.organizationName ?? "",
-      emergencyContactName: user.emergencyContactName ?? "",
-      emergencyContactPhone: user.emergencyContactPhone ?? "",
-      memberCode: membership?.memberCode ?? null,
-      orgCode: membership?.organization?.orgCode ?? null,
-    });
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     console.error("GET /api/users/profile error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+}
+
+async function buildUserProfileResponse(
+  userId: string,
+  organizationId: string | null | undefined,
+) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      phone: true,
+      avatarUrl: true,
+      role: true,
+      title: true,
+      companyName: true,
+      businessAddress: true,
+      firmName: true,
+      licenseNumber: true,
+      barNumber: true,
+      organizationName: true,
+      emergencyContactName: true,
+      emergencyContactPhone: true,
+    },
+  });
+
+  if (!user) return null;
+
+  // Per-org identity codes. memberCode is scoped to the active org so a
+  // multi-org user sees a different code per organization; orgCode is the
+  // organization's own ORG- sequence.
+  const membership = organizationId
+    ? await prisma.organizationMembership.findUnique({
+        where: {
+          userId_organizationId: {
+            userId: user.id,
+            organizationId,
+          },
+        },
+        select: {
+          memberCode: true,
+          organization: { select: { orgCode: true } },
+        },
+      })
+    : null;
+
+  return {
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    phone: user.phone ?? "",
+    image: user.avatarUrl ?? undefined,
+    role: user.role,
+    title: user.title ?? "",
+    companyName: user.companyName ?? "",
+    businessAddress: user.businessAddress ?? "",
+    firmName: user.firmName ?? "",
+    licenseNumber: user.licenseNumber ?? "",
+    barNumber: user.barNumber ?? "",
+    organizationName: user.organizationName ?? "",
+    emergencyContactName: user.emergencyContactName ?? "",
+    emergencyContactPhone: user.emergencyContactPhone ?? "",
+    memberCode: membership?.memberCode ?? null,
+    orgCode: membership?.organization?.orgCode ?? null,
+  };
 }
 
 // PATCH /api/users/profile — updates only the fields allowed by the caller's

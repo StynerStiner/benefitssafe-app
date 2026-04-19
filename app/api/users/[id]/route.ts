@@ -5,12 +5,19 @@
 // membership row, never the global User row.
 
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+const ROUTE_GET = "api/users/[id]:GET";
 const ROUTE_PATCH = "api/users/[id]:PATCH";
 const ROUTE_DELETE = "api/users/[id]:DELETE";
 
@@ -48,51 +55,86 @@ export async function GET(
 
     const { id } = await params;
 
-    // Multi-org access check: caller must have a membership row for this
-    // user in their currently active org. Filtering by User.organizationId
-    // would silently 404 multi-org team members whose User row points at
-    // a different nonprofit.
-    const membership = await prisma.organizationMembership.findFirst({
-      where: { userId: id, organizationId },
-      select: { id: true, role: true, status: true, memberCode: true },
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:users:detail:${id}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.LIST.maxStaleSeconds,
+      fetcher: () => buildUserDetailResponse(organizationId, id),
     });
-    if (!membership) {
+
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.data === null) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phone: true,
-        isActive: true,
-        avatarUrl: true,
-        beneficiaryCode: true,
-        addressCity: true,
-        addressState: true,
-        createdAt: true,
-      },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
     }
 
-    // Surface the per-org role + memberCode + membership status.
-    // We never include any other-org membership data.
-    return NextResponse.json({
-      ...user,
-      role: membership.role,
-      memberCode: membership.memberCode,
-      membershipStatus: membership.status,
-    });
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     console.error("GET /api/users/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+}
+
+async function buildUserDetailResponse(organizationId: string, id: string) {
+  // Multi-org access check: caller must have a membership row for this
+  // user in their currently active org. Filtering by User.organizationId
+  // would silently 404 multi-org team members whose User row points at
+  // a different nonprofit.
+  const membership = await prisma.organizationMembership.findFirst({
+    where: { userId: id, organizationId },
+    select: { id: true, role: true, status: true, memberCode: true },
+  });
+  if (!membership) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      phone: true,
+      isActive: true,
+      avatarUrl: true,
+      beneficiaryCode: true,
+      addressCity: true,
+      addressState: true,
+      createdAt: true,
+    },
+  });
+
+  if (!user) return null;
+
+  // Surface the per-org role + memberCode + membership status.
+  // We never include any other-org membership data.
+  return {
+    ...user,
+    role: membership.role,
+    memberCode: membership.memberCode,
+    membershipStatus: membership.status,
+  };
 }
 
 // PATCH /api/users/[id] — Update team member.

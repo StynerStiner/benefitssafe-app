@@ -7,6 +7,7 @@ import {
   STALE_CACHE_TTL,
   cachedWithStaleness,
   hashParams,
+  jitterTtl,
 } from "@/lib/cache";
 import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
@@ -42,7 +43,7 @@ export async function GET(request: Request) {
     const cacheKey = `${STALE_CACHE_KEY_PREFIX}:${organizationId}:beneficiaries:list:${hashParams(request)}`;
     const staleResult = await cachedWithStaleness({
       key: cacheKey,
-      ttlSeconds: STALE_CACHE_TTL.LIST.ttlSeconds,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.LIST.ttlSeconds),
       maxStaleSeconds: STALE_CACHE_TTL.LIST.maxStaleSeconds,
       fetcher: () =>
         buildBeneficiariesListResponse({

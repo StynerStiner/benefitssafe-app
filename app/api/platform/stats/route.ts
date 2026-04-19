@@ -9,6 +9,7 @@ import {
   STALE_CACHE_TTL,
   cached,
   cachedWithStaleness,
+  jitterTtl,
 } from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { errorResponse } from "@/lib/error-response";
@@ -31,7 +32,7 @@ export async function GET() {
     // even if the inner perf entry has expired.
     const staleResult = await cachedWithStaleness({
       key: `${STALE_CACHE_KEY_PREFIX}:platform:stats:default`,
-      ttlSeconds: STALE_CACHE_TTL.PLATFORM_STATS.ttlSeconds,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.PLATFORM_STATS.ttlSeconds),
       maxStaleSeconds: STALE_CACHE_TTL.PLATFORM_STATS.maxStaleSeconds,
       fetcher: () =>
         cached(CACHE_KEYS.platformStats(), CACHE_TTL.SHORT, async () => {

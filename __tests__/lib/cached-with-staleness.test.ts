@@ -370,6 +370,41 @@ describe("cachedWithStaleness — Redis errors (graceful)", () => {
 });
 
 // ──────────────────────────────────────────────────────────────────
+// Group F — jitterTtl (2 tests)
+// ──────────────────────────────────────────────────────────────────
+
+describe("jitterTtl", () => {
+  it("F1: result stays within ±20% of the base TTL", async () => {
+    const { jitterTtl } = await import("@/lib/cache");
+    const base = 300;
+    // Run many iterations so the min/max observe the full ±20% band.
+    const samples = Array.from({ length: 500 }, () => jitterTtl(base));
+    const min = Math.min(...samples);
+    const max = Math.max(...samples);
+    // Floor means the lower bound can dip to floor(0.8*300) = 240.
+    // Upper bound is floor(1.2*300-ε) ≤ 360.
+    expect(min).toBeGreaterThanOrEqual(240);
+    expect(max).toBeLessThanOrEqual(360);
+    // Every sample must be a positive integer.
+    for (const s of samples) {
+      expect(Number.isInteger(s)).toBe(true);
+      expect(s).toBeGreaterThan(0);
+    }
+  });
+
+  it("F2: non-deterministic across calls (no lockstep expiry)", async () => {
+    const { jitterTtl } = await import("@/lib/cache");
+    // 100 calls against the same base should produce at least a few
+    // distinct values. Mathematically possible but vanishingly unlikely
+    // to see all 100 land on the same integer under Math.random().
+    const samples = new Set(
+      Array.from({ length: 100 }, () => jitterTtl(120)),
+    );
+    expect(samples.size).toBeGreaterThan(5);
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────
 // Group G — hashParams (3 tests)
 // ──────────────────────────────────────────────────────────────────
 

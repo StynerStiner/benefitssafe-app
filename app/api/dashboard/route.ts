@@ -9,6 +9,7 @@ import {
   STALE_CACHE_TTL,
   cachedWithStaleness,
   hashParams,
+  jitterTtl,
 } from "@/lib/cache";
 import { getDashboardData } from "@/lib/data";
 import { errorResponse } from "@/lib/error-response";
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
     const cacheKey = `${STALE_CACHE_KEY_PREFIX}:${organizationId ?? "none"}:dashboard:${role}:${userId}:${hashParams(request)}`;
     const result = await cachedWithStaleness({
       key: cacheKey,
-      ttlSeconds: STALE_CACHE_TTL.DASHBOARD.ttlSeconds,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.DASHBOARD.ttlSeconds),
       maxStaleSeconds: STALE_CACHE_TTL.DASHBOARD.maxStaleSeconds,
       fetcher: () => getDashboardData(role, userId, organizationId, { limit: 100 }),
     });

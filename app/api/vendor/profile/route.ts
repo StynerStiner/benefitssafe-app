@@ -2,11 +2,18 @@
 // PATCH /api/vendor/profile — Update vendor profile (vendor self-service)
 
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
 
+const ROUTE_GET = "api/vendor/profile:GET";
 const ROUTE_PATCH = "api/vendor/profile:PATCH";
 
 export async function GET() {
@@ -19,34 +26,65 @@ export async function GET() {
     if (session.user.role !== "vendor") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
+    const userId = session.user.id;
 
-    const vendor = await prisma.vendor.findFirst({
-      where: {
-        userId: session.user.id,
-        archivedAt: null,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        website: true,
-        address: true,
-        paymentMethod: true,
-        taxIdCollected: true,
-        form1099Required: true,
-        status: true,
-        type: true,
-        createdAt: true,
-        organization: { select: { name: true } },
-      },
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:user:${userId}:vendor-profile:default`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.LIST.maxStaleSeconds,
+      fetcher: () =>
+        prisma.vendor.findFirst({
+          where: {
+            userId,
+            archivedAt: null,
+          },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            website: true,
+            address: true,
+            paymentMethod: true,
+            taxIdCollected: true,
+            form1099Required: true,
+            status: true,
+            type: true,
+            createdAt: true,
+            organization: { select: { name: true } },
+          },
+        }),
     });
 
-    if (!vendor) {
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.data === null) {
       return NextResponse.json({ error: "Vendor profile not found" }, { status: 404 });
     }
 
-    return NextResponse.json(vendor);
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
+
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     console.error("GET /api/vendor/profile error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

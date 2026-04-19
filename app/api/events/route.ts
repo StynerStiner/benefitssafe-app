@@ -4,11 +4,19 @@
 // POST /api/events — Create a calendar event
 
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  hashParams,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { NextRequest, NextResponse } from "next/server";
 
+const ROUTE_GET = "api/events:GET";
 const ROUTE_POST = "api/events:POST";
 
 // Synthetic event IDs use this prefix so the PATCH/DELETE handlers can
@@ -28,17 +36,63 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { organizationId, role } = session.user;
+    const { organizationId, role, id: userId } = session.user;
 
     // Vendors have no calendar use case on BenefitsSafe — return empty
     // rather than leaking grant dates from the nonprofit they transact with.
+    // Short-circuit before the cache/Aurora dance — no DB hit, no cache entry.
     if (role === "vendor") {
       return NextResponse.json({ events: [] });
     }
 
-    const searchParams = request.nextUrl.searchParams;
-    const start = searchParams.get("start");
-    const end = searchParams.get("end");
+    const cacheKey = `${STALE_CACHE_KEY_PREFIX}:${organizationId}:events:list:${role}:${userId}:${hashParams(request)}`;
+    const staleResult = await cachedWithStaleness({
+      key: cacheKey,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.LIST.maxStaleSeconds,
+      fetcher: () => buildEventsResponse(request, organizationId, role, userId),
+    });
+
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
+
+    return NextResponse.json(staleResult.data);
+  } catch (error) {
+    console.error("GET /api/events error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+async function buildEventsResponse(
+  request: NextRequest,
+  organizationId: string,
+  role: string,
+  userId: string,
+) {
+  const searchParams = request.nextUrl.searchParams;
+  const start = searchParams.get("start");
+  const end = searchParams.get("end");
 
     const startDate = start ? new Date(start) : null;
     const endDate = end ? new Date(end) : null;
@@ -67,7 +121,7 @@ export async function GET(request: NextRequest) {
       status: { in: ["ACTIVE", "DRAFT", "PAUSED"] },
     };
     if (role === "beneficiary") {
-      grantWhere.beneficiaryId = session.user.id;
+      grantWhere.beneficiaryId = userId;
     }
 
     const grants = await prisma.grant.findMany({
@@ -173,11 +227,7 @@ export async function GET(request: NextRequest) {
       return aTime - bTime;
     });
 
-    return NextResponse.json({ events });
-  } catch (error) {
-    console.error("GET /api/events error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
+    return { events };
 }
 
 export async function POST(request: Request) {

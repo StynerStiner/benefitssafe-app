@@ -2,6 +2,12 @@
 // No cross-organization data leakage possible.
 
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
@@ -130,24 +136,24 @@ export async function GET(
 
     const { id } = await params;
 
-    // Multi-org access control: the viewing admin's session.user.organizationId
-    // must have an active beneficiary membership for this user. Filtering by
-    // User.organizationId would be wrong: a beneficiary could be in our org
-    // via a membership while their User.organizationId still points at the
-    // org where they originally registered.
-    //
-    // We also pull the per-org notes from the membership row so the admin
-    // sees their own org's private notes (not whatever User.notes happened
-    // to be set to by another nonprofit).
-    const membership = await prisma.organizationMembership.findFirst({
-      where: {
-        userId: id,
-        organizationId,
-        role: "beneficiary",
-      },
-      select: { id: true, notes: true },
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:beneficiaries:detail:${id}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.LIST.maxStaleSeconds,
+      fetcher: () => buildBeneficiaryDetailResponse(organizationId, id),
     });
-    if (!membership) {
+
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.data === null) {
       return errorResponse({
         kind: "not_found",
         message: "Beneficiary not found",
@@ -158,71 +164,21 @@ export async function GET(
       });
     }
 
-    const beneficiary = await prisma.user.findUnique({
-      where: { id },
-      select: buildProfileSelect(organizationId),
-    });
-
-    if (!beneficiary) {
-      return errorResponse({
-        kind: "not_found",
-        message: "Beneficiary not found",
-        route: ROUTE_GET,
-        method: "GET",
-        userId: session.user.id,
-        organizationId,
-      });
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
     }
 
-    // Derive invite status
-    const lastInvite = beneficiary.inviteTokens?.[0];
-    let inviteStatus: "not_invited" | "invited" | "active" = "not_invited";
-    let inviteSentAt: string | null = null;
-
-    if (beneficiary.passwordHash) {
-      inviteStatus = "active";
-    } else if (lastInvite) {
-      inviteStatus = "invited";
-      inviteSentAt = lastInvite.createdAt.toISOString();
-    }
-
-    // Build invite history with status for each token
-    const inviteHistory = beneficiary.inviteTokens.map((t) => {
-      let status: "accepted" | "expired" | "pending" = "pending";
-      if (t.usedAt) {
-        status = "accepted";
-      } else if (new Date() > t.expiresAt) {
-        status = "expired";
-      }
-      return {
-        id: t.id,
-        sentTo: t.sentTo || beneficiary.email,
-        method: (t.method || "email") as "email" | "link",
-        sentAt: t.createdAt.toISOString(),
-        expiresAt: t.expiresAt.toISOString(),
-        usedAt: t.usedAt?.toISOString() || null,
-        status,
-      };
-    });
-
-    // Mask SSN — only show last 4 as ***-**-XXXX
-    // Exclude passwordHash and inviteTokens from response.
-    // Notes: prefer the per-org membership.notes (private to this nonprofit)
-    // over the legacy global User.notes. Both fields exist; the membership
-    // value wins when set so each nonprofit sees its own annotations.
-    const { passwordHash: _ph, inviteTokens: _it, ...rest } = beneficiary;
-    const masked = {
-      ...rest,
-      ssnLast4: beneficiary.ssnLast4
-        ? `***-**-${beneficiary.ssnLast4}`
-        : null,
-      notes: membership.notes ?? beneficiary.notes,
-      inviteStatus,
-      inviteSentAt,
-      inviteHistory,
-    };
-
-    return NextResponse.json(masked);
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     return errorResponse({
       kind: "internal",
@@ -232,6 +188,85 @@ export async function GET(
       cause: error,
     });
   }
+}
+
+async function buildBeneficiaryDetailResponse(
+  organizationId: string,
+  id: string,
+) {
+  // Multi-org access control: the viewing admin's session.user.organizationId
+  // must have an active beneficiary membership for this user. Filtering by
+  // User.organizationId would be wrong: a beneficiary could be in our org
+  // via a membership while their User.organizationId still points at the
+  // org where they originally registered.
+  //
+  // We also pull the per-org notes from the membership row so the admin
+  // sees their own org's private notes (not whatever User.notes happened
+  // to be set to by another nonprofit).
+  const membership = await prisma.organizationMembership.findFirst({
+    where: {
+      userId: id,
+      organizationId,
+      role: "beneficiary",
+    },
+    select: { id: true, notes: true },
+  });
+  if (!membership) return null;
+
+  const beneficiary = await prisma.user.findUnique({
+    where: { id },
+    select: buildProfileSelect(organizationId),
+  });
+
+  if (!beneficiary) return null;
+
+  // Derive invite status
+  const lastInvite = beneficiary.inviteTokens?.[0];
+  let inviteStatus: "not_invited" | "invited" | "active" = "not_invited";
+  let inviteSentAt: string | null = null;
+
+  if (beneficiary.passwordHash) {
+    inviteStatus = "active";
+  } else if (lastInvite) {
+    inviteStatus = "invited";
+    inviteSentAt = lastInvite.createdAt.toISOString();
+  }
+
+  // Build invite history with status for each token
+  const inviteHistory = beneficiary.inviteTokens.map((t) => {
+    let status: "accepted" | "expired" | "pending" = "pending";
+    if (t.usedAt) {
+      status = "accepted";
+    } else if (new Date() > t.expiresAt) {
+      status = "expired";
+    }
+    return {
+      id: t.id,
+      sentTo: t.sentTo || beneficiary.email,
+      method: (t.method || "email") as "email" | "link",
+      sentAt: t.createdAt.toISOString(),
+      expiresAt: t.expiresAt.toISOString(),
+      usedAt: t.usedAt?.toISOString() || null,
+      status,
+    };
+  });
+
+  // Mask SSN — only show last 4 as ***-**-XXXX
+  // Exclude passwordHash and inviteTokens from response.
+  // Notes: prefer the per-org membership.notes (private to this nonprofit)
+  // over the legacy global User.notes. Both fields exist; the membership
+  // value wins when set so each nonprofit sees its own annotations.
+  const { passwordHash: _ph, inviteTokens: _it, ...rest } = beneficiary;
+  return {
+    ...rest,
+    ssnLast4: beneficiary.ssnLast4
+      ? `***-**-${beneficiary.ssnLast4}`
+      : null,
+    notes: membership.notes ?? beneficiary.notes,
+    inviteStatus,
+    inviteSentAt,
+    inviteHistory,
+  };
 }
 
 // PATCH /api/beneficiaries/[id] — update beneficiary profile

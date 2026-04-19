@@ -129,6 +129,23 @@ export const STALE_CACHE_KEY_PREFIX = "cache:degraded";
 const DEFAULT_DEGRADED_FETCHER_TIMEOUT_MS = 3_000;
 
 /**
+ * Add ±20% jitter to a base TTL to prevent synchronized cache expiry
+ * across Lambda instances during degraded-mode rollouts (FM-5: cache
+ * stampede at 1.8M-org scale). Call this at every retrofit site that
+ * passes `ttlSeconds` to cachedWithStaleness — only the write-side
+ * TTL is jittered; maxStaleSeconds (read-side ceiling) stays
+ * deterministic.
+ *
+ * Non-seeded by design: each call returns a slightly different value
+ * so individual cache writes across concurrent Lambdas expire at
+ * varying times, not in lockstep.
+ */
+export function jitterTtl(baseSeconds: number): number {
+  const factor = 1 + (Math.random() * 0.4 - 0.2); // ±20%
+  return Math.max(1, Math.floor(baseSeconds * factor));
+}
+
+/**
  * Short, deterministic hash of a request's query params. Used as the
  * tail segment of a stale-cache key so paginated or filtered variants
  * don't collide. Params are sorted so `?limit=25&offset=0` and

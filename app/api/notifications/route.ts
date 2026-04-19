@@ -8,6 +8,7 @@ import {
   STALE_CACHE_TTL,
   cachedWithStaleness,
   hashParams,
+  jitterTtl,
 } from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
     const cacheKey = `${STALE_CACHE_KEY_PREFIX}:${organizationId}:notifications:${userId}:${hashParams(request)}`;
     const result = await cachedWithStaleness({
       key: cacheKey,
-      ttlSeconds: STALE_CACHE_TTL.NOTIFICATIONS.ttlSeconds,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.NOTIFICATIONS.ttlSeconds),
       maxStaleSeconds: STALE_CACHE_TTL.NOTIFICATIONS.maxStaleSeconds,
       fetcher: async () => {
         const [notifications, unreadCount] = await Promise.all([

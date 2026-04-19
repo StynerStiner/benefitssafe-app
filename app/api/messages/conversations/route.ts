@@ -2,12 +2,20 @@
 // POST /api/messages/conversations -- Create new conversation
 
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  hashParams,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { createConversationSchema } from "@/lib/validations/conversation";
 import { NextRequest, NextResponse } from "next/server";
 
+const ROUTE_GET = "api/messages/conversations:GET";
 const ROUTE_POST = "api/messages/conversations:POST";
 
 export async function GET(request: NextRequest) {
@@ -31,6 +39,58 @@ export async function GET(request: NextRequest) {
     const participationWhere = viewAll
       ? { conversation: { organizationId } }
       : { userId };
+
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:conversations:list:${userId}:${hashParams(request)}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.LIST.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.LIST.maxStaleSeconds,
+      fetcher: () =>
+        buildConversationsListResponse({
+          participationWhere,
+          userId,
+          limit,
+          offset,
+        }),
+    });
+
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
+
+    return NextResponse.json(staleResult.data);
+  } catch (error) {
+    console.error("GET /api/messages/conversations error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+async function buildConversationsListResponse(opts: {
+  participationWhere: Record<string, unknown>;
+  userId: string;
+  limit: number;
+  offset: number;
+}) {
+  const { participationWhere, userId, limit, offset } = opts;
 
     const [participations, total] = await Promise.all([
       prisma.conversationParticipant.findMany({
@@ -118,11 +178,7 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({ conversations, total, limit, offset });
-  } catch (error) {
-    console.error("GET /api/messages/conversations error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
+    return { conversations, total, limit, offset };
 }
 
 export async function POST(request: Request) {
