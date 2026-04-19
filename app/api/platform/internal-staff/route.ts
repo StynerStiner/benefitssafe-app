@@ -22,6 +22,13 @@
 // the new staff member under the canonical platform org.
 
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  hashParams,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import {
@@ -42,6 +49,7 @@ import type { UserRole } from "@/lib/generated/prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+const ROUTE_GET = "api/platform/internal-staff:GET";
 const ROUTE = "api/platform/internal-staff:POST";
 
 const INVITE_EXPIRY_DAYS = 7;
@@ -71,14 +79,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const platformOrg = await getPlatformOrg();
-    if (!platformOrg) {
-      return NextResponse.json(
-        { error: "Platform organization not configured" },
-        { status: 500 },
-      );
-    }
-
     const { searchParams } = new URL(request.url);
     const rawLimit = parseInt(searchParams.get("limit") ?? "50", 10);
     const rawOffset = parseInt(searchParams.get("offset") ?? "0", 10);
@@ -88,63 +88,111 @@ export async function GET(request: Request) {
     const roleFilter = searchParams.get("role");
     const search = searchParams.get("search")?.trim() || "";
 
-    // Scope strictly to the platform org so a stray platform_admin seeded
-    // into a tenant nonprofit never appears in this list.
-    const where: Record<string, unknown> = {
-      organizationId: platformOrg.id,
-      role: { in: PLATFORM_INVITABLE_ROLES as readonly UserRole[] },
-    };
+    // Platform-scoped key — list is cross-tenant by definition (the
+    // canonical platform org only). hashParams differentiates filter
+    // variants.
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:platform:internal-staff:${hashParams(request)}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.PLATFORM_STATS.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.PLATFORM_STATS.maxStaleSeconds,
+      fetcher: async () => {
+        const platformOrg = await getPlatformOrg();
+        if (!platformOrg) {
+          return { error: "Platform organization not configured" } as const;
+        }
 
-    if (roleFilter && isPlatformInvitableRole(roleFilter)) {
-      where.role = roleFilter as UserRole;
+        // Scope strictly to the platform org so a stray platform_admin seeded
+        // into a tenant nonprofit never appears in this list.
+        const where: Record<string, unknown> = {
+          organizationId: platformOrg.id,
+          role: { in: PLATFORM_INVITABLE_ROLES as readonly UserRole[] },
+        };
+
+        if (roleFilter && isPlatformInvitableRole(roleFilter)) {
+          where.role = roleFilter as UserRole;
+        }
+
+        if (search) {
+          where.OR = [
+            { email: { contains: search, mode: "insensitive" } },
+            { firstName: { contains: search, mode: "insensitive" } },
+            { lastName: { contains: search, mode: "insensitive" } },
+          ];
+        }
+
+        const [staff, total] = await Promise.all([
+          prisma.user.findMany({
+            where,
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              role: true,
+              isActive: true,
+              passwordHash: true,
+              lastLoginAt: true,
+              createdAt: true,
+              organizationId: true,
+              organization: { select: { name: true, orgCode: true } },
+            },
+            orderBy: { createdAt: "desc" },
+            take: limit,
+            skip: offset,
+          }),
+          prisma.user.count({ where }),
+        ]);
+
+        // Don't expose the actual password hash — just whether one is set.
+        const sanitized = staff.map((u) => ({
+          id: u.id,
+          email: u.email,
+          firstName: u.firstName,
+          lastName: u.lastName,
+          role: u.role,
+          isActive: u.isActive,
+          hasPassword: !!u.passwordHash,
+          lastLoginAt: u.lastLoginAt,
+          createdAt: u.createdAt,
+          organization: u.organization,
+        }));
+
+        return { staff: sanitized, total, limit, offset };
+      },
+    });
+
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
     }
 
-    if (search) {
-      where.OR = [
-        { email: { contains: search, mode: "insensitive" } },
-        { firstName: { contains: search, mode: "insensitive" } },
-        { lastName: { contains: search, mode: "insensitive" } },
-      ];
+    if ("error" in staleResult.data) {
+      return NextResponse.json(
+        { error: "Platform organization not configured" },
+        { status: 500 },
+      );
     }
 
-    const [staff, total] = await Promise.all([
-      prisma.user.findMany({
-        where,
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          role: true,
-          isActive: true,
-          passwordHash: true,
-          lastLoginAt: true,
-          createdAt: true,
-          organizationId: true,
-          organization: { select: { name: true, orgCode: true } },
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
         },
-        orderBy: { createdAt: "desc" },
-        take: limit,
-        skip: offset,
-      }),
-      prisma.user.count({ where }),
-    ]);
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
 
-    // Don't expose the actual password hash — just whether one is set.
-    const sanitized = staff.map((u) => ({
-      id: u.id,
-      email: u.email,
-      firstName: u.firstName,
-      lastName: u.lastName,
-      role: u.role,
-      isActive: u.isActive,
-      hasPassword: !!u.passwordHash,
-      lastLoginAt: u.lastLoginAt,
-      createdAt: u.createdAt,
-      organization: u.organization,
-    }));
-
-    return NextResponse.json({ staff: sanitized, total, limit, offset });
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     console.error("GET /api/platform/internal-staff error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

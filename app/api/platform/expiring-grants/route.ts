@@ -16,6 +16,12 @@ import {
   requireAdmin,
   requirePlatformAdmin,
 } from "@/lib/auth-guard";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { createExpiringGrantSchema } from "@/lib/validations/expiring-grant";
@@ -33,56 +39,93 @@ export async function GET(_request: Request) {
   try {
     const { organizationId } = await requireAdmin(ROUTE_GET, "GET");
 
-    const now = new Date();
-    const recentCutoff = new Date(
-      now.getTime() - RECENTLY_EXPIRED_DAYS * 24 * 60 * 60 * 1000,
-    );
+    // Key is org-scoped (not platform-scoped) because the handler returns
+    // per-acting-org results via requireAdmin (nonprofit_admin sees their
+    // own org; platform_admin sees whichever org they're currently
+    // operating in). A platform-wide key would leak cross-org grant data.
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:platform:expiring-grants:default`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.PLATFORM_STATS.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.PLATFORM_STATS.maxStaleSeconds,
+      fetcher: async () => {
+        const now = new Date();
+        const recentCutoff = new Date(
+          now.getTime() - RECENTLY_EXPIRED_DAYS * 24 * 60 * 60 * 1000,
+        );
 
-    // A grant is "time-boxed" iff expiresAt IS NOT NULL. We list every
-    // such membership in this org — active ones and those expired/revoked
-    // within the recent window.
-    const grants = await prisma.organizationMembership.findMany({
-      where: {
-        organizationId,
-        expiresAt: { not: null },
-        OR: [
-          { expiresAt: { gt: now }, revokedAt: null },
-          { expiresAt: { gte: recentCutoff } },
-          { revokedAt: { gte: recentCutoff } },
-        ],
-      },
-      select: {
-        id: true,
-        role: true,
-        expiresAt: true,
-        grantedBy: true,
-        grantReason: true,
-        revokedAt: true,
-        revokedBy: true,
-        createdAt: true,
-        user: {
+        // A grant is "time-boxed" iff expiresAt IS NOT NULL. We list every
+        // such membership in this org — active ones and those expired/revoked
+        // within the recent window.
+        const grants = await prisma.organizationMembership.findMany({
+          where: {
+            organizationId,
+            expiresAt: { not: null },
+            OR: [
+              { expiresAt: { gt: now }, revokedAt: null },
+              { expiresAt: { gte: recentCutoff } },
+              { revokedAt: { gte: recentCutoff } },
+            ],
+          },
           select: {
             id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
             role: true,
+            expiresAt: true,
+            grantedBy: true,
+            grantReason: true,
+            revokedAt: true,
+            revokedBy: true,
+            createdAt: true,
+            user: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+              },
+            },
           },
-        },
+          orderBy: { expiresAt: "asc" },
+        });
+
+        let totalActive = 0;
+        let totalExpiredLast30d = 0;
+        for (const g of grants) {
+          const expired = g.expiresAt !== null && g.expiresAt <= now;
+          const revoked = g.revokedAt !== null;
+          if (!expired && !revoked) totalActive++;
+          else totalExpiredLast30d++;
+        }
+
+        return { grants, totalActive, totalExpiredLast30d };
       },
-      orderBy: { expiresAt: "asc" },
     });
 
-    let totalActive = 0;
-    let totalExpiredLast30d = 0;
-    for (const g of grants) {
-      const expired = g.expiresAt !== null && g.expiresAt <= now;
-      const revoked = g.revokedAt !== null;
-      if (!expired && !revoked) totalActive++;
-      else totalExpiredLast30d++;
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
     }
 
-    return NextResponse.json({ grants, totalActive, totalExpiredLast30d });
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
+
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({

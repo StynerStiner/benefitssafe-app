@@ -3,11 +3,18 @@
 // ORG-SCOPED via session.organizationId
 
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
 
+const ROUTE_GET = "api/org/disbursement-policy:GET";
 const ROUTE_POST = "api/org/disbursement-policy:POST";
 
 // GET — retrieve the org-wide disbursement policy
@@ -23,11 +30,43 @@ export async function GET() {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const policy = await prisma.disbursementPolicy.findFirst({
-      where: { organizationId, grantId: null },
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:disbursement-policy:default`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.ORG_SETTINGS.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.ORG_SETTINGS.maxStaleSeconds,
+      fetcher: async () => {
+        const policy = await prisma.disbursementPolicy.findFirst({
+          where: { organizationId, grantId: null },
+        });
+        return { policy };
+      },
     });
 
-    return NextResponse.json({ policy });
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
+
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     console.error("GET /api/org/disbursement-policy error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

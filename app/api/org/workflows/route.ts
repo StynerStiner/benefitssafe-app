@@ -1,4 +1,10 @@
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
@@ -6,6 +12,7 @@ import { NextResponse } from "next/server";
 import { WORKFLOW_TEMPLATES, getTemplateById } from "@/lib/workflow-templates";
 import type { Prisma } from "@/lib/generated/prisma/client";
 
+const ROUTE_GET = "api/org/workflows:GET";
 const ROUTE_POST = "api/org/workflows:POST";
 
 // GET /api/org/workflows -- List org's workflow triggers with template info
@@ -16,54 +23,75 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { organizationId: true },
-    });
-
-    if (!user?.organizationId) {
+    // Use session-level organizationId so Aurora is not hit before the
+    // cache read.
+    const organizationId = session.user.organizationId;
+    if (!organizationId) {
       return NextResponse.json({ error: "No organization" }, { status: 404 });
     }
 
-    // Get org's active triggers
-    const triggers = await prisma.workflowTrigger.findMany({
-      where: { organizationId: user.organizationId },
-      orderBy: { createdAt: "desc" },
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:workflows:default`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.ORG_SETTINGS.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.ORG_SETTINGS.maxStaleSeconds,
+      fetcher: async () => {
+        // Get org's active triggers
+        const triggers = await prisma.workflowTrigger.findMany({
+          where: { organizationId },
+          orderBy: { createdAt: "desc" },
+        });
+
+        // Get org's connected integrations for provider status
+        const integrations = await prisma.integration.findMany({
+          where: { organizationId },
+        });
+
+        const connectedProviders = new Set(
+          integrations
+            .filter((i: { status: string }) => i.status === "connected")
+            .map((i: { provider: string }) => i.provider)
+        );
+
+        // Build trigger map by template ID for quick lookup
+        const triggerMap = new Map(
+          triggers.map((t: { actionSlug: string; eventType: string; id: string; enabled: boolean; actionConfig: unknown }) => [
+            `${t.eventType}:${t.actionSlug}`,
+            t,
+          ])
+        );
+
+        // Merge templates with org-specific trigger status
+        return WORKFLOW_TEMPLATES.map((template) => {
+          const key = `${template.eventType}:${template.actionSlug}`;
+          const trigger = triggerMap.get(key);
+          return {
+            ...template,
+            triggerId: trigger?.id || null,
+            enabled: trigger?.enabled || false,
+            providerConnected: connectedProviders.has(template.provider),
+            actionConfig: trigger?.actionConfig || template.actionConfig,
+          };
+        });
+      },
     });
 
-    // Get org's connected integrations for provider status
-    const integrations = await prisma.integration.findMany({
-      where: { organizationId: user.organizationId },
-    });
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
 
-    const connectedProviders = new Set(
-      integrations
-        .filter((i: { status: string }) => i.status === "connected")
-        .map((i: { provider: string }) => i.provider)
-    );
+    // Array response — header-only staleness indicator.
+    const headers: Record<string, string> = {};
+    if (staleResult.kind === "stale") {
+      headers["X-Data-Staleness"] = String(staleResult.staleSeconds);
+    }
 
-    // Build trigger map by template ID for quick lookup
-    const triggerMap = new Map(
-      triggers.map((t: { actionSlug: string; eventType: string; id: string; enabled: boolean; actionConfig: unknown }) => [
-        `${t.eventType}:${t.actionSlug}`,
-        t,
-      ])
-    );
-
-    // Merge templates with org-specific trigger status
-    const result = WORKFLOW_TEMPLATES.map((template) => {
-      const key = `${template.eventType}:${template.actionSlug}`;
-      const trigger = triggerMap.get(key);
-      return {
-        ...template,
-        triggerId: trigger?.id || null,
-        enabled: trigger?.enabled || false,
-        providerConnected: connectedProviders.has(template.provider),
-        actionConfig: trigger?.actionConfig || template.actionConfig,
-      };
-    });
-
-    return NextResponse.json(result);
+    return NextResponse.json(staleResult.data, { headers });
   } catch (error) {
     console.error("GET /api/org/workflows error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

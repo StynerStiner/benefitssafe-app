@@ -1,12 +1,22 @@
 // @ts-nocheck
 import { auth } from "@/auth";
-import { cached, invalidateCache, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
+import {
+  cached,
+  invalidateCache,
+  CACHE_KEYS,
+  CACHE_TTL,
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { updatePolicySchema } from "@/lib/validations/policy";
 import { NextResponse } from "next/server";
 
+const ROUTE_GET = "api/policies:GET";
 const ROUTE_PATCH = "api/policies:PATCH";
 
 export async function GET() {
@@ -18,15 +28,39 @@ export async function GET() {
 
     const orgId = session.user.organizationId;
 
-    const policy = await cached(
-      CACHE_KEYS.orgPolicies(orgId),
-      CACHE_TTL.MEDIUM,
-      () => prisma.disbursementPolicy.findFirst({
-        where: { organizationId: orgId },
-      })
-    );
+    // Layered cache: inner cached() is the P4 perf cache; outer
+    // cachedWithStaleness adds degraded-mode fallback. Same layering as
+    // grants/route.ts + vendors/route.ts.
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${orgId}:policies:default`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.ORG_SETTINGS.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.ORG_SETTINGS.maxStaleSeconds,
+      fetcher: () =>
+        cached(
+          CACHE_KEYS.orgPolicies(orgId),
+          CACHE_TTL.MEDIUM,
+          () => prisma.disbursementPolicy.findFirst({
+            where: { organizationId: orgId },
+          }),
+        ),
+    });
 
-    return NextResponse.json(policy);
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    const headers: Record<string, string> = {};
+    if (staleResult.kind === "stale") {
+      headers["X-Data-Staleness"] = String(staleResult.staleSeconds);
+    }
+
+    return NextResponse.json(staleResult.data, { headers });
   } catch (error) {
     console.error("GET /api/policies error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

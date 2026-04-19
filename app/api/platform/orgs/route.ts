@@ -21,6 +21,13 @@
 // we actually cross the 500-org threshold.
 
 import { GuardDenial, requirePlatformAdmin } from "@/lib/auth-guard";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  hashParams,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
@@ -35,32 +42,68 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.trim() || "";
 
-    const where: Record<string, unknown> = {};
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { orgCode: { contains: search, mode: "insensitive" } },
-      ];
+    // Platform-scoped key — the list is cross-tenant by definition, so no
+    // per-org prefix. The hashParams segment differentiates search
+    // variants so degraded-mode hits preserve query specificity.
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:platform:orgs:${hashParams(request)}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.PLATFORM_STATS.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.PLATFORM_STATS.maxStaleSeconds,
+      fetcher: async () => {
+        const where: Record<string, unknown> = {};
+        if (search) {
+          where.OR = [
+            { name: { contains: search, mode: "insensitive" } },
+            { orgCode: { contains: search, mode: "insensitive" } },
+          ];
+        }
+
+        const orgs = await prisma.organization.findMany({
+          where: where as never,
+          select: {
+            id: true,
+            name: true,
+            orgCode: true,
+            isPlatformOrg: true,
+            subscriptionStatus: true,
+          },
+          orderBy: [{ isPlatformOrg: "desc" }, { name: "asc" }],
+          take: MAX_ORGS,
+        });
+
+        return {
+          orgs,
+          total: orgs.length,
+          truncated: orgs.length === MAX_ORGS,
+        };
+      },
+    });
+
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
     }
 
-    const orgs = await prisma.organization.findMany({
-      where: where as never,
-      select: {
-        id: true,
-        name: true,
-        orgCode: true,
-        isPlatformOrg: true,
-        subscriptionStatus: true,
-      },
-      orderBy: [{ isPlatformOrg: "desc" }, { name: "asc" }],
-      take: MAX_ORGS,
-    });
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
 
-    return NextResponse.json({
-      orgs,
-      total: orgs.length,
-      truncated: orgs.length === MAX_ORGS,
-    });
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({

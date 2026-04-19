@@ -1,10 +1,17 @@
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
 import { SUPPORTED_PROVIDERS } from "@/lib/workflow-templates";
 
+const ROUTE_GET = "api/org/integrations:GET";
 const ROUTE_POST = "api/org/integrations:POST";
 
 // GET /api/org/integrations -- List org's integrations with connection status
@@ -15,41 +22,63 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { organizationId: true },
-    });
-
-    if (!user?.organizationId) {
+    // Use session-level organizationId so Aurora is not hit before the
+    // cache read. The session claim is NextAuth-signed and trustworthy.
+    const organizationId = session.user.organizationId;
+    if (!organizationId) {
       return NextResponse.json({ error: "No organization" }, { status: 404 });
     }
 
-    const integrations = await prisma.integration.findMany({
-      where: { organizationId: user.organizationId },
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:integrations:default`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.ORG_SETTINGS.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.ORG_SETTINGS.maxStaleSeconds,
+      fetcher: async () => {
+        const integrations = await prisma.integration.findMany({
+          where: { organizationId },
+        });
+
+        // Build response with all supported providers, merging stored status
+        const integrationMap = new Map(
+          integrations.map((i: { provider: string; id: string; status: string; connectedBy: string | null; connectedAt: Date | null; composioConnectionId: string | null }) => [
+            i.provider,
+            i,
+          ])
+        );
+
+        return SUPPORTED_PROVIDERS.map((p) => {
+          const stored = integrationMap.get(p.id);
+          return {
+            provider: p.id,
+            name: p.name,
+            icon: p.icon,
+            status: stored?.status || "disconnected",
+            connectedBy: stored?.connectedBy || null,
+            connectedAt: stored?.connectedAt || null,
+            composioConnectionId: stored?.composioConnectionId || null,
+          };
+        });
+      },
     });
 
-    // Build response with all supported providers, merging stored status
-    const integrationMap = new Map(
-      integrations.map((i: { provider: string; id: string; status: string; connectedBy: string | null; connectedAt: Date | null; composioConnectionId: string | null }) => [
-        i.provider,
-        i,
-      ])
-    );
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
 
-    const result = SUPPORTED_PROVIDERS.map((p) => {
-      const stored = integrationMap.get(p.id);
-      return {
-        provider: p.id,
-        name: p.name,
-        icon: p.icon,
-        status: stored?.status || "disconnected",
-        connectedBy: stored?.connectedBy || null,
-        connectedAt: stored?.connectedAt || null,
-        composioConnectionId: stored?.composioConnectionId || null,
-      };
-    });
+    // Array response — use header-only staleness indicator to preserve
+    // client code that expects a bare array. Mirrors memberships/route.ts.
+    const headers: Record<string, string> = {};
+    if (staleResult.kind === "stale") {
+      headers["X-Data-Staleness"] = String(staleResult.staleSeconds);
+    }
 
-    return NextResponse.json(result);
+    return NextResponse.json(staleResult.data, { headers });
   } catch (error) {
     console.error("GET /api/org/integrations error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

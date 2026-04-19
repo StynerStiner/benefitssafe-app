@@ -1,11 +1,18 @@
 // @ts-nocheck
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+const ROUTE_GET = "api/promo-codes:GET";
 const ROUTE_POST = "api/promo-codes:POST";
 
 const createPromoCodeSchema = z.object({
@@ -45,16 +52,48 @@ export async function GET() {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const promoCodes = await prisma.promoCode.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        _count: {
-          select: { redemptions: true },
-        },
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:platform:promo-codes:default`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.ORG_SETTINGS.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.ORG_SETTINGS.maxStaleSeconds,
+      fetcher: async () => {
+        const promoCodes = await prisma.promoCode.findMany({
+          orderBy: { createdAt: "desc" },
+          include: {
+            _count: {
+              select: { redemptions: true },
+            },
+          },
+        });
+        return { data: promoCodes };
       },
     });
 
-    return NextResponse.json({ data: promoCodes });
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
+
+    return NextResponse.json(staleResult.data);
   } catch (error: unknown) {
     const err = error as { message?: string };
     console.error("GET /api/promo-codes error:", err.message);

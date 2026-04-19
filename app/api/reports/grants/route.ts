@@ -1,8 +1,18 @@
 // GET /api/reports/grants — List grant reports for the org
 
 import { auth } from "@/auth";
+import {
+  STALE_CACHE_KEY_PREFIX,
+  STALE_CACHE_TTL,
+  cachedWithStaleness,
+  hashParams,
+  jitterTtl,
+} from "@/lib/cache";
 import { prisma } from "@/lib/db";
+import { errorResponse } from "@/lib/error-response";
 import { NextRequest, NextResponse } from "next/server";
+
+const ROUTE_GET = "api/reports/grants:GET";
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,20 +36,53 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(params.get("limit") || "20"), 100);
     const offset = Math.max(parseInt(params.get("offset") || "0"), 0);
 
-    const where: Record<string, unknown> = { organizationId };
-    if (grantId) where.grantId = grantId;
+    const staleResult = await cachedWithStaleness({
+      key: `${STALE_CACHE_KEY_PREFIX}:${organizationId}:reports:grants:${hashParams(request)}`,
+      ttlSeconds: jitterTtl(STALE_CACHE_TTL.REPORTS.ttlSeconds),
+      maxStaleSeconds: STALE_CACHE_TTL.REPORTS.maxStaleSeconds,
+      fetcher: async () => {
+        const where: Record<string, unknown> = { organizationId };
+        if (grantId) where.grantId = grantId;
 
-    const [reports, total] = await Promise.all([
-      prisma.grantReport.findMany({
-        where: where as never,
-        orderBy: { generatedAt: "desc" },
-        take: limit,
-        skip: offset,
-      }),
-      prisma.grantReport.count({ where: where as never }),
-    ]);
+        const [reports, total] = await Promise.all([
+          prisma.grantReport.findMany({
+            where: where as never,
+            orderBy: { generatedAt: "desc" },
+            take: limit,
+            skip: offset,
+          }),
+          prisma.grantReport.count({ where: where as never }),
+        ]);
 
-    return NextResponse.json({ reports, total, limit, offset });
+        return { reports, total, limit, offset };
+      },
+    });
+
+    if (staleResult.kind === "unavailable") {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_GET,
+        method: "GET",
+        retryAfterSeconds: 30,
+      });
+    }
+
+    if (staleResult.kind === "stale") {
+      return NextResponse.json(
+        {
+          ...staleResult.data,
+          _meta: {
+            stale: true,
+            staleSeconds: staleResult.staleSeconds,
+            cachedAt: staleResult.cachedAt,
+          },
+        },
+        { headers: { "X-Data-Staleness": String(staleResult.staleSeconds) } },
+      );
+    }
+
+    return NextResponse.json(staleResult.data);
   } catch (error) {
     console.error("GET /api/reports/grants error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
