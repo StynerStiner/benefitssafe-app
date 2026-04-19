@@ -4,6 +4,13 @@ vi.mock("@/lib/db", () => ({ prisma: {} }));
 vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
+vi.mock("@/lib/db-health", () => ({
+  assertDbHealthy: vi.fn(() => Promise.resolve()),
+  DbUnavailableError: class extends Error {
+    cooldown_ms_remaining = 30_000;
+  },
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
 });

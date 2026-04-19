@@ -3,8 +3,12 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
+import { errorResponse } from "@/lib/error-response";
 import { createBudgetCategorySchema } from "@/lib/validations/grant";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/grants/[id]/categories:POST";
 
 // POST /api/grants/[id]/categories — add a budget category
 export async function POST(
@@ -12,6 +16,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -76,6 +81,16 @@ export async function POST(
 
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     console.error("POST /api/grants/[id]/categories error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

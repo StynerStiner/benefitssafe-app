@@ -6,6 +6,7 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { stripe } from "@/lib/stripe";
 import {
   stripeCircuit,
@@ -46,6 +47,7 @@ interface OnboardingResponse {
 
 export async function POST(request: Request): Promise<NextResponse<OnboardingResponse>> {
   try {
+    await assertDbHealthy();
     const session = await auth();
 
     if (!session?.user?.id) {
@@ -274,6 +276,16 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
       status: "pending",
     });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_POST,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
       return circuitErrorResponse(error, ROUTE_POST, "POST");
     }

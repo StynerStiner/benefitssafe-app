@@ -1,7 +1,11 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
+import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
 import { SUPPORTED_PROVIDERS } from "@/lib/workflow-templates";
+
+const ROUTE_POST = "api/org/integrations:POST";
 
 // GET /api/org/integrations -- List org's integrations with connection status
 export async function GET() {
@@ -55,6 +59,7 @@ export async function GET() {
 // POST /api/org/integrations -- Initiate OAuth connection for a provider
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -154,6 +159,16 @@ export async function POST(request: Request) {
       integrationId: integration.id,
     });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_POST,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     console.error("POST /api/org/integrations error:", error);
     return NextResponse.json({ error: "Failed to initiate connection" }, { status: 500 });
   }

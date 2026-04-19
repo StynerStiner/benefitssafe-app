@@ -6,6 +6,7 @@ import { GuardDenial, requireAuth, requireRole } from "@/lib/auth-guard";
 import { cached, invalidateCacheByPrefix, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { validateRecipientEmail, sanitizeEmailForLog, buildSecureLink } from "@/lib/email-security";
 import { errorResponse } from "@/lib/error-response";
 import { createVendorSchema } from "@/lib/validations/vendor";
@@ -93,6 +94,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const ctx = await requireAuth(ROUTE_POST, "POST");
     requireRole(ctx, WRITE_ROLES, ROUTE_POST, "POST");
     const { session, userId, organizationId } = ctx;
@@ -343,6 +345,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json(vendor, { status: 201 });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_POST,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({
       kind: "internal",

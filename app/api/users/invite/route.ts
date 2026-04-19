@@ -8,13 +8,17 @@
 import { auth } from "@/auth";
 import { isPlatformInvitableRole } from "@/lib/constants/invitable-roles";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { validateRecipientEmail, sanitizeEmailForLog, buildSecureLink } from "@/lib/email-security";
+import { errorResponse } from "@/lib/error-response";
 import { checkLimitAccess, buildLimitReachedResponse } from "@/lib/feature-gates";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildInviteEmail } from "@/lib/services/email-templates";
 import { generateMembershipCode } from "@/lib/utils/membership-code";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+const ROUTE = "api/users/invite:POST";
 
 const INVITABLE_ROLES = [
   "nonprofit_staff",
@@ -35,6 +39,7 @@ const inviteSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -340,6 +345,16 @@ export async function POST(request: Request) {
       inviteUrl,
     }, { status: 201 });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     console.error("POST /api/users/invite error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

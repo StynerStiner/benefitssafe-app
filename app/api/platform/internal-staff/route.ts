@@ -23,6 +23,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import {
   PLATFORM_INVITABLE_ROLES,
   isPlatformInvitableRole,
@@ -32,6 +33,7 @@ import {
   sanitizeEmailForLog,
   buildSecureLink,
 } from "@/lib/email-security";
+import { errorResponse } from "@/lib/error-response";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildInviteEmail } from "@/lib/services/email-templates";
@@ -39,6 +41,8 @@ import { generateMembershipCode } from "@/lib/utils/membership-code";
 import type { UserRole } from "@/lib/generated/prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+const ROUTE = "api/platform/internal-staff:POST";
 
 const INVITE_EXPIRY_DAYS = 7;
 
@@ -168,6 +172,7 @@ const createStaffSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -353,6 +358,16 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     console.error("POST /api/platform/internal-staff error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

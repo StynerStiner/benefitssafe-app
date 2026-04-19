@@ -14,6 +14,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { stripe } from "@/lib/stripe";
 import {
   stripeCircuit,
@@ -125,6 +126,7 @@ export async function GET(): Promise<NextResponse> {
 // POST — start a SetupIntent so the frontend can collect bank details
 export async function POST(): Promise<NextResponse> {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -171,6 +173,16 @@ export async function POST(): Promise<NextResponse> {
       publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || "",
     });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_POST,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
       return circuitErrorResponse(error, ROUTE_POST, "POST");
     }
@@ -182,6 +194,7 @@ export async function POST(): Promise<NextResponse> {
 // PATCH — persist the confirmed PaymentMethod id from the frontend flow
 export async function PATCH(request: Request): Promise<NextResponse> {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -249,6 +262,16 @@ export async function PATCH(request: Request): Promise<NextResponse> {
       last4: pm.us_bank_account?.last4 ?? null,
     });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
       return circuitErrorResponse(error, ROUTE_PATCH, "PATCH");
     }

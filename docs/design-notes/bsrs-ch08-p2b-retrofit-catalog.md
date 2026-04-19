@@ -63,7 +63,7 @@ app/api/grants/[id]/document/route.ts                  POST+DELETE
 - `__tests__/api/virtual-cards-close-circuit.test.ts` — add `vi.mock("@/lib/db-health"...)` (currently missing; will 503 post-retrofit).
 - `__tests__/api/expenses.test.ts` — verify if schema-only; if handler invoked, add mock.
 
-## Tier 2 — admin / platform / org-settings writes (25 files, ~32 methods)
+## Tier 2 — admin / platform / org-settings writes (25 files, 30 methods)
 
 Blast radius: operator (nonprofit admin, platform admin) hits 504 during settings or onboarding change. Lower urgency than Tier 1 (non-active-user) but higher than Tier 3 (higher frequency).
 

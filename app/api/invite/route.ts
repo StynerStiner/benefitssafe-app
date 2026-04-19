@@ -8,6 +8,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import {
   ORG_INVITABLE_ROLES,
   PLATFORM_INVITABLE_ROLES,
@@ -15,9 +16,12 @@ import {
   isOrgInvitableRole,
 } from "@/lib/constants/invitable-roles";
 import { validateRecipientEmail, sanitizeEmailForLog, buildSecureLink } from "@/lib/email-security";
+import { errorResponse } from "@/lib/error-response";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildInviteEmail } from "@/lib/services/email-templates";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/invite:POST";
 
 const INVITE_EXPIRY_DAYS = 7;
 
@@ -31,6 +35,7 @@ const ALL_INVITABLE_ROLES = [
 
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -247,6 +252,16 @@ export async function POST(request: Request) {
       emailSent,
     });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     console.error("POST /api/invite error:", error);
     return NextResponse.json(
       { error: "Internal server error" },

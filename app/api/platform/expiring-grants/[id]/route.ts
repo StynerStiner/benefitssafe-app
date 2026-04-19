@@ -15,6 +15,7 @@
 import { errorResponse } from "@/lib/error-response";
 import { GuardDenial, requirePlatformAdmin } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { extendExpiringGrantSchema } from "@/lib/validations/expiring-grant";
 import { NextResponse } from "next/server";
 
@@ -26,6 +27,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    await assertDbHealthy();
     const { userId: actingUserId, organizationId } =
       await requirePlatformAdmin(ROUTE_PATCH, "PATCH");
 
@@ -137,6 +139,16 @@ export async function PATCH(
 
     return NextResponse.json(updated);
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({
       kind: "internal",
@@ -153,6 +165,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    await assertDbHealthy();
     const { userId: actingUserId, organizationId } =
       await requirePlatformAdmin(ROUTE_DELETE, "DELETE");
 
@@ -217,6 +230,16 @@ export async function DELETE(
 
     return NextResponse.json(updated);
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_DELETE,
+        method: "DELETE",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({
       kind: "internal",

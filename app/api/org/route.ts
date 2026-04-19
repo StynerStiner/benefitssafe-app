@@ -1,6 +1,10 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
+import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
+
+const ROUTE_PATCH = "api/org:PATCH";
 
 // GET /api/org — Get current user's organization details
 export async function GET() {
@@ -72,6 +76,7 @@ export async function GET() {
 // PATCH /api/org — Update organization details
 export async function PATCH(request: Request) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -125,6 +130,16 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     console.error("PATCH /api/org error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
