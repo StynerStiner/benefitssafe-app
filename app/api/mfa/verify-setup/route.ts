@@ -3,10 +3,14 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
+import { errorResponse } from "@/lib/error-response";
 import { verifyMfaToken, generateBackupCodes } from "@/lib/mfa";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+
+const ROUTE = "api/mfa/verify-setup:POST";
 
 const verifySetupSchema = z.object({
   token: z.string().length(6, "Token must be 6 digits").regex(/^\d{6}$/, "Token must be 6 digits"),
@@ -14,6 +18,7 @@ const verifySetupSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -104,6 +109,16 @@ export async function POST(request: NextRequest) {
       message: "MFA has been enabled. Save your backup codes in a secure location.",
     });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     console.error("POST /api/mfa/verify-setup error:", error);
     return NextResponse.json(
       { error: "Internal server error" },

@@ -1,5 +1,6 @@
 import { GuardDenial, requireAdmin, requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { createSubscriptionSchema } from "@/lib/validations/subscription";
 import { NextRequest, NextResponse } from "next/server";
@@ -52,6 +53,7 @@ export async function GET(request: NextRequest) {
 // POST /api/subscriptions -- create a new subscription
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const { userId, organizationId } = await requireAdmin(ROUTE_POST, "POST");
 
     const body = await request.json();
@@ -154,6 +156,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json(subscription, { status: 201 });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_POST,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({
       kind: "internal",

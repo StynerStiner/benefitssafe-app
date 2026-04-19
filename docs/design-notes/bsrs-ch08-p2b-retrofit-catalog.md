@@ -100,7 +100,7 @@ app/api/platform/internal-staff/route.ts                           POST
 - `__tests__/api/grants.test.ts` — verify if handler invoked; mockPrisma is full-shape, likely needs db-health mock.
 - `__tests__/api/vendors.test.ts` — verify if schema-only; likely no-op.
 
-## Tier 3 — low-frequency / profile / billing / MFA (19 files, ~19 methods)
+## Tier 3 — low-frequency / profile / billing / MFA (19 files, 19 methods)
 
 Blast radius: user updates profile, admin toggles MFA, promo-code verification. Lowest frequency, smallest concurrent-user impact during an incident.
 

@@ -28,9 +28,13 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
+import { errorResponse } from "@/lib/error-response";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+const ROUTE = "api/admin/data-deletion:POST";
 
 // Top-level JSON keys we scrub from AuditLog.oldValue / AuditLog.newValue.
 // Everything here is user-visible PII that existing writers have been
@@ -64,6 +68,7 @@ const BodySchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -234,6 +239,16 @@ export async function POST(request: Request) {
       scrubbed: result,
     });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     console.error("POST /api/admin/data-deletion error:", error);
     return NextResponse.json(
       { error: "Internal server error" },

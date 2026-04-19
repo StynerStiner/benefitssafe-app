@@ -3,10 +3,14 @@
 // Accepts either a 6-digit TOTP code or a backup recovery code.
 
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
+import { errorResponse } from "@/lib/error-response";
 import { verifyMfaToken, verifyBackupCode } from "@/lib/mfa";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+
+const ROUTE = "api/mfa/verify:POST";
 
 const verifySchema = z.object({
   userId: z.string().min(1, "User ID is required"),
@@ -15,6 +19,7 @@ const verifySchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    await assertDbHealthy();
     const body = await request.json();
     const parsed = verifySchema.safeParse(body);
     if (!parsed.success) {
@@ -133,6 +138,16 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ verified: true });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     console.error("POST /api/mfa/verify error:", error);
     return NextResponse.json(
       { error: "Internal server error" },

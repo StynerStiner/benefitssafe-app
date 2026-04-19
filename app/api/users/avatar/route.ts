@@ -3,14 +3,19 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
+import { errorResponse } from "@/lib/error-response";
 import { uploadAvatarToS3 } from "@/lib/s3-upload";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/users/avatar:POST";
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"];
 
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -43,6 +48,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ avatarUrl });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     console.error("POST /api/users/avatar error:", error);
     // Never expose internal error messages to the client (A05)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

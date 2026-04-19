@@ -1,7 +1,11 @@
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { verifyEIN } from "@/lib/ein-verify";
+import { errorResponse } from "@/lib/error-response";
 import { rateLimit } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+const ROUTE = "api/verify-ein:POST";
 
 const verifyEINSchema = z.object({
   ein: z.string().regex(/^\d{2}-?\d{7}$/, "EIN must be 9 digits (format: XX-XXXXXXX)"),
@@ -15,6 +19,7 @@ const EIN_VERIFY_RATE_LIMIT = {
 
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     // Rate limit by IP
     const ip =
       request.headers.get("x-forwarded-for") ||
@@ -56,6 +61,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result, { status: 200 });
   } catch (error: unknown) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     console.error("POST /api/verify-ein error:", error);
     return NextResponse.json(
       { error: "Internal server error" },

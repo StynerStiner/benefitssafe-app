@@ -6,10 +6,14 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { captureApiError } from "@/lib/error-handler";
+import { errorResponse } from "@/lib/error-response";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+const ROUTE = "api/ai/chat:POST";
 
 const ALLOWED_ROLES = [
   "nonprofit_admin",
@@ -69,6 +73,7 @@ If you are unsure about a specific rule, say so clearly and recommend consulting
 
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -317,6 +322,16 @@ export async function POST(request: Request) {
       usage: response.usage,
     });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     captureApiError(error, { route: "POST /api/ai/chat" });
     console.error("POST /api/ai/chat error:", error);
 

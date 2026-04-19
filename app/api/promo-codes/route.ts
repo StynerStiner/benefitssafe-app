@@ -1,8 +1,12 @@
 // @ts-nocheck
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
+import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+const ROUTE_POST = "api/promo-codes:POST";
 
 const createPromoCodeSchema = z.object({
   code: z
@@ -67,6 +71,7 @@ export async function GET() {
  */
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -134,6 +139,16 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error: unknown) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_POST,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     const err = error as { message?: string };
     console.error("POST /api/promo-codes error:", err.message);
     return NextResponse.json(

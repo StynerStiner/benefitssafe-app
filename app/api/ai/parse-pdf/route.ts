@@ -2,7 +2,11 @@
 // POST /api/ai/parse-file — Extract text from PDF, XLSX, CSV, or images for AI chat context
 
 import { auth } from "@/auth";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
+import { errorResponse } from "@/lib/error-response";
 import { NextResponse } from "next/server";
+
+const ROUTE = "api/ai/parse-pdf:POST";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -22,6 +26,7 @@ const SUPPORTED_TYPES: Record<string, string> = {
 
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -134,6 +139,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: "Unhandled file type" }, { status: 400 });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     console.error("POST /api/ai/parse-file error:", error);
     return NextResponse.json(
       { error: "Internal server error" },

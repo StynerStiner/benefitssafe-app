@@ -1,7 +1,11 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
+import { errorResponse } from "@/lib/error-response";
 import { getProfileConfig, type ProfileField } from "@/lib/profile-config";
 import { NextResponse } from "next/server";
+
+const ROUTE_PATCH = "api/users/profile:PATCH";
 
 // GET /api/users/profile — returns the authenticated user's full profile,
 // including role + all role-aware fields. Shape is a superset of the legacy
@@ -128,6 +132,7 @@ function isEmailValid(email: string): boolean {
 
 export async function PATCH(request: Request) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user?.id || !session.user.role) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -317,6 +322,16 @@ export async function PATCH(request: Request) {
       emergencyContactPhone: updated.emergencyContactPhone ?? "",
     });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     console.error("PATCH /api/users/profile error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
