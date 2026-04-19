@@ -269,7 +269,7 @@ Ordered by leverage × fix-cost. Solo-founder scope. Numbering continues the BSR
 | P | Item | Effort | BSRS section | Status |
 |---|---|---|---|---|
 | P1 | Stripe circuit breaker + timeout budget | 4-6 hrs | Controlling Degradation | P1a CLOSED in `4fc087a`; P1b CLOSED across `399c4e0`+`37cc4ba`+`10ebd00` |
-| P2 | Aurora degraded-mode + maintenance page | 6-8 hrs | Controlling Degradation | P2a CLOSED in `f9e4c43`; P2b + P2c open |
+| P2 | Aurora degraded-mode + maintenance page | 6-8 hrs | Controlling Degradation | P2a CLOSED in `f9e4c43`; P2b CLOSED across `8c8df95`+`bef76ec`+`cdf1218`+`8aaf366`+`13534e7`; P2c open |
 | P3 | Two failure domains (Vercel aliased deploys) | 8-12 hrs | Failure Domains | Open |
 | P4 | Quarterly key rotation + latency measurement | 3-4 hrs first, 30min recurring | Time Separation + Key Rotation Cycles | CLOSED in `bbb9378` |
 | P5 | Load testing + failure injection + quarterly game day | 12-20 hrs initial, recurring | Continuous Validation | Open |
