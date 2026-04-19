@@ -22,6 +22,16 @@ vi.mock("@/lib/db", () => ({ prisma: mockPrisma }));
 vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
+// BSRS Ch 8 P2a — assertDbHealthy() was added to the POST handler.
+// Stub it as a no-op so these tests don't exercise the real health
+// probe (which would try to call $queryRaw on the minimal mock above).
+vi.mock("@/lib/db-health", () => ({
+  assertDbHealthy: vi.fn(() => Promise.resolve()),
+  DbUnavailableError: class DbUnavailableError extends Error {
+    cooldown_ms_remaining = 30_000;
+  },
+}));
+
 async function mockSessionAs(user: {
   id: string;
   role: string;

@@ -17,6 +17,7 @@ import {
   requirePlatformAdmin,
 } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { createExpiringGrantSchema } from "@/lib/validations/expiring-grant";
 import { NextResponse } from "next/server";
 
@@ -96,6 +97,7 @@ export async function GET(_request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const { userId: grantedBy, organizationId } = await requirePlatformAdmin(
       ROUTE_POST,
       "POST",
@@ -186,6 +188,16 @@ export async function POST(request: Request) {
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
     if (error instanceof GuardDenial) return error.toErrorResponse();
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_POST,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     return errorResponse({
       kind: "internal",
       message: "Internal server error",

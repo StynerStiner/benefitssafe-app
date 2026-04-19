@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import Footer from "@/components/layout/footer";
 import Header from "@/components/layout/header";
 import ThemeCustomizer from "@/components/theme-customizer/theme-customizer";
+import DegradedBanner from "@/components/shared/degraded-banner";
 import PlatformAdminBanner from "@/components/shared/platform-admin-banner";
 import TrialBanner from "@/components/shared/trial-banner";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -47,6 +48,7 @@ export function ClientRoot({
             <SidebarInset>
               <Header />
             </SidebarInset>
+            <DegradedBanner />
             <PlatformAdminBanner />
             <TrialBanner />
             <div className="dashboard-body bg-neutral-100 dark:bg-[#1e2734] md:p-6 p-3 flex-1 overflow-x-hidden min-w-0 max-w-full">

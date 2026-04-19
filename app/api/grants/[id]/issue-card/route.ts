@@ -11,6 +11,7 @@ import {
   CircuitTimeoutError,
   CIRCUIT_OPEN_COOLDOWN_MS,
 } from "@/lib/stripe-circuit";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { checkLimitAccess, buildLimitReachedResponse, getCurrentPeriod } from "@/lib/feature-gates";
@@ -41,6 +42,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -684,6 +686,16 @@ export async function POST(
       card: virtualCard,
     }, { status: 201 });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
       const retryAfterSeconds =
         error instanceof CircuitOpenError

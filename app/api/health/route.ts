@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/db";
 import { redis } from "@/lib/cache";
+import { getDbHealth } from "@/lib/db-health";
 import { NextResponse } from "next/server";
 import { logger, flushLogs } from "@/lib/logger";
 
@@ -8,14 +8,19 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const checks: Record<string, { status: "ok" | "degraded" | "down"; latencyMs: number }> = {};
 
-  // Check database
-  const dbStart = Date.now();
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    checks.database = { status: "ok", latencyMs: Date.now() - dbStart };
-  } catch {
-    checks.database = { status: "down", latencyMs: Date.now() - dbStart };
-  }
+  // BSRS Ch 8 P2a — database probe is cached in lib/db-health. The
+  // client banner polls /api/health every 30s across all authenticated
+  // users; without the cache each poll would run a fresh SELECT 1 on
+  // Aurora. The cache TTL (30s) is tuned so banner freshness and
+  // Aurora load stay in the right ballpark — tune in db-health.ts,
+  // not here. "healthy" internally maps to "ok" here to preserve the
+  // pre-P2a response contract consumed by the banner and /api/health
+  // probers (Better Stack, Vercel, uptime monitors).
+  const db = await getDbHealth();
+  checks.database = {
+    status: db.status === "healthy" ? "ok" : db.status,
+    latencyMs: db.latencyMs,
+  };
 
   // Check Redis (optional — degraded if unavailable)
   const redisStart = Date.now();

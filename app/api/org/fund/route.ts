@@ -12,6 +12,7 @@ import {
   CircuitTimeoutError,
   CIRCUIT_OPEN_COOLDOWN_MS,
 } from "@/lib/stripe-circuit";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { z } from "zod";
 
@@ -171,6 +172,7 @@ export async function GET(): Promise<NextResponse> {
 // POST — Initiate inbound transfer from nonprofit's bank to Financial Account
 export async function POST(request: Request): Promise<NextResponse> {
   try {
+    await assertDbHealthy();
     const session = await auth();
 
     if (!session?.user?.id) {
@@ -492,6 +494,16 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_POST,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
       return circuitErrorResponse(error, ROUTE_POST, "POST");
     }

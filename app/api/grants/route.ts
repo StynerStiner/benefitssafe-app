@@ -6,6 +6,7 @@ import { GuardDenial, requireAdmin, requireAuth } from "@/lib/auth-guard";
 import { cached, invalidateCacheByPrefix, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { createGrantSchema } from "@/lib/validations/grant";
@@ -75,6 +76,7 @@ export async function GET(request: Request) {
 // POST /api/grants — create a new grant
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const { session, userId, organizationId } = await requireAdmin(ROUTE_POST, "POST");
 
     // Rate limit: 10 requests per minute per user
@@ -188,6 +190,16 @@ export async function POST(request: Request) {
     return NextResponse.json(grant, { status: 201 });
   } catch (error) {
     if (error instanceof GuardDenial) return error.toErrorResponse();
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_POST,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     Sentry.captureException(error, {
       tags: { route: '/api/grants', method: 'POST' },
     });
