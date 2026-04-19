@@ -200,6 +200,8 @@ Ordered by leverage × fix-cost. Solo-founder scope. Numbering continues the BSR
 
 **Leverage:** Turns "our platform is broken" support tickets into "we're in a known degraded state, ETA follows" — massive operator workload reduction during incidents.
 
+**Shipped (P2a):** commit `f9e4c43` — `lib/db-health.ts` + 12 tests + `DegradedBanner` + `/api/health` cache extension + 5 canonical route retrofits (`grants/POST`, `grants/[id]/issue-card/POST`, `beneficiaries/[id]/PATCH`, `platform/expiring-grants/POST`, `org/fund/POST`). P2b retrofits the remaining 63 write routes in tiers (test-mock propagation tax: every test file that `vi.mock`s `@/lib/db` also needs a `vi.mock` for `@/lib/db-health`). P2c (stale-cache reads serving data with a staleness timestamp when Aurora is down) is deferred further.
+
 ### P3 — Two failure domains via Vercel aliased deployments
 
 **Problem:** Zero failure domains (§3.4). Every deploy is all-or-nothing at 100% of traffic.
@@ -267,7 +269,7 @@ Ordered by leverage × fix-cost. Solo-founder scope. Numbering continues the BSR
 | P | Item | Effort | BSRS section | Status |
 |---|---|---|---|---|
 | P1 | Stripe circuit breaker + timeout budget | 4-6 hrs | Controlling Degradation | P1a CLOSED in `4fc087a`; P1b CLOSED across `399c4e0`+`37cc4ba`+`10ebd00` |
-| P2 | Aurora degraded-mode + maintenance page | 6-8 hrs | Controlling Degradation | Open |
+| P2 | Aurora degraded-mode + maintenance page | 6-8 hrs | Controlling Degradation | P2a CLOSED in `f9e4c43`; P2b + P2c open |
 | P3 | Two failure domains (Vercel aliased deploys) | 8-12 hrs | Failure Domains | Open |
 | P4 | Quarterly key rotation + latency measurement | 3-4 hrs first, 30min recurring | Time Separation + Key Rotation Cycles | CLOSED in `bbb9378` |
 | P5 | Load testing + failure injection + quarterly game day | 12-20 hrs initial, recurring | Continuous Validation | Open |
