@@ -4,6 +4,7 @@
 import { GuardDenial, requireNonprofitStaff } from "@/lib/auth-guard";
 import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { validateRecipientEmail } from "@/lib/email-security";
 import { errorResponse } from "@/lib/error-response";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
@@ -157,6 +158,7 @@ export async function GET(request: Request) {
 // POST /api/beneficiaries — create a new beneficiary
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const { session, userId, organizationId } = await requireNonprofitStaff(ROUTE_POST, "POST");
 
     // Rate limit: 20 requests per minute per user
@@ -506,6 +508,16 @@ export async function POST(request: Request) {
       inviteUrl: process.env.POSTMARK_API_TOKEN ? undefined : inviteUrl,
     }, { status: 201 });
   } catch (error: unknown) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_POST,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     if (error instanceof GuardDenial) return error.toErrorResponse();
     const err = error as { code?: string; meta?: unknown; message?: string };
 

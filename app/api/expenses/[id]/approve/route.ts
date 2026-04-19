@@ -16,6 +16,7 @@
 
 import { GuardDenial, requireAdmin } from "@/lib/auth-guard";
 import { prisma, retryOnSerializationFailure } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { errorResponse } from "@/lib/error-response";
 import { invalidateDashboardCache } from "@/lib/data";
@@ -41,6 +42,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    await assertDbHealthy();
     const { session, userId, organizationId } = await requireAdmin(ROUTE, "PATCH");
 
     const { id } = await params;
@@ -319,6 +321,16 @@ export async function PATCH(
 
     return NextResponse.json(result);
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "PATCH",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({
       kind: "internal",

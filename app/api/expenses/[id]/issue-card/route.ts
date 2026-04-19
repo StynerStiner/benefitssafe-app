@@ -4,6 +4,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { stripe } from "@/lib/stripe";
 import {
@@ -43,6 +44,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user) {
       return errorResponse({
@@ -801,6 +803,16 @@ export async function POST(
       card: virtualCard,
     }, { status: 201 });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     if (error instanceof CircuitOpenError || error instanceof CircuitTimeoutError) {
       const retryAfterSeconds =
         error instanceof CircuitOpenError

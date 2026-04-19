@@ -5,12 +5,16 @@ import * as Sentry from "@sentry/nextjs";
 import { auth } from "@/auth";
 import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
+import { errorResponse } from "@/lib/error-response";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { createExpenseSchema } from "@/lib/validations/expense";
 import { classifyExpense } from "@/utils/compliance-rules";
 import { checkLimitAccess, buildLimitReachedResponse, getCurrentPeriod } from "@/lib/feature-gates";
 import { incrementUsage } from "@/lib/usage-tracker";
 import { NextResponse } from "next/server";
+
+const ROUTE_POST = "api/expenses:POST";
 
 // GET /api/expenses — list expenses scoped by role
 export async function GET(request: Request) {
@@ -112,6 +116,7 @@ export async function GET(request: Request) {
 // POST /api/expenses — submit a new expense request
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -368,6 +373,16 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_POST,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     Sentry.captureException(error, {
       tags: { route: '/api/expenses', method: 'POST' },
     });

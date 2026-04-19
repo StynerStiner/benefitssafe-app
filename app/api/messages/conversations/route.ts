@@ -3,8 +3,12 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
+import { errorResponse } from "@/lib/error-response";
 import { createConversationSchema } from "@/lib/validations/conversation";
 import { NextRequest, NextResponse } from "next/server";
+
+const ROUTE_POST = "api/messages/conversations:POST";
 
 export async function GET(request: NextRequest) {
   try {
@@ -123,6 +127,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -237,6 +242,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ conversationId }, { status: 201 });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_POST,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     console.error("POST /api/messages/conversations error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

@@ -3,6 +3,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { sendEmail } from "@/lib/services/email-service";
 import { buildExpenseRejectedEmail } from "@/lib/services/email-templates";
@@ -17,6 +18,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    await assertDbHealthy();
     const session = await auth();
     if (!session?.user) {
       return errorResponse({
@@ -194,6 +196,16 @@ export async function PATCH(
 
     return NextResponse.json(updatedExpense);
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE,
+        method: "PATCH",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     return errorResponse({
       kind: "internal",
       message: "Internal server error",

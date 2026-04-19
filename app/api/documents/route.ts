@@ -1,5 +1,6 @@
 import { GuardDenial, requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { uploadDocumentToS3 } from "@/lib/s3-upload";
 import { createDocumentSchema } from "@/lib/validations/document";
@@ -54,6 +55,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: Request) {
   try {
+    await assertDbHealthy();
     const { userId, organizationId } = await requireAuth(ROUTE_POST, "POST");
 
     const formData = await request.formData();
@@ -154,6 +156,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json(document, { status: 201 });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_POST,
+        method: "POST",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     if (error instanceof GuardDenial) return error.toErrorResponse();
     // Never expose internal error messages to the client (A05)
     return errorResponse({

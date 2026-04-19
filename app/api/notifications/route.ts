@@ -4,6 +4,7 @@
 
 import { GuardDenial, requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/db";
+import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -64,6 +65,7 @@ export async function GET(request: NextRequest) {
 // Delete specific notifications or all read notifications
 export async function DELETE(request: Request) {
   try {
+    await assertDbHealthy();
     const { userId } = await requireAuth(ROUTE_DELETE, "DELETE");
 
     const body = await request.json().catch(() => ({}));
@@ -83,6 +85,16 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_DELETE,
+        method: "DELETE",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({
       kind: "internal",
@@ -97,6 +109,7 @@ export async function DELETE(request: Request) {
 // Mark all or specific notifications as read
 export async function PATCH(request: Request) {
   try {
+    await assertDbHealthy();
     const { userId } = await requireAuth(ROUTE_PATCH, "PATCH");
 
     const body = await request.json().catch(() => ({}));
@@ -118,6 +131,16 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ message: "Marked as read" });
   } catch (error) {
+    if (error instanceof DbUnavailableError) {
+      return errorResponse({
+        kind: "dependency_unavailable",
+        message: "Aurora is currently unavailable; please retry.",
+        route: ROUTE_PATCH,
+        method: "PATCH",
+        retryAfterSeconds: Math.ceil(error.cooldown_ms_remaining / 1000),
+        cause: error,
+      });
+    }
     if (error instanceof GuardDenial) return error.toErrorResponse();
     return errorResponse({
       kind: "internal",

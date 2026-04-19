@@ -33,7 +33,7 @@ between Phase 1 closure and Tier N kickoff if new write routes land.
 
 **P2a canonical 5** (retrofitted in f9e4c43): `grants/POST`, `grants/[id]/issue-card/POST`, `beneficiaries/[id]/PATCH`, `platform/expiring-grants/POST`, `org/fund/POST`.
 
-## Tier 1 — beneficiary-facing / active-user flows (19 files, ~27 methods)
+## Tier 1 — beneficiary-facing / active-user flows (19 files, 24 methods)
 
 Blast radius: a 504 during an Aurora incident hits an active user in the middle of a task (creating expense, pausing card, sending message). Highest urgency for degraded-mode signaling.
 
