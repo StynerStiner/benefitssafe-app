@@ -54,6 +54,11 @@ export async function GET() {
       status: overall,
       timestamp: new Date().toISOString(),
       version: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || "dev",
+      // BSRS Ch 8 P3c — identify which channel is serving the probe
+      // so the operator can verify traffic split end-to-end (also
+      // consumed by the comparison dashboard in Better Stack).
+      deploy_channel: process.env.DEPLOY_CHANNEL || "stable",
+      commit_sha: process.env.VERCEL_GIT_COMMIT_SHA || "local",
       checks,
     },
     {
