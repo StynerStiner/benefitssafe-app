@@ -1,0 +1,177 @@
+# BSRS Ch 8 P3d — Promote a canary SHA to the stable branch.
+#
+# Triggered manually (workflow_dispatch). Never auto-fires.
+#
+# What it does:
+#   1. Verifies canary_sha is reachable from origin/main.
+#   2. Enforces the 24hr burn-in gate (commit timestamp vs now),
+#      allowing a bypass only if override_burn_in_reason is provided.
+#   3. Fast-forwards origin/stable to canary_sha. Non-fast-forward
+#      pushes fail naturally — never force, never merge.
+#   4. Emits a {"event":"deploy_promotion", ...} JSON line so the
+#      promotion is a durable audit record in GitHub Actions logs.
+#
+# What it does NOT do (P3f TODO):
+#   - Call Better Stack API to verify error rate ≤ 1.2× stable and
+#     p95 latency ≤ 1.2× stable across the 24hr window.
+#   - Call Cloudflare LB API to assert canary weight was 0.1 (and
+#     not manually forced elsewhere) throughout the burn-in.
+#   - Require CI green on canary_sha.
+#   - Rebind the stable.benefitssafe.com Vercel alias. Vercel's git
+#     integration (P3b) watches stable and auto-deploys on push.
+#
+# Required secrets (GitHub → Settings → Secrets and variables):
+#   PROMOTE_PAT  Fine-grained PAT scoped to this repo with
+#                "Contents: Read & Write". This PAT's identity is
+#                the only principal allowed to push to stable once
+#                branch protection is configured. Document the
+#                PAT owner + rotation cadence in the credential
+#                rotation ledger.
+#
+# See docs/design-notes/bsrs-ch08-p3-design.md §7 for the promotion
+# process rationale, and docs/runbooks/failure-domain-failover.md
+# for incident-response procedures this workflow does not cover.
+
+name: Promote canary to stable
+run-name: "Promote ${{ inputs.canary_sha }} → stable (by ${{ github.actor }})"
+
+on:
+  workflow_dispatch:
+    inputs:
+      canary_sha:
+        description: "Canary commit SHA to promote (must be on origin/main)"
+        required: true
+        type: string
+      override_burn_in_reason:
+        description: "Non-empty reason bypasses the 24hr burn-in (hotfixes only)"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read  # The push uses secrets.PROMOTE_PAT, not GITHUB_TOKEN.
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history, PROMOTE_PAT)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PROMOTE_PAT }}
+
+      - name: Verify canary_sha is on origin/main
+        env:
+          SHA: ${{ inputs.canary_sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin main --quiet
+          if ! git merge-base --is-ancestor "$SHA" origin/main; then
+            echo "::error::canary_sha '$SHA' is not reachable from origin/main. Either the SHA is wrong or main has been force-pushed."
+            exit 1
+          fi
+          echo "::notice::canary_sha '$SHA' confirmed on origin/main."
+
+      - name: Check 24hr burn-in gate
+        id: burnin
+        env:
+          SHA: ${{ inputs.canary_sha }}
+          REASON: ${{ inputs.override_burn_in_reason }}
+        run: |
+          set -euo pipefail
+          COMMIT_TS=$(git show -s --format=%ct "$SHA")
+          NOW=$(date +%s)
+          ELAPSED_HRS=$(( (NOW - COMMIT_TS) / 3600 ))
+          echo "elapsed_hours=$ELAPSED_HRS" >> "$GITHUB_OUTPUT"
+
+          if [ "$ELAPSED_HRS" -lt 24 ]; then
+            if [ -z "${REASON// /}" ]; then
+              echo "::error::24hr burn-in not met: only ${ELAPSED_HRS}hr elapsed since canary_sha was authored. Re-run with override_burn_in_reason set to a non-empty string to hotfix."
+              exit 1
+            fi
+            echo "::notice::Burn-in override accepted (${ELAPSED_HRS}hr elapsed): ${REASON}"
+          else
+            echo "::notice::Burn-in gate passed: ${ELAPSED_HRS}hr elapsed."
+          fi
+
+      - name: Capture current stable HEAD
+        id: stable
+        run: |
+          set -euo pipefail
+          git fetch origin stable --quiet
+          OLD=$(git rev-parse origin/stable)
+          echo "old_sha=$OLD" >> "$GITHUB_OUTPUT"
+          echo "::notice::stable is currently at $OLD."
+
+      - name: Fast-forward stable → canary_sha
+        env:
+          SHA: ${{ inputs.canary_sha }}
+        run: |
+          set -euo pipefail
+          # Plain fast-forward. No --force, no merge commit. If stable
+          # has commits not reachable from SHA the push is rejected
+          # and the workflow fails — which is the correct behavior:
+          # someone pushed directly to stable and the canary-to-stable
+          # invariant is broken, so promotion must not silently paper
+          # over it.
+          git push origin "${SHA}:refs/heads/stable"
+          echo "::notice::Fast-forwarded stable to ${SHA}."
+
+      - name: Emit deploy_promotion event
+        env:
+          SHA: ${{ inputs.canary_sha }}
+          STABLE_BEFORE: ${{ steps.stable.outputs.old_sha }}
+          ACTOR: ${{ github.actor }}
+          REASON: ${{ inputs.override_burn_in_reason }}
+          ELAPSED: ${{ steps.burnin.outputs.elapsed_hours }}
+        run: |
+          set -euo pipefail
+          # jq handles all quote / newline / control-char escaping in
+          # the override reason so constructing JSON via shell string
+          # interpolation is never attempted.
+          jq -nc \
+            --arg event "deploy_promotion" \
+            --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg sha "$SHA" \
+            --arg stable_before "$STABLE_BEFORE" \
+            --arg actor "$ACTOR" \
+            --arg reason "$REASON" \
+            --argjson elapsed "$ELAPSED" \
+            '{
+              event: $event,
+              ts: $ts,
+              canary_sha: $sha,
+              stable_before: $stable_before,
+              stable_after: $sha,
+              actor: $actor,
+              burn_in_hours_elapsed: $elapsed,
+              override_burn_in_reason: (if $reason == "" then null else $reason end)
+            }'
+
+      - name: Job summary
+        if: always()
+        env:
+          SHA: ${{ inputs.canary_sha }}
+          STABLE_BEFORE: ${{ steps.stable.outputs.old_sha }}
+          REASON: ${{ inputs.override_burn_in_reason }}
+          ELAPSED: ${{ steps.burnin.outputs.elapsed_hours }}
+        run: |
+          {
+            echo "## Promotion summary"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| canary_sha | \`${SHA}\` |"
+            echo "| stable_before | \`${STABLE_BEFORE:-<unknown>}\` |"
+            echo "| actor | @${{ github.actor }} |"
+            echo "| burn_in_hours_elapsed | ${ELAPSED:-<not-checked>} |"
+            if [ -n "${REASON// /}" ]; then
+              echo "| override_burn_in_reason | ${REASON} |"
+            else
+              echo "| override_burn_in_reason | _(none — full 24hr burn-in)_ |"
+            fi
+            echo "| timestamp | $(date -u +%Y-%m-%dT%H:%M:%SZ) |"
+            echo ""
+            echo "See [docs/runbooks/failure-domain-failover.md](../blob/main/docs/runbooks/failure-domain-failover.md) if this promotion needs to be rolled back."
+          } >> "$GITHUB_STEP_SUMMARY"
