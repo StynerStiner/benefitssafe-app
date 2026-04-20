@@ -12,6 +12,11 @@ export const createExpenseSchema = z.object({
   amount: z.coerce.number().positive("Amount must be positive"),
   frequency: z.enum(["ONE_TIME", "MONTHLY", "QUARTERLY", "ANNUAL"]).default("ONE_TIME"),
   expenseType: z.string().min(1, "Expense type is required").max(100),
+  // DDIA Ch12 F1 — optional end-to-end idempotency key. Clients that
+  // care about retry-safety send a UUID v4; a same-UUID retry returns
+  // the original expense with 200 instead of creating a duplicate.
+  // Omitted by older clients → create as before (no dedup).
+  requestId: z.string().uuid("requestId must be a valid UUID").optional(),
 });
 
 export const approveExpenseSchema = z.object({

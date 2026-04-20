@@ -277,6 +277,15 @@ model ExpenseRequest {
   vendorId       String?
   vendor         Vendor?        @relation(fields: [vendorId], references: [id])
 
+  // DDIA Ch12 — end-to-end request ID for idempotent expense creation.
+  // A client (beneficiary UI, automation, retried POST on network timeout)
+  // supplies a UUID v4; the @@unique below + a partial unique index
+  // (via scripts/add-expense-request-id.ts, scoped WHERE requestId IS NOT
+  // NULL) enforces durable dedup. Nullable for backward compatibility —
+  // older clients that don't send a requestId still work as before.
+  // Mirrors FundTransfer.requestId.
+  requestId String?
+
   description String
   amount      Decimal          @db.Decimal(12, 2)
   frequency   ExpenseFrequency @default(ONE_TIME)
@@ -318,6 +327,7 @@ model ExpenseRequest {
   // Hot-path covering indexes only — shorter composites that are subsumed
   // by leftmost-prefix of these longer ones were dropped in the DDIA Ch3
   // index audit (see references/engineering/designing-data-intensive-applications/AUDIT-TRACKER.md).
+  @@unique([organizationId, requestId]) // DDIA Ch12 — end-to-end idempotency. DB-level enforcement is a partial unique index (WHERE requestId IS NOT NULL); see scripts/add-expense-request-id.ts.
   @@index([organizationId, status, createdAt]) // List queries: where org+status order by createdAt
   @@index([organizationId, riskClassification]) // Compliance page count-per-risk-tier
   @@index([grantId]) // Join back from Grant.expenses

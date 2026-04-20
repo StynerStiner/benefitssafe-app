@@ -13,6 +13,7 @@ import {
 import { invalidateDashboardCache } from "@/lib/data";
 import { prisma } from "@/lib/db";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
+import type { Prisma } from "@/lib/generated/prisma/client";
 import { errorResponse } from "@/lib/error-response";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
 import { createExpenseSchema } from "@/lib/validations/expense";
@@ -291,128 +292,187 @@ export async function POST(request: Request) {
       benefitFlags,
     );
 
-    // Create the expense request
-    const expense = await prisma.expenseRequest.create({
-      data: {
-        organizationId,
-        grantId: data.grantId,
-        categoryId: category.id,
-        requestedById: userId,
-        suggestedCategory: isOtherCategory ? data.suggestedCategory : null,
-        description: data.description,
-        amount: data.amount,
-        frequency: data.frequency,
-        expenseType: data.expenseType,
-        vendorName: data.vendorName || null,
-        vendorEmail: data.vendorEmail || null,
-        vendorPhone: data.vendorPhone || null,
-        vendorWebsite: data.vendorWebsite || null,
-        riskClassification: classification.level,
-        riskNotes: classification.reason,
-        status: classification.level === "BLOCKED" ? "REJECTED" : "PENDING",
-        rejectedReason:
-          classification.level === "BLOCKED"
-            ? `Auto-blocked by compliance engine: ${classification.reason}`
-            : null,
-      },
-      include: {
-        grant: { select: { id: true, name: true } },
-        category: { select: { id: true, name: true } },
-        requestedBy: { select: { id: true, firstName: true, lastName: true, email: true, avatarUrl: true } },
-        virtualCards: { select: { id: true, last4: true, status: true } },
-      },
-    });
+    // Create the expense request.
+    //
+    // DDIA Ch12 F1 — end-to-end request ID idempotency. If the client
+    // supplied a `requestId`, a duplicate submission (network timeout
+    // retry, double-click, browser refresh on POST) hits the partial
+    // unique index (organizationId, requestId) WHERE requestId IS NOT
+    // NULL and throws Prisma P2002. We look up the existing row and
+    // return it with 200 instead of 201 — idempotent success, not an
+    // error. Mirrors the FundTransfer.requestId pattern.
+    const expenseInclude = {
+      grant: { select: { id: true, name: true } },
+      category: { select: { id: true, name: true } },
+      requestedBy: { select: { id: true, firstName: true, lastName: true, email: true, avatarUrl: true } },
+      virtualCards: { select: { id: true, last4: true, status: true } },
+    } satisfies Prisma.ExpenseRequestInclude;
+    type ExpenseWithIncludes = Prisma.ExpenseRequestGetPayload<{ include: typeof expenseInclude }>;
 
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        userId,
-        organizationId,
-        action: "create",
-        entityType: "expense",
-        entityId: expense.id,
-        newValue: {
-          description: expense.description,
-          amount: expense.amount.toString(),
+    let expense: ExpenseWithIncludes;
+    let isRetrievedFromRetry = false;
+    try {
+      expense = await prisma.expenseRequest.create({
+        data: {
+          organizationId,
+          grantId: data.grantId,
+          categoryId: category.id,
+          requestedById: userId,
+          requestId: data.requestId ?? null,
+          suggestedCategory: isOtherCategory ? data.suggestedCategory : null,
+          description: data.description,
+          amount: data.amount,
+          frequency: data.frequency,
+          expenseType: data.expenseType,
+          vendorName: data.vendorName || null,
+          vendorEmail: data.vendorEmail || null,
+          vendorPhone: data.vendorPhone || null,
+          vendorWebsite: data.vendorWebsite || null,
           riskClassification: classification.level,
           riskNotes: classification.reason,
-          rules: classification.rules,
+          status: classification.level === "BLOCKED" ? "REJECTED" : "PENDING",
+          rejectedReason:
+            classification.level === "BLOCKED"
+              ? `Auto-blocked by compliance engine: ${classification.reason}`
+              : null,
         },
-      },
-    });
-
-    // Increment usage counter for this month
-    await incrementUsage(organizationId, "expensesProcessed");
-
-    // Fire workflow for flagged expenses (non-blocking)
-    if (classification.level === "NEEDS_REVIEW" || classification.level === "LIKELY_RISKY") {
-      import("@/lib/workflow-engine").then(({ getWorkflowEngine }) => {
-        getWorkflowEngine().fire(organizationId, "transaction_needs_review", {
-          transactionId: expense.id,
-          beneficiaryName: `${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`,
-          amount: parseFloat(expense.amount.toString()),
-          merchantName: expense.vendorName || "Unknown",
-          mccCode: "",
-          riskClassification: classification.level,
-          grantName: expense.grant.name,
-        });
-      }).catch(() => {});
+        include: expenseInclude,
+      });
+    } catch (err) {
+      // P2002 on (organizationId, requestId) — idempotent retry of a
+      // previously-completed expense create. Return the existing row
+      // with 200. Any other P2002 (or non-P2002 error) bubbles up.
+      const isP2002 =
+        typeof err === "object" &&
+        err !== null &&
+        "code" in err &&
+        (err as { code: string }).code === "P2002";
+      if (!isP2002 || !data.requestId) {
+        throw err;
+      }
+      const existing = await prisma.expenseRequest.findUnique({
+        where: {
+          organizationId_requestId: {
+            organizationId,
+            requestId: data.requestId,
+          },
+        },
+        include: expenseInclude,
+      });
+      if (!existing) {
+        // Defensive — P2002 implies the row exists. If it doesn't, the
+        // unique constraint collided on something we can't resolve;
+        // surface as a 500 with a hint rather than loop.
+        console.error(
+          "POST /api/expenses: P2002 on (organizationId, requestId) but findUnique returned null",
+          { organizationId, requestId: data.requestId },
+        );
+        return NextResponse.json(
+          { error: "Expense conflict — please retry with a new requestId" },
+          { status: 500 },
+        );
+      }
+      expense = existing;
+      isRetrievedFromRetry = true;
     }
 
-    // Notify org admins + staff about new expense submission.
-    // In-app notification only — no email. An individual email per
-    // expense submission would produce 60–250 emails/day for a busy
-    // nonprofit and train admins to filter BenefitsSafe entirely.
-    // The in-app badge count is sufficient; admins open the dashboard
-    // to approve anyway.
-    //
-    // Bounded to 200 admins per org and batched into a single
-    // createMany call — at scale a 500-admin org would otherwise fire
-    // 500 sequential notification.create calls and time out the request.
-    const admins = await prisma.user.findMany({
-      where: {
-        organizationId,
-        role: {
-          in: ["nonprofit_admin", "nonprofit_staff", "platform_admin"],
+    // DDIA Ch12 F1 — side effects only on fresh create. On an idempotent
+    // retry (isRetrievedFromRetry === true) we skip the audit log, usage
+    // increment, workflow fire, admin notifications, and dashboard
+    // invalidation — those already ran during the original POST. Firing
+    // them again would double-count usage, double-notify admins, and
+    // re-fire the compliance workflow.
+    if (!isRetrievedFromRetry) {
+      await prisma.auditLog.create({
+        data: {
+          userId,
+          organizationId,
+          action: "create",
+          entityType: "expense",
+          entityId: expense.id,
+          newValue: {
+            description: expense.description,
+            amount: expense.amount.toString(),
+            riskClassification: classification.level,
+            riskNotes: classification.reason,
+            rules: classification.rules,
+          },
         },
-        isActive: true,
-      },
-      select: { id: true },
-      take: 200,
-    });
-    const submitterName = expense.requestedBy
-      ? `${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`
-      : "A user";
-    const expenseAmount = parseFloat(expense.amount.toString()).toFixed(2);
-    const notificationTitle = "New expense request submitted";
-    const notificationMessage = `${submitterName} submitted a $${expenseAmount} expense for "${expense.description}" (${expense.grant.name}).`;
+      });
 
-    const notificationRows = admins
-      .filter((admin) => admin.id !== userId)
-      .map((admin) => ({
-        userId: admin.id,
-        organizationId,
-        type: "expense_submitted",
-        title: notificationTitle,
-        message: notificationMessage,
-        entityType: "expense",
-        entityId: expense.id,
-        href: `/expenses`,
-      }));
-    if (notificationRows.length > 0) {
-      await prisma.notification.createMany({ data: notificationRows });
+      // Increment usage counter for this month
+      await incrementUsage(organizationId, "expensesProcessed");
+
+      // Fire workflow for flagged expenses (non-blocking)
+      if (classification.level === "NEEDS_REVIEW" || classification.level === "LIKELY_RISKY") {
+        import("@/lib/workflow-engine").then(({ getWorkflowEngine }) => {
+          getWorkflowEngine().fire(organizationId, "transaction_needs_review", {
+            transactionId: expense.id,
+            beneficiaryName: `${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`,
+            amount: parseFloat(expense.amount.toString()),
+            merchantName: expense.vendorName || "Unknown",
+            mccCode: "",
+            riskClassification: classification.level,
+            grantName: expense.grant.name,
+          });
+        }).catch(() => {});
+      }
+
+      // Notify org admins + staff about new expense submission.
+      // In-app notification only — no email. An individual email per
+      // expense submission would produce 60–250 emails/day for a busy
+      // nonprofit and train admins to filter BenefitsSafe entirely.
+      // The in-app badge count is sufficient; admins open the dashboard
+      // to approve anyway.
+      //
+      // Bounded to 200 admins per org and batched into a single
+      // createMany call — at scale a 500-admin org would otherwise fire
+      // 500 sequential notification.create calls and time out the request.
+      const admins = await prisma.user.findMany({
+        where: {
+          organizationId,
+          role: {
+            in: ["nonprofit_admin", "nonprofit_staff", "platform_admin"],
+          },
+          isActive: true,
+        },
+        select: { id: true },
+        take: 200,
+      });
+      const submitterName = expense.requestedBy
+        ? `${expense.requestedBy.firstName} ${expense.requestedBy.lastName}`
+        : "A user";
+      const expenseAmount = parseFloat(expense.amount.toString()).toFixed(2);
+      const notificationTitle = "New expense request submitted";
+      const notificationMessage = `${submitterName} submitted a $${expenseAmount} expense for "${expense.description}" (${expense.grant.name}).`;
+
+      const notificationRows = admins
+        .filter((admin) => admin.id !== userId)
+        .map((admin) => ({
+          userId: admin.id,
+          organizationId,
+          type: "expense_submitted",
+          title: notificationTitle,
+          message: notificationMessage,
+          entityType: "expense",
+          entityId: expense.id,
+          href: `/expenses`,
+        }));
+      if (notificationRows.length > 0) {
+        await prisma.notification.createMany({ data: notificationRows });
+      }
+
+      // Invalidate dashboard roll-up so the new expense shows up on the
+      // admin dashboard immediately. (DDIA Ch5 Replication audit.)
+      await invalidateDashboardCache(organizationId);
     }
-
-    // Invalidate dashboard roll-up so the new expense shows up on the
-    // admin dashboard immediately. (DDIA Ch5 Replication audit.)
-    await invalidateDashboardCache(organizationId);
 
     return NextResponse.json(
       {
         ...expense,
         classification,
       },
-      { status: 201 },
+      { status: isRetrievedFromRetry ? 200 : 201 },
     );
   } catch (error) {
     if (error instanceof DbUnavailableError) {

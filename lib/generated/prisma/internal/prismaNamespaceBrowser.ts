@@ -245,6 +245,7 @@ export const ExpenseRequestScalarFieldEnum = {
   categoryId: 'categoryId',
   requestedById: 'requestedById',
   vendorId: 'vendorId',
+  requestId: 'requestId',
   description: 'description',
   amount: 'amount',
   frequency: 'frequency',

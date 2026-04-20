@@ -41,6 +41,7 @@ export type ExpenseRequestMinAggregateOutputType = {
   categoryId: string | null
   requestedById: string | null
   vendorId: string | null
+  requestId: string | null
   description: string | null
   amount: runtime.Decimal | null
   frequency: $Enums.ExpenseFrequency | null
@@ -70,6 +71,7 @@ export type ExpenseRequestMaxAggregateOutputType = {
   categoryId: string | null
   requestedById: string | null
   vendorId: string | null
+  requestId: string | null
   description: string | null
   amount: runtime.Decimal | null
   frequency: $Enums.ExpenseFrequency | null
@@ -99,6 +101,7 @@ export type ExpenseRequestCountAggregateOutputType = {
   categoryId: number
   requestedById: number
   vendorId: number
+  requestId: number
   description: number
   amount: number
   frequency: number
@@ -139,6 +142,7 @@ export type ExpenseRequestMinAggregateInputType = {
   categoryId?: true
   requestedById?: true
   vendorId?: true
+  requestId?: true
   description?: true
   amount?: true
   frequency?: true
@@ -168,6 +172,7 @@ export type ExpenseRequestMaxAggregateInputType = {
   categoryId?: true
   requestedById?: true
   vendorId?: true
+  requestId?: true
   description?: true
   amount?: true
   frequency?: true
@@ -197,6 +202,7 @@ export type ExpenseRequestCountAggregateInputType = {
   categoryId?: true
   requestedById?: true
   vendorId?: true
+  requestId?: true
   description?: true
   amount?: true
   frequency?: true
@@ -314,6 +320,7 @@ export type ExpenseRequestGroupByOutputType = {
   categoryId: string
   requestedById: string
   vendorId: string | null
+  requestId: string | null
   description: string
   amount: runtime.Decimal
   frequency: $Enums.ExpenseFrequency
@@ -367,6 +374,7 @@ export type ExpenseRequestWhereInput = {
   categoryId?: Prisma.StringFilter<"ExpenseRequest"> | string
   requestedById?: Prisma.StringFilter<"ExpenseRequest"> | string
   vendorId?: Prisma.StringNullableFilter<"ExpenseRequest"> | string | null
+  requestId?: Prisma.StringNullableFilter<"ExpenseRequest"> | string | null
   description?: Prisma.StringFilter<"ExpenseRequest"> | string
   amount?: Prisma.DecimalFilter<"ExpenseRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFilter<"ExpenseRequest"> | $Enums.ExpenseFrequency
@@ -404,6 +412,7 @@ export type ExpenseRequestOrderByWithRelationInput = {
   categoryId?: Prisma.SortOrder
   requestedById?: Prisma.SortOrder
   vendorId?: Prisma.SortOrderInput | Prisma.SortOrder
+  requestId?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   frequency?: Prisma.SortOrder
@@ -436,6 +445,7 @@ export type ExpenseRequestOrderByWithRelationInput = {
 
 export type ExpenseRequestWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  organizationId_requestId?: Prisma.ExpenseRequestOrganizationIdRequestIdCompoundUniqueInput
   AND?: Prisma.ExpenseRequestWhereInput | Prisma.ExpenseRequestWhereInput[]
   OR?: Prisma.ExpenseRequestWhereInput[]
   NOT?: Prisma.ExpenseRequestWhereInput | Prisma.ExpenseRequestWhereInput[]
@@ -444,6 +454,7 @@ export type ExpenseRequestWhereUniqueInput = Prisma.AtLeast<{
   categoryId?: Prisma.StringFilter<"ExpenseRequest"> | string
   requestedById?: Prisma.StringFilter<"ExpenseRequest"> | string
   vendorId?: Prisma.StringNullableFilter<"ExpenseRequest"> | string | null
+  requestId?: Prisma.StringNullableFilter<"ExpenseRequest"> | string | null
   description?: Prisma.StringFilter<"ExpenseRequest"> | string
   amount?: Prisma.DecimalFilter<"ExpenseRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFilter<"ExpenseRequest"> | $Enums.ExpenseFrequency
@@ -472,7 +483,7 @@ export type ExpenseRequestWhereUniqueInput = Prisma.AtLeast<{
   approvals?: Prisma.ApprovalListRelationFilter
   ledgerEntries?: Prisma.LedgerEntryListRelationFilter
   virtualCards?: Prisma.VirtualCardListRelationFilter
-}, "id">
+}, "id" | "organizationId_requestId">
 
 export type ExpenseRequestOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -481,6 +492,7 @@ export type ExpenseRequestOrderByWithAggregationInput = {
   categoryId?: Prisma.SortOrder
   requestedById?: Prisma.SortOrder
   vendorId?: Prisma.SortOrderInput | Prisma.SortOrder
+  requestId?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   frequency?: Prisma.SortOrder
@@ -519,6 +531,7 @@ export type ExpenseRequestScalarWhereWithAggregatesInput = {
   categoryId?: Prisma.StringWithAggregatesFilter<"ExpenseRequest"> | string
   requestedById?: Prisma.StringWithAggregatesFilter<"ExpenseRequest"> | string
   vendorId?: Prisma.StringNullableWithAggregatesFilter<"ExpenseRequest"> | string | null
+  requestId?: Prisma.StringNullableWithAggregatesFilter<"ExpenseRequest"> | string | null
   description?: Prisma.StringWithAggregatesFilter<"ExpenseRequest"> | string
   amount?: Prisma.DecimalWithAggregatesFilter<"ExpenseRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyWithAggregatesFilter<"ExpenseRequest"> | $Enums.ExpenseFrequency
@@ -545,6 +558,7 @@ export type ExpenseRequestScalarWhereWithAggregatesInput = {
 export type ExpenseRequestCreateInput = {
   id?: string
   organizationId: string
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -582,6 +596,7 @@ export type ExpenseRequestUncheckedCreateInput = {
   categoryId: string
   requestedById: string
   vendorId?: string | null
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -611,6 +626,7 @@ export type ExpenseRequestUncheckedCreateInput = {
 export type ExpenseRequestUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -648,6 +664,7 @@ export type ExpenseRequestUncheckedUpdateInput = {
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   requestedById?: Prisma.StringFieldUpdateOperationsInput | string
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -681,6 +698,7 @@ export type ExpenseRequestCreateManyInput = {
   categoryId: string
   requestedById: string
   vendorId?: string | null
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -707,6 +725,7 @@ export type ExpenseRequestCreateManyInput = {
 export type ExpenseRequestUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -737,6 +756,7 @@ export type ExpenseRequestUncheckedUpdateManyInput = {
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   requestedById?: Prisma.StringFieldUpdateOperationsInput | string
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -770,6 +790,11 @@ export type ExpenseRequestOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type ExpenseRequestOrganizationIdRequestIdCompoundUniqueInput = {
+  organizationId: string
+  requestId: string
+}
+
 export type ExpenseRequestCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
@@ -777,6 +802,7 @@ export type ExpenseRequestCountOrderByAggregateInput = {
   categoryId?: Prisma.SortOrder
   requestedById?: Prisma.SortOrder
   vendorId?: Prisma.SortOrder
+  requestId?: Prisma.SortOrder
   description?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   frequency?: Prisma.SortOrder
@@ -811,6 +837,7 @@ export type ExpenseRequestMaxOrderByAggregateInput = {
   categoryId?: Prisma.SortOrder
   requestedById?: Prisma.SortOrder
   vendorId?: Prisma.SortOrder
+  requestId?: Prisma.SortOrder
   description?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   frequency?: Prisma.SortOrder
@@ -840,6 +867,7 @@ export type ExpenseRequestMinOrderByAggregateInput = {
   categoryId?: Prisma.SortOrder
   requestedById?: Prisma.SortOrder
   vendorId?: Prisma.SortOrder
+  requestId?: Prisma.SortOrder
   description?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   frequency?: Prisma.SortOrder
@@ -1105,6 +1133,7 @@ export type ExpenseRequestUpdateOneRequiredWithoutApprovalsNestedInput = {
 export type ExpenseRequestCreateWithoutRequestedByInput = {
   id?: string
   organizationId: string
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -1140,6 +1169,7 @@ export type ExpenseRequestUncheckedCreateWithoutRequestedByInput = {
   grantId: string
   categoryId: string
   vendorId?: string | null
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -1202,6 +1232,7 @@ export type ExpenseRequestScalarWhereInput = {
   categoryId?: Prisma.StringFilter<"ExpenseRequest"> | string
   requestedById?: Prisma.StringFilter<"ExpenseRequest"> | string
   vendorId?: Prisma.StringNullableFilter<"ExpenseRequest"> | string | null
+  requestId?: Prisma.StringNullableFilter<"ExpenseRequest"> | string | null
   description?: Prisma.StringFilter<"ExpenseRequest"> | string
   amount?: Prisma.DecimalFilter<"ExpenseRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFilter<"ExpenseRequest"> | $Enums.ExpenseFrequency
@@ -1228,6 +1259,7 @@ export type ExpenseRequestScalarWhereInput = {
 export type ExpenseRequestCreateWithoutGrantInput = {
   id?: string
   organizationId: string
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -1263,6 +1295,7 @@ export type ExpenseRequestUncheckedCreateWithoutGrantInput = {
   categoryId: string
   requestedById: string
   vendorId?: string | null
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -1318,6 +1351,7 @@ export type ExpenseRequestUpdateManyWithWhereWithoutGrantInput = {
 export type ExpenseRequestCreateWithoutCategoryInput = {
   id?: string
   organizationId: string
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -1353,6 +1387,7 @@ export type ExpenseRequestUncheckedCreateWithoutCategoryInput = {
   grantId: string
   requestedById: string
   vendorId?: string | null
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -1408,6 +1443,7 @@ export type ExpenseRequestUpdateManyWithWhereWithoutCategoryInput = {
 export type ExpenseRequestCreateWithoutVendorInput = {
   id?: string
   organizationId: string
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -1443,6 +1479,7 @@ export type ExpenseRequestUncheckedCreateWithoutVendorInput = {
   grantId: string
   categoryId: string
   requestedById: string
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -1498,6 +1535,7 @@ export type ExpenseRequestUpdateManyWithWhereWithoutVendorInput = {
 export type ExpenseRequestCreateWithoutVirtualCardsInput = {
   id?: string
   organizationId: string
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -1534,6 +1572,7 @@ export type ExpenseRequestUncheckedCreateWithoutVirtualCardsInput = {
   categoryId: string
   requestedById: string
   vendorId?: string | null
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -1578,6 +1617,7 @@ export type ExpenseRequestUpdateToOneWithWhereWithoutVirtualCardsInput = {
 export type ExpenseRequestUpdateWithoutVirtualCardsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -1614,6 +1654,7 @@ export type ExpenseRequestUncheckedUpdateWithoutVirtualCardsInput = {
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   requestedById?: Prisma.StringFieldUpdateOperationsInput | string
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -1642,6 +1683,7 @@ export type ExpenseRequestUncheckedUpdateWithoutVirtualCardsInput = {
 export type ExpenseRequestCreateWithoutLedgerEntriesInput = {
   id?: string
   organizationId: string
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -1678,6 +1720,7 @@ export type ExpenseRequestUncheckedCreateWithoutLedgerEntriesInput = {
   categoryId: string
   requestedById: string
   vendorId?: string | null
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -1722,6 +1765,7 @@ export type ExpenseRequestUpdateToOneWithWhereWithoutLedgerEntriesInput = {
 export type ExpenseRequestUpdateWithoutLedgerEntriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -1758,6 +1802,7 @@ export type ExpenseRequestUncheckedUpdateWithoutLedgerEntriesInput = {
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   requestedById?: Prisma.StringFieldUpdateOperationsInput | string
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -1786,6 +1831,7 @@ export type ExpenseRequestUncheckedUpdateWithoutLedgerEntriesInput = {
 export type ExpenseRequestCreateWithoutApprovalsInput = {
   id?: string
   organizationId: string
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -1822,6 +1868,7 @@ export type ExpenseRequestUncheckedCreateWithoutApprovalsInput = {
   categoryId: string
   requestedById: string
   vendorId?: string | null
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -1866,6 +1913,7 @@ export type ExpenseRequestUpdateToOneWithWhereWithoutApprovalsInput = {
 export type ExpenseRequestUpdateWithoutApprovalsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -1902,6 +1950,7 @@ export type ExpenseRequestUncheckedUpdateWithoutApprovalsInput = {
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   requestedById?: Prisma.StringFieldUpdateOperationsInput | string
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -1933,6 +1982,7 @@ export type ExpenseRequestCreateManyRequestedByInput = {
   grantId: string
   categoryId: string
   vendorId?: string | null
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -1959,6 +2009,7 @@ export type ExpenseRequestCreateManyRequestedByInput = {
 export type ExpenseRequestUpdateWithoutRequestedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -1994,6 +2045,7 @@ export type ExpenseRequestUncheckedUpdateWithoutRequestedByInput = {
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -2026,6 +2078,7 @@ export type ExpenseRequestUncheckedUpdateManyWithoutRequestedByInput = {
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -2055,6 +2108,7 @@ export type ExpenseRequestCreateManyGrantInput = {
   categoryId: string
   requestedById: string
   vendorId?: string | null
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -2081,6 +2135,7 @@ export type ExpenseRequestCreateManyGrantInput = {
 export type ExpenseRequestUpdateWithoutGrantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -2116,6 +2171,7 @@ export type ExpenseRequestUncheckedUpdateWithoutGrantInput = {
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   requestedById?: Prisma.StringFieldUpdateOperationsInput | string
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -2148,6 +2204,7 @@ export type ExpenseRequestUncheckedUpdateManyWithoutGrantInput = {
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   requestedById?: Prisma.StringFieldUpdateOperationsInput | string
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -2177,6 +2234,7 @@ export type ExpenseRequestCreateManyCategoryInput = {
   grantId: string
   requestedById: string
   vendorId?: string | null
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -2203,6 +2261,7 @@ export type ExpenseRequestCreateManyCategoryInput = {
 export type ExpenseRequestUpdateWithoutCategoryInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -2238,6 +2297,7 @@ export type ExpenseRequestUncheckedUpdateWithoutCategoryInput = {
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   requestedById?: Prisma.StringFieldUpdateOperationsInput | string
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -2270,6 +2330,7 @@ export type ExpenseRequestUncheckedUpdateManyWithoutCategoryInput = {
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   requestedById?: Prisma.StringFieldUpdateOperationsInput | string
   vendorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -2299,6 +2360,7 @@ export type ExpenseRequestCreateManyVendorInput = {
   grantId: string
   categoryId: string
   requestedById: string
+  requestId?: string | null
   description: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: $Enums.ExpenseFrequency
@@ -2325,6 +2387,7 @@ export type ExpenseRequestCreateManyVendorInput = {
 export type ExpenseRequestUpdateWithoutVendorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -2360,6 +2423,7 @@ export type ExpenseRequestUncheckedUpdateWithoutVendorInput = {
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   requestedById?: Prisma.StringFieldUpdateOperationsInput | string
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -2392,6 +2456,7 @@ export type ExpenseRequestUncheckedUpdateManyWithoutVendorInput = {
   grantId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   requestedById?: Prisma.StringFieldUpdateOperationsInput | string
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency
@@ -2471,6 +2536,7 @@ export type ExpenseRequestSelect<ExtArgs extends runtime.Types.Extensions.Intern
   categoryId?: boolean
   requestedById?: boolean
   vendorId?: boolean
+  requestId?: boolean
   description?: boolean
   amount?: boolean
   frequency?: boolean
@@ -2509,6 +2575,7 @@ export type ExpenseRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   categoryId?: boolean
   requestedById?: boolean
   vendorId?: boolean
+  requestId?: boolean
   description?: boolean
   amount?: boolean
   frequency?: boolean
@@ -2543,6 +2610,7 @@ export type ExpenseRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   categoryId?: boolean
   requestedById?: boolean
   vendorId?: boolean
+  requestId?: boolean
   description?: boolean
   amount?: boolean
   frequency?: boolean
@@ -2577,6 +2645,7 @@ export type ExpenseRequestSelectScalar = {
   categoryId?: boolean
   requestedById?: boolean
   vendorId?: boolean
+  requestId?: boolean
   description?: boolean
   amount?: boolean
   frequency?: boolean
@@ -2600,7 +2669,7 @@ export type ExpenseRequestSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ExpenseRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "grantId" | "categoryId" | "requestedById" | "vendorId" | "description" | "amount" | "frequency" | "expenseType" | "vendorName" | "vendorEmail" | "vendorPhone" | "vendorWebsite" | "riskClassification" | "riskNotes" | "policyViolations" | "status" | "approvedById" | "approvedAt" | "rejectedReason" | "suggestedCategory" | "receiptUrl" | "invoiceUrl" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["expenseRequest"]>
+export type ExpenseRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "grantId" | "categoryId" | "requestedById" | "vendorId" | "requestId" | "description" | "amount" | "frequency" | "expenseType" | "vendorName" | "vendorEmail" | "vendorPhone" | "vendorWebsite" | "riskClassification" | "riskNotes" | "policyViolations" | "status" | "approvedById" | "approvedAt" | "rejectedReason" | "suggestedCategory" | "receiptUrl" | "invoiceUrl" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["expenseRequest"]>
 export type ExpenseRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   grant?: boolean | Prisma.GrantDefaultArgs<ExtArgs>
   category?: boolean | Prisma.BudgetCategoryDefaultArgs<ExtArgs>
@@ -2642,6 +2711,7 @@ export type $ExpenseRequestPayload<ExtArgs extends runtime.Types.Extensions.Inte
     categoryId: string
     requestedById: string
     vendorId: string | null
+    requestId: string | null
     description: string
     amount: runtime.Decimal
     frequency: $Enums.ExpenseFrequency
@@ -3099,6 +3169,7 @@ export interface ExpenseRequestFieldRefs {
   readonly categoryId: Prisma.FieldRef<"ExpenseRequest", 'String'>
   readonly requestedById: Prisma.FieldRef<"ExpenseRequest", 'String'>
   readonly vendorId: Prisma.FieldRef<"ExpenseRequest", 'String'>
+  readonly requestId: Prisma.FieldRef<"ExpenseRequest", 'String'>
   readonly description: Prisma.FieldRef<"ExpenseRequest", 'String'>
   readonly amount: Prisma.FieldRef<"ExpenseRequest", 'Decimal'>
   readonly frequency: Prisma.FieldRef<"ExpenseRequest", 'ExpenseFrequency'>
