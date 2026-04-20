@@ -14,6 +14,7 @@ import {
   CIRCUIT_OPEN_COOLDOWN_MS,
 } from "@/lib/stripe-circuit";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
+import { stripeIdempotencyKey } from "@/lib/stripe-idempotency";
 import { checkLimitAccess, buildLimitReachedResponse, getCurrentPeriod } from "@/lib/feature-gates";
 import { incrementUsage } from "@/lib/usage-tracker";
 import { screenAgainstOFAC, OFACScreeningError } from "@/lib/ofac-screening";
@@ -500,7 +501,7 @@ export async function POST(
             },
           }, {
             ...stripeOpts,
-            idempotencyKey: `cardholder-${expense.requestedById}-${issuing.mode}-${organizationId}`,
+            idempotencyKey: stripeIdempotencyKey("cardholder", expense.requestedById, issuing.mode, organizationId),
           }),
         );
         cardholder = cardholderResult;
@@ -543,7 +544,7 @@ export async function POST(
           },
         }, {
           ...stripeOpts,
-          idempotencyKey: `card-exp-${expense.id}-${issuing.mode}`,
+          idempotencyKey: stripeIdempotencyKey("card-expense", expense.id, issuing.mode),
         }),
       );
     } catch (stripeError) {

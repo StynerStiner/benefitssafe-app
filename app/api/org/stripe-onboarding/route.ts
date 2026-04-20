@@ -15,6 +15,7 @@ import {
   CIRCUIT_OPEN_COOLDOWN_MS,
 } from "@/lib/stripe-circuit";
 import { errorResponse } from "@/lib/error-response";
+import { stripeIdempotencyKey } from "@/lib/stripe-idempotency";
 
 const ROUTE_POST = "api/org/stripe-onboarding:POST";
 const ROUTE_GET = "api/org/stripe-onboarding:GET";
@@ -142,7 +143,7 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
                 service_agreement: "full",
               },
             },
-            { idempotencyKey: `onboarding-acct-full-${organization.id}` },
+            { idempotencyKey: stripeIdempotencyKey("onboard-acct", "full", organization.id) },
           ),
         );
       } catch (createError: unknown) {
@@ -175,7 +176,7 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
                   service_agreement: "full",
                 },
               },
-              { idempotencyKey: `onboarding-acct-transfers-${organization.id}` },
+              { idempotencyKey: stripeIdempotencyKey("onboard-acct", "transfers", organization.id) },
             ),
           );
         } else {
@@ -211,7 +212,7 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
             },
             {
               stripeAccount: account.id,
-              idempotencyKey: `onboarding-fa-${organization.id}`,
+              idempotencyKey: stripeIdempotencyKey("onboard-treasury", organization.id),
             },
           ),
         );
@@ -251,7 +252,7 @@ export async function POST(request: Request): Promise<NextResponse<OnboardingRes
           // If user closes onboarding without completing, redirect to retry
           failure_url: `${process.env.NEXTAUTH_URL || "http://localhost:3002"}/org-settings?stripe_connect_success=false`,
         },
-        { idempotencyKey: `onboarding-link-${accountId}-${linkBucket}` },
+        { idempotencyKey: stripeIdempotencyKey("onboard-link", accountId, String(linkBucket)) },
       ),
     );
 

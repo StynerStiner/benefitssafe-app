@@ -14,6 +14,7 @@ import {
 } from "@/lib/stripe-circuit";
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
+import { stripeIdempotencyKey } from "@/lib/stripe-idempotency";
 import { z } from "zod";
 
 const ROUTE_GET = "api/org/fund:GET";
@@ -396,8 +397,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     // Deterministic Stripe idempotency key tied to the client-supplied
-    // requestId. Survives any retry window.
-    const idempotencyKey = `ibt-${user.organizationId}-${requestId}`;
+    // requestId. Survives any retry window. (Ch12 F7 — unified helper.)
+    const idempotencyKey = stripeIdempotencyKey("ibt", user.organizationId, requestId);
 
     try {
       const transfer = await stripeCircuit.run(

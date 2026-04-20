@@ -10,6 +10,7 @@ import {
 } from "@/lib/stripe-circuit";
 import { errorResponse } from "@/lib/error-response";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
+import { stripeIdempotencyKey } from "@/lib/stripe-idempotency";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
@@ -257,7 +258,7 @@ export async function POST(request: Request) {
               product_category: "non_profit",
             },
           },
-          { idempotencyKey: `signup-acct-${email.toLowerCase().trim()}` },
+          { idempotencyKey: stripeIdempotencyKey("signup-acct", email.toLowerCase().trim()) },
         ),
       );
       stripeAccountId = stripeAccount.id;

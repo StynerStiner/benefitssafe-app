@@ -14,6 +14,7 @@ import {
 import { assertDbHealthy, DbUnavailableError } from "@/lib/db-health";
 import { errorResponse } from "@/lib/error-response";
 import { rateLimit, RATE_LIMIT_CONFIGS } from "@/lib/rate-limit";
+import { stripeIdempotencyKey } from "@/lib/stripe-idempotency";
 import { checkLimitAccess, buildLimitReachedResponse, getCurrentPeriod } from "@/lib/feature-gates";
 import { incrementUsage } from "@/lib/usage-tracker";
 import { screenAgainstOFAC, OFACScreeningError } from "@/lib/ofac-screening";
@@ -437,7 +438,7 @@ export async function POST(
             },
           }, {
             ...stripeOpts,
-            idempotencyKey: `cardholder-${beneficiaryId}-${issuing.mode}-${organizationId}`,
+            idempotencyKey: stripeIdempotencyKey("cardholder", beneficiaryId, issuing.mode, organizationId),
           }),
         );
         cardholder = cardholderResult;
@@ -483,7 +484,7 @@ export async function POST(
           },
         }, {
           ...stripeOpts,
-          idempotencyKey: `card-grant-${grantId}-${beneficiaryId}-${issuing.mode}`,
+          idempotencyKey: stripeIdempotencyKey("card-grant", grantId, beneficiaryId, issuing.mode),
         }),
       );
     } catch (stripeError) {

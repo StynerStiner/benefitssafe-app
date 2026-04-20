@@ -13,6 +13,7 @@ import {
   CIRCUIT_OPEN_COOLDOWN_MS,
 } from "@/lib/stripe-circuit";
 import { errorResponse } from "@/lib/error-response";
+import { stripeIdempotencyKey } from "@/lib/stripe-idempotency";
 import { TIER_CONFIG, PricingTier, coerceTier } from "@/lib/pricing";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
             name: org?.name || undefined,
             metadata: { organizationId, platform: "benefitssafe" },
           },
-          { idempotencyKey: `billing-customer-${organizationId}` },
+          { idempotencyKey: stripeIdempotencyKey("billing-customer", organizationId) },
         ),
       );
       customerId = customer.id;
@@ -132,7 +133,7 @@ export async function POST(request: Request) {
           allow_promotion_codes: true,
           billing_address_collection: "required",
         },
-        { idempotencyKey: `checkout-${organizationId}-${tierEnum}-${sessionBucket}` },
+        { idempotencyKey: stripeIdempotencyKey("checkout", organizationId, tierEnum, String(sessionBucket)) },
       ),
     );
 

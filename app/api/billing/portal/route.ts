@@ -14,6 +14,7 @@ import {
   CIRCUIT_OPEN_COOLDOWN_MS,
 } from "@/lib/stripe-circuit";
 import { errorResponse } from "@/lib/error-response";
+import { stripeIdempotencyKey } from "@/lib/stripe-idempotency";
 import { NextResponse } from "next/server";
 
 const ROUTE = "api/billing/portal:POST";
@@ -59,7 +60,7 @@ export async function POST() {
           customer: sub.stripeCustomerId,
           return_url: `${baseUrl}/settings/billing`,
         },
-        { idempotencyKey: `billing-portal-${organizationId}-${portalBucket}` },
+        { idempotencyKey: stripeIdempotencyKey("billing-portal", organizationId, String(portalBucket)) },
       ),
     );
 
