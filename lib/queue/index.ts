@@ -75,7 +75,12 @@ export async function enqueueJob(
     });
   } catch (err) {
     console.error(`[queue] QStash publish failed for ${path}:`, err);
-    // Fallback to sync on QStash failure
+    // Fallback to sync on QStash failure. Release It! Ch 5 R7 —
+    // 5s AbortSignal.timeout matches Postmark's budget. Without this, a
+    // slow sync fallback (endpoint unresponsive, TCP blackhole) can hold
+    // a money-path Lambda for its full 60s maxDuration, defeating the
+    // "async by default" Decoupling Middleware posture. Timeout-driven
+    // AbortError propagates to the existing catch block below.
     try {
       await fetch(endpoint, {
         method: "POST",
@@ -84,6 +89,7 @@ export async function enqueueJob(
           "x-internal-key": process.env.INTERNAL_API_KEY || "",
         },
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(5000),
       });
     } catch (fallbackErr) {
       console.error(`[queue] sync fallback also failed for ${path}:`, fallbackErr);
