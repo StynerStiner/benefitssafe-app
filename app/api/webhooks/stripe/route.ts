@@ -122,7 +122,7 @@ export async function POST(request: Request) {
       // issuing_transaction.created is handled by /api/webhooks/stripe-charges
       // to avoid duplicate Transaction records. Do NOT process here.
       case "account.updated": {
-        return handleAccountUpdated(event.data.object);
+        return handleAccountUpdated(event.data.object, new Date(event.created * 1000));
       }
       case "issuing_dispute.created": {
         return handleDisputeCreated(event.data.object, new Date(event.created * 1000));
@@ -673,7 +673,20 @@ async function handleTransactionCreated(transaction: Record<string, unknown>) {
 }
 
 // Handle Stripe Connect account updates (bank verification, onboarding complete, etc.)
-async function handleAccountUpdated(account: Record<string, unknown>) {
+//
+// DDIA Ch9 Consistency & Consensus — event-time ordering guard.
+//
+// Stripe delivers `account.updated` webhooks at-least-once and does not
+// guarantee retry ordering. Without a guard, a stale retry of an older
+// event could re-stamp bankConnectedAt with now() after a newer event
+// already landed (visible to the operator as the bank-connected banner
+// flickering back and forth). Every UPDATE now runs through an
+// updateMany WHERE clause keyed on Organization.lastStripeAccountEventAt
+// so a stale retry becomes a logged no-op. The AuditLog row is written
+// for EVERY event — outer ProcessedWebhookEvent already owns event-id
+// dedup. Mirrors BillingSubscription.lastBillingEventAt in stripe-billing
+// and Transaction.lastDisputeEventAt in handleDisputeUpdated.
+async function handleAccountUpdated(account: Record<string, unknown>, eventAt: Date) {
   const accountId = account.id as string;
   const chargesEnabled = account.charges_enabled as boolean;
   const payoutsEnabled = account.payouts_enabled as boolean;
@@ -692,17 +705,46 @@ async function handleAccountUpdated(account: Record<string, unknown>) {
       return NextResponse.json({ received: true });
     }
 
-    // Update org with latest Stripe Connect status
-    if (chargesEnabled && payoutsEnabled && detailsSubmitted) {
-      await prisma.organization.update({
-        where: { id: org.id },
-        data: { bankConnectedAt: new Date() },
-      }).catch((err) => {
-        console.error("Failed to update bankConnectedAt:", err);
-      });
+    // Event-time ordering guard. Only advance lastStripeAccountEventAt
+    // (and, when onboarding just completed, bankConnectedAt) if this
+    // event is strictly newer than the one already recorded. Stale
+    // retries become no-ops. bankConnectedAt is stamped with server
+    // clock (it records "when BenefitsSafe observed completion"); the
+    // ordering check itself uses Stripe's event.created.
+    const onboardingComplete =
+      chargesEnabled && payoutsEnabled && detailsSubmitted;
+    const result = await prisma.organization.updateMany({
+      where: {
+        id: org.id,
+        OR: [
+          { lastStripeAccountEventAt: null },
+          { lastStripeAccountEventAt: { lt: eventAt } },
+        ],
+      },
+      data: {
+        lastStripeAccountEventAt: eventAt,
+        ...(onboardingComplete ? { bankConnectedAt: new Date() } : {}),
+      },
+    });
+    if (result.count === 0) {
+      console.warn(
+        "[stripe-issuing] account.updated arrived out-of-order, skipping org update",
+        {
+          orgId: org.id,
+          accountId,
+          eventAt: eventAt.toISOString(),
+          chargesEnabled,
+          payoutsEnabled,
+          detailsSubmitted,
+        },
+      );
+      // Fall through and still write the AuditLog so the attempted
+      // transition is visible — operators can see we received a late
+      // retry even though we didn't act on it.
     }
 
-    // Audit log
+    // Audit log — written for EVERY event (outer ProcessedWebhookEvent
+    // dedups on event.id; stale-retry no-op is logged above).
     await prisma.auditLog.create({
       data: {
         userId: "system",
@@ -715,6 +757,8 @@ async function handleAccountUpdated(account: Record<string, unknown>) {
           chargesEnabled,
           payoutsEnabled,
           detailsSubmitted,
+          eventAt: eventAt.toISOString(),
+          applied: result.count > 0,
         })),
       },
     });

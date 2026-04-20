@@ -35,6 +35,19 @@ model Organization {
   plaidItemId                 String? // Plaid connection
   logoUrl                     String? // Organization logo image URL
 
+  // Stripe Connect `account.updated` event-ordering guard. Stripe retries
+  // account webhooks at-least-once and does not guarantee order: a late
+  // retry of a pre-onboarding `account.updated` can arrive AFTER a newer
+  // post-onboarding event, silently re-stamping bankConnectedAt with
+  // now() or overwriting flags with stale values. Every handler writes
+  // `event.created` (Stripe's own clock, not our server's) into this
+  // column and guards its UPDATE with
+  // `WHERE lastStripeAccountEventAt IS NULL OR lastStripeAccountEventAt < :eventAt`
+  // so a stale retry becomes a logged no-op. Mirrors
+  // BillingSubscription.lastBillingEventAt and
+  // Transaction.lastDisputeEventAt. DDIA Ch9 Consistency & Consensus.
+  lastStripeAccountEventAt DateTime?
+
   // Trial & Subscription
   trialStartDate     DateTime?
   trialEndDate       DateTime?

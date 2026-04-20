@@ -40,6 +40,7 @@ export type OrganizationMinAggregateOutputType = {
   bankConnectedAt: Date | null
   plaidItemId: string | null
   logoUrl: string | null
+  lastStripeAccountEventAt: Date | null
   trialStartDate: Date | null
   trialEndDate: Date | null
   subscriptionStatus: string | null
@@ -63,6 +64,7 @@ export type OrganizationMaxAggregateOutputType = {
   bankConnectedAt: Date | null
   plaidItemId: string | null
   logoUrl: string | null
+  lastStripeAccountEventAt: Date | null
   trialStartDate: Date | null
   trialEndDate: Date | null
   subscriptionStatus: string | null
@@ -86,6 +88,7 @@ export type OrganizationCountAggregateOutputType = {
   bankConnectedAt: number
   plaidItemId: number
   logoUrl: number
+  lastStripeAccountEventAt: number
   trialStartDate: number
   trialEndDate: number
   subscriptionStatus: number
@@ -111,6 +114,7 @@ export type OrganizationMinAggregateInputType = {
   bankConnectedAt?: true
   plaidItemId?: true
   logoUrl?: true
+  lastStripeAccountEventAt?: true
   trialStartDate?: true
   trialEndDate?: true
   subscriptionStatus?: true
@@ -134,6 +138,7 @@ export type OrganizationMaxAggregateInputType = {
   bankConnectedAt?: true
   plaidItemId?: true
   logoUrl?: true
+  lastStripeAccountEventAt?: true
   trialStartDate?: true
   trialEndDate?: true
   subscriptionStatus?: true
@@ -157,6 +162,7 @@ export type OrganizationCountAggregateInputType = {
   bankConnectedAt?: true
   plaidItemId?: true
   logoUrl?: true
+  lastStripeAccountEventAt?: true
   trialStartDate?: true
   trialEndDate?: true
   subscriptionStatus?: true
@@ -253,6 +259,7 @@ export type OrganizationGroupByOutputType = {
   bankConnectedAt: Date | null
   plaidItemId: string | null
   logoUrl: string | null
+  lastStripeAccountEventAt: Date | null
   trialStartDate: Date | null
   trialEndDate: Date | null
   subscriptionStatus: string
@@ -297,6 +304,7 @@ export type OrganizationWhereInput = {
   bankConnectedAt?: Prisma.DateTimeNullableFilter<"Organization"> | Date | string | null
   plaidItemId?: Prisma.StringNullableFilter<"Organization"> | string | null
   logoUrl?: Prisma.StringNullableFilter<"Organization"> | string | null
+  lastStripeAccountEventAt?: Prisma.DateTimeNullableFilter<"Organization"> | Date | string | null
   trialStartDate?: Prisma.DateTimeNullableFilter<"Organization"> | Date | string | null
   trialEndDate?: Prisma.DateTimeNullableFilter<"Organization"> | Date | string | null
   subscriptionStatus?: Prisma.StringFilter<"Organization"> | string
@@ -338,6 +346,7 @@ export type OrganizationOrderByWithRelationInput = {
   bankConnectedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   plaidItemId?: Prisma.SortOrderInput | Prisma.SortOrder
   logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastStripeAccountEventAt?: Prisma.SortOrderInput | Prisma.SortOrder
   trialStartDate?: Prisma.SortOrderInput | Prisma.SortOrder
   trialEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
   subscriptionStatus?: Prisma.SortOrder
@@ -382,6 +391,7 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   bankConnectedAt?: Prisma.DateTimeNullableFilter<"Organization"> | Date | string | null
   plaidItemId?: Prisma.StringNullableFilter<"Organization"> | string | null
   logoUrl?: Prisma.StringNullableFilter<"Organization"> | string | null
+  lastStripeAccountEventAt?: Prisma.DateTimeNullableFilter<"Organization"> | Date | string | null
   trialStartDate?: Prisma.DateTimeNullableFilter<"Organization"> | Date | string | null
   trialEndDate?: Prisma.DateTimeNullableFilter<"Organization"> | Date | string | null
   subscriptionStatus?: Prisma.StringFilter<"Organization"> | string
@@ -423,6 +433,7 @@ export type OrganizationOrderByWithAggregationInput = {
   bankConnectedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   plaidItemId?: Prisma.SortOrderInput | Prisma.SortOrder
   logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastStripeAccountEventAt?: Prisma.SortOrderInput | Prisma.SortOrder
   trialStartDate?: Prisma.SortOrderInput | Prisma.SortOrder
   trialEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
   subscriptionStatus?: Prisma.SortOrder
@@ -452,6 +463,7 @@ export type OrganizationScalarWhereWithAggregatesInput = {
   bankConnectedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Organization"> | Date | string | null
   plaidItemId?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   logoUrl?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
+  lastStripeAccountEventAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Organization"> | Date | string | null
   trialStartDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Organization"> | Date | string | null
   trialEndDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Organization"> | Date | string | null
   subscriptionStatus?: Prisma.StringWithAggregatesFilter<"Organization"> | string
@@ -475,6 +487,7 @@ export type OrganizationCreateInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -516,6 +529,7 @@ export type OrganizationUncheckedCreateInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -557,6 +571,7 @@ export type OrganizationUpdateInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -598,6 +613,7 @@ export type OrganizationUncheckedUpdateInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -639,6 +655,7 @@ export type OrganizationCreateManyInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -662,6 +679,7 @@ export type OrganizationUpdateManyMutationInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -685,6 +703,7 @@ export type OrganizationUncheckedUpdateManyInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -708,6 +727,7 @@ export type OrganizationCountOrderByAggregateInput = {
   bankConnectedAt?: Prisma.SortOrder
   plaidItemId?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
+  lastStripeAccountEventAt?: Prisma.SortOrder
   trialStartDate?: Prisma.SortOrder
   trialEndDate?: Prisma.SortOrder
   subscriptionStatus?: Prisma.SortOrder
@@ -731,6 +751,7 @@ export type OrganizationMaxOrderByAggregateInput = {
   bankConnectedAt?: Prisma.SortOrder
   plaidItemId?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
+  lastStripeAccountEventAt?: Prisma.SortOrder
   trialStartDate?: Prisma.SortOrder
   trialEndDate?: Prisma.SortOrder
   subscriptionStatus?: Prisma.SortOrder
@@ -754,6 +775,7 @@ export type OrganizationMinOrderByAggregateInput = {
   bankConnectedAt?: Prisma.SortOrder
   plaidItemId?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
+  lastStripeAccountEventAt?: Prisma.SortOrder
   trialStartDate?: Prisma.SortOrder
   trialEndDate?: Prisma.SortOrder
   subscriptionStatus?: Prisma.SortOrder
@@ -1054,6 +1076,7 @@ export type OrganizationCreateWithoutUsersInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -1094,6 +1117,7 @@ export type OrganizationUncheckedCreateWithoutUsersInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -1150,6 +1174,7 @@ export type OrganizationUpdateWithoutUsersInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1190,6 +1215,7 @@ export type OrganizationUncheckedUpdateWithoutUsersInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1230,6 +1256,7 @@ export type OrganizationCreateWithoutGrantsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -1270,6 +1297,7 @@ export type OrganizationUncheckedCreateWithoutGrantsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -1326,6 +1354,7 @@ export type OrganizationUpdateWithoutGrantsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1366,6 +1395,7 @@ export type OrganizationUncheckedUpdateWithoutGrantsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1406,6 +1436,7 @@ export type OrganizationCreateWithoutBudgetCategoriesInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -1446,6 +1477,7 @@ export type OrganizationUncheckedCreateWithoutBudgetCategoriesInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -1502,6 +1534,7 @@ export type OrganizationUpdateWithoutBudgetCategoriesInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1542,6 +1575,7 @@ export type OrganizationUncheckedUpdateWithoutBudgetCategoriesInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1582,6 +1616,7 @@ export type OrganizationCreateWithoutVendorsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -1622,6 +1657,7 @@ export type OrganizationUncheckedCreateWithoutVendorsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -1678,6 +1714,7 @@ export type OrganizationUpdateWithoutVendorsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1718,6 +1755,7 @@ export type OrganizationUncheckedUpdateWithoutVendorsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1758,6 +1796,7 @@ export type OrganizationCreateWithoutSubscriptionsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -1798,6 +1837,7 @@ export type OrganizationUncheckedCreateWithoutSubscriptionsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -1854,6 +1894,7 @@ export type OrganizationUpdateWithoutSubscriptionsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1894,6 +1935,7 @@ export type OrganizationUncheckedUpdateWithoutSubscriptionsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1934,6 +1976,7 @@ export type OrganizationCreateWithoutCardsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -1974,6 +2017,7 @@ export type OrganizationUncheckedCreateWithoutCardsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -2030,6 +2074,7 @@ export type OrganizationUpdateWithoutCardsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2070,6 +2115,7 @@ export type OrganizationUncheckedUpdateWithoutCardsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2110,6 +2156,7 @@ export type OrganizationCreateWithoutCardholderEligibilitiesInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -2150,6 +2197,7 @@ export type OrganizationUncheckedCreateWithoutCardholderEligibilitiesInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -2206,6 +2254,7 @@ export type OrganizationUpdateWithoutCardholderEligibilitiesInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2246,6 +2295,7 @@ export type OrganizationUncheckedUpdateWithoutCardholderEligibilitiesInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2286,6 +2336,7 @@ export type OrganizationCreateWithoutApprovalsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -2326,6 +2377,7 @@ export type OrganizationUncheckedCreateWithoutApprovalsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -2382,6 +2434,7 @@ export type OrganizationUpdateWithoutApprovalsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2422,6 +2475,7 @@ export type OrganizationUncheckedUpdateWithoutApprovalsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2462,6 +2516,7 @@ export type OrganizationCreateWithoutPoliciesInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -2502,6 +2557,7 @@ export type OrganizationUncheckedCreateWithoutPoliciesInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -2558,6 +2614,7 @@ export type OrganizationUpdateWithoutPoliciesInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2598,6 +2655,7 @@ export type OrganizationUncheckedUpdateWithoutPoliciesInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2638,6 +2696,7 @@ export type OrganizationCreateWithoutPromoRedemptionsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -2678,6 +2737,7 @@ export type OrganizationUncheckedCreateWithoutPromoRedemptionsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -2734,6 +2794,7 @@ export type OrganizationUpdateWithoutPromoRedemptionsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2774,6 +2835,7 @@ export type OrganizationUncheckedUpdateWithoutPromoRedemptionsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2814,6 +2876,7 @@ export type OrganizationCreateWithoutCalendarEventsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -2854,6 +2917,7 @@ export type OrganizationUncheckedCreateWithoutCalendarEventsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -2910,6 +2974,7 @@ export type OrganizationUpdateWithoutCalendarEventsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2950,6 +3015,7 @@ export type OrganizationUncheckedUpdateWithoutCalendarEventsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2990,6 +3056,7 @@ export type OrganizationCreateWithoutMembershipsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -3030,6 +3097,7 @@ export type OrganizationUncheckedCreateWithoutMembershipsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -3086,6 +3154,7 @@ export type OrganizationUpdateWithoutMembershipsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3126,6 +3195,7 @@ export type OrganizationUncheckedUpdateWithoutMembershipsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3166,6 +3236,7 @@ export type OrganizationCreateWithoutIntegrationsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -3206,6 +3277,7 @@ export type OrganizationUncheckedCreateWithoutIntegrationsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -3262,6 +3334,7 @@ export type OrganizationUpdateWithoutIntegrationsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3302,6 +3375,7 @@ export type OrganizationUncheckedUpdateWithoutIntegrationsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3342,6 +3416,7 @@ export type OrganizationCreateWithoutWorkflowTriggersInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -3382,6 +3457,7 @@ export type OrganizationUncheckedCreateWithoutWorkflowTriggersInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -3438,6 +3514,7 @@ export type OrganizationUpdateWithoutWorkflowTriggersInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3478,6 +3555,7 @@ export type OrganizationUncheckedUpdateWithoutWorkflowTriggersInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3518,6 +3596,7 @@ export type OrganizationCreateWithoutWorkflowLogsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -3558,6 +3637,7 @@ export type OrganizationUncheckedCreateWithoutWorkflowLogsInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -3614,6 +3694,7 @@ export type OrganizationUpdateWithoutWorkflowLogsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3654,6 +3735,7 @@ export type OrganizationUncheckedUpdateWithoutWorkflowLogsInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3694,6 +3776,7 @@ export type OrganizationCreateWithoutBillingSubscriptionInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -3734,6 +3817,7 @@ export type OrganizationUncheckedCreateWithoutBillingSubscriptionInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -3790,6 +3874,7 @@ export type OrganizationUpdateWithoutBillingSubscriptionInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3830,6 +3915,7 @@ export type OrganizationUncheckedUpdateWithoutBillingSubscriptionInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3870,6 +3956,7 @@ export type OrganizationCreateWithoutUsageCountersInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -3910,6 +3997,7 @@ export type OrganizationUncheckedCreateWithoutUsageCountersInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -3966,6 +4054,7 @@ export type OrganizationUpdateWithoutUsageCountersInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4006,6 +4095,7 @@ export type OrganizationUncheckedUpdateWithoutUsageCountersInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4046,6 +4136,7 @@ export type OrganizationCreateWithoutFundTransfersInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -4086,6 +4177,7 @@ export type OrganizationUncheckedCreateWithoutFundTransfersInput = {
   bankConnectedAt?: Date | string | null
   plaidItemId?: string | null
   logoUrl?: string | null
+  lastStripeAccountEventAt?: Date | string | null
   trialStartDate?: Date | string | null
   trialEndDate?: Date | string | null
   subscriptionStatus?: string
@@ -4142,6 +4234,7 @@ export type OrganizationUpdateWithoutFundTransfersInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4182,6 +4275,7 @@ export type OrganizationUncheckedUpdateWithoutFundTransfersInput = {
   bankConnectedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   plaidItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStripeAccountEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4397,6 +4491,7 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   bankConnectedAt?: boolean
   plaidItemId?: boolean
   logoUrl?: boolean
+  lastStripeAccountEventAt?: boolean
   trialStartDate?: boolean
   trialEndDate?: boolean
   subscriptionStatus?: boolean
@@ -4439,6 +4534,7 @@ export type OrganizationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   bankConnectedAt?: boolean
   plaidItemId?: boolean
   logoUrl?: boolean
+  lastStripeAccountEventAt?: boolean
   trialStartDate?: boolean
   trialEndDate?: boolean
   subscriptionStatus?: boolean
@@ -4462,6 +4558,7 @@ export type OrganizationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   bankConnectedAt?: boolean
   plaidItemId?: boolean
   logoUrl?: boolean
+  lastStripeAccountEventAt?: boolean
   trialStartDate?: boolean
   trialEndDate?: boolean
   subscriptionStatus?: boolean
@@ -4485,6 +4582,7 @@ export type OrganizationSelectScalar = {
   bankConnectedAt?: boolean
   plaidItemId?: boolean
   logoUrl?: boolean
+  lastStripeAccountEventAt?: boolean
   trialStartDate?: boolean
   trialEndDate?: boolean
   subscriptionStatus?: boolean
@@ -4492,7 +4590,7 @@ export type OrganizationSelectScalar = {
   updatedAt?: boolean
 }
 
-export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "ein" | "orgCode" | "isPlatformOrg" | "einVerified" | "address" | "phone" | "website" | "stripeAccountId" | "stripeFinancialAccountId" | "stripeOriginPaymentMethodId" | "bankConnectedAt" | "plaidItemId" | "logoUrl" | "trialStartDate" | "trialEndDate" | "subscriptionStatus" | "createdAt" | "updatedAt", ExtArgs["result"]["organization"]>
+export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "ein" | "orgCode" | "isPlatformOrg" | "einVerified" | "address" | "phone" | "website" | "stripeAccountId" | "stripeFinancialAccountId" | "stripeOriginPaymentMethodId" | "bankConnectedAt" | "plaidItemId" | "logoUrl" | "lastStripeAccountEventAt" | "trialStartDate" | "trialEndDate" | "subscriptionStatus" | "createdAt" | "updatedAt", ExtArgs["result"]["organization"]>
 export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   users?: boolean | Prisma.Organization$usersArgs<ExtArgs>
   grants?: boolean | Prisma.Organization$grantsArgs<ExtArgs>
@@ -4555,6 +4653,7 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     bankConnectedAt: Date | null
     plaidItemId: string | null
     logoUrl: string | null
+    lastStripeAccountEventAt: Date | null
     trialStartDate: Date | null
     trialEndDate: Date | null
     subscriptionStatus: string
@@ -5016,6 +5115,7 @@ export interface OrganizationFieldRefs {
   readonly bankConnectedAt: Prisma.FieldRef<"Organization", 'DateTime'>
   readonly plaidItemId: Prisma.FieldRef<"Organization", 'String'>
   readonly logoUrl: Prisma.FieldRef<"Organization", 'String'>
+  readonly lastStripeAccountEventAt: Prisma.FieldRef<"Organization", 'DateTime'>
   readonly trialStartDate: Prisma.FieldRef<"Organization", 'DateTime'>
   readonly trialEndDate: Prisma.FieldRef<"Organization", 'DateTime'>
   readonly subscriptionStatus: Prisma.FieldRef<"Organization", 'String'>
