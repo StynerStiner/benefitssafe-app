@@ -3212,6 +3212,7 @@ export const LedgerEntryScalarFieldEnum = {
   balanceAfter: 'balanceAfter',
   description: 'description',
   reference: 'reference',
+  seq: 'seq',
   createdAt: 'createdAt'
 } as const
 
@@ -3863,6 +3864,20 @@ export type EnumLedgerTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$Prism
  * Reference to a field of type 'LedgerType[]'
  */
 export type ListEnumLedgerTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LedgerType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BigInt'
+ */
+export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
+    
+
+
+/**
+ * Reference to a field of type 'BigInt[]'
+ */
+export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
     
 
 

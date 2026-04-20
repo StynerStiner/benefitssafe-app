@@ -3,6 +3,19 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { orgScopingExtension } from "./prisma-org-scoping";
 
+// BigInt JSON serialization polyfill. NextResponse.json() → JSON.stringify
+// throws TypeError on BigInt unless toJSON is defined. LedgerEntry.seq
+// (DDIA Ch9 P2, BIGSERIAL) flows into API responses; serialize as string
+// so values exceeding Number.MAX_SAFE_INTEGER stay intact on the wire.
+// Single global install at Prisma init time.
+if (typeof (BigInt.prototype as unknown as { toJSON?: () => string }).toJSON !== "function") {
+  (BigInt.prototype as unknown as { toJSON: () => string }).toJSON = function (
+    this: bigint,
+  ) {
+    return this.toString();
+  };
+}
+
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };

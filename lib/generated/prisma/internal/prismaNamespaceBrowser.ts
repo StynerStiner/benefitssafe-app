@@ -397,6 +397,7 @@ export const LedgerEntryScalarFieldEnum = {
   balanceAfter: 'balanceAfter',
   description: 'description',
   reference: 'reference',
+  seq: 'seq',
   createdAt: 'createdAt'
 } as const
 

@@ -508,7 +508,9 @@ async function fetchLedgerEntries(
       createdAt: true,
       grantId: true,
     },
-    orderBy: { createdAt: "asc" },
+    // DDIA Ch9 P2 — order by the BIGSERIAL `seq` so the export rows are in
+    // strict insertion order even when two ledger entries share the same ms.
+    orderBy: { seq: "asc" },
     take: 10000,
   });
   return rows.map((r) => ({

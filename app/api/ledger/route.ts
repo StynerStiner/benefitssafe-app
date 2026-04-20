@@ -30,7 +30,9 @@ export async function GET(request: Request) {
     const [ledgerEntries, ledgerTotal, transactions, transactionTotal] = await Promise.all([
       prisma.ledgerEntry.findMany({
         where: ledgerWhere,
-        orderBy: { createdAt: "desc" },
+        // DDIA Ch9 P2 — order by the BIGSERIAL `seq` (deterministic under
+        // concurrent same-ms inserts) rather than `createdAt`.
+        orderBy: { seq: "desc" },
         take: limit,
         skip: offset,
       }),

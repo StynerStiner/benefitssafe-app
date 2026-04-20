@@ -29,11 +29,13 @@ export type AggregateLedgerEntry = {
 export type LedgerEntryAvgAggregateOutputType = {
   amount: runtime.Decimal | null
   balanceAfter: runtime.Decimal | null
+  seq: number | null
 }
 
 export type LedgerEntrySumAggregateOutputType = {
   amount: runtime.Decimal | null
   balanceAfter: runtime.Decimal | null
+  seq: bigint | null
 }
 
 export type LedgerEntryMinAggregateOutputType = {
@@ -47,6 +49,7 @@ export type LedgerEntryMinAggregateOutputType = {
   balanceAfter: runtime.Decimal | null
   description: string | null
   reference: string | null
+  seq: bigint | null
   createdAt: Date | null
 }
 
@@ -61,6 +64,7 @@ export type LedgerEntryMaxAggregateOutputType = {
   balanceAfter: runtime.Decimal | null
   description: string | null
   reference: string | null
+  seq: bigint | null
   createdAt: Date | null
 }
 
@@ -75,6 +79,7 @@ export type LedgerEntryCountAggregateOutputType = {
   balanceAfter: number
   description: number
   reference: number
+  seq: number
   createdAt: number
   _all: number
 }
@@ -83,11 +88,13 @@ export type LedgerEntryCountAggregateOutputType = {
 export type LedgerEntryAvgAggregateInputType = {
   amount?: true
   balanceAfter?: true
+  seq?: true
 }
 
 export type LedgerEntrySumAggregateInputType = {
   amount?: true
   balanceAfter?: true
+  seq?: true
 }
 
 export type LedgerEntryMinAggregateInputType = {
@@ -101,6 +108,7 @@ export type LedgerEntryMinAggregateInputType = {
   balanceAfter?: true
   description?: true
   reference?: true
+  seq?: true
   createdAt?: true
 }
 
@@ -115,6 +123,7 @@ export type LedgerEntryMaxAggregateInputType = {
   balanceAfter?: true
   description?: true
   reference?: true
+  seq?: true
   createdAt?: true
 }
 
@@ -129,6 +138,7 @@ export type LedgerEntryCountAggregateInputType = {
   balanceAfter?: true
   description?: true
   reference?: true
+  seq?: true
   createdAt?: true
   _all?: true
 }
@@ -230,6 +240,7 @@ export type LedgerEntryGroupByOutputType = {
   balanceAfter: runtime.Decimal
   description: string
   reference: string | null
+  seq: bigint
   createdAt: Date
   _count: LedgerEntryCountAggregateOutputType | null
   _avg: LedgerEntryAvgAggregateOutputType | null
@@ -267,6 +278,7 @@ export type LedgerEntryWhereInput = {
   balanceAfter?: Prisma.DecimalFilter<"LedgerEntry"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringFilter<"LedgerEntry"> | string
   reference?: Prisma.StringNullableFilter<"LedgerEntry"> | string | null
+  seq?: Prisma.BigIntFilter<"LedgerEntry"> | bigint | number
   createdAt?: Prisma.DateTimeFilter<"LedgerEntry"> | Date | string
   expense?: Prisma.XOR<Prisma.ExpenseRequestNullableScalarRelationFilter, Prisma.ExpenseRequestWhereInput> | null
 }
@@ -282,6 +294,7 @@ export type LedgerEntryOrderByWithRelationInput = {
   balanceAfter?: Prisma.SortOrder
   description?: Prisma.SortOrder
   reference?: Prisma.SortOrderInput | Prisma.SortOrder
+  seq?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   expense?: Prisma.ExpenseRequestOrderByWithRelationInput
 }
@@ -300,6 +313,7 @@ export type LedgerEntryWhereUniqueInput = Prisma.AtLeast<{
   balanceAfter?: Prisma.DecimalFilter<"LedgerEntry"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringFilter<"LedgerEntry"> | string
   reference?: Prisma.StringNullableFilter<"LedgerEntry"> | string | null
+  seq?: Prisma.BigIntFilter<"LedgerEntry"> | bigint | number
   createdAt?: Prisma.DateTimeFilter<"LedgerEntry"> | Date | string
   expense?: Prisma.XOR<Prisma.ExpenseRequestNullableScalarRelationFilter, Prisma.ExpenseRequestWhereInput> | null
 }, "id">
@@ -315,6 +329,7 @@ export type LedgerEntryOrderByWithAggregationInput = {
   balanceAfter?: Prisma.SortOrder
   description?: Prisma.SortOrder
   reference?: Prisma.SortOrderInput | Prisma.SortOrder
+  seq?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.LedgerEntryCountOrderByAggregateInput
   _avg?: Prisma.LedgerEntryAvgOrderByAggregateInput
@@ -337,6 +352,7 @@ export type LedgerEntryScalarWhereWithAggregatesInput = {
   balanceAfter?: Prisma.DecimalWithAggregatesFilter<"LedgerEntry"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringWithAggregatesFilter<"LedgerEntry"> | string
   reference?: Prisma.StringNullableWithAggregatesFilter<"LedgerEntry"> | string | null
+  seq?: Prisma.BigIntWithAggregatesFilter<"LedgerEntry"> | bigint | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"LedgerEntry"> | Date | string
 }
 
@@ -350,6 +366,7 @@ export type LedgerEntryCreateInput = {
   balanceAfter: runtime.Decimal | runtime.DecimalJsLike | number | string
   description: string
   reference?: string | null
+  seq?: bigint | number
   createdAt?: Date | string
   expense?: Prisma.ExpenseRequestCreateNestedOneWithoutLedgerEntriesInput
 }
@@ -365,6 +382,7 @@ export type LedgerEntryUncheckedCreateInput = {
   balanceAfter: runtime.Decimal | runtime.DecimalJsLike | number | string
   description: string
   reference?: string | null
+  seq?: bigint | number
   createdAt?: Date | string
 }
 
@@ -378,6 +396,7 @@ export type LedgerEntryUpdateInput = {
   balanceAfter?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seq?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expense?: Prisma.ExpenseRequestUpdateOneWithoutLedgerEntriesNestedInput
 }
@@ -393,6 +412,7 @@ export type LedgerEntryUncheckedUpdateInput = {
   balanceAfter?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seq?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -407,6 +427,7 @@ export type LedgerEntryCreateManyInput = {
   balanceAfter: runtime.Decimal | runtime.DecimalJsLike | number | string
   description: string
   reference?: string | null
+  seq?: bigint | number
   createdAt?: Date | string
 }
 
@@ -420,6 +441,7 @@ export type LedgerEntryUpdateManyMutationInput = {
   balanceAfter?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seq?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -434,6 +456,7 @@ export type LedgerEntryUncheckedUpdateManyInput = {
   balanceAfter?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seq?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -458,12 +481,14 @@ export type LedgerEntryCountOrderByAggregateInput = {
   balanceAfter?: Prisma.SortOrder
   description?: Prisma.SortOrder
   reference?: Prisma.SortOrder
+  seq?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type LedgerEntryAvgOrderByAggregateInput = {
   amount?: Prisma.SortOrder
   balanceAfter?: Prisma.SortOrder
+  seq?: Prisma.SortOrder
 }
 
 export type LedgerEntryMaxOrderByAggregateInput = {
@@ -477,6 +502,7 @@ export type LedgerEntryMaxOrderByAggregateInput = {
   balanceAfter?: Prisma.SortOrder
   description?: Prisma.SortOrder
   reference?: Prisma.SortOrder
+  seq?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -491,12 +517,14 @@ export type LedgerEntryMinOrderByAggregateInput = {
   balanceAfter?: Prisma.SortOrder
   description?: Prisma.SortOrder
   reference?: Prisma.SortOrder
+  seq?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type LedgerEntrySumOrderByAggregateInput = {
   amount?: Prisma.SortOrder
   balanceAfter?: Prisma.SortOrder
+  seq?: Prisma.SortOrder
 }
 
 export type LedgerEntryCreateNestedManyWithoutExpenseInput = {
@@ -545,6 +573,14 @@ export type EnumLedgerTypeFieldUpdateOperationsInput = {
   set?: $Enums.LedgerType
 }
 
+export type BigIntFieldUpdateOperationsInput = {
+  set?: bigint | number
+  increment?: bigint | number
+  decrement?: bigint | number
+  multiply?: bigint | number
+  divide?: bigint | number
+}
+
 export type LedgerEntryCreateWithoutExpenseInput = {
   id?: string
   organizationId: string
@@ -555,6 +591,7 @@ export type LedgerEntryCreateWithoutExpenseInput = {
   balanceAfter: runtime.Decimal | runtime.DecimalJsLike | number | string
   description: string
   reference?: string | null
+  seq?: bigint | number
   createdAt?: Date | string
 }
 
@@ -568,6 +605,7 @@ export type LedgerEntryUncheckedCreateWithoutExpenseInput = {
   balanceAfter: runtime.Decimal | runtime.DecimalJsLike | number | string
   description: string
   reference?: string | null
+  seq?: bigint | number
   createdAt?: Date | string
 }
 
@@ -611,6 +649,7 @@ export type LedgerEntryScalarWhereInput = {
   balanceAfter?: Prisma.DecimalFilter<"LedgerEntry"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringFilter<"LedgerEntry"> | string
   reference?: Prisma.StringNullableFilter<"LedgerEntry"> | string | null
+  seq?: Prisma.BigIntFilter<"LedgerEntry"> | bigint | number
   createdAt?: Prisma.DateTimeFilter<"LedgerEntry"> | Date | string
 }
 
@@ -624,6 +663,7 @@ export type LedgerEntryCreateManyExpenseInput = {
   balanceAfter: runtime.Decimal | runtime.DecimalJsLike | number | string
   description: string
   reference?: string | null
+  seq?: bigint | number
   createdAt?: Date | string
 }
 
@@ -637,6 +677,7 @@ export type LedgerEntryUpdateWithoutExpenseInput = {
   balanceAfter?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seq?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -650,6 +691,7 @@ export type LedgerEntryUncheckedUpdateWithoutExpenseInput = {
   balanceAfter?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seq?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -663,6 +705,7 @@ export type LedgerEntryUncheckedUpdateManyWithoutExpenseInput = {
   balanceAfter?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seq?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -679,6 +722,7 @@ export type LedgerEntrySelect<ExtArgs extends runtime.Types.Extensions.InternalA
   balanceAfter?: boolean
   description?: boolean
   reference?: boolean
+  seq?: boolean
   createdAt?: boolean
   expense?: boolean | Prisma.LedgerEntry$expenseArgs<ExtArgs>
 }, ExtArgs["result"]["ledgerEntry"]>
@@ -694,6 +738,7 @@ export type LedgerEntrySelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   balanceAfter?: boolean
   description?: boolean
   reference?: boolean
+  seq?: boolean
   createdAt?: boolean
   expense?: boolean | Prisma.LedgerEntry$expenseArgs<ExtArgs>
 }, ExtArgs["result"]["ledgerEntry"]>
@@ -709,6 +754,7 @@ export type LedgerEntrySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   balanceAfter?: boolean
   description?: boolean
   reference?: boolean
+  seq?: boolean
   createdAt?: boolean
   expense?: boolean | Prisma.LedgerEntry$expenseArgs<ExtArgs>
 }, ExtArgs["result"]["ledgerEntry"]>
@@ -724,10 +770,11 @@ export type LedgerEntrySelectScalar = {
   balanceAfter?: boolean
   description?: boolean
   reference?: boolean
+  seq?: boolean
   createdAt?: boolean
 }
 
-export type LedgerEntryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "grantId" | "categoryId" | "expenseId" | "type" | "amount" | "balanceAfter" | "description" | "reference" | "createdAt", ExtArgs["result"]["ledgerEntry"]>
+export type LedgerEntryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "grantId" | "categoryId" | "expenseId" | "type" | "amount" | "balanceAfter" | "description" | "reference" | "seq" | "createdAt", ExtArgs["result"]["ledgerEntry"]>
 export type LedgerEntryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   expense?: boolean | Prisma.LedgerEntry$expenseArgs<ExtArgs>
 }
@@ -754,6 +801,7 @@ export type $LedgerEntryPayload<ExtArgs extends runtime.Types.Extensions.Interna
     balanceAfter: runtime.Decimal
     description: string
     reference: string | null
+    seq: bigint
     createdAt: Date
   }, ExtArgs["result"]["ledgerEntry"]>
   composites: {}
@@ -1189,6 +1237,7 @@ export interface LedgerEntryFieldRefs {
   readonly balanceAfter: Prisma.FieldRef<"LedgerEntry", 'Decimal'>
   readonly description: Prisma.FieldRef<"LedgerEntry", 'String'>
   readonly reference: Prisma.FieldRef<"LedgerEntry", 'String'>
+  readonly seq: Prisma.FieldRef<"LedgerEntry", 'BigInt'>
   readonly createdAt: Prisma.FieldRef<"LedgerEntry", 'DateTime'>
 }
     

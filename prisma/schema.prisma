@@ -602,10 +602,20 @@ model LedgerEntry {
   description  String
   reference    String? // Transaction ID, invoice number, etc.
 
+  // DB-generated monotonic sequence. `createdAt` has millisecond precision,
+  // which is not fine-grained enough when two expense-approval
+  // `$transaction`s commit in the same tick: concurrent inserts can produce
+  // identical `createdAt` values, making ORDER BY createdAt non-deterministic
+  // for same-ms entries. `seq` is a Postgres BIGSERIAL — strictly monotonic,
+  // gap-free, immune to clock drift and concurrency. Use `seq` for ordering;
+  // keep `createdAt` for human-readable display. DDIA Ch9 P2.
+  seq BigInt @default(autoincrement())
+
   createdAt DateTime @default(now())
   // IMMUTABLE — no updatedAt. Ledger entries are NEVER modified.
 
   @@index([organizationId, createdAt]) // Ledger time-series queries per org
+  @@index([organizationId, seq]) // Deterministic per-org ordered scans (audit, reconciliation)
   @@index([expenseId]) // Join back from ExpenseRequest.ledgerEntries
   @@index([grantId, createdAt]) // Monthly reconciliation queries at scale
 }

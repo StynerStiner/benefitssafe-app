@@ -165,7 +165,9 @@ async function buildVendorPaymentsResponse(opts: {
         },
       },
     },
-    orderBy: { createdAt: "desc" },
+    // DDIA Ch9 P2 — deterministic chronological order under concurrent
+    // same-ms inserts. `seq` is BIGSERIAL, monotonic and gap-free.
+    orderBy: { seq: "desc" },
     take: limit,
   });
 
