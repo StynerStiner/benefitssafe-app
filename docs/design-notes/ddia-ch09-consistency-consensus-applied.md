@@ -155,7 +155,7 @@ Not used. We don't need cross-service causal clocks because:
 
 DDIA §9.3: total order broadcast is equivalent to linearizable compare-and-swap, which is equivalent to consensus.
 
-For BenefitsSafe, Aurora's writer provides total order broadcast "for free" — every commit is a broadcast event in the storage replication layer. We don't run a separate broadcast system (Kafka, Pulsar) at the application layer. If BSRS Ch 11 ever happens (stream processing), this changes — but that's a multi-chapter-future PDR.
+For BenefitsSafe, Aurora's writer provides total order broadcast "for free" — every commit is a broadcast event in the storage replication layer. We don't run a separate broadcast system (Kafka, Pulsar) at the application layer. See [`ddia-ch11-stream-processing-applied.md`](./ddia-ch11-stream-processing-applied.md) §2 for the broader discussion of how BenefitsSafe already applies stream-processing discipline without a separate broker; a future PDR that introduces Kafka-style partitioned logs would change this section's invariants.
 
 ---
 
