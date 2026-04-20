@@ -125,10 +125,10 @@ export async function POST(request: Request) {
         return handleAccountUpdated(event.data.object);
       }
       case "issuing_dispute.created": {
-        return handleDisputeCreated(event.data.object);
+        return handleDisputeCreated(event.data.object, new Date(event.created * 1000));
       }
       case "issuing_dispute.updated": {
-        return handleDisputeUpdated(event.data.object);
+        return handleDisputeUpdated(event.data.object, new Date(event.created * 1000));
       }
       case "issuing_dispute.submitted": {
         return handleDisputeSubmitted(event.data.object);
@@ -726,11 +726,12 @@ async function handleAccountUpdated(account: Record<string, unknown>) {
 }
 
 // Handle dispute creation (chargeback, fraud claim, etc.)
-async function handleDisputeCreated(dispute: Record<string, unknown>) {
+async function handleDisputeCreated(dispute: Record<string, unknown>, eventAt: Date) {
   const stripeTransactionId = (dispute.transaction as Record<string, unknown>)?.id as string;
   const amount = dispute.amount as number; // in cents
   const reason = dispute.reason as string;
   const disputeId = dispute.id as string;
+  const disputeStatus = dispute.status as string | undefined;
 
   if (!stripeTransactionId) {
     return NextResponse.json({ received: true });
@@ -772,14 +773,31 @@ async function handleDisputeCreated(dispute: Record<string, unknown>) {
     }
 
     await prisma.$transaction(async (tx) => {
-      // Update transaction status
-      await tx.transaction.update({
-        where: { id: transaction.id },
+      // DDIA Ch9 — event-time ordering guard on Transaction. A stale
+      // `issuing_dispute.created` retry arriving after a newer `.updated`
+      // must not overwrite the newer dispute state. Same shape as
+      // BillingSubscription.lastBillingEventAt in stripe-billing.
+      const result = await tx.transaction.updateMany({
+        where: {
+          id: transaction.id,
+          OR: [
+            { lastDisputeEventAt: null },
+            { lastDisputeEventAt: { lt: eventAt } },
+          ],
+        },
         data: {
           status: "disputed",
           declinedReason: reason,
+          disputeStatus: disputeStatus ?? "needs_response",
+          lastDisputeEventAt: eventAt,
         },
       });
+      if (result.count === 0) {
+        console.warn(
+          "[stripe-issuing] dispute.created arrived out-of-order, skipping transaction update",
+          { transactionId: transaction.id, disputeId, eventAt: eventAt.toISOString() },
+        );
+      }
 
       // Create audit log
       await tx.auditLog.create({
@@ -835,36 +853,95 @@ async function handleDisputeCreated(dispute: Record<string, unknown>) {
 }
 
 // Handle dispute status updates
-async function handleDisputeUpdated(dispute: Record<string, unknown>) {
+//
+// DDIA Ch9 Consistency & Consensus — event-time ordering guard.
+//
+// Previous behavior: deduped on (disputeId, action="dispute_updated") via
+// AuditLog.findFirst + early return. That silently dropped EVERY status
+// transition after the first one landed. A dispute walking
+// warning_needs_response → warning_under_review → warning_closed never
+// advanced past the first recorded state, and Transaction.status set to
+// "disputed" by handleDisputeCreated never reached its terminal
+// dispute_won / dispute_lost state.
+//
+// Current behavior: event-id dedup is owned by the outer
+// ProcessedWebhookEvent guard (markWebhookProcessed). This handler trusts
+// that it will only be called once per event.id, and guards stale retries
+// of OLDER events via Transaction.lastDisputeEventAt (Stripe's event.created
+// high-water mark). An AuditLog row is written for EVERY event so operators
+// see the full transition history. Mirrors the stripe-billing pattern
+// exactly (BillingSubscription.lastBillingEventAt + updateMany WHERE).
+async function handleDisputeUpdated(dispute: Record<string, unknown>, eventAt: Date) {
   const disputeId = dispute.id as string;
   const status = dispute.status as string;
   const stripeTransactionId = (dispute.transaction as Record<string, unknown>)?.id as string;
 
+  // Terminal dispute states — on arrival, Transaction.status advances off
+  // "disputed" to its final outcome. warning_closed is a card-network
+  // early-warning inquiry closing without a formal dispute being filed;
+  // per the Ch9 fix spec it resolves as dispute_lost alongside "lost"
+  // (falls to the else branch of the ternary below).
+  const TERMINAL_STATUSES = new Set(["won", "lost", "warning_closed"]);
+  const isTerminal = TERMINAL_STATUSES.has(status);
+
   try {
-    // Check idempotency
-    const existingUpdate = await prisma.auditLog.findFirst({
-      where: {
-        entityId: disputeId,
-        action: "dispute_updated",
-      },
-      select: { id: true },
-    });
-
-    if (existingUpdate) {
-      return NextResponse.json({ received: true });
-    }
-
-    // Look up organization from the transaction
+    // Look up the transaction in our system
     let organizationId = "unknown";
+    let transactionId: string | null = null;
     if (stripeTransactionId) {
-      const tx = await prisma.transaction.findUnique({
+      const existing = await prisma.transaction.findUnique({
         where: { stripeTransactionId },
-        select: { organizationId: true },
+        select: { id: true, organizationId: true },
       });
-      if (tx) organizationId = tx.organizationId;
+      if (existing) {
+        organizationId = existing.organizationId;
+        transactionId = existing.id;
+      }
     }
 
-    // Create audit log for dispute update
+    // Event-time ordering guard. Only advance disputeStatus (and, on
+    // terminal events, Transaction.status) if this event is strictly
+    // newer than the one already recorded. Stale retries become no-ops.
+    if (transactionId) {
+      const result = await prisma.transaction.updateMany({
+        where: {
+          id: transactionId,
+          OR: [
+            { lastDisputeEventAt: null },
+            { lastDisputeEventAt: { lt: eventAt } },
+          ],
+        },
+        data: {
+          disputeStatus: status,
+          lastDisputeEventAt: eventAt,
+          ...(isTerminal
+            ? { status: status === "won" ? "dispute_won" : "dispute_lost" }
+            : {}),
+        },
+      });
+      if (result.count === 0) {
+        console.warn(
+          "[stripe-issuing] dispute.updated arrived out-of-order, skipping transaction update",
+          {
+            transactionId,
+            disputeId,
+            incomingStatus: status,
+            eventAt: eventAt.toISOString(),
+          },
+        );
+        // Fall through and still write the AuditLog so the transition is
+        // visible in the immutable history — operators can see we received
+        // a late retry even though we didn't act on it.
+      }
+    } else {
+      console.warn(
+        `[stripe-issuing] dispute.updated for unknown transaction: ${stripeTransactionId}`,
+      );
+    }
+
+    // Write an AuditLog for EVERY event — the outer ProcessedWebhookEvent
+    // guard already dedups on event.id, so this is safe; the previous
+    // one-shot guard on (disputeId, action) was the actual bug.
     await prisma.auditLog.create({
       data: {
         userId: "system_webhook",
@@ -874,6 +951,8 @@ async function handleDisputeUpdated(dispute: Record<string, unknown>) {
         entityId: disputeId,
         newValue: {
           status,
+          isTerminal,
+          eventAt: eventAt.toISOString(),
           updatedAt: new Date().toISOString(),
         },
       },

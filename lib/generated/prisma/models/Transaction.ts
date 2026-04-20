@@ -46,6 +46,8 @@ export type TransactionMinAggregateOutputType = {
   declinedReason: string | null
   grantId: string | null
   expenseId: string | null
+  lastDisputeEventAt: Date | null
+  disputeStatus: string | null
   createdAt: Date | null
 }
 
@@ -61,6 +63,8 @@ export type TransactionMaxAggregateOutputType = {
   declinedReason: string | null
   grantId: string | null
   expenseId: string | null
+  lastDisputeEventAt: Date | null
+  disputeStatus: string | null
   createdAt: Date | null
 }
 
@@ -76,6 +80,8 @@ export type TransactionCountAggregateOutputType = {
   declinedReason: number
   grantId: number
   expenseId: number
+  lastDisputeEventAt: number
+  disputeStatus: number
   createdAt: number
   _all: number
 }
@@ -101,6 +107,8 @@ export type TransactionMinAggregateInputType = {
   declinedReason?: true
   grantId?: true
   expenseId?: true
+  lastDisputeEventAt?: true
+  disputeStatus?: true
   createdAt?: true
 }
 
@@ -116,6 +124,8 @@ export type TransactionMaxAggregateInputType = {
   declinedReason?: true
   grantId?: true
   expenseId?: true
+  lastDisputeEventAt?: true
+  disputeStatus?: true
   createdAt?: true
 }
 
@@ -131,6 +141,8 @@ export type TransactionCountAggregateInputType = {
   declinedReason?: true
   grantId?: true
   expenseId?: true
+  lastDisputeEventAt?: true
+  disputeStatus?: true
   createdAt?: true
   _all?: true
 }
@@ -233,6 +245,8 @@ export type TransactionGroupByOutputType = {
   declinedReason: string | null
   grantId: string | null
   expenseId: string | null
+  lastDisputeEventAt: Date | null
+  disputeStatus: string | null
   createdAt: Date
   _count: TransactionCountAggregateOutputType | null
   _avg: TransactionAvgAggregateOutputType | null
@@ -271,6 +285,8 @@ export type TransactionWhereInput = {
   declinedReason?: Prisma.StringNullableFilter<"Transaction"> | string | null
   grantId?: Prisma.StringNullableFilter<"Transaction"> | string | null
   expenseId?: Prisma.StringNullableFilter<"Transaction"> | string | null
+  lastDisputeEventAt?: Prisma.DateTimeNullableFilter<"Transaction"> | Date | string | null
+  disputeStatus?: Prisma.StringNullableFilter<"Transaction"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Transaction"> | Date | string
   card?: Prisma.XOR<Prisma.VirtualCardScalarRelationFilter, Prisma.VirtualCardWhereInput>
 }
@@ -287,6 +303,8 @@ export type TransactionOrderByWithRelationInput = {
   declinedReason?: Prisma.SortOrderInput | Prisma.SortOrder
   grantId?: Prisma.SortOrderInput | Prisma.SortOrder
   expenseId?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastDisputeEventAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  disputeStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   card?: Prisma.VirtualCardOrderByWithRelationInput
 }
@@ -306,6 +324,8 @@ export type TransactionWhereUniqueInput = Prisma.AtLeast<{
   declinedReason?: Prisma.StringNullableFilter<"Transaction"> | string | null
   grantId?: Prisma.StringNullableFilter<"Transaction"> | string | null
   expenseId?: Prisma.StringNullableFilter<"Transaction"> | string | null
+  lastDisputeEventAt?: Prisma.DateTimeNullableFilter<"Transaction"> | Date | string | null
+  disputeStatus?: Prisma.StringNullableFilter<"Transaction"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Transaction"> | Date | string
   card?: Prisma.XOR<Prisma.VirtualCardScalarRelationFilter, Prisma.VirtualCardWhereInput>
 }, "id" | "stripeTransactionId">
@@ -322,6 +342,8 @@ export type TransactionOrderByWithAggregationInput = {
   declinedReason?: Prisma.SortOrderInput | Prisma.SortOrder
   grantId?: Prisma.SortOrderInput | Prisma.SortOrder
   expenseId?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastDisputeEventAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  disputeStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.TransactionCountOrderByAggregateInput
   _avg?: Prisma.TransactionAvgOrderByAggregateInput
@@ -345,6 +367,8 @@ export type TransactionScalarWhereWithAggregatesInput = {
   declinedReason?: Prisma.StringNullableWithAggregatesFilter<"Transaction"> | string | null
   grantId?: Prisma.StringNullableWithAggregatesFilter<"Transaction"> | string | null
   expenseId?: Prisma.StringNullableWithAggregatesFilter<"Transaction"> | string | null
+  lastDisputeEventAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Transaction"> | Date | string | null
+  disputeStatus?: Prisma.StringNullableWithAggregatesFilter<"Transaction"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Transaction"> | Date | string
 }
 
@@ -359,6 +383,8 @@ export type TransactionCreateInput = {
   declinedReason?: string | null
   grantId?: string | null
   expenseId?: string | null
+  lastDisputeEventAt?: Date | string | null
+  disputeStatus?: string | null
   createdAt?: Date | string
   card: Prisma.VirtualCardCreateNestedOneWithoutTransactionsInput
 }
@@ -375,6 +401,8 @@ export type TransactionUncheckedCreateInput = {
   declinedReason?: string | null
   grantId?: string | null
   expenseId?: string | null
+  lastDisputeEventAt?: Date | string | null
+  disputeStatus?: string | null
   createdAt?: Date | string
 }
 
@@ -389,6 +417,8 @@ export type TransactionUpdateInput = {
   declinedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastDisputeEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disputeStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   card?: Prisma.VirtualCardUpdateOneRequiredWithoutTransactionsNestedInput
 }
@@ -405,6 +435,8 @@ export type TransactionUncheckedUpdateInput = {
   declinedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastDisputeEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disputeStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -420,6 +452,8 @@ export type TransactionCreateManyInput = {
   declinedReason?: string | null
   grantId?: string | null
   expenseId?: string | null
+  lastDisputeEventAt?: Date | string | null
+  disputeStatus?: string | null
   createdAt?: Date | string
 }
 
@@ -434,6 +468,8 @@ export type TransactionUpdateManyMutationInput = {
   declinedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastDisputeEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disputeStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -449,6 +485,8 @@ export type TransactionUncheckedUpdateManyInput = {
   declinedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastDisputeEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disputeStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -474,6 +512,8 @@ export type TransactionCountOrderByAggregateInput = {
   declinedReason?: Prisma.SortOrder
   grantId?: Prisma.SortOrder
   expenseId?: Prisma.SortOrder
+  lastDisputeEventAt?: Prisma.SortOrder
+  disputeStatus?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -493,6 +533,8 @@ export type TransactionMaxOrderByAggregateInput = {
   declinedReason?: Prisma.SortOrder
   grantId?: Prisma.SortOrder
   expenseId?: Prisma.SortOrder
+  lastDisputeEventAt?: Prisma.SortOrder
+  disputeStatus?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -508,6 +550,8 @@ export type TransactionMinOrderByAggregateInput = {
   declinedReason?: Prisma.SortOrder
   grantId?: Prisma.SortOrder
   expenseId?: Prisma.SortOrder
+  lastDisputeEventAt?: Prisma.SortOrder
+  disputeStatus?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -568,6 +612,8 @@ export type TransactionCreateWithoutCardInput = {
   declinedReason?: string | null
   grantId?: string | null
   expenseId?: string | null
+  lastDisputeEventAt?: Date | string | null
+  disputeStatus?: string | null
   createdAt?: Date | string
 }
 
@@ -582,6 +628,8 @@ export type TransactionUncheckedCreateWithoutCardInput = {
   declinedReason?: string | null
   grantId?: string | null
   expenseId?: string | null
+  lastDisputeEventAt?: Date | string | null
+  disputeStatus?: string | null
   createdAt?: Date | string
 }
 
@@ -626,6 +674,8 @@ export type TransactionScalarWhereInput = {
   declinedReason?: Prisma.StringNullableFilter<"Transaction"> | string | null
   grantId?: Prisma.StringNullableFilter<"Transaction"> | string | null
   expenseId?: Prisma.StringNullableFilter<"Transaction"> | string | null
+  lastDisputeEventAt?: Prisma.DateTimeNullableFilter<"Transaction"> | Date | string | null
+  disputeStatus?: Prisma.StringNullableFilter<"Transaction"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Transaction"> | Date | string
 }
 
@@ -640,6 +690,8 @@ export type TransactionCreateManyCardInput = {
   declinedReason?: string | null
   grantId?: string | null
   expenseId?: string | null
+  lastDisputeEventAt?: Date | string | null
+  disputeStatus?: string | null
   createdAt?: Date | string
 }
 
@@ -654,6 +706,8 @@ export type TransactionUpdateWithoutCardInput = {
   declinedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastDisputeEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disputeStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -668,6 +722,8 @@ export type TransactionUncheckedUpdateWithoutCardInput = {
   declinedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastDisputeEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disputeStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -682,6 +738,8 @@ export type TransactionUncheckedUpdateManyWithoutCardInput = {
   declinedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expenseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastDisputeEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disputeStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -699,6 +757,8 @@ export type TransactionSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   declinedReason?: boolean
   grantId?: boolean
   expenseId?: boolean
+  lastDisputeEventAt?: boolean
+  disputeStatus?: boolean
   createdAt?: boolean
   card?: boolean | Prisma.VirtualCardDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["transaction"]>
@@ -715,6 +775,8 @@ export type TransactionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   declinedReason?: boolean
   grantId?: boolean
   expenseId?: boolean
+  lastDisputeEventAt?: boolean
+  disputeStatus?: boolean
   createdAt?: boolean
   card?: boolean | Prisma.VirtualCardDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["transaction"]>
@@ -731,6 +793,8 @@ export type TransactionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   declinedReason?: boolean
   grantId?: boolean
   expenseId?: boolean
+  lastDisputeEventAt?: boolean
+  disputeStatus?: boolean
   createdAt?: boolean
   card?: boolean | Prisma.VirtualCardDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["transaction"]>
@@ -747,10 +811,12 @@ export type TransactionSelectScalar = {
   declinedReason?: boolean
   grantId?: boolean
   expenseId?: boolean
+  lastDisputeEventAt?: boolean
+  disputeStatus?: boolean
   createdAt?: boolean
 }
 
-export type TransactionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "cardId" | "stripeTransactionId" | "amount" | "merchantName" | "merchantCategory" | "status" | "declinedReason" | "grantId" | "expenseId" | "createdAt", ExtArgs["result"]["transaction"]>
+export type TransactionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "cardId" | "stripeTransactionId" | "amount" | "merchantName" | "merchantCategory" | "status" | "declinedReason" | "grantId" | "expenseId" | "lastDisputeEventAt" | "disputeStatus" | "createdAt", ExtArgs["result"]["transaction"]>
 export type TransactionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   card?: boolean | Prisma.VirtualCardDefaultArgs<ExtArgs>
 }
@@ -778,6 +844,8 @@ export type $TransactionPayload<ExtArgs extends runtime.Types.Extensions.Interna
     declinedReason: string | null
     grantId: string | null
     expenseId: string | null
+    lastDisputeEventAt: Date | null
+    disputeStatus: string | null
     createdAt: Date
   }, ExtArgs["result"]["transaction"]>
   composites: {}
@@ -1214,6 +1282,8 @@ export interface TransactionFieldRefs {
   readonly declinedReason: Prisma.FieldRef<"Transaction", 'String'>
   readonly grantId: Prisma.FieldRef<"Transaction", 'String'>
   readonly expenseId: Prisma.FieldRef<"Transaction", 'String'>
+  readonly lastDisputeEventAt: Prisma.FieldRef<"Transaction", 'DateTime'>
+  readonly disputeStatus: Prisma.FieldRef<"Transaction", 'String'>
   readonly createdAt: Prisma.FieldRef<"Transaction", 'DateTime'>
 }
     

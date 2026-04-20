@@ -547,10 +547,23 @@ model Transaction {
   amount           Decimal @db.Decimal(10, 2)
   merchantName     String
   merchantCategory String?
-  status           String // "pending", "completed", "declined"
+  status           String // "pending", "completed", "declined", "disputed", "dispute_won", "dispute_lost"
   declinedReason   String?
   grantId          String? // For ledger tracking
   expenseId        String? // For expense tracking
+
+  // Stripe dispute-event ordering guard. Stripe delivers issuing_dispute.*
+  // webhooks at-least-once and does not guarantee order across retries: a
+  // late `warning_needs_response` retry can arrive AFTER `warning_closed`,
+  // or a stale `needs_response` after `won`/`lost`, and without an ordering
+  // check the older handler would overwrite the newer state. Every dispute
+  // handler writes `event.created` (Stripe's own clock, not our server's)
+  // into this column and guards its UPDATE with
+  // `WHERE lastDisputeEventAt IS NULL OR lastDisputeEventAt < :eventAt` so a
+  // stale retry becomes a logged no-op. Mirrors
+  // BillingSubscription.lastBillingEventAt. DDIA Ch9 Consistency & Consensus.
+  lastDisputeEventAt DateTime?
+  disputeStatus      String? // needs_response, under_review, won, lost, warning_needs_response, warning_under_review, warning_closed
 
   createdAt DateTime @default(now())
 

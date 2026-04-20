@@ -377,6 +377,8 @@ export const TransactionScalarFieldEnum = {
   declinedReason: 'declinedReason',
   grantId: 'grantId',
   expenseId: 'expenseId',
+  lastDisputeEventAt: 'lastDisputeEventAt',
+  disputeStatus: 'disputeStatus',
   createdAt: 'createdAt'
 } as const
 
