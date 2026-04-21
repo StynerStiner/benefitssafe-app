@@ -40,7 +40,7 @@ When your organization signs up and uses BenefitsSafe, we collect:
 - Employer Identification Number (EIN)
 - 501(c)(3) determination status
 - Primary contact information for the account owner and authorized staff
-- Bank account information (via Plaid — we do not store full account or routing numbers ourselves)
+- Bank-account information collected via Stripe Connect for ACH and payout setup; we do not store full account or routing numbers ourselves
 - Stripe Connect account ID and associated business-verification data (collected directly by Stripe)
 - Grant program details, funder names, and restriction rules you configure
 
@@ -133,16 +133,21 @@ We share data only with the subprocessors below, only for the purpose described,
 
 | Subprocessor | Purpose | Data Types | Location | Their Policy |
 |--------------|---------|------------|----------|--------------|
-| Stripe, Inc. (incl. Stripe Issuing, Stripe Connect, Stripe Treasury) | Payment processing, card issuance, cardholder KYC, subscription billing | Beneficiary identity data, card transactions, Nonprofit billing | United States | [stripe.com/privacy](https://stripe.com/privacy) · [stripe.com/legal](https://stripe.com/legal) |
-| Plaid, Inc. | Nonprofit bank-account verification and ACH setup | Bank account details (tokenized) | United States | [plaid.com/legal](https://plaid.com/legal) |
+| Stripe, Inc. (incl. Stripe Issuing, Stripe Connect, Stripe Treasury, Stripe Billing) | Payment processing, card issuance, cardholder KYC, subscription billing, Nonprofit ACH onboarding | Beneficiary identity data, card transactions, Nonprofit bank and billing data | United States | [stripe.com/privacy](https://stripe.com/privacy) · [stripe.com/legal](https://stripe.com/legal) |
 | Amazon Web Services, Inc. | Application hosting, database (Aurora PostgreSQL), S3 document storage, AWS KMS key management | All platform data (encrypted at rest) | US-West (Oregon) primary; US-East (Virginia) backup | [aws.amazon.com/privacy](https://aws.amazon.com/privacy) |
+| Vercel, Inc. | Application hosting and edge delivery for app.benefitssafe.com and benefitssafe.com | HTTP request metadata, deployment logs, encrypted environment variables | United States | [vercel.com/legal/privacy-policy](https://vercel.com/legal/privacy-policy) |
+| Cloudflare, Inc. | DNS and CDN/proxy for app.benefitssafe.com; Cloudflare Workers for scheduled cron jobs | HTTP request metadata (IP, user-agent, URL path) | United States (global edge) | [cloudflare.com/privacypolicy](https://www.cloudflare.com/privacypolicy/) |
 | Postmark (ActiveCampaign) | Transactional email delivery (receipts, alerts, invites) | Email address, user name, message content | United States | [postmarkapp.com/privacy-policy](https://postmarkapp.com/privacy-policy) |
 | Sentry (Functional Software, Inc.) | Error and performance monitoring | Pseudonymized error traces, user ID, URL path | United States | [sentry.io/privacy](https://sentry.io/privacy) |
-| Upstash, Inc. | Rate limiting and ephemeral caching (Redis) | Pseudonymized request keys, counters | United States | [upstash.com/trust/privacy.pdf](https://upstash.com/trust/privacy.pdf) |
+| Upstash, Inc. | Rate limiting, ephemeral caching (Redis), background job queue (QStash) | Pseudonymized request keys, counters, queued job payloads | United States | [upstash.com/trust/privacy.pdf](https://upstash.com/trust/privacy.pdf) |
 | Better Stack (Logtail) | Centralized application log storage | Application logs with redacted PII | United States / EU | [betterstack.com/privacy](https://betterstack.com/privacy) |
 | Anthropic, PBC | Compliance Assistant AI (Claude) — answers compliance questions; does not receive Beneficiary SSN or full account numbers | Question text, compliance context (no SSN, no card numbers, no bank credentials) | United States | [anthropic.com/legal/privacy](https://anthropic.com/legal/privacy) |
-| OFAC screening provider | Sanctions-list screening at account creation and periodically thereafter | Beneficiary name and DOB | United States | Provider's privacy terms disclosed in our DPA. |
+| Composio, Inc. | Workflow automation (org-level integrations for authorized Nonprofit workflows) | Workflow-trigger metadata and payloads the Nonprofit elects to send | United States | [composio.dev/privacy](https://composio.dev/privacy) |
+| Google LLC (Google OAuth) | Optional Google sign-in for Nonprofit staff | Email, name, profile image, Google account ID (only when user chooses Google login) | United States | [policies.google.com/privacy](https://policies.google.com/privacy) |
+| Microsoft Corporation (Microsoft Entra ID) | Optional Microsoft sign-in for Nonprofit staff | Email, name, Microsoft account ID (only when user chooses Microsoft login) | United States | [privacy.microsoft.com](https://privacy.microsoft.com/privacystatement) |
 | Cards issued by **Sutton Bank** and **Evolve Bank & Trust**, Members FDIC | Card-issuance banks for Stripe Issuing | Cardholder identity data (via Stripe) | United States | Governed by Stripe Issuing terms. |
+
+OFAC sanctions screening is performed by calling the US Department of the Treasury's public SDN search API directly; the Treasury is not a commercial subprocessor and no Personal Data leaves our application in a form that could be re-identified (we send first name + last name for the screen).
 
 **Official sanctions reference:** [ofac.treasury.gov](https://ofac.treasury.gov)
 
@@ -204,7 +209,7 @@ To submit a CCPA request, email **privacy@benefitssafe.com** with the subject li
 | Professional/employment info | Limited (nonprofit staff role, title) | Directly from you | Platform role assignment | Internal only |
 | **Sensitive PI: SSN (last 4 or full for KYC)** | Yes | Directly from Nonprofit | Card issuance KYC | Stripe only |
 | **Sensitive PI: Account log-in credentials** | Yes (hashed passwords, session tokens) | Automatically | Authentication | AWS (storage) |
-| **Sensitive PI: Financial account information** | Yes (tokenized via Plaid) | Directly from Nonprofit | ACH setup | Plaid, Stripe |
+| **Sensitive PI: Financial account information** | Yes (tokenized) | Directly from Nonprofit via Stripe Connect | ACH and payout setup | Stripe |
 | **Sensitive PI: Health/benefit enrollment (Medi-Cal, SSI, etc.)** | Yes | Directly from Nonprofit | Benefits-compliance engine | Internal only |
 | Inferences | No | — | — | — |
 

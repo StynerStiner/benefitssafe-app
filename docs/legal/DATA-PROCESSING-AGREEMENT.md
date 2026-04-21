@@ -216,10 +216,10 @@ A notification of a Security Incident does not constitute an admission of fault 
 
 BenefitsSafe will make available to Customer, on reasonable written request:
 
-- Current SOC 2 Type 2 report (when available) or, in the interim, a letter describing BenefitsSafe's security program aligned with the NIST Cybersecurity Framework.
-- Penetration-test executive summaries from the past 12 months.
+- Current SOC 2 Type 2 report (when available) or, in the interim, a letter describing BenefitsSafe's security program aligned with the NIST Cybersecurity Framework. SOC 2 Type 2 audit is planned for completion in Q3 2026.
+- Penetration-test executive summaries, once available. BenefitsSafe's first third-party penetration test is scheduled for post-launch (target: Q3 2026); in the interim, BenefitsSafe shares the results of internal security reviews and dependency vulnerability scans on request.
 - Copies of Sub-processor DPAs on request (confidentiality-redacted where required).
-- The current list of Sub-processors (Appendix A).
+- The current list of Sub-processors (Appendix A), also published at [benefitssafe.com/subprocessors](https://benefitssafe.com/subprocessors).
 
 ### 8.2 On-site Audit
 
@@ -348,17 +348,22 @@ As of the Effective Date, BenefitsSafe engages the following Sub-processors:
 
 | Sub-processor | Role | Data Processed | Location | Transfer Mechanism | Link |
 |---------------|------|----------------|----------|---------------------|------|
-| Stripe, Inc. (Stripe Payments, Stripe Issuing, Stripe Connect, Stripe Treasury) | Payment processing, card issuance, KYC, subscription billing | Beneficiary identity, card transactions, Nonprofit billing | United States | DPF + SCCs (Module 3) | [stripe.com/privacy](https://stripe.com/privacy) · [stripe.com/legal](https://stripe.com/legal) |
+| Stripe, Inc. (Stripe Payments, Stripe Issuing, Stripe Connect, Stripe Treasury, Stripe Billing) | Payment processing, card issuance, KYC, subscription billing, Nonprofit ACH onboarding | Beneficiary identity, card transactions, Nonprofit bank + billing data | United States | DPF + SCCs (Module 3) | [stripe.com/privacy](https://stripe.com/privacy) · [stripe.com/legal](https://stripe.com/legal) |
 | **Sutton Bank** (card-issuing bank via Stripe Issuing) | FDIC-insured card issuer | Cardholder identity (via Stripe) | United States | Regulated US bank | Governed by Stripe Issuing terms |
 | **Evolve Bank & Trust** (card-issuing bank via Stripe Issuing) | FDIC-insured card issuer | Cardholder identity (via Stripe) | United States | Regulated US bank | Governed by Stripe Issuing terms |
-| Plaid, Inc. | Bank-account verification and ACH setup | Bank-account tokens | United States | SCCs | [plaid.com/legal](https://plaid.com/legal) |
-| Amazon Web Services, Inc. | Hosting, database, object storage, KMS | All platform data (encrypted at rest) | US-West (Oregon) primary, US-East (Virginia) backup | DPF + SCCs | [aws.amazon.com/privacy](https://aws.amazon.com/privacy) · [aws.amazon.com/compliance/gdpr-center](https://aws.amazon.com/compliance/gdpr-center) |
+| Amazon Web Services, Inc. | Hosting, database (Aurora PostgreSQL), object storage (S3), KMS | All platform data (encrypted at rest) | US-West (Oregon) primary, US-East (Virginia) backup | DPF + SCCs | [aws.amazon.com/privacy](https://aws.amazon.com/privacy) · [aws.amazon.com/compliance/gdpr-center](https://aws.amazon.com/compliance/gdpr-center) |
+| Vercel, Inc. | Application hosting + edge delivery | HTTP request metadata, deployment logs, encrypted env vars | United States | SCCs | [vercel.com/legal/privacy-policy](https://vercel.com/legal/privacy-policy) |
+| Cloudflare, Inc. | DNS + proxy for app.benefitssafe.com; Cloudflare Workers for cron scheduling | HTTP request metadata (IP, user-agent, URL path) | United States (global edge) | SCCs | [cloudflare.com/privacypolicy](https://www.cloudflare.com/privacypolicy/) |
 | Postmark (ActiveCampaign) | Transactional email | Email address, user name, message content | United States | SCCs | [postmarkapp.com/privacy-policy](https://postmarkapp.com/privacy-policy) |
 | Sentry (Functional Software, Inc.) | Error and performance monitoring | Pseudonymized traces, user ID, URL path | United States | DPF | [sentry.io/privacy](https://sentry.io/privacy) |
-| Upstash, Inc. | Rate limiting and ephemeral cache (Redis) | Pseudonymized request keys, counters | United States | SCCs | [upstash.com/trust/privacy.pdf](https://upstash.com/trust/privacy.pdf) |
+| Upstash, Inc. | Rate limiting, ephemeral cache (Redis), background job queue (QStash) | Pseudonymized request keys, counters, queued job payloads | United States | SCCs | [upstash.com/trust/privacy.pdf](https://upstash.com/trust/privacy.pdf) |
 | Better Stack (Logtail) | Centralized application logs | Application logs with redacted PII | United States / EU | SCCs | [betterstack.com/privacy](https://betterstack.com/privacy) |
 | Anthropic, PBC | Compliance Assistant AI (Claude); no SSN or card-number access | Question text, compliance context | United States | SCCs | [anthropic.com/legal/privacy](https://anthropic.com/legal/privacy) |
-| OFAC screening provider | Sanctions-list screening | Beneficiary name and DOB | United States | Regulated US vendor | DPA disclosed on request |
+| Composio, Inc. | Workflow automation for org-level integrations that the Nonprofit elects to enable | Workflow-trigger metadata and payloads supplied by the Nonprofit | United States | SCCs | [composio.dev/privacy](https://composio.dev/privacy) |
+| Google LLC (Google OAuth) | Optional Google sign-in for Nonprofit staff | Email, name, profile image, Google account ID | United States | DPF | [policies.google.com/privacy](https://policies.google.com/privacy) |
+| Microsoft Corporation (Microsoft Entra ID) | Optional Microsoft sign-in for Nonprofit staff | Email, name, Microsoft account ID | United States | DPF | [privacy.microsoft.com](https://privacy.microsoft.com/privacystatement) |
+
+OFAC sanctions screening is performed by calling the US Department of the Treasury's public SDN search API; the Treasury is not a commercial subprocessor.
 
 The current list is maintained at [benefitssafe.com/subprocessors](https://benefitssafe.com/subprocessors).
 
