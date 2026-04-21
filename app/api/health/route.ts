@@ -1,4 +1,5 @@
 import { redis } from "@/lib/cache";
+import { prisma } from "@/lib/db";
 import { getDbHealth } from "@/lib/db-health";
 import { NextResponse } from "next/server";
 import { logger, flushLogs } from "@/lib/logger";
@@ -41,11 +42,48 @@ export async function GET() {
       ? "degraded"
       : "ok";
 
+  // Nygard Ch 17 p. 271 — surface business-transaction signal alongside
+  // system health so a "green" probe can't hide zero flow. Skipped when
+  // the DB is already "down" (no point re-hitting it) and wrapped so a
+  // slow/failing count never degrades the probe itself.
+  let business: {
+    orgs_total: number;
+    expenses_24h: number;
+    active_cards: number;
+    sampled_at: string;
+  } | null = null;
+  if (overall !== "down") {
+    try {
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const [orgsTotal, expenses24h, activeCards] = await prisma.$transaction(
+        async (tx) =>
+          Promise.all([
+            tx.organization.count(),
+            tx.expenseRequest.count({ where: { createdAt: { gte: twentyFourHoursAgo } } }),
+            tx.virtualCard.count({ where: { status: "ACTIVE" } }),
+          ]),
+        { timeout: 3000 },
+      );
+      business = {
+        orgs_total: orgsTotal,
+        expenses_24h: expenses24h,
+        active_cards: activeCards,
+        sampled_at: new Date().toISOString(),
+      };
+    } catch (err) {
+      logger.warn("Health business metrics query failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      business = null;
+    }
+  }
+
   logger.info("Health check", {
     overall,
     dbStatus: checks.database?.status,
     dbLatencyMs: checks.database?.latencyMs,
     redisStatus: checks.redis?.status,
+    businessSampled: business !== null,
   });
   await flushLogs();
 
@@ -60,6 +98,7 @@ export async function GET() {
       deploy_channel: process.env.DEPLOY_CHANNEL || "stable",
       commit_sha: process.env.VERCEL_GIT_COMMIT_SHA || "local",
       checks,
+      business,
     },
     {
       status: overall === "down" ? 503 : 200,
