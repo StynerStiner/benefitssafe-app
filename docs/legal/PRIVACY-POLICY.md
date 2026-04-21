@@ -2,8 +2,8 @@
 
 **Version 1.0 | Effective April 21, 2026**
 
-**BenefitsSafe LLC** ("BenefitsSafe," "we," "us," or "our")
-Oakland, California
+**BenefitsSafe** ("BenefitsSafe," "we," "us," or "our")
+1969 Harrington Ave, Oakland, CA 94601
 
 ---
 
@@ -17,7 +17,7 @@ You can always contact us at **privacy@benefitssafe.com** with questions, correc
 
 ## 2. Definitions
 
-- **BenefitsSafe** — the online platform located at app.benefitssafe.com and associated services operated by BenefitsSafe LLC.
+- **BenefitsSafe** — the online platform located at app.benefitssafe.com and associated services operated by BenefitsSafe.
 - **Nonprofit** — the 501(c)(3) organization that has a paid subscription and is using BenefitsSafe to manage grant disbursement.
 - **Beneficiary** — an individual person who receives goods or services paid for through a Nonprofit's grant on BenefitsSafe.
 - **Vendor** — a merchant or service provider that accepts payment from a BenefitsSafe virtual card.
@@ -189,7 +189,7 @@ Under the California Consumer Privacy Act (as amended by the California Privacy 
 - **Non-discrimination** — We will not deny service, charge different prices, or provide a different level of service because you exercised a CCPA right.
 - **Authorized agent** — You may designate someone else to submit a request on your behalf (we will verify their authorization).
 
-To submit a CCPA request, email **privacy@benefitssafe.com** with the subject line "CCPA Request" or call **[BENEFITSSAFE PHONE NUMBER]**. We verify requests by confirming the email/phone we already have on file, or by matching at least two other data points. We respond within 45 days (extendable by 45 days with notice).
+To submit a CCPA request, email **privacy@benefitssafe.com** with the subject line "CCPA Request," or use the privacy request form in your account settings at app.benefitssafe.com. Because BenefitsSafe operates exclusively online and has a direct relationship with account holders, email is an accepted request channel under CCPA §1798.130(a)(1)(A). We verify requests by confirming the email we already have on file, or by matching at least two other data points. We respond within 45 days (extendable by 45 days with notice).
 
 **Categories of Personal Information collected in the past 12 months (CCPA §1798.110 disclosure):**
 
@@ -325,13 +325,10 @@ Previous versions are available on request at **privacy@benefitssafe.com**.
 
 ## 16. Contact Us
 
-**BenefitsSafe LLC**
+**BenefitsSafe**
 Attn: Privacy Officer
-[BENEFITSSAFE MAILING ADDRESS — Oakland, CA]
+1969 Harrington Ave, Oakland, CA 94601
 Email: **privacy@benefitssafe.com**
-Phone: **[BENEFITSSAFE PHONE NUMBER]**
-
-For EU/EEA/UK inquiries, you may also contact our EU representative at **[EU REPRESENTATIVE — to be appointed if we have substantial EU user base under GDPR Art. 27]**.
 
 For security vulnerability reports: **security@benefitssafe.com**.
 

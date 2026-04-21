@@ -4,7 +4,7 @@
 
 This Data Processing Agreement ("DPA") is entered into between:
 
-**BenefitsSafe LLC**, a California limited liability company located in Oakland, California ("**BenefitsSafe**," "we," "us," or "**Processor**"), and
+**BenefitsSafe**, located at 1969 Harrington Ave, Oakland, CA 94601 ("**BenefitsSafe**," "we," "us," or "**Processor**"), and
 
 **the Nonprofit** identified in the applicable Order Form or online signup ("**Customer**," "you," or "**Controller**").
 
@@ -376,9 +376,9 @@ On request, BenefitsSafe will sign a standalone copy of the SCCs referencing thi
 
 ## Signature
 
-For **BenefitsSafe LLC**:
-Name: [PRINCIPAL NAME]
-Title: [TITLE]
+For **BenefitsSafe**:
+Name: Styner Stiner
+Title: Founder
 Date: April 21, 2026
 Signature: ____________________________________
 

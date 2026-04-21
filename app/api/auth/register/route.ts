@@ -35,6 +35,11 @@ const registerApiSchema = z.object({
   promoCode: z.string().max(50).optional().or(z.literal("")),
   stripeSessionId: z.string().max(200).optional(),
   plan: z.string().max(50).optional(),
+  acceptTerms: z.literal(true, {
+    errorMap: () => ({ message: "You must accept the Terms and Privacy Policy" }),
+  }),
+  termsVersion: z.string().max(20),
+  privacyVersion: z.string().max(20),
 });
 
 /**
@@ -94,7 +99,18 @@ export async function POST(request: Request) {
       );
     }
 
-    const { organizationName, firstName, lastName, email, password, promoCode, stripeSessionId, plan } = parsed.data;
+    const {
+      organizationName,
+      firstName,
+      lastName,
+      email,
+      password,
+      promoCode,
+      stripeSessionId,
+      plan,
+      termsVersion,
+      privacyVersion,
+    } = parsed.data;
 
     // Validate email against disposable domains and injection attacks
     const emailCheck = validateRecipientEmail(email);
@@ -311,6 +327,10 @@ export async function POST(request: Request) {
           emailVerified: false,
           emailVerifyToken,
           emailVerifyExpiry,
+          termsAcceptedAt: now,
+          termsVersion,
+          privacyAcceptedAt: now,
+          privacyVersion,
         },
         select: { id: true, email: true, firstName: true, lastName: true },
       });

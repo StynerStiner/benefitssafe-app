@@ -25,16 +25,17 @@ Budget 2-4 hours of attorney time before publication. A fintech-savvy solo or sm
 
 ## Placeholders to Fill In
 
-These documents contain bracketed placeholders. Replace every one before publication.
+All bracketed placeholders in the three legal documents were filled with real BenefitsSafe business information on 2026-04-21.
 
-- [ ] `[BENEFITSSAFE MAILING ADDRESS — Oakland, CA]` — full street address (appears in Privacy Policy §16, Terms §19.3 and §20, DPA signature block)
-- [ ] `[BENEFITSSAFE PHONE NUMBER]` — toll-free or local number for CCPA requests (Privacy Policy §7.2, §16)
-- [ ] `[EU REPRESENTATIVE — to be appointed if we have substantial EU user base under GDPR Art. 27]` — only required if targeting EU users without an EU establishment; delete the line if not applicable
-- [ ] `[PRINCIPAL NAME]` and `[TITLE]` — BenefitsSafe signatory for the DPA signature block
-- [ ] `[status.benefitssafe.com]` — confirm the status-page URL or remove the reference (Terms §10)
-- [ ] `benefitssafe.com/subprocessors` — confirm this page exists or remove the reference (DPA Appendix A footer)
-- [ ] `benefitssafe.com/security` — confirm the security page exists (Privacy Policy §10, DPA §4.7)
-- [ ] **SOC 2 language** — today the docs say "on our roadmap." Update when actually certified.
+- [x] Business name set to **BenefitsSafe** throughout (Privacy Policy, Terms, DPA headers and signature blocks)
+- [x] Mailing address set to **1969 Harrington Ave, Oakland, CA 94601** (Privacy Policy §16, Terms §19.3 and §20, DPA opening + signature block)
+- [x] Phone-number placeholder removed. CCPA requests now route via email (**privacy@benefitssafe.com**) + in-app privacy form, permitted under CCPA §1798.130(a)(1)(A) for exclusively-online businesses (Privacy Policy §7.2, §16)
+- [x] EU Representative line removed (not required; no substantial EU user base). Re-add under GDPR Art. 27 when targeting EU users without an EU establishment.
+- [x] DPA signature block populated: **Styner Stiner, Founder**
+- [x] `status.benefitssafe.com` brackets removed (Terms §10); confirm the status page is live before launch
+- [ ] Confirm `benefitssafe.com/subprocessors` page exists (DPA Appendix A footer)
+- [ ] Confirm `benefitssafe.com/security` page exists (Privacy Policy §10, DPA §4.7)
+- [ ] **SOC 2 language** — docs say "on our roadmap." Update when actually certified.
 
 ---
 

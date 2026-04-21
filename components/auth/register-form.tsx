@@ -133,6 +133,9 @@ const RegisterForm = () => {
           promoCode: values.promoCode?.trim() || undefined,
           stripeSessionId: checkoutSessionId || undefined,
           plan: planParam || undefined,
+          acceptTerms: values.acceptTerms,
+          termsVersion: "1.0",
+          privacyVersion: "1.0",
         }),
       });
 
@@ -447,20 +450,25 @@ const RegisterForm = () => {
                     />
                   </FormControl>
                   <label htmlFor="createAccount" className="text-sm">
-                    By creating an account means you agree to the{" "}
-                    <Link
-                      href="#"
+                    I agree to the{" "}
+                    <a
+                      href="https://benefitssafe.com/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-primary font-semibold hover:underline"
                     >
-                      Terms & Conditions
-                    </Link>{" "}
-                    and our{" "}
-                    <Link
-                      href="#"
+                      Terms of Service
+                    </a>{" "}
+                    and{" "}
+                    <a
+                      href="https://benefitssafe.com/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-primary font-semibold hover:underline"
                     >
                       Privacy Policy
-                    </Link>
+                    </a>
+                    .
                   </label>
                 </div>
                 <FormMessage />
@@ -491,11 +499,11 @@ const RegisterForm = () => {
             )}
           </div>
 
-          {/* Submit Button */}
+          {/* Submit Button — disabled until Terms + Privacy are accepted */}
           <Button
             type="submit"
             className="w-full rounded-lg h-11 text-sm"
-            disabled={loading}
+            disabled={loading || !form.watch("acceptTerms")}
           >
             {isSubmitting ? (
               <>

@@ -2,8 +2,8 @@
 
 **Version 1.0 | Effective April 21, 2026**
 
-**BenefitsSafe LLC** ("BenefitsSafe," "we," "us," or "our")
-Oakland, California
+**BenefitsSafe** ("BenefitsSafe," "we," "us," or "our")
+1969 Harrington Ave, Oakland, CA 94601
 
 ---
 
@@ -26,7 +26,7 @@ The full legal terms follow. If there is any conflict between this summary and t
 
 ## 1. Acceptance of Terms
 
-By clicking "I agree," creating an account, signing a BenefitsSafe order form, or using any part of the platform, you (on behalf of your Nonprofit) enter into a binding contract with BenefitsSafe LLC. If you are agreeing on behalf of an organization, you represent that you have authority to bind that organization.
+By clicking "I agree," creating an account, signing a BenefitsSafe order form, or using any part of the platform, you (on behalf of your Nonprofit) enter into a binding contract with BenefitsSafe. If you are agreeing on behalf of an organization, you represent that you have authority to bind that organization.
 
 If you do not agree, do not create an account or use the platform.
 
@@ -175,7 +175,7 @@ We are **not** responsible for:
 
 ### 9.1 Platform IP
 
-BenefitsSafe, all software, trademarks, service marks, logos, documentation, the Compliance Engine's rules and logic, and all derivative improvements are the exclusive property of BenefitsSafe LLC and its licensors. Nothing in this Agreement transfers ownership to you.
+BenefitsSafe, all software, trademarks, service marks, logos, documentation, the Compliance Engine's rules and logic, and all derivative improvements are the exclusive property of BenefitsSafe and its licensors. Nothing in this Agreement transfers ownership to you.
 
 We grant you a limited, non-exclusive, non-transferable, revocable license to access and use the platform during the subscription term solely for your internal operations.
 
@@ -197,7 +197,7 @@ We may use aggregated and de-identified data derived from platform activity for 
 
 ## 10. Platform Availability and Support
 
-We target 99.9% monthly uptime for the core application, excluding scheduled maintenance and upstream-provider outages (Stripe, AWS, Plaid). Current status is available at **[status.benefitssafe.com]**.
+We target 99.9% monthly uptime for the core application, excluding scheduled maintenance and upstream-provider outages (Stripe, AWS, Plaid). Current status is available at **status.benefitssafe.com**.
 
 Technical support channels depend on your subscription tier and are specified in your Order Form or pricing page.
 
@@ -406,7 +406,7 @@ Neither party is liable for delay or failure to perform (other than payment obli
 
 ### 19.3 Notices
 
-Notices to you will be sent to the account email on file. Notices to BenefitsSafe must be sent to **legal@benefitssafe.com** and to BenefitsSafe LLC, Attn: Legal, [BENEFITSSAFE MAILING ADDRESS — Oakland, CA]. Notices are effective on receipt.
+Notices to you will be sent to the account email on file. Notices to BenefitsSafe must be sent to **legal@benefitssafe.com** and to BenefitsSafe, Attn: Legal, 1969 Harrington Ave, Oakland, CA 94601. Notices are effective on receipt.
 
 ### 19.4 Independent Contractors
 
@@ -436,9 +436,9 @@ If you are a federal, state, or local government entity, any provision that conf
 
 ## 20. Contact for Legal Questions
 
-**BenefitsSafe LLC**
+**BenefitsSafe**
 Attn: Legal
-[BENEFITSSAFE MAILING ADDRESS — Oakland, CA]
+1969 Harrington Ave, Oakland, CA 94601
 Email: **legal@benefitssafe.com**
 
 For privacy-specific questions, see the [Privacy Policy](./PRIVACY-POLICY.md).

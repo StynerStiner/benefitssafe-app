@@ -94,6 +94,14 @@ model User {
   emailVerifyToken  String?   @unique
   emailVerifyExpiry DateTime?
 
+  // Terms of Service and Privacy Policy acceptance
+  // Stamped at signup submission; nullable for users created before 2026-04-21
+  // or via server-side mechanisms that predate the checkbox (OAuth, invite).
+  termsAcceptedAt   DateTime?
+  termsVersion      String?
+  privacyAcceptedAt DateTime?
+  privacyVersion    String?
+
   // MFA / Two-Factor Authentication (TOTP)
   mfaEnabled     Boolean  @default(false)
   mfaSecret      String? // Encrypted TOTP secret
