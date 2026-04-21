@@ -182,3 +182,8 @@ export type ProcessedWebhookEvent = Prisma.ProcessedWebhookEventModel
  * 
  */
 export type FundTransfer = Prisma.FundTransferModel
+/**
+ * Model SchemaVersion
+ * 
+ */
+export type SchemaVersion = Prisma.SchemaVersionModel

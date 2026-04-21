@@ -1091,3 +1091,19 @@ model FundTransfer {
   @@index([organizationId, createdAt])
   @@index([status])
 }
+
+// ============================================
+// INFRASTRUCTURE — schema version tracking
+// Nygard Ch 18 p.319 — fail-fast on schema/app drift.
+// Single-row table (@id @default(1) enforces it). Every migration
+// script bumps both the row and EXPECTED_SCHEMA_VERSION in
+// lib/schema-version.ts so app startup can detect drift.
+// ============================================
+
+model SchemaVersion {
+  id        Int      @id @default(1)
+  version   Int
+  appliedAt DateTime @default(now())
+
+  @@map("_schema_version")
+}

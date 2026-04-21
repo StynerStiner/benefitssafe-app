@@ -83,7 +83,8 @@ export const ModelName = {
   BillingSubscription: 'BillingSubscription',
   UsageCounter: 'UsageCounter',
   ProcessedWebhookEvent: 'ProcessedWebhookEvent',
-  FundTransfer: 'FundTransfer'
+  FundTransfer: 'FundTransfer',
+  SchemaVersion: 'SchemaVersion'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -738,6 +739,15 @@ export const FundTransferScalarFieldEnum = {
 } as const
 
 export type FundTransferScalarFieldEnum = (typeof FundTransferScalarFieldEnum)[keyof typeof FundTransferScalarFieldEnum]
+
+
+export const SchemaVersionScalarFieldEnum = {
+  id: 'id',
+  version: 'version',
+  appliedAt: 'appliedAt'
+} as const
+
+export type SchemaVersionScalarFieldEnum = (typeof SchemaVersionScalarFieldEnum)[keyof typeof SchemaVersionScalarFieldEnum]
 
 
 export const SortOrder = {

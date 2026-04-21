@@ -1,6 +1,7 @@
 import { redis } from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { getDbHealth } from "@/lib/db-health";
+import { checkSchemaVersion } from "@/lib/schema-version";
 import { NextResponse } from "next/server";
 import { logger, flushLogs } from "@/lib/logger";
 
@@ -78,12 +79,26 @@ export async function GET() {
     }
   }
 
+  // Nygard Ch 18 p.319 — surface schema/app version drift in the health
+  // probe so Better Stack pages immediately when a deploy ships ahead of
+  // (or behind) its migration. checkSchemaVersion never throws; same
+  // "degraded but responsive" posture as the business block above.
+  const schemaVersion =
+    overall === "down"
+      ? { expected: 0, actual: null, match: false as const }
+      : await checkSchemaVersion().then((r) => ({
+          expected: r.expected,
+          actual: r.actual,
+          match: r.match,
+        }));
+
   logger.info("Health check", {
     overall,
     dbStatus: checks.database?.status,
     dbLatencyMs: checks.database?.latencyMs,
     redisStatus: checks.redis?.status,
     businessSampled: business !== null,
+    schemaVersionMatch: schemaVersion.match,
   });
   await flushLogs();
 
@@ -99,6 +114,7 @@ export async function GET() {
       commit_sha: process.env.VERCEL_GIT_COMMIT_SHA || "local",
       checks,
       business,
+      schema_version: schemaVersion,
     },
     {
       status: overall === "down" ? 503 : 200,

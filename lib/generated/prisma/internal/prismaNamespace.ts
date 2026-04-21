@@ -416,7 +416,8 @@ export const ModelName = {
   BillingSubscription: 'BillingSubscription',
   UsageCounter: 'UsageCounter',
   ProcessedWebhookEvent: 'ProcessedWebhookEvent',
-  FundTransfer: 'FundTransfer'
+  FundTransfer: 'FundTransfer',
+  SchemaVersion: 'SchemaVersion'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -432,7 +433,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organization" | "user" | "inviteToken" | "grant" | "budgetCategory" | "expenseRequest" | "vendor" | "subscription" | "virtualCard" | "cardholderEligibility" | "transaction" | "ledgerEntry" | "approval" | "auditLog" | "conversation" | "conversationParticipant" | "message" | "notification" | "document" | "disbursementPolicy" | "promoCode" | "promoRedemption" | "calendarEvent" | "organizationMembership" | "cronCheckpoint" | "integration" | "workflowTrigger" | "workflowLog" | "grantReport" | "billingSubscription" | "usageCounter" | "processedWebhookEvent" | "fundTransfer"
+    modelProps: "organization" | "user" | "inviteToken" | "grant" | "budgetCategory" | "expenseRequest" | "vendor" | "subscription" | "virtualCard" | "cardholderEligibility" | "transaction" | "ledgerEntry" | "approval" | "auditLog" | "conversation" | "conversationParticipant" | "message" | "notification" | "document" | "disbursementPolicy" | "promoCode" | "promoRedemption" | "calendarEvent" | "organizationMembership" | "cronCheckpoint" | "integration" | "workflowTrigger" | "workflowLog" | "grantReport" | "billingSubscription" | "usageCounter" | "processedWebhookEvent" | "fundTransfer" | "schemaVersion"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2878,6 +2879,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SchemaVersion: {
+      payload: Prisma.$SchemaVersionPayload<ExtArgs>
+      fields: Prisma.SchemaVersionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SchemaVersionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SchemaVersionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SchemaVersionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SchemaVersionPayload>
+        }
+        findFirst: {
+          args: Prisma.SchemaVersionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SchemaVersionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SchemaVersionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SchemaVersionPayload>
+        }
+        findMany: {
+          args: Prisma.SchemaVersionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SchemaVersionPayload>[]
+        }
+        create: {
+          args: Prisma.SchemaVersionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SchemaVersionPayload>
+        }
+        createMany: {
+          args: Prisma.SchemaVersionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SchemaVersionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SchemaVersionPayload>[]
+        }
+        delete: {
+          args: Prisma.SchemaVersionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SchemaVersionPayload>
+        }
+        update: {
+          args: Prisma.SchemaVersionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SchemaVersionPayload>
+        }
+        deleteMany: {
+          args: Prisma.SchemaVersionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SchemaVersionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SchemaVersionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SchemaVersionPayload>[]
+        }
+        upsert: {
+          args: Prisma.SchemaVersionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SchemaVersionPayload>
+        }
+        aggregate: {
+          args: Prisma.SchemaVersionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSchemaVersion>
+        }
+        groupBy: {
+          args: Prisma.SchemaVersionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SchemaVersionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SchemaVersionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SchemaVersionCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3555,6 +3630,15 @@ export const FundTransferScalarFieldEnum = {
 export type FundTransferScalarFieldEnum = (typeof FundTransferScalarFieldEnum)[keyof typeof FundTransferScalarFieldEnum]
 
 
+export const SchemaVersionScalarFieldEnum = {
+  id: 'id',
+  version: 'version',
+  appliedAt: 'appliedAt'
+} as const
+
+export type SchemaVersionScalarFieldEnum = (typeof SchemaVersionScalarFieldEnum)[keyof typeof SchemaVersionScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -4051,6 +4135,7 @@ export type GlobalOmitConfig = {
   usageCounter?: Prisma.UsageCounterOmit
   processedWebhookEvent?: Prisma.ProcessedWebhookEventOmit
   fundTransfer?: Prisma.FundTransferOmit
+  schemaVersion?: Prisma.SchemaVersionOmit
 }
 
 /* Types for Logging */
