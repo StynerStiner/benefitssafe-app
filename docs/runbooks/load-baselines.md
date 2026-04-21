@@ -76,9 +76,34 @@ Notes:
   - <anything noteworthy — Aurora was warm/cold, cache prepopulated, etc.>
 ```
 
-### First baseline — pending
+### 2026-04-21 — production — smoke — 3c1a01d
 
-No baseline has been recorded yet. First baseline lands when P3b completes (staging canary + stable are live) and the operator runs `--baseline` against both channels.
+Operator: @stynerdev225
+BASE_URL: https://app.benefitssafe.com
+Mode: --smoke (1 req/endpoint, dry run — single-sample latencies, not a true distribution)
+Concurrency × duration: 1 × 0s
+Auth: unauthenticated (no AUTH_COOKIE); endpoints returned 200 — the app currently tolerates unauthenticated GETs for these dashboards at the edge; a proper `--baseline` with a session cookie is still the next step.
+
+```
+  endpoint                  | count  | p50      | p95      | p99      | error%
+  ----------------------------------------------------------------------------
+  /api/dashboard            |      1 |  816.1ms |  816.1ms |  816.1ms |  0.0%
+  /api/grants               |      1 |  277.2ms |  277.2ms |  277.2ms |  0.0%
+  /api/beneficiaries        |      1 |  248.4ms |  248.4ms |  248.4ms |  0.0%
+  /api/notifications        |      1 |  245.7ms |  245.7ms |  245.7ms |  0.0%
+  /api/expenses             |      1 |  233.4ms |  233.4ms |  233.4ms |  0.0%
+```
+
+Notes:
+  - Smoke mode only — single sample per endpoint, so these numbers are p50=p95=p99 by definition. Treat as a sanity floor, not a regression yardstick; the first regression-gating baseline lands on the next `--baseline` run (10 × 60s) with a valid session cookie.
+  - Captured immediately after Ch18 deploy `3c1a01d` landed — Lambda was cold for the first call (`/api/dashboard` at 816ms is the cold-start tax); the next four calls reused the warm container and settled at 233–277ms.
+  - Ran at 00:53 Pacific — within the off-peak window (§6).
+  - Health probe concurrently reported `status:ok`, `schema_version.match:true`, `business.orgs_total:1` — no degraded signal during the run.
+  - Database latency at probe time: 481ms; Redis: 54ms.
+
+### First regression-gating baseline — pending
+
+The smoke numbers above are a floor, not a baseline. The first `--baseline` (10 concurrent × 60s) with an authenticated session cookie is still pending — run it in the next off-peak window against both `stable.benefitssafe.com` and `canary.benefitssafe.com` so the regression policy in §3 has a real distribution to compare against.
 
 ## 5. Running against canary (once P3b is live)
 
