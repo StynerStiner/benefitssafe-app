@@ -442,6 +442,54 @@ Status as of 2026-04-21: all six tail-end defects (C2, H1, H2, H4, H5, P1) verif
 
 ---
 
+## Security Standard (app repo)
+
+This repo is a production fintech platform handling PII, real money, and authenticated sessions. The security bar is higher than the marketing site.
+
+### Zero-tolerance scope
+
+Known vulnerabilities in production-critical dependencies must be remediated or documented. Production-critical = anything touching:
+
+- Authentication (NextAuth, session handling, MFA)
+- Payments (Stripe SDK, webhook handlers, Connect/Issuing/Treasury)
+- Database access (Prisma, Aurora connections, query scoping)
+- Encryption (bcryptjs, crypto libs, session fingerprints)
+- Multi-tenant query scoping (every query touching `organizationId`)
+- API routes under `app/api/**`
+- Middleware (`middleware.ts`)
+- Cron jobs / workers (`@upstash/qstash`)
+
+### Exception path
+
+Vulnerabilities that are genuinely not reachable in production (dev-only tooling, unused code paths, attack vectors requiring preconditions we don't meet) may be accepted if documented in `docs/security-exceptions.md` with:
+
+- **Attack surface analysis** — where the vulnerable code runs, who can reach it
+- **Exploitability assessment** — what an attacker needs, what our code actually does
+- **Mitigation in place** — WAF, rate limiting, feature flags, config that reduces reachability
+- **Remediation path** — what triggers removal of the exception (upstream patch, major bump, etc.)
+
+"Not currently exploitable" is not sufficient on its own. Document the reachability analysis and the mitigations.
+
+### Baseline requirements
+
+- `.npmrc` with `ignore-scripts=true`, `save-exact=true`, `legacy-peer-deps=true`
+- `package-lock.json` committed
+- `engines.node` pinned in package.json
+- `.nvmrc` present
+- Every dependency change requires: `npm audit` checked, `npm run build` verified, vitest suite run
+- Post-deploy smoke test on `/api/health` (HTTP 200) + manual verification of auth + dashboard + upload paths
+- Pre-install: web-search for recent supply-chain advisories on the specific package(s) being installed (CISA-recommended practice post-Axios attack March 2026)
+
+### Touch-restricted paths (approval required before editing during security work)
+
+- `prisma/schema.prisma`
+- `prisma/migrations/**`
+- `app/api/webhooks/stripe/**`
+- `auth.ts` / `auth.config.ts` (NextAuth setup)
+- `.env`, `.env.local`
+
+---
+
 ## REMEMBER
 
 This platform protects vulnerable people's government benefits. A sloppy expense classification could cause someone to lose their SSI or Medi-Cal. A data breach could expose disability status. A compliance error could cost a nonprofit its 501(c)(3) status.
