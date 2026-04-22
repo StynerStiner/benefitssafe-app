@@ -415,6 +415,20 @@ These documents contain the full business logic, legal framework, market analysi
 
 ---
 
+## DDIA Audit — Spec-Drift Notes
+
+The original DDIA Chapter 12 audit spec referenced file paths and field names that differ from where the fixes actually landed. Future sessions: use the **Actual** column, not the spec.
+
+| Defect | Spec assumed | Actual in code |
+|--------|--------------|----------------|
+| H1 (Stripe Connect callback URL) | `app/api/auth/stripe-onboarding/route.ts` | `app/api/org/stripe-onboarding/route.ts` |
+| H2 (account.updated webhook handler) | `app/api/webhooks/stripe-billing/route.ts` | `app/api/webhooks/stripe/route.ts` (the Issuing/Connect webhook, not the Billing webhook) |
+| H2 (persisted field) | `Organization.stripeAccountStatus` | `Organization.bankConnectedAt` + `Organization.lastStripeAccountEventAt` (the `charges_enabled` / `payouts_enabled` flags are captured in `AuditLog.newValue`, not as a dedicated column) |
+
+Status as of 2026-04-21: all six tail-end defects (C2, H1, H2, H4, H5, P1) verified CLOSED — see `docs/STATUS-DDIA-AUDIT.md` for the full evidence trail.
+
+---
+
 ## REMEMBER
 
 This platform protects vulnerable people's government benefits. A sloppy expense classification could cause someone to lose their SSI or Medi-Cal. A data breach could expose disability status. A compliance error could cost a nonprofit its 501(c)(3) status.
