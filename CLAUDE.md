@@ -415,6 +415,19 @@ These documents contain the full business logic, legal framework, market analysi
 
 ---
 
+## Legal Doc Sync Automation
+
+The three public legal documents have a single source of truth in this repo at `docs/legal/PRIVACY-POLICY.md`, `TERMS-OF-SERVICE.md`, and `DATA-PROCESSING-AGREEMENT.md`. A GitHub Action keeps the public copies at `benefitssafe.com/privacy`, `/terms`, and `/dpa` in sync automatically — **never edit the marketing repo's `content/legal/*.md` files directly.**
+
+- **Workflow:** [.github/workflows/sync-legal-to-marketing.yml](.github/workflows/sync-legal-to-marketing.yml) — triggers on push to `main` touching `docs/legal/**.md`, opens a PR in `benefitssafe-marketing` for human review (not auto-merge).
+- **Required secret:** `MARKETING_REPO_PAT` (classic PAT, `repo` scope) in this repo's **Settings → Secrets and variables → Actions**. Setup steps: [docs/legal/SYNC-SETUP.md](docs/legal/SYNC-SETUP.md).
+- **Drift check anytime:** `./scripts/verify-legal-sync.sh` — clones the marketing repo and SHA-256-compares all three synced files. Exit 0 = in sync; 1 = drift.
+- **Dormant until PAT is added.** The workflow is active in the repo; it simply fails at the checkout-marketing-repo step until the secret exists.
+
+To update a legal doc: edit in this repo → commit → push → review the PR that opens in `benefitssafe-marketing` → merge → Vercel auto-deploys. Done.
+
+---
+
 ## DDIA Audit — Spec-Drift Notes
 
 The original DDIA Chapter 12 audit spec referenced file paths and field names that differ from where the fixes actually landed. Future sessions: use the **Actual** column, not the spec.
