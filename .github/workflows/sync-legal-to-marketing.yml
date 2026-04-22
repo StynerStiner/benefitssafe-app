@@ -1,0 +1,98 @@
+name: Sync legal docs to marketing repo
+# Setup: docs/legal/SYNC-SETUP.md. Never auto-merges; opens a PR.
+on:
+  push:
+    branches: [main]
+    paths: ["docs/legal/**.md"]
+  workflow_dispatch:
+
+concurrency: { group: sync-legal-to-marketing, cancel-in-progress: false }
+permissions: { contents: read }
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: app, fetch-depth: 2 }
+      - uses: actions/checkout@v4
+        with:
+          repository: stynerdev225/benefitssafe-marketing
+          token: ${{ secrets.MARKETING_REPO_PAT }}
+          path: marketing
+
+      - name: Copy public legal docs
+        run: |
+          set -euo pipefail
+          mkdir -p marketing/content/legal
+          cp app/docs/legal/PRIVACY-POLICY.md            marketing/content/legal/privacy.md
+          cp app/docs/legal/TERMS-OF-SERVICE.md          marketing/content/legal/terms.md
+          cp app/docs/legal/DATA-PROCESSING-AGREEMENT.md marketing/content/legal/dpa.md
+
+      - id: drift
+        name: Detect content drift
+        working-directory: marketing
+        run: |
+          if git diff --quiet content/legal/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --stat content/legal/
+          fi
+
+      - name: Ensure PR labels exist
+        if: steps.drift.outputs.changed == 'true'
+        env: { GH_TOKEN: "${{ secrets.MARKETING_REPO_PAT }}" }
+        run: |
+          R=stynerdev225/benefitssafe-marketing
+          gh label create legal     --color B60205 --description "Legal documents"     --repo $R 2>/dev/null || true
+          gh label create auto-sync --color 0E8A16 --description "Opened by sync workflow" --repo $R 2>/dev/null || true
+
+      - name: Commit, push, open PR
+        if: steps.drift.outputs.changed == 'true'
+        working-directory: marketing
+        env:
+          GH_TOKEN:      ${{ secrets.MARKETING_REPO_PAT }}
+          SOURCE_SHA:    ${{ github.sha }}
+          SOURCE_REPO:   ${{ github.repository }}
+          SOURCE_ACTOR:  ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          BRANCH="legal-sync/$(date -u +%Y-%m-%d-%H%M%S)"
+          TODAY="$(date -u +%Y-%m-%d)"
+          git config user.name "benefits-safe-legal-sync[bot]"
+          git config user.email "legal-sync@benefitssafe.com"
+          git checkout -b "$BRANCH"
+          git add content/legal/
+          FILES="$(git diff --cached --name-only)"
+          MSG="$(git -C ../app log -1 --pretty=format:'%s%n%n%b' "$SOURCE_SHA")"
+          git commit -m "chore(legal): sync from ${SOURCE_REPO}@${SOURCE_SHA:0:7}"
+          git push -u origin "$BRANCH"
+          cat > /tmp/pr.md <<EOF
+          Automated sync of public legal documents from the source-of-truth repo.
+          **Review carefully before merging** — this changes what nonprofits,
+          beneficiaries, and regulators see at benefitssafe.com/privacy, /terms, /dpa.
+
+          ## Source
+          - Repo: \`${SOURCE_REPO}\`
+          - Commit: \`${SOURCE_SHA}\`
+          - Pushed by: @${SOURCE_ACTOR}
+
+          ## Files updated
+          \`\`\`
+          ${FILES}
+          \`\`\`
+
+          ## Source commit message
+          \`\`\`
+          ${MSG}
+          \`\`\`
+
+          After merge, run \`./scripts/verify-legal-sync.sh\` in the app repo to confirm parity.
+          EOF
+          gh pr create --repo stynerdev225/benefitssafe-marketing \
+            --base main --head "$BRANCH" \
+            --title "Legal docs sync from app repo — $TODAY" \
+            --body-file /tmp/pr.md \
+            --label legal --label auto-sync \
+            --reviewer stynerdev225

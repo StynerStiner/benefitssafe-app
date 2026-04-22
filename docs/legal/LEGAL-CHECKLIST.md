@@ -142,6 +142,21 @@ Route all five to a human who checks daily, not a black hole.
 
 ---
 
+## Legal-Docs Sync Automation (app → marketing)
+
+The source of truth for all three public legal docs lives in `benefits-safe-app/docs/legal/`. The marketing site at benefitssafe.com renders copies from `benefits-safe-marketing/content/legal/`. Manual copying is out — drift risk is real.
+
+- [ ] Sync automation active: `.github/workflows/sync-legal-to-marketing.yml` in the app repo
+- [ ] `MARKETING_REPO_PAT` secret configured in app-repo GitHub Actions secrets (see [SYNC-SETUP.md](SYNC-SETUP.md))
+- [ ] First-run verification done: a legal-doc edit triggered the workflow and produced a PR in the marketing repo
+- [ ] Calendar reminder set to rotate the `MARKETING_REPO_PAT` annually
+- [ ] Local drift check script works: `./scripts/verify-legal-sync.sh` reports in-sync
+- [ ] Last sync verified: _____ (fill in after first successful merge)
+
+Setup instructions: [SYNC-SETUP.md](SYNC-SETUP.md). Never edit `content/legal/*.md` directly in the marketing repo — the workflow overwrites it.
+
+---
+
 ## Done When
 
 - All three documents are publicly accessible at the URLs promised in this checklist
