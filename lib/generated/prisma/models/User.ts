@@ -38,6 +38,10 @@ export type UserMinAggregateOutputType = {
   emailVerified: boolean | null
   emailVerifyToken: string | null
   emailVerifyExpiry: Date | null
+  termsAcceptedAt: Date | null
+  termsVersion: string | null
+  privacyAcceptedAt: Date | null
+  privacyVersion: string | null
   mfaEnabled: boolean | null
   mfaSecret: string | null
   lastLoginIp: string | null
@@ -78,6 +82,10 @@ export type UserMaxAggregateOutputType = {
   emailVerified: boolean | null
   emailVerifyToken: string | null
   emailVerifyExpiry: Date | null
+  termsAcceptedAt: Date | null
+  termsVersion: string | null
+  privacyAcceptedAt: Date | null
+  privacyVersion: string | null
   mfaEnabled: boolean | null
   mfaSecret: string | null
   lastLoginIp: string | null
@@ -118,6 +126,10 @@ export type UserCountAggregateOutputType = {
   emailVerified: number
   emailVerifyToken: number
   emailVerifyExpiry: number
+  termsAcceptedAt: number
+  termsVersion: number
+  privacyAcceptedAt: number
+  privacyVersion: number
   mfaEnabled: number
   mfaSecret: number
   mfaBackupCodes: number
@@ -164,6 +176,10 @@ export type UserMinAggregateInputType = {
   emailVerified?: true
   emailVerifyToken?: true
   emailVerifyExpiry?: true
+  termsAcceptedAt?: true
+  termsVersion?: true
+  privacyAcceptedAt?: true
+  privacyVersion?: true
   mfaEnabled?: true
   mfaSecret?: true
   lastLoginIp?: true
@@ -204,6 +220,10 @@ export type UserMaxAggregateInputType = {
   emailVerified?: true
   emailVerifyToken?: true
   emailVerifyExpiry?: true
+  termsAcceptedAt?: true
+  termsVersion?: true
+  privacyAcceptedAt?: true
+  privacyVersion?: true
   mfaEnabled?: true
   mfaSecret?: true
   lastLoginIp?: true
@@ -244,6 +264,10 @@ export type UserCountAggregateInputType = {
   emailVerified?: true
   emailVerifyToken?: true
   emailVerifyExpiry?: true
+  termsAcceptedAt?: true
+  termsVersion?: true
+  privacyAcceptedAt?: true
+  privacyVersion?: true
   mfaEnabled?: true
   mfaSecret?: true
   mfaBackupCodes?: true
@@ -361,6 +385,10 @@ export type UserGroupByOutputType = {
   emailVerified: boolean
   emailVerifyToken: string | null
   emailVerifyExpiry: Date | null
+  termsAcceptedAt: Date | null
+  termsVersion: string | null
+  privacyAcceptedAt: Date | null
+  privacyVersion: string | null
   mfaEnabled: boolean
   mfaSecret: string | null
   mfaBackupCodes: string[]
@@ -426,6 +454,10 @@ export type UserWhereInput = {
   emailVerified?: Prisma.BoolFilter<"User"> | boolean
   emailVerifyToken?: Prisma.StringNullableFilter<"User"> | string | null
   emailVerifyExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  termsAcceptedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  termsVersion?: Prisma.StringNullableFilter<"User"> | string | null
+  privacyAcceptedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  privacyVersion?: Prisma.StringNullableFilter<"User"> | string | null
   mfaEnabled?: Prisma.BoolFilter<"User"> | boolean
   mfaSecret?: Prisma.StringNullableFilter<"User"> | string | null
   mfaBackupCodes?: Prisma.StringNullableListFilter<"User">
@@ -480,6 +512,10 @@ export type UserOrderByWithRelationInput = {
   emailVerified?: Prisma.SortOrder
   emailVerifyToken?: Prisma.SortOrderInput | Prisma.SortOrder
   emailVerifyExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
+  termsAcceptedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  termsVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  privacyAcceptedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  privacyVersion?: Prisma.SortOrderInput | Prisma.SortOrder
   mfaEnabled?: Prisma.SortOrder
   mfaSecret?: Prisma.SortOrderInput | Prisma.SortOrder
   mfaBackupCodes?: Prisma.SortOrder
@@ -538,6 +574,10 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   isActive?: Prisma.BoolFilter<"User"> | boolean
   emailVerified?: Prisma.BoolFilter<"User"> | boolean
   emailVerifyExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  termsAcceptedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  termsVersion?: Prisma.StringNullableFilter<"User"> | string | null
+  privacyAcceptedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  privacyVersion?: Prisma.StringNullableFilter<"User"> | string | null
   mfaEnabled?: Prisma.BoolFilter<"User"> | boolean
   mfaSecret?: Prisma.StringNullableFilter<"User"> | string | null
   mfaBackupCodes?: Prisma.StringNullableListFilter<"User">
@@ -591,6 +631,10 @@ export type UserOrderByWithAggregationInput = {
   emailVerified?: Prisma.SortOrder
   emailVerifyToken?: Prisma.SortOrderInput | Prisma.SortOrder
   emailVerifyExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
+  termsAcceptedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  termsVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  privacyAcceptedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  privacyVersion?: Prisma.SortOrderInput | Prisma.SortOrder
   mfaEnabled?: Prisma.SortOrder
   mfaSecret?: Prisma.SortOrderInput | Prisma.SortOrder
   mfaBackupCodes?: Prisma.SortOrder
@@ -641,6 +685,10 @@ export type UserScalarWhereWithAggregatesInput = {
   emailVerified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   emailVerifyToken?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   emailVerifyExpiry?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  termsAcceptedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  termsVersion?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  privacyAcceptedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  privacyVersion?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   mfaEnabled?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   mfaSecret?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   mfaBackupCodes?: Prisma.StringNullableListFilter<"User">
@@ -684,6 +732,10 @@ export type UserCreateInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -738,6 +790,10 @@ export type UserUncheckedCreateInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -790,6 +846,10 @@ export type UserUpdateInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -844,6 +904,10 @@ export type UserUncheckedUpdateInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -897,6 +961,10 @@ export type UserCreateManyInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -940,6 +1008,10 @@ export type UserUpdateManyMutationInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -984,6 +1056,10 @@ export type UserUncheckedUpdateManyInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -1046,6 +1122,10 @@ export type UserCountOrderByAggregateInput = {
   emailVerified?: Prisma.SortOrder
   emailVerifyToken?: Prisma.SortOrder
   emailVerifyExpiry?: Prisma.SortOrder
+  termsAcceptedAt?: Prisma.SortOrder
+  termsVersion?: Prisma.SortOrder
+  privacyAcceptedAt?: Prisma.SortOrder
+  privacyVersion?: Prisma.SortOrder
   mfaEnabled?: Prisma.SortOrder
   mfaSecret?: Prisma.SortOrder
   mfaBackupCodes?: Prisma.SortOrder
@@ -1090,6 +1170,10 @@ export type UserMaxOrderByAggregateInput = {
   emailVerified?: Prisma.SortOrder
   emailVerifyToken?: Prisma.SortOrder
   emailVerifyExpiry?: Prisma.SortOrder
+  termsAcceptedAt?: Prisma.SortOrder
+  termsVersion?: Prisma.SortOrder
+  privacyAcceptedAt?: Prisma.SortOrder
+  privacyVersion?: Prisma.SortOrder
   mfaEnabled?: Prisma.SortOrder
   mfaSecret?: Prisma.SortOrder
   lastLoginIp?: Prisma.SortOrder
@@ -1130,6 +1214,10 @@ export type UserMinOrderByAggregateInput = {
   emailVerified?: Prisma.SortOrder
   emailVerifyToken?: Prisma.SortOrder
   emailVerifyExpiry?: Prisma.SortOrder
+  termsAcceptedAt?: Prisma.SortOrder
+  termsVersion?: Prisma.SortOrder
+  privacyAcceptedAt?: Prisma.SortOrder
+  privacyVersion?: Prisma.SortOrder
   mfaEnabled?: Prisma.SortOrder
   mfaSecret?: Prisma.SortOrder
   lastLoginIp?: Prisma.SortOrder
@@ -1366,6 +1454,10 @@ export type UserCreateWithoutOrganizationInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -1418,6 +1510,10 @@ export type UserUncheckedCreateWithoutOrganizationInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -1500,6 +1596,10 @@ export type UserScalarWhereInput = {
   emailVerified?: Prisma.BoolFilter<"User"> | boolean
   emailVerifyToken?: Prisma.StringNullableFilter<"User"> | string | null
   emailVerifyExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  termsAcceptedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  termsVersion?: Prisma.StringNullableFilter<"User"> | string | null
+  privacyAcceptedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  privacyVersion?: Prisma.StringNullableFilter<"User"> | string | null
   mfaEnabled?: Prisma.BoolFilter<"User"> | boolean
   mfaSecret?: Prisma.StringNullableFilter<"User"> | string | null
   mfaBackupCodes?: Prisma.StringNullableListFilter<"User">
@@ -1543,6 +1643,10 @@ export type UserCreateWithoutInviteTokensInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -1596,6 +1700,10 @@ export type UserUncheckedCreateWithoutInviteTokensInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -1663,6 +1771,10 @@ export type UserUpdateWithoutInviteTokensInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -1716,6 +1828,10 @@ export type UserUncheckedUpdateWithoutInviteTokensInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -1767,6 +1883,10 @@ export type UserCreateWithoutGrantsInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -1820,6 +1940,10 @@ export type UserUncheckedCreateWithoutGrantsInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -1887,6 +2011,10 @@ export type UserUpdateWithoutGrantsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -1940,6 +2068,10 @@ export type UserUncheckedUpdateWithoutGrantsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -1991,6 +2123,10 @@ export type UserCreateWithoutExpenseRequestsInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -2044,6 +2180,10 @@ export type UserUncheckedCreateWithoutExpenseRequestsInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -2111,6 +2251,10 @@ export type UserUpdateWithoutExpenseRequestsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -2164,6 +2308,10 @@ export type UserUncheckedUpdateWithoutExpenseRequestsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -2215,6 +2363,10 @@ export type UserCreateWithoutVendorsInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -2268,6 +2420,10 @@ export type UserUncheckedCreateWithoutVendorsInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -2335,6 +2491,10 @@ export type UserUpdateWithoutVendorsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -2388,6 +2548,10 @@ export type UserUncheckedUpdateWithoutVendorsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -2439,6 +2603,10 @@ export type UserCreateWithoutVirtualCardsInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -2492,6 +2660,10 @@ export type UserUncheckedCreateWithoutVirtualCardsInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -2559,6 +2731,10 @@ export type UserUpdateWithoutVirtualCardsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -2612,6 +2788,10 @@ export type UserUncheckedUpdateWithoutVirtualCardsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -2663,6 +2843,10 @@ export type UserCreateWithoutCardholderEligibilityInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -2716,6 +2900,10 @@ export type UserUncheckedCreateWithoutCardholderEligibilityInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -2783,6 +2971,10 @@ export type UserUpdateWithoutCardholderEligibilityInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -2836,6 +3028,10 @@ export type UserUncheckedUpdateWithoutCardholderEligibilityInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -2887,6 +3083,10 @@ export type UserCreateWithoutApprovalsInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -2940,6 +3140,10 @@ export type UserUncheckedCreateWithoutApprovalsInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -3007,6 +3211,10 @@ export type UserUpdateWithoutApprovalsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -3060,6 +3268,10 @@ export type UserUncheckedUpdateWithoutApprovalsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -3111,6 +3323,10 @@ export type UserCreateWithoutMembershipsInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -3164,6 +3380,10 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -3231,6 +3451,10 @@ export type UserUpdateWithoutMembershipsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -3284,6 +3508,10 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -3335,6 +3563,10 @@ export type UserCreateWithoutFundTransfersInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -3388,6 +3620,10 @@ export type UserUncheckedCreateWithoutFundTransfersInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -3455,6 +3691,10 @@ export type UserUpdateWithoutFundTransfersInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -3508,6 +3748,10 @@ export type UserUncheckedUpdateWithoutFundTransfersInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -3559,6 +3803,10 @@ export type UserCreateManyOrganizationInput = {
   emailVerified?: boolean
   emailVerifyToken?: string | null
   emailVerifyExpiry?: Date | string | null
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  privacyAcceptedAt?: Date | string | null
+  privacyVersion?: string | null
   mfaEnabled?: boolean
   mfaSecret?: string | null
   mfaBackupCodes?: Prisma.UserCreatemfaBackupCodesInput | string[]
@@ -3602,6 +3850,10 @@ export type UserUpdateWithoutOrganizationInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -3654,6 +3906,10 @@ export type UserUncheckedUpdateWithoutOrganizationInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -3706,6 +3962,10 @@ export type UserUncheckedUpdateManyWithoutOrganizationInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifyExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  privacyAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mfaBackupCodes?: Prisma.UserUpdatemfaBackupCodesInput | string[]
@@ -3844,6 +4104,10 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   emailVerified?: boolean
   emailVerifyToken?: boolean
   emailVerifyExpiry?: boolean
+  termsAcceptedAt?: boolean
+  termsVersion?: boolean
+  privacyAcceptedAt?: boolean
+  privacyVersion?: boolean
   mfaEnabled?: boolean
   mfaSecret?: boolean
   mfaBackupCodes?: boolean
@@ -3899,6 +4163,10 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   emailVerified?: boolean
   emailVerifyToken?: boolean
   emailVerifyExpiry?: boolean
+  termsAcceptedAt?: boolean
+  termsVersion?: boolean
+  privacyAcceptedAt?: boolean
+  privacyVersion?: boolean
   mfaEnabled?: boolean
   mfaSecret?: boolean
   mfaBackupCodes?: boolean
@@ -3944,6 +4212,10 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   emailVerified?: boolean
   emailVerifyToken?: boolean
   emailVerifyExpiry?: boolean
+  termsAcceptedAt?: boolean
+  termsVersion?: boolean
+  privacyAcceptedAt?: boolean
+  privacyVersion?: boolean
   mfaEnabled?: boolean
   mfaSecret?: boolean
   mfaBackupCodes?: boolean
@@ -3989,6 +4261,10 @@ export type UserSelectScalar = {
   emailVerified?: boolean
   emailVerifyToken?: boolean
   emailVerifyExpiry?: boolean
+  termsAcceptedAt?: boolean
+  termsVersion?: boolean
+  privacyAcceptedAt?: boolean
+  privacyVersion?: boolean
   mfaEnabled?: boolean
   mfaSecret?: boolean
   mfaBackupCodes?: boolean
@@ -4019,7 +4295,7 @@ export type UserSelectScalar = {
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "firstName" | "lastName" | "phone" | "passwordHash" | "avatarUrl" | "role" | "organizationId" | "isActive" | "emailVerified" | "emailVerifyToken" | "emailVerifyExpiry" | "mfaEnabled" | "mfaSecret" | "mfaBackupCodes" | "lastLoginIp" | "lastLoginUserAgent" | "lastLoginAt" | "trustedDevices" | "alertPreferences" | "beneficiaryCode" | "dateOfBirth" | "addressStreet" | "addressCity" | "addressState" | "addressZip" | "ssnLast4" | "benefitPrograms" | "emergencyContactName" | "emergencyContactPhone" | "notes" | "title" | "companyName" | "businessAddress" | "firmName" | "licenseNumber" | "barNumber" | "organizationName" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "firstName" | "lastName" | "phone" | "passwordHash" | "avatarUrl" | "role" | "organizationId" | "isActive" | "emailVerified" | "emailVerifyToken" | "emailVerifyExpiry" | "termsAcceptedAt" | "termsVersion" | "privacyAcceptedAt" | "privacyVersion" | "mfaEnabled" | "mfaSecret" | "mfaBackupCodes" | "lastLoginIp" | "lastLoginUserAgent" | "lastLoginAt" | "trustedDevices" | "alertPreferences" | "beneficiaryCode" | "dateOfBirth" | "addressStreet" | "addressCity" | "addressState" | "addressZip" | "ssnLast4" | "benefitPrograms" | "emergencyContactName" | "emergencyContactPhone" | "notes" | "title" | "companyName" | "businessAddress" | "firmName" | "licenseNumber" | "barNumber" | "organizationName" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   expenseRequests?: boolean | Prisma.User$expenseRequestsArgs<ExtArgs>
@@ -4068,6 +4344,10 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     emailVerified: boolean
     emailVerifyToken: string | null
     emailVerifyExpiry: Date | null
+    termsAcceptedAt: Date | null
+    termsVersion: string | null
+    privacyAcceptedAt: Date | null
+    privacyVersion: string | null
     mfaEnabled: boolean
     mfaSecret: string | null
     mfaBackupCodes: string[]
@@ -4542,6 +4822,10 @@ export interface UserFieldRefs {
   readonly emailVerified: Prisma.FieldRef<"User", 'Boolean'>
   readonly emailVerifyToken: Prisma.FieldRef<"User", 'String'>
   readonly emailVerifyExpiry: Prisma.FieldRef<"User", 'DateTime'>
+  readonly termsAcceptedAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly termsVersion: Prisma.FieldRef<"User", 'String'>
+  readonly privacyAcceptedAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly privacyVersion: Prisma.FieldRef<"User", 'String'>
   readonly mfaEnabled: Prisma.FieldRef<"User", 'Boolean'>
   readonly mfaSecret: Prisma.FieldRef<"User", 'String'>
   readonly mfaBackupCodes: Prisma.FieldRef<"User", 'String[]'>
