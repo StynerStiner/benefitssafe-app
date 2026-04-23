@@ -15,7 +15,19 @@ export async function GET() {
     const userId = session.user.id;
     const orgId = session.user.organizationId;
 
-    const [profile, grants, expenses, documents, cards, auditLogs] = await Promise.all([
+    const [
+      profile,
+      grants,
+      expenses,
+      documents,
+      cards,
+      auditLogs,
+      memberships,
+      invites,
+      approvals,
+      notifications,
+      cardholderEligibility,
+    ] = await Promise.all([
       prisma.user.findUnique({
         where: { id: userId },
         select: {
@@ -95,6 +107,30 @@ export async function GET() {
           createdAt: true,
         },
       }),
+      // LINDDUN-D (CCPA §1798.110 + GDPR Art. 15) — additional user-referencing
+      // tables. Conservative field selection: free-text fields that may embed
+      // cross-user PII (Approval.notes, Notification.message,
+      // CardholderEligibility.probationParoleRestrictions) are excluded.
+      prisma.organizationMembership.findMany({
+        where: { userId },
+        select: { id: true, organizationId: true, role: true, memberCode: true, notes: true, createdAt: true },
+      }),
+      prisma.inviteToken.findMany({
+        where: { userId },
+        select: { id: true, method: true, sentTo: true, createdAt: true, expiresAt: true, usedAt: true },
+      }),
+      prisma.approval.findMany({
+        where: { approverId: userId, organizationId: orgId },
+        select: { id: true, action: true, expenseId: true, createdAt: true },
+      }),
+      prisma.notification.findMany({
+        where: { userId, organizationId: orgId },
+        select: { id: true, type: true, title: true, entityType: true, entityId: true, read: true, createdAt: true },
+      }),
+      prisma.cardholderEligibility.findUnique({
+        where: { beneficiaryId: userId },
+        select: { id: true, eligibilityStatus: true, ofacScreened: true, ofacScreenedAt: true },
+      }),
     ]);
 
     // Audit this export
@@ -119,6 +155,11 @@ export async function GET() {
       documents,
       virtualCards: cards,
       recentAuditLogs: auditLogs,
+      organizationMemberships: memberships,
+      inviteTokens: invites,
+      approvals,
+      notifications,
+      cardholderEligibility,
     });
   } catch (error) {
     console.error("GET /api/user/data-export error:", error);
