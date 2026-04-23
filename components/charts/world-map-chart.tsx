@@ -8,9 +8,16 @@ import {
   Geography,
 } from "react-simple-maps";
 
-// GeoJSON source
-const geoUrl =
-  "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+// GeoJSON source — self-hosted from /public (PDR T4).
+// Vendored from: https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json
+// SHA-256:  2516c915867c7baf18ddec727aec46c315541a07cfb3d79a6559b05d5e94eee8
+// Size:     107761 bytes
+// Captured: 2026-04-23
+// NOTE: world-atlas@2 is a mutable npm version tag, not an immutable hash.
+// A maintainer republish of v2 would drift silently. Re-verify upstream
+// SHA-256 against this capture quarterly.
+// TODO: re-verify upstream SHA — next check due 2026-07-22
+const geoUrl = "/maps/countries-110m.json";
 
 // Define a minimal type for a single geo object
 interface GeoFeature {
