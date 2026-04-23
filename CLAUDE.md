@@ -524,6 +524,7 @@ Every PDR that makes a code, schema, config, or infrastructure change walks this
 3. **Append to [docs/CTM-BASELINE.md](docs/CTM-BASELINE.md) in the same merge** if the PDR introduces a new external service, new DB, new role, new trust boundary, or a new Crown Jewel. No "we'll update the doc later" — same merge, same commit body.
 4. **Add discovered gaps to §6 Open Questions.** A-CTM's `potential-tm-update` pattern: unknowns surfaced during a PDR become logged questions in §6, never silent assumptions. Future PDRs pick them up.
 5. **Record remediation in [DEPENDENCY_AUDIT.md](DEPENDENCY_AUDIT.md)** when a PDR fixes a vuln or misconfig against a Crown Jewel or boundary.
+   - *When the row needs to reference the merge SHA, split into two commits per the SHA-paradox pattern (audit-row commit follows code-fix commit, references its SHA, push both together).* Commit 1 ships the code fix + audit doc + OQ additions with **no** `DEPENDENCY_AUDIT.md` row; capture its SHA from `git log`; commit 2 appends the `DEPENDENCY_AUDIT.md` row referencing commit 1's SHA (subject: `audit-row(security): record <PDR-name> in DEPENDENCY_AUDIT.md`); push both commits in one push; one `vercel --prod` covers both. Avoids the amend paradox where a commit that names its own hash can never stabilize — first observed on commit `d3682fd` / `5bdb086` (LINDDUN-code audit, 2026-04-23).
 
 Reference: Tarandach & Coles, *Threat Modeling* (O'Reilly 2020), Chapter 5 — The Autodesk Continuous Threat Modeling Methodology.
 
