@@ -69,11 +69,17 @@ const IS_PRODUCTION = process.env.NODE_ENV === "production";
 //                     (needed for OAuth provider redirects to work)
 //   - __Secure-     : prefixed cookie name in prod, which browsers refuse
 //                     to set from a non-HTTPS origin (belt + suspenders)
+//   - domain        : ".benefitssafe.com" on session + callback cookies
+//                     in prod so the JWT travels across app/stable/canary
+//                     subdomains (canary/stable traffic-split architecture).
+//                     CSRF/PKCE/state stay origin-locked — they must not
+//                     leak across deploy channels since they're single-use
+//                     per flow.
 //
-// The three secondary cookies (callbackUrl, csrfToken, pkceCodeVerifier)
-// are locked down with the same flag set so NextAuth's built-in CSRF
-// protection cannot be downgraded by an older browser or a proxy that
-// strips the default cookie prefix.
+// CSRF uses __Secure- (not __Host-) because __Host- forbids a domain
+// attribute — even though CSRF doesn't set one, keeping the prefix
+// consistent with the other origin-locked cookies avoids a mixed
+// cookie-jar state during the subdomain rollout.
 const AUTH_COOKIES = {
   sessionToken: {
     name: IS_PRODUCTION ? "__Secure-authjs.session-token" : "authjs.session-token",
@@ -82,6 +88,7 @@ const AUTH_COOKIES = {
       sameSite: "lax" as const,
       path: "/",
       secure: IS_PRODUCTION,
+      ...(IS_PRODUCTION && { domain: ".benefitssafe.com" }),
     },
   },
   callbackUrl: {
@@ -91,10 +98,11 @@ const AUTH_COOKIES = {
       sameSite: "lax" as const,
       path: "/",
       secure: IS_PRODUCTION,
+      ...(IS_PRODUCTION && { domain: ".benefitssafe.com" }),
     },
   },
   csrfToken: {
-    name: IS_PRODUCTION ? "__Host-authjs.csrf-token" : "authjs.csrf-token",
+    name: IS_PRODUCTION ? "__Secure-authjs.csrf-token" : "authjs.csrf-token",
     options: {
       httpOnly: true,
       sameSite: "lax" as const,
