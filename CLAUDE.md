@@ -490,6 +490,35 @@ Vulnerabilities that are genuinely not reachable in production (dev-only tooling
 
 ---
 
+## Threat Modeling Checklist
+
+Every PDR's **Documented Failure Modes** section must walk these 13 letters with one line each. Mark irrelevant letters `N/A: <reason>` — explicit N/A proves the category was considered, not overlooked.
+
+### STRIDE (security)
+
+- **S** — Spoofing
+- **T** — Tampering
+- **R** — Repudiation
+- **I** — Information disclosure
+- **D** — Denial of service
+- **E** — Elevation of privilege
+
+### LINDDUN (privacy — critical for SSI / Medi-Cal / CalFresh PII)
+
+- **L** — Linkability
+- **I** — Identifiability
+- **N** — Non-repudiation
+- **D** — Detectability
+- **D** — Disclosure of information
+- **U** — Unawareness
+- **N** — Non-compliance
+
+Reference: Tarandach & Coles, *Threat Modeling* (O'Reilly 2020), Chapter 3 (STRIDE-per-Element) and Specialized Methodologies (LINDDUN).
+
+Every vuln or misconfig decision made via this checklist must also append a row to [`DEPENDENCY_AUDIT.md`](DEPENDENCY_AUDIT.md) after merge.
+
+---
+
 ## REMEMBER
 
 This platform protects vulnerable people's government benefits. A sloppy expense classification could cause someone to lose their SSI or Medi-Cal. A data breach could expose disability status. A compliance error could cost a nonprofit its 501(c)(3) status.
