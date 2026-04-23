@@ -515,7 +515,17 @@ Every PDR's **Documented Failure Modes** section must walk these 13 letters with
 
 Reference: Tarandach & Coles, *Threat Modeling* (O'Reilly 2020), Chapter 3 (STRIDE-per-Element) and Specialized Methodologies (LINDDUN).
 
-Every vuln or misconfig decision made via this checklist must also append a row to [`DEPENDENCY_AUDIT.md`](DEPENDENCY_AUDIT.md) after merge.
+### Threat Model Every Story (CTM)
+
+Every PDR that makes a code, schema, config, or infrastructure change walks this contract (the same contract lives in [docs/CTM-BASELINE.md §0](docs/CTM-BASELINE.md) — intentional redundancy so a PDR author opening either document cold gets the rules):
+
+1. **Grep [docs/CTM-BASELINE.md](docs/CTM-BASELINE.md) §3 Crown Jewels for scope match.** If the PDR touches any Crown Jewel's files/tables/routes, the PDR's Documented Failure Modes section must reference the Crown Jewels entry by ID (e.g. `CJ-8`) and explain how the change affects that asset's confidentiality / integrity / availability.
+2. **Walk §4 Trust Boundaries.** If the PDR crosses any boundary (e.g. `TB-6` org ↔ org, `TB-2` app ↔ Stripe), reference the entry by ID and explain what enforcement keeps the crossing intended.
+3. **Append to [docs/CTM-BASELINE.md](docs/CTM-BASELINE.md) in the same merge** if the PDR introduces a new external service, new DB, new role, new trust boundary, or a new Crown Jewel. No "we'll update the doc later" — same merge, same commit body.
+4. **Add discovered gaps to §6 Open Questions.** A-CTM's `potential-tm-update` pattern: unknowns surfaced during a PDR become logged questions in §6, never silent assumptions. Future PDRs pick them up.
+5. **Record remediation in [DEPENDENCY_AUDIT.md](DEPENDENCY_AUDIT.md)** when a PDR fixes a vuln or misconfig against a Crown Jewel or boundary.
+
+Reference: Tarandach & Coles, *Threat Modeling* (O'Reilly 2020), Chapter 5 — The Autodesk Continuous Threat Modeling Methodology.
 
 ---
 
