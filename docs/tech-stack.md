@@ -15,7 +15,7 @@ Last updated: 2026-04-03
 ## Authentication & Security
 | Layer | Technology |
 |-------|-----------|
-| Auth | NextAuth v5 (Credentials + Google + GitHub) |
+| Auth | NextAuth v5 (Credentials + Google + Microsoft Entra ID (common-tenant)) |
 | MFA | TOTP with encrypted secrets + hashed backup codes |
 | Encryption | AES-256-GCM (lib/encryption.ts) |
 | Sessions | JWT with role + organizationId claims |

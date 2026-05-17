@@ -4,7 +4,7 @@
 
 ## Overview
 
-- **Database**: PostgreSQL (via Supabase)
+- **Database**: AWS Aurora PostgreSQL (us-east-2)
 - **ORM**: Prisma
 - **Generator output**: `../lib/generated/prisma`
 - **Total models**: 25

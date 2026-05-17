@@ -91,8 +91,8 @@ These are THREE SEPARATE database entities. Never merge them.
 | Language | TypeScript | 5.8+ |
 | CSS | Tailwind CSS | v4 |
 | Components | shadcn/ui | Latest |
-| Auth | NextAuth v5 | Credentials + Google + GitHub |
-| Database | PostgreSQL | Via Supabase |
+| Auth | NextAuth v5 | Credentials + Google + Microsoft Entra ID (common-tenant) |
+| Database | PostgreSQL | AWS Aurora (us-east-2) |
 | ORM | Prisma | Latest |
 | Cards | Stripe Issuing | Latest |
 | Validation | Zod | Latest |
@@ -324,6 +324,8 @@ NEXTAUTH_SECRET=
 NEXTAUTH_URL=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
+MICROSOFT_CLIENT_ID=
+MICROSOFT_CLIENT_SECRET=
 ANTHROPIC_API_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_PUBLISHABLE_KEY=
